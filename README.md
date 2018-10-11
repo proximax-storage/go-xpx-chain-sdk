@@ -1,6 +1,6 @@
 # nem2-sdk-go
 
-nem2-sdk-go is a Golang client library for Catapult API
+This is the ProximaX forked [nem2-sdk-go](https://github.com/proximax-storage/nem2-sdk-go) Golang client library for Catapult API
 
 
 <p align="center"> 
