@@ -207,7 +207,7 @@ func TestAggregateTransactionSerialization(t *testing.T) {
 	ttx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SBILTA367K2LX2FEXG5TFWAS7GEFYAGY7QLFBYKC", MijinTest),
-		Mosaics{Xem(10000000)},
+		Mosaics{Xpx(10000000)},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -476,7 +476,7 @@ func TestLockFundsTransactionSerialization(t *testing.T) {
 		128, 126, 135, 139}
 
 	stx := &SignedTransaction{AggregateBonded, "payload", "8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"}
-	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), stx, MijinTest)
+	tx, err := NewLockFundsTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), stx, MijinTest)
 	b, err := tx.generateBytes()
 	if err != nil {
 		t.Errorf("LockFundsTransaction generateBytes() returned error: %s", err)
@@ -500,7 +500,7 @@ func TestLockFundsTransactionToAggregate(t *testing.T) {
 	}
 	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 	stx := &SignedTransaction{AggregateBonded, "payload", "8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"}
-	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), stx, MijinTest)
+	tx, err := NewLockFundsTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), stx, MijinTest)
 	tx.Signer = p
 	b, err := toAggregateTransactionBytes(tx)
 	if err != nil {
@@ -518,7 +518,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest)
 
 	stx := &SignedTransaction{AggregateBonded, "payload", "8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"}
-	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), stx, MijinTest)
+	tx, err := NewLockFundsTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), stx, MijinTest)
 	b, err := signTransactionWith(tx, acc)
 	if err != nil {
 		t.Errorf("LockFundsTransaction signing returned error: %s", err)
@@ -544,7 +544,7 @@ func TestSecretLockTransactionSerialization(t *testing.T) {
 		236, 59, 165, 131, 28, 182, 8, 163, 18, 194, 242, 3, 186, 132, 172}
 	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
 	b, err := tx.generateBytes()
 	if err != nil {
 		t.Errorf("SecretLockTransaction generateBytes() returned error: %s", err)
@@ -570,7 +570,7 @@ func TestSecretLockTransactionToAggregate(t *testing.T) {
 	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
 	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
 	tx.Signer = p
 	b, err := toAggregateTransactionBytes(tx)
 	if err != nil {
@@ -587,7 +587,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
 	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest)
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XpxRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
 	b, err := acc.Sign(tx)
 	if err != nil {
 		t.Errorf("SecretLockTransaction signing returned error: %s", err)

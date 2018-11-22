@@ -1911,6 +1911,8 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 	if err != nil {
 		return nil, err
 	}
+
+	tx.GetAbstractTransaction().TransactionInfo = &TransactionInfo{Hash: (Hash)(h)}
 	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(ph), (Hash)(h)}, nil
 }
 
