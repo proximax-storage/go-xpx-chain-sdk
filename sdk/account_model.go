@@ -330,10 +330,12 @@ func NewAddress(address string, networkType NetworkType) *Address {
 }
 
 var addressNet = map[uint8]NetworkType{
-	'N': MainNet,
-	'T': TestNet,
 	'M': Mijin,
 	'S': MijinTest,
+	'X': Public,
+	'V': PublicTest,
+	'Z': Private,
+	'W': PrivateTest,
 }
 
 func NewAddressFromRaw(address string) (*Address, error) {
