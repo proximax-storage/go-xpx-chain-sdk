@@ -15,23 +15,29 @@ type NetworkType uint8
 
 // NetworkType enums
 const (
-	MainNet         NetworkType = 104
-	TestNet         NetworkType = 152
 	Mijin           NetworkType = 96
 	MijinTest       NetworkType = 144
+	Public          NetworkType = 184
+	PublicTest      NetworkType = 168
+	Private         NetworkType = 200
+	PrivateTest     NetworkType = 176
 	NotSupportedNet NetworkType = 0
 )
 
 func NetworkTypeFromString(networkType string) NetworkType {
 	switch strings.ToUpper(networkType) {
-	case "MIJIN":
+	case "mijin":
 		return Mijin
-	case "MIJIN_TEST":
+	case "mijinTest":
 		return MijinTest
-	case "TEST_NET":
-		return TestNet
-	case "MAIN_NET":
-		return MijinTest
+	case "public":
+		return Public
+	case "publicTest":
+		return PublicTest
+	case "private":
+		return Private
+	case "privateTest":
+		return PrivateTest
 	}
 	return NotSupportedNet
 }
