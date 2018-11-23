@@ -14,8 +14,6 @@ const testNEMPublicKey = "b4f12e7c9f6946091e2cb8b6d3a12b50d17ccbbf646386ea27ce29
 var testAddressesForEncoded = map[NetworkType]string{
 	MijinTest: "SARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJETM3ZSP",
 	Mijin:     "MARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJE5K5RYU",
-	TestNet:   "TARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJE47FYR3",
-	MainNet:   "NARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJFJKUV32",
 }
 
 func TestGenerateNewAccount_NEM(t *testing.T) {
@@ -26,8 +24,7 @@ func TestGenerateNewAccount_NEM(t *testing.T) {
 	a := acc.KeyPair.PrivateKey.String()
 	t.Log("Private Key: " + a)
 
-	assert.NotNil(t,acc.KeyPair.PrivateKey.String(),"Error generating new KeyPair")
-
+	assert.NotNil(t, acc.KeyPair.PrivateKey.String(), "Error generating new KeyPair")
 
 }
 func TestGenerateEncodedAddress_NEM(t *testing.T) {

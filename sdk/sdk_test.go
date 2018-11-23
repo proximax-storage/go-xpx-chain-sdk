@@ -25,7 +25,7 @@ const (
 )
 
 func setupWithAddress(adr string) *Client {
-	conf, err := NewConfig(adr, TestNet)
+	conf, err := NewConfig(adr, PublicTest)
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +34,7 @@ func setupWithAddress(adr string) *Client {
 }
 
 func setup() (*Client, string) {
-	conf, err := NewConfig(address, TestNet)
+	conf, err := NewConfig(address, PublicTest)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +49,7 @@ func setupMockServer() (client *Client, mux *http.ServeMux, serverURL string, te
 
 	server := httptest.NewServer(mux)
 
-	conf, err := NewConfig(server.URL, TestNet)
+	conf, err := NewConfig(server.URL, PublicTest)
 	if err != nil {
 		return nil, nil, "", nil, err
 	}
