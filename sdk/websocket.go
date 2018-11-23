@@ -286,7 +286,7 @@ func (c *ClientWebsocket) buildType(name string, t []byte) error {
 		if err != nil {
 			return err
 		}
-		ChanSubscribe.UnconfirmedAdded.Ch <- data
+		ChanSubscribe.PartialAdded.Ch <- data
 		return nil
 
 	case "unconfirmedAdded":
