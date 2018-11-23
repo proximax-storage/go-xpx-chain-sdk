@@ -63,7 +63,7 @@ type MosaicId struct {
 	FullName string
 }
 
-func NewMosaicIdFromName(name string) (*MosaicId, error) {
+func NewMosaicIdFromFullName(name string) (*MosaicId, error) {
 	if (name == "") || strings.Contains(name, " {") {
 		return nil, errors.New(name + " is not valid")
 	}
@@ -211,7 +211,7 @@ type MosaicName struct {
 	ParentId *NamespaceId
 }
 
-var XemMosaicId, _ = NewMosaicIdFromName("prx:xpx")
+var XemMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
 
 // Create xem with using xem as unit
 func Xpx(amount int64) *Mosaic {

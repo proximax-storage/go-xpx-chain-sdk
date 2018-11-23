@@ -504,7 +504,7 @@ func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaic *MosaicId, supp
 	} else {
 		if mosaic.Id == nil || mosaic.Id.Int64() == 0 {
 			var err error
-			mosaic, err = NewMosaicIdFromName(mosaic.FullName)
+			mosaic, err = NewMosaicIdFromFullName(mosaic.FullName)
 			if err != nil {
 				return nil, err
 			}

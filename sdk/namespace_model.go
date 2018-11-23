@@ -16,7 +16,7 @@ import (
 	"unsafe"
 )
 
-// 	NamespaceId
+// NamespaceId
 type NamespaceId struct {
 	Id       *big.Int
 	FullName string
@@ -26,7 +26,7 @@ func (n *NamespaceId) toHexString() string {
 	return BigIntegerToHex(n.Id)
 }
 
-//NewNamespaceId generate new NamespaceId from bigInt
+// NewNamespaceId generate new NamespaceId from bigInt
 func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 
 	if id == nil {
@@ -35,8 +35,8 @@ func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 	return &NamespaceId{id, ""}, nil
 }
 
-//NewNamespaceIdFromName generate Id from namespaceName
-func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
+// NewNamespaceIdFromFullName generate Id from namespaceName
+func NewNamespaceIdFromFullName(namespaceName string) (*NamespaceId, error) {
 
 	id, err := generateNamespaceId(namespaceName)
 	if err != nil {
