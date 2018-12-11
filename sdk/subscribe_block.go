@@ -5,6 +5,7 @@
 package sdk
 
 import (
+	"errors"
 	"fmt"
 	"golang.org/x/net/websocket"
 )
@@ -26,7 +27,7 @@ const (
 )
 
 // Closes the subscription channel.
-func closeChannel(s *subscribe) {
+func (s *subscribe) closeChannel() error {
 	switch s.Ch.(type) {
 	case chan *BlockInfo:
 		chType := s.Ch.(chan *BlockInfo)
@@ -52,7 +53,12 @@ func closeChannel(s *subscribe) {
 		delete(signerInfoChannels, s.getAdd())
 		close(chType)
 
-	default:
+	case chan *ErrorInfo:
+		chType := s.Ch.(chan *ErrorInfo)
+		delete(errChannels, s.getAdd())
+		close(chType)
+
+	case chan Transaction:
 		chType := s.Ch.(chan Transaction)
 		if s.getSubscribe() == "partialAdded" {
 			delete(partialAddedChannels, s.getAdd())
@@ -62,7 +68,11 @@ func closeChannel(s *subscribe) {
 			delete(confirmedAddedChannels, s.getAdd())
 		}
 		close(chType)
+
+	default:
+		return errors.New("WRONG TYPE CHANNEL")
 	}
+	return nil
 }
 
 // Unsubscribe terminates the specified subscription.
@@ -76,7 +86,9 @@ func (c *subscribe) unsubscribe() error {
 		return err
 	}
 
-	closeChannel(c)
+	if err := c.closeChannel(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -217,4 +229,16 @@ func (c *SubscribeService) Cosignature(add string) (*SubscribeSigner, error) {
 	subCosignature.subscribe = subscribe
 	subscribe.Ch = signerInfoChannels[add]
 	return subCosignature, err
+}
+
+func (c *SubscribeService) Error(add string) *SubscribeError {
+	c.client = c.getClient(add)
+	subError := new(SubscribeError)
+	subError.Ch = make(chan *ErrorInfo)
+	errChannels[add] = subError.Ch
+	subscribe := new(subscribe)
+	subscribe.Subscribe = "error/" + add
+	subError.subscribe = subscribe
+	subscribe.Ch = errChannels[add]
+	return subError
 }
