@@ -29,13 +29,13 @@ type accountInfoDTO struct {
 }
 
 type reputationDTO struct {
-	positiveInteractions uint64DTO
-	negativeInteractions uint64DTO
+	PositiveInteractions uint64DTO `json:"positiveInteractions"`
+	NegativeInteractions uint64DTO `json:"negativeInteractions"`
 }
 
 func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
-	posInter := ref.positiveInteractions.toBigInt().Uint64()
-	negInter := ref.negativeInteractions.toBigInt().Uint64()
+	posInter := ref.PositiveInteractions.toBigInt().Uint64()
+	negInter := ref.NegativeInteractions.toBigInt().Uint64()
 
 	if posInter < repConfig.minInteractions {
 		return repConfig.defaultReputation
