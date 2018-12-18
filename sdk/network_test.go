@@ -11,8 +11,12 @@ import (
 )
 
 const (
-	testNetRoute = `{
-  			"name": "TEST_NET",
+	mijinRoute = `{
+  			"name": "mijin",
+  			"description": "catapult development network"
+  	}`
+	mijinTestRoute = `{
+  			"name": "mijinTest",
   			"description": "catapult development network"
   	}`
 	notSupportedRoute = `{
@@ -22,19 +26,34 @@ const (
 )
 
 func TestNetworkService_GetNetworkType(t *testing.T) {
-	t.Run("TEST_NET", func(t *testing.T) {
+	t.Run("mijin", func(t *testing.T) {
 		mockServ := newSdkMockWithRouter(&mock.Router{
 			Path:     networkRoute,
-			RespBody: testNetRoute,
+			RespBody: mijinRoute,
 		})
 
 		defer mockServ.Close()
 
-		netType, err := mockServ.getTestNetClientUnsafe().Network.GetNetworkType(ctx)
+		netType, err := mockServ.getPublicTestClientUnsafe().Network.GetNetworkType(ctx)
 
 		assert.Nilf(t, err, "NetworkService.GetNetworkType returned error=%s", err)
 
-		assert.Equal(t, netType, TestNet)
+		assert.Equal(t, netType, MijinTest)
+	})
+
+	t.Run("mijinTest", func(t *testing.T) {
+		mockServ := newSdkMockWithRouter(&mock.Router{
+			Path:     networkRoute,
+			RespBody: mijinTestRoute,
+		})
+
+		defer mockServ.Close()
+
+		netType, err := mockServ.getPublicTestClientUnsafe().Network.GetNetworkType(ctx)
+
+		assert.Nilf(t, err, "NetworkService.GetNetworkType returned error=%s", err)
+
+		assert.Equal(t, netType, MijinTest)
 	})
 
 	t.Run("NotSupportedNet", func(t *testing.T) {
@@ -45,7 +64,7 @@ func TestNetworkService_GetNetworkType(t *testing.T) {
 
 		defer mock.Close()
 
-		netType, err := mock.getTestNetClientUnsafe().Network.GetNetworkType(ctx)
+		netType, err := mock.getPublicTestClientUnsafe().Network.GetNetworkType(ctx)
 
 		assert.NotNil(t, err, "NetworkService.GetNetworkType should return error")
 		assert.Equal(t, netType, NotSupportedNet)

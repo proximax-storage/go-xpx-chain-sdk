@@ -185,11 +185,21 @@ type MosaicName struct {
 	ParentId *NamespaceId
 }
 
-var XemMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
+var XemMosaicId, _ = NewMosaicIdFromFullName("nem:xem")
+var XpxMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
+
+// Create xem with using xem as unit
+func Xem(amount int64) *Mosaic {
+	return &Mosaic{XemMosaicId, big.NewInt(amount)}
+}
 
 // Create xem with using xem as unit
 func Xpx(amount int64) *Mosaic {
-	return &Mosaic{XemMosaicId, big.NewInt(amount)}
+	return &Mosaic{XpxMosaicId, big.NewInt(amount)}
+}
+
+func XemRelative(amount int64) *Mosaic {
+	return Xem(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
 }
 
 func XpxRelative(amount int64) *Mosaic {
