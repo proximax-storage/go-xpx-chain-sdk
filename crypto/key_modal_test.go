@@ -5,7 +5,7 @@
 package crypto
 
 import (
-	"github.com/proximax-storage/nem2-sdk-go/utils"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"

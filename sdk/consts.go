@@ -4,9 +4,12 @@
 
 package sdk
 
-import "regexp"
+import (
+	"regexp"
+)
 
 var XemMosaicId, _ = NewMosaicIdFromFullName("nem:xem")
+var XpxMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
 
 // const routers path for methods AccountService
 const (

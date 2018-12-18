@@ -6,7 +6,7 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/nem2-sdk-go/utils"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"github.com/proximax-storage/proximax-utils-go/str"
 	"math/big"
 	"strings"
@@ -179,21 +179,12 @@ func (tx MosaicSupplyType) String() string {
 	return fmt.Sprintf("%d", tx)
 }
 
-type MosaicName struct {
-	MosaicId *MosaicId
-	Name     string
-	ParentId *NamespaceId
-}
-
-var XemMosaicId, _ = NewMosaicIdFromFullName("nem:xem")
-var XpxMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
-
 // Create xem with using xem as unit
 func Xem(amount int64) *Mosaic {
 	return &Mosaic{XemMosaicId, big.NewInt(amount)}
 }
 
-// Create xem with using xem as unit
+// Create xpx with using xpx as unit
 func Xpx(amount int64) *Mosaic {
 	return &Mosaic{XpxMosaicId, big.NewInt(amount)}
 }

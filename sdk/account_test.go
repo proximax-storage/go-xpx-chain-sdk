@@ -12,18 +12,19 @@ import (
 
 var (
 	account = &AccountInfo{
-		&Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
-		uint64DTO{1, 0}.toBigInt(),
-		"F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
-		uint64DTO{0, 0}.toBigInt(),
-		uint64DTO{409090909, 0}.toBigInt(),
-		uint64DTO{1, 0}.toBigInt(),
-		[]*Mosaic{
+		Address:          &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+		AddressHeight:    uint64DTO{1, 0}.toBigInt(),
+		PublicKey:        "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+		PublicKeyHeight:  uint64DTO{0, 0}.toBigInt(),
+		Importance:       uint64DTO{409090909, 0}.toBigInt(),
+		ImportanceHeight: uint64DTO{1, 0}.toBigInt(),
+		Mosaics: []*Mosaic{
 			{MosaicId: bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt()), Amount: uint64DTO{3863990592, 95248}.toBigInt()},
 		},
+		Reputation: 0.9,
 	}
 
-	accountClient = mockServer.getTestNetClientUnsafe().Account
+	accountClient = mockServer.getPublicTestClientUnsafe().Account
 )
 
 const (

@@ -10,7 +10,7 @@ This is the ProximaX forked [nem2-sdk-go](https://github.com/proximax-storage/ne
 ## Usage ##
 
 ```go
-import "github.com/proximax-storage/nem2-sdk-go/sdk"
+import "github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
 ```
 
 Create a Catapult network configuration 

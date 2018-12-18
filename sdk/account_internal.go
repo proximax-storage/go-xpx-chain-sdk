@@ -3,29 +3,50 @@ package sdk
 import (
 	"encoding/base32"
 	"encoding/hex"
-	"github.com/proximax-storage/nem2-sdk-go/crypto"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/crypto"
 )
 
 var addressNet = map[uint8]NetworkType{
-	'N': MainNet,
-	'T': TestNet,
 	'M': Mijin,
 	'S': MijinTest,
+	'X': Public,
+	'V': PublicTest,
+	'Z': Private,
+	'W': PrivateTest,
 }
 
 type accountInfoDTO struct {
 	Account struct {
-		Address          string       `json:"address"`
-		AddressHeight    uint64DTO    `json:"addressHeight"`
-		PublicKey        string       `json:"publicKey"`
-		PublicKeyHeight  uint64DTO    `json:"publicKeyHeight"`
-		Importance       uint64DTO    `json:"importance"`
-		ImportanceHeight uint64DTO    `json:"importanceHeight"`
-		Mosaics          []*mosaicDTO `json:"mosaics"`
+		Address          string         `json:"address"`
+		AddressHeight    uint64DTO      `json:"addressHeight"`
+		PublicKey        string         `json:"publicKey"`
+		PublicKeyHeight  uint64DTO      `json:"publicKeyHeight"`
+		Importance       uint64DTO      `json:"importance"`
+		ImportanceHeight uint64DTO      `json:"importanceHeight"`
+		Mosaics          []*mosaicDTO   `json:"mosaics"`
+		Reputation       *reputationDTO `json:"reputation"`
 	} `json:"account"`
 }
 
-func (dto *accountInfoDTO) toStruct() (*AccountInfo, error) {
+type reputationDTO struct {
+	positiveInteractions uint64DTO
+	negativeInteractions uint64DTO
+}
+
+func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
+	posInter := ref.positiveInteractions.toBigInt().Uint64()
+	negInter := ref.negativeInteractions.toBigInt().Uint64()
+
+	if posInter < repConfig.minInteractions {
+		return repConfig.defaultReputation
+	}
+
+	rep := (posInter - negInter) / posInter
+
+	return float64(rep)
+}
+
+func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, error) {
 	var (
 		ms  = make([]*Mosaic, len(dto.Account.Mosaics))
 		err error
@@ -43,7 +64,7 @@ func (dto *accountInfoDTO) toStruct() (*AccountInfo, error) {
 		return nil, err
 	}
 
-	return &AccountInfo{
+	acc := &AccountInfo{
 		Address:          add,
 		AddressHeight:    dto.Account.AddressHeight.toBigInt(),
 		PublicKey:        dto.Account.PublicKey,
@@ -51,19 +72,26 @@ func (dto *accountInfoDTO) toStruct() (*AccountInfo, error) {
 		Importance:       dto.Account.Importance.toBigInt(),
 		ImportanceHeight: dto.Account.ImportanceHeight.toBigInt(),
 		Mosaics:          ms,
-	}, nil
+		Reputation:       repConfig.defaultReputation,
+	}
+
+	if dto.Account.Reputation != nil {
+		acc.Reputation = dto.Account.Reputation.toFloat(repConfig)
+	}
+
+	return acc, nil
 }
 
 type accountInfoDTOs []*accountInfoDTO
 
-func (a accountInfoDTOs) toStruct() ([]*AccountInfo, error) {
+func (a accountInfoDTOs) toStruct(repConfig *reputationConfig) ([]*AccountInfo, error) {
 	var (
 		accountInfos = make([]*AccountInfo, len(a))
 		err          error
 	)
 
 	for idx, dto := range a {
-		accountInfos[idx], err = dto.toStruct()
+		accountInfos[idx], err = dto.toStruct(repConfig)
 		if err != nil {
 			return nil, err
 		}

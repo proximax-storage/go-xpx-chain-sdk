@@ -7,7 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/proximax-storage/nem2-sdk-go/sdk"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
 	"time"
 )
 

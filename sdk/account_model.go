@@ -8,7 +8,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"fmt"
-	"github.com/proximax-storage/nem2-sdk-go/crypto"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/crypto"
 	"github.com/proximax-storage/proximax-utils-go/str"
 	"math/big"
 	"strings"
@@ -51,6 +51,7 @@ type AccountInfo struct {
 	Importance       *big.Int
 	ImportanceHeight *big.Int
 	Mosaics          []*Mosaic
+	Reputation       float64
 }
 
 func (a *AccountInfo) String() string {
@@ -148,15 +149,6 @@ func NewAddress(address string, networkType NetworkType) *Address {
 	address = strings.Replace(address, "-", "", -1)
 	address = strings.ToUpper(address)
 	return &Address{networkType, address}
-}
-
-var addressNet = map[uint8]NetworkType{
-	'M': Mijin,
-	'S': MijinTest,
-	'X': Public,
-	'V': PublicTest,
-	'Z': Private,
-	'W': PrivateTest,
 }
 
 func NewAddressFromRaw(address string) (*Address, error) {

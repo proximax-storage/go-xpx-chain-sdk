@@ -188,7 +188,7 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 		RespBody: transactionJson,
 	})
 
-	cl := mockServer.getTestNetClientUnsafe()
+	cl := mockServer.getPublicTestClientUnsafe()
 
 	tx, err := cl.Transaction.GetTransaction(context.Background(), transactionId)
 
@@ -203,7 +203,7 @@ func TestTransactionService_GetTransactions(t *testing.T) {
 		RespBody: "[" + transactionJson + "]",
 	})
 
-	cl := mockServer.getTestNetClientUnsafe()
+	cl := mockServer.getPublicTestClientUnsafe()
 
 	transactions, err := cl.Transaction.GetTransactions(context.Background(), []string{
 		transactionId,
@@ -222,7 +222,7 @@ func TestTransactionService_GetTransactionStatus(t *testing.T) {
 		RespBody: statusJson,
 	})
 
-	cl := mockServer.getTestNetClientUnsafe()
+	cl := mockServer.getPublicTestClientUnsafe()
 
 	txStatus, err := cl.Transaction.GetTransactionStatus(context.Background(), transactionHash)
 
@@ -237,7 +237,7 @@ func TestTransactionService_GetTransactionStatuses(t *testing.T) {
 		RespBody: "[" + statusJson + "]",
 	})
 
-	cl := mockServer.getTestNetClientUnsafe()
+	cl := mockServer.getPublicTestClientUnsafe()
 
 	txStatuses, err := cl.Transaction.GetTransactionStatuses(context.Background(), []string{transactionHash})
 

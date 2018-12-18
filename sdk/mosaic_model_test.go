@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewMosaicId(t *testing.T) {
-	assert.Equal(t, big.NewInt(-3087871471161192663).Int64(), mosaicIdToBigInt(XemMosaicId).Int64())
+	assert.Equal(t, big.NewInt(-3160520765780471308).Int64(), mosaicIdToBigInt(XpxMosaicId).Int64())
 }
 
 func TestNewMosaicIdFromIdViaConstructor(t *testing.T) {

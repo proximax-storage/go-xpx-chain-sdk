@@ -89,7 +89,7 @@ const (
 )
 
 var (
-	blockClient = mockServer.getTestNetClientUnsafe().Blockchain
+	blockClient = mockServer.getPublicTestClientUnsafe().Blockchain
 	testHeight  = big.NewInt(1)
 	testLimit   = big.NewInt(100)
 )

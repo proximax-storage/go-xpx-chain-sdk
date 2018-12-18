@@ -58,3 +58,7 @@ var (
 	ErrNilAccount        = errors.New("account should not be nil")
 	ErrInvalidAddress    = errors.New("wrong address")
 )
+
+var (
+	ErrInvalidReputationConfig = errors.New("default reputation should be greater than 0 and less than 1")
+)

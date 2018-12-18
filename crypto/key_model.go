@@ -6,7 +6,7 @@ package crypto
 
 import (
 	"encoding/hex"
-	"github.com/proximax-storage/nem2-sdk-go/utils"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"math/big"
 	"strconv"
 )
@@ -31,7 +31,6 @@ type PrivateKey struct {
 	value *big.Int
 	Raw   []byte
 }
-
 
 // NewPrivateKey creates a new private key from []byte
 func NewPrivateKey(raw []byte) *PrivateKey {

@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	namespaceClient = mockServer.getTestNetClientUnsafe().Namespace
+	namespaceClient = mockServer.getPublicTestClientUnsafe().Namespace
 	testAddresses   = []*Address{
 		{Address: "SDRDGFTDLLCB67D4HPGIMIHPNSRYRJRT7DOBGWZY"},
 		{Address: "SBCPGZ3S2SCC3YHBBTYDCUZV4ZZEPHM2KGCP4QXX"},

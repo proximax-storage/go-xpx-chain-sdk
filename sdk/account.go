@@ -36,7 +36,7 @@ func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (
 		return nil, err
 	}
 
-	return dto.toStruct()
+	return dto.toStruct(a.client.config.reputationConfig)
 }
 
 // Gets AccountsInfo for different accounts.
@@ -66,7 +66,7 @@ func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Addre
 		return nil, err
 	}
 
-	return dtos.toStruct()
+	return dtos.toStruct(a.client.config.reputationConfig)
 }
 
 // Gets a MultisigAccountInfo for an account.

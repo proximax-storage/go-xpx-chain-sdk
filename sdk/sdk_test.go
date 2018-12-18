@@ -22,24 +22,6 @@ var (
 	mockServer = newSdkMock(5 * time.Minute)
 )
 
-func setupWithAddress(adr string) *Client {
-	conf, err := NewConfig(adr, TestNet)
-	if err != nil {
-		panic(err)
-	}
-
-	return NewClient(nil, conf)
-}
-
-func setup() (*Client, string) {
-	conf, err := NewConfig(address, TestNet)
-	if err != nil {
-		panic(err)
-	}
-
-	return NewClient(nil, conf), address
-}
-
 // Bool is a helper routine that allocates a new bool value
 // to store v and returns a pointer to it.
 func Bool(v bool) *bool { return &v }
@@ -102,12 +84,12 @@ func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error
 	return client, nil
 }
 
-func (m *sdkMock) getTestNetClient() (*Client, error) {
-	return m.getClientByNetworkType(TestNet)
+func (m *sdkMock) getPublicTestClient() (*Client, error) {
+	return m.getClientByNetworkType(PublicTest)
 }
 
-func (m *sdkMock) getTestNetClientUnsafe() *Client {
-	client, _ := m.getTestNetClient()
+func (m *sdkMock) getPublicTestClientUnsafe() *Client {
+	client, _ := m.getPublicTestClient()
 
 	return client
 }

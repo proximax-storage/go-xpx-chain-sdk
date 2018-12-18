@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	mosaicClient  = mockServer.getTestNetClientUnsafe().Mosaic
+	mosaicClient  = mockServer.getPublicTestClientUnsafe().Mosaic
 	testMosaicId  = bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt())
 	testMosaicIds = []*MosaicId{
 		testMosaicId,
@@ -83,7 +83,7 @@ var (
 		Owner: &PublicAccount{
 			Address: &Address{
 				Type:    mosaicClient.client.config.NetworkType,
-				Address: "TBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVVPAYGJN",
+				Address: "VBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVX36ZFE7",
 			},
 
 			PublicKey: "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",

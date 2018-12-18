@@ -5,7 +5,7 @@
 package test
 
 import (
-	"github.com/proximax-storage/nem2-sdk-go/sdk"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
 	"golang.org/x/net/context"
 	"math/big"
 	"testing"
