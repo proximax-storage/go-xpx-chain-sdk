@@ -11,11 +11,11 @@ import (
 
 const (
 	mijinRoute = `{
-  			"name": "MIJIN",
+  			"name": "mijin",
   			"description": "catapult development network"
   	}`
 	mijinTestRoute = `{
-  			"name": "MIJIN_TEST",
+  			"name": "mijinTest",
   			"description": "catapult development network"
   	}`
 )
