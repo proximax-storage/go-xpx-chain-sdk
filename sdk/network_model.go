@@ -8,7 +8,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type NetworkType uint8
@@ -25,7 +24,7 @@ const (
 )
 
 func NetworkTypeFromString(networkType string) NetworkType {
-	switch strings.ToUpper(networkType) {
+	switch networkType {
 	case "mijin":
 		return Mijin
 	case "mijinTest":
