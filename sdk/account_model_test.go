@@ -9,7 +9,11 @@ import (
 	"testing"
 )
 
-const testNEMPublicKey = "b4f12e7c9f6946091e2cb8b6d3a12b50d17ccbbf646386ea27ce2946a7423dcf"
+const (
+	testNEMPublicKey    = "b4f12e7c9f6946091e2cb8b6d3a12b50d17ccbbf646386ea27ce2946a7423dcf"
+	testPublicKey1      = "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E"
+	testEncodedAddress1 = "SBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVVTOKK5M"
+)
 
 var testAddressesForEncoded = map[NetworkType]string{
 	MijinTest: "SARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJETM3ZSP",
