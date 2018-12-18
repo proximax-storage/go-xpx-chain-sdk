@@ -38,10 +38,10 @@ var defaultRepConfig = reputationConfig{
 
 func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig, error) {
 	if defaultRep < 0 || defaultRep > 1 {
-		return nil, errors.New("")
+		return nil, ErrInvalidReputationConfig
 	}
 
-	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, ErrInvalidReputationConfig
+	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
 // Config constructor
