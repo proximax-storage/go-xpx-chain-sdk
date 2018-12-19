@@ -6,7 +6,7 @@ package crypto
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/proximax-storage/nem2-sdk-go/utils"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"math"
 	"math/big"
 )

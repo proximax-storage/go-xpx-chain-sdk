@@ -21,18 +21,42 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Provides service configuration
 type Config struct {
-	BaseURL *url.URL
+	reputationConfig *reputationConfig
+	BaseURL          *url.URL
 	NetworkType
+}
+
+type reputationConfig struct {
+	minInteractions   uint64
+	defaultReputation float64
+}
+
+var defaultRepConfig = reputationConfig{
+	minInteractions:   10,
+	defaultReputation: 0.9,
+}
+
+func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig, error) {
+	if defaultRep < 0 || defaultRep > 1 {
+		return nil, ErrInvalidReputationConfig
+	}
+
+	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
 // Config constructor
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
+	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
+}
+
+// Config constructor
+func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error) {
 	u, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Config{BaseURL: u, NetworkType: networkType}
+	c := &Config{BaseURL: u, NetworkType: networkType, reputationConfig: repConf}
 
 	return c, nil
 }
@@ -179,4 +203,22 @@ func addOptions(s string, opt interface{}) (string, error) {
 
 	u.RawQuery = qs.Encode()
 	return u.String(), nil
+}
+
+func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) error {
+	if resp == nil {
+		return ErrInternalError
+	}
+
+	if codeToErrs != nil {
+		if err, ok := codeToErrs[resp.StatusCode]; ok {
+			return err
+		}
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return ErrNotAcceptedResponseStatusCode
+	}
+
+	return nil
 }

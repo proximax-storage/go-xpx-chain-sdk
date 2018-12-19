@@ -6,7 +6,7 @@ package sdk
 
 import (
 	"encoding/binary"
-	"github.com/proximax-storage/nem2-sdk-go/utils"
+	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"math/big"
 	"strconv"
 )
@@ -27,12 +27,11 @@ func (dto uint64DTO) toBigInt() *big.Int {
 
 // analog JAVA Uint64.bigIntegerToHex
 func BigIntegerToHex(id *big.Int) string {
-
 	u := FromBigInt(id)
 
 	return strconv.FormatInt(int64(u[1]), 16) + strconv.FormatInt(int64(u[0]), 16)
-
 }
+
 func FromBigInt(int *big.Int) []uint32 {
 	b := int.Bytes()
 	ln := len(b)

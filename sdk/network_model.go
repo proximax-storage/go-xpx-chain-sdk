@@ -12,7 +12,6 @@ import (
 
 type NetworkType uint8
 
-// NetworkType enums
 const (
 	Mijin           NetworkType = 96
 	MijinTest       NetworkType = 144
@@ -38,6 +37,7 @@ func NetworkTypeFromString(networkType string) NetworkType {
 	case "privateTest":
 		return PrivateTest
 	}
+
 	return NotSupportedNet
 }
 
