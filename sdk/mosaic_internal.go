@@ -139,7 +139,7 @@ func (dto *mosaicPropertiesDTO) toStruct() *MosaicProperties {
 	return NewMosaicProperties(bitMapFlags[2] == '1',
 		bitMapFlags[1] == '1',
 		bitMapFlags[0] == '1',
-		(*dto)[1].toBigInt().Int64(),
+		byte((*dto)[1].toBigInt().Int64()),
 		(*dto)[2].toBigInt(),
 	)
 }

@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -68,9 +69,15 @@ func (rcv *CosignatoryModificationBuffer) CosignatoryPublicKeyBytes() []byte {
 func CosignatoryModificationBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func CosignatoryModificationBufferAddType(builder *flatbuffers.Builder, type_ uint8) {
-	builder.PrependByteSlot(0, byte(type_), 0)
+func CosignatoryModificationBufferAddType(builder *flatbuffers.Builder, type_ byte) {
+	builder.PrependByteSlot(0, type_, 0)
 }
 func CosignatoryModificationBufferAddCosignatoryPublicKey(builder *flatbuffers.Builder, cosignatoryPublicKey flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(cosignatoryPublicKey), 0)
+}
+func CosignatoryModificationBufferStartCosignatoryPublicKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func CosignatoryModificationBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -225,15 +226,57 @@ func (rcv *SecretProofTransactionBuffer) ProofBytes() []byte {
 func SecretProofTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(11)
 }
+func SecretProofTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func SecretProofTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func SecretProofTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func SecretProofTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func SecretProofTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func SecretProofTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func SecretProofTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func SecretProofTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func SecretProofTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func SecretProofTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func SecretProofTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func SecretProofTransactionBufferAddHashAlgorithm(builder *flatbuffers.Builder, hashAlgorithm byte) {
 	builder.PrependByteSlot(7, hashAlgorithm, 0)
 }
 func SecretProofTransactionBufferAddSecret(builder *flatbuffers.Builder, secret flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(secret), 0)
 }
-func SecretProofTransactionBufferAddProofSize(builder *flatbuffers.Builder, proofSize int) {
-	builder.PrependUint16Slot(9, uint16(proofSize), 0)
+func SecretProofTransactionBufferStartSecretVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func SecretProofTransactionBufferAddProofSize(builder *flatbuffers.Builder, proofSize uint16) {
+	builder.PrependUint16Slot(9, proofSize, 0)
 }
 func SecretProofTransactionBufferAddProof(builder *flatbuffers.Builder, proof flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(proof), 0)
+}
+func SecretProofTransactionBufferStartProofVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func SecretProofTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }
