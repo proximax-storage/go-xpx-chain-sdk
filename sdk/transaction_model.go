@@ -404,7 +404,7 @@ func (tx *MosaicDefinitionTransaction) String() string {
 
 func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	f := uint8(0)
+	var f uint8 = 0
 	if tx.MosaicProperties.SupplyMutable {
 		f += 1
 	}
@@ -733,11 +733,11 @@ type ModifyMultisigAccountTransaction struct {
 }
 
 func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
-	if modifications == nil {
-		return nil, errors.New("modifications must not be nil")
+	if len(modifications) == 0 {
+		return nil, errors.New("modifications must not empty")
 	}
 
-	return &ModifyMultisigAccountTransaction{
+	mmatx := ModifyMultisigAccountTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     3,
 			Deadline:    deadline,
@@ -747,7 +747,9 @@ func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta ui
 		MinRemovalDelta:  minRemovalDelta,
 		MinApprovalDelta: minApprovalDelta,
 		Modifications:    modifications,
-	}, nil
+	}
+
+	return &mmatx, nil
 }
 
 func (tx *ModifyMultisigAccountTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -841,17 +843,18 @@ func NewModifyContractTransaction(
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
 	networkType NetworkType) (*ModifyContractTransaction, error) {
-	if customers == nil {
-		return nil, errors.New("customers must not be nil")
+
+	if len(customers) == 0 {
+		return nil, errors.New("customers must not empty")
 	}
-	if executors == nil {
-		return nil, errors.New("executors must not be nil")
+	if len(executors) == 0 {
+		return nil, errors.New("executors must not empty")
 	}
-	if verifiers == nil {
-		return nil, errors.New("verifiers must not be nil")
+	if len(verifiers) == 0 {
+		return nil, errors.New("verifiers must not empty")
 	}
 
-	return &ModifyContractTransaction{
+	mctx := ModifyContractTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     3,
 			Deadline:    deadline,
@@ -864,7 +867,9 @@ func NewModifyContractTransaction(
 		Customers:     customers,
 		Executors:     executors,
 		Verifiers:     verifiers,
-	}, nil
+	}
+
+	return &mctx, nil
 }
 
 func (tx *ModifyContractTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -2160,12 +2165,13 @@ func stringToBuffer(builder *flatbuffers.Builder, hash string) flatbuffers.UOffs
 
 func multisigCosignatoryDTOArrayToStruct(Modifications []*multisigCosignatoryModificationDTO, NetworkType NetworkType) ([]*MultisigCosignatoryModification, error) {
 	ms := make([]*MultisigCosignatoryModification, len(Modifications))
-	err := error(nil)
+	var err error = nil
 	for i, m := range Modifications {
 		ms[i], err = m.toStruct(NetworkType)
-	}
-	if err != nil {
-		return nil, err
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return ms, err
