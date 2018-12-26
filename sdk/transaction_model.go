@@ -1746,8 +1746,8 @@ var transactionTypes = []transactionTypeStruct{
 	{ModifyContract, 16727, 0x4157},
 	{RegisterNamespace, 16718, 0x414e},
 	{Transfer, 16724, 0x4154},
-	{Lock, 16716, 0x414C},
-	{SecretLock, 16972, 0x424C},
+	{Lock, 16712, 0x4148},
+	{SecretLock, 16722, 0x4152},
 	{SecretProof, 17228, 0x434C},
 }
 
