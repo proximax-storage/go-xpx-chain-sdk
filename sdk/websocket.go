@@ -160,7 +160,7 @@ func (s *subscribeInfo) buildType(t []byte) error {
 
 	case "signer":
 		var data SignerInfo
-		err := json.Unmarshal(t, data)
+		err := json.Unmarshal(t, &data)
 		if err != nil {
 			return err
 		}
@@ -170,7 +170,7 @@ func (s *subscribeInfo) buildType(t []byte) error {
 
 	case "unconfirmedRemoved":
 		var data HashInfo
-		err := json.Unmarshal(t, data)
+		err := json.Unmarshal(t, &data)
 		if err != nil {
 			return err
 		}
