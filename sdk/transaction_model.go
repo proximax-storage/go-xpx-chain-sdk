@@ -949,13 +949,13 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DurationDelta     int64                                 `json:"duration"`
+		DurationDelta     *uint64DTO                            `json:"duration"`
 		MultisigPublicKey string                                `json:"multisig"`
 		Hash              Hash                                  `json:"hash"`
 		Customers         []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors         []*multisigCosignatoryModificationDTO `json:"executors"`
 		Verifiers         []*multisigCosignatoryModificationDTO `json:"verifiers"`
-	} `json:"contract"`
+	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
@@ -982,7 +982,7 @@ func (dto *modifyContractTransactionDTO) toStruct() (*ModifyContractTransaction,
 
 	return &ModifyContractTransaction{
 		*atx,
-		dto.Tx.DurationDelta,
+		dto.Tx.DurationDelta.toBigInt().Int64(),
 		dto.Tx.MultisigPublicKey,
 		dto.Tx.Hash,
 		customers,
