@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -270,23 +271,62 @@ func (rcv *MosaicDefinitionTransactionBuffer) DurationLength() int {
 func MosaicDefinitionTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(16)
 }
+func MosaicDefinitionTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func MosaicDefinitionTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func MosaicDefinitionTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func MosaicDefinitionTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func MosaicDefinitionTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func MosaicDefinitionTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func MosaicDefinitionTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func MosaicDefinitionTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func MosaicDefinitionTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func MosaicDefinitionTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func MosaicDefinitionTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func MosaicDefinitionTransactionBufferAddParentId(builder *flatbuffers.Builder, parentId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(parentId), 0)
+}
+func MosaicDefinitionTransactionBufferStartParentIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func MosaicDefinitionTransactionBufferAddMosaicId(builder *flatbuffers.Builder, mosaicId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(mosaicId), 0)
 }
-func MosaicDefinitionTransactionBufferAddMosaicNameLength(builder *flatbuffers.Builder, mosaicNameLength int) {
-	builder.PrependByteSlot(9, byte(mosaicNameLength), 0)
+func MosaicDefinitionTransactionBufferStartMosaicIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func MosaicDefinitionTransactionBufferAddMosaicNameLength(builder *flatbuffers.Builder, mosaicNameLength byte) {
+	builder.PrependByteSlot(9, mosaicNameLength, 0)
 }
 func MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder *flatbuffers.Builder, numOptionalProperties byte) {
 	builder.PrependByteSlot(10, numOptionalProperties, 0)
 }
-func MosaicDefinitionTransactionBufferAddFlags(builder *flatbuffers.Builder, flags int) {
-	builder.PrependByteSlot(11, byte(flags), 0)
+func MosaicDefinitionTransactionBufferAddFlags(builder *flatbuffers.Builder, flags byte) {
+	builder.PrependByteSlot(11, flags, 0)
 }
-func MosaicDefinitionTransactionBufferAddDivisibility(builder *flatbuffers.Builder, divisibility int64) {
-	builder.PrependByteSlot(12, byte(divisibility), 0)
+func MosaicDefinitionTransactionBufferAddDivisibility(builder *flatbuffers.Builder, divisibility byte) {
+	builder.PrependByteSlot(12, divisibility, 0)
 }
 func MosaicDefinitionTransactionBufferAddMosaicName(builder *flatbuffers.Builder, mosaicName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(mosaicName), 0)
@@ -296,4 +336,10 @@ func MosaicDefinitionTransactionBufferAddIndicateDuration(builder *flatbuffers.B
 }
 func MosaicDefinitionTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(duration), 0)
+}
+func MosaicDefinitionTransactionBufferStartDurationVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func MosaicDefinitionTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

@@ -123,11 +123,11 @@ type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
 	LevyMutable   bool
-	Divisibility  int64
+	Divisibility  uint8
 	Duration      *big.Int
 }
 
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility int64, duration *big.Int) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
 		transferable,

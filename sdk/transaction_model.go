@@ -288,7 +288,7 @@ func (tx *AggregateTransaction) generateBytes() ([]byte, error) {
 	transactions.AggregateTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, 120+4+len(txsb))
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
-	transactions.AggregateTransactionBufferAddTransactionsSize(builder, len(txsb))
+	transactions.AggregateTransactionBufferAddTransactionsSize(builder, uint32(len(txsb)))
 	transactions.AggregateTransactionBufferAddTransactions(builder, tV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -404,7 +404,7 @@ func (tx *MosaicDefinitionTransaction) String() string {
 
 func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	f := 0
+	var f uint8 = 0
 	if tx.MosaicProperties.SupplyMutable {
 		f += 1
 	}
@@ -431,7 +431,7 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
 	transactions.MosaicDefinitionTransactionBufferAddParentId(builder, nV)
-	transactions.MosaicDefinitionTransactionBufferAddMosaicNameLength(builder, len(tx.MosaicName))
+	transactions.MosaicDefinitionTransactionBufferAddMosaicNameLength(builder, uint8(len(tx.MosaicName)))
 	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, 1)
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
@@ -671,11 +671,11 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 	}
 
 	transactions.TransferTransactionBufferStart(builder)
-	transactions.TransactionBufferAddSize(builder, 149+(16*ml)+pl)
+	transactions.TransactionBufferAddSize(builder, 148+1+(16*ml)+pl)
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.TransferTransactionBufferAddRecipient(builder, rV)
-	transactions.TransferTransactionBufferAddNumMosaics(builder, ml)
-	transactions.TransferTransactionBufferAddMessageSize(builder, pl+1)
+	transactions.TransferTransactionBufferAddNumMosaics(builder, uint8(ml))
+	transactions.TransferTransactionBufferAddMessageSize(builder, uint16(pl+1))
 	transactions.TransferTransactionBufferAddMessage(builder, m)
 	transactions.TransferTransactionBufferAddMosaics(builder, mV)
 	t := transactions.TransactionBufferEnd(builder)
@@ -727,17 +727,17 @@ func (dto *transferTransactionDTO) toStruct() (*TransferTransaction, error) {
 // ModifyMultisigAccountTransaction
 type ModifyMultisigAccountTransaction struct {
 	AbstractTransaction
-	MinApprovalDelta int
-	MinRemovalDelta  int
+	MinApprovalDelta uint8
+	MinRemovalDelta  uint8
 	Modifications    []*MultisigCosignatoryModification
 }
 
-func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int, minRemovalDelta int, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
-	if modifications == nil {
-		return nil, errors.New("modifications must not be nil")
+func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
+	if len(modifications) == 0 {
+		return nil, errors.New("modifications must not empty")
 	}
 
-	return &ModifyMultisigAccountTransaction{
+	mmatx := ModifyMultisigAccountTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     3,
 			Deadline:    deadline,
@@ -747,7 +747,9 @@ func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta in
 		MinRemovalDelta:  minRemovalDelta,
 		MinApprovalDelta: minApprovalDelta,
 		Modifications:    modifications,
-	}, nil
+	}
+
+	return &mmatx, nil
 }
 
 func (tx *ModifyMultisigAccountTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -771,20 +773,11 @@ func (tx *ModifyMultisigAccountTransaction) String() string {
 
 func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
-	for i, m := range tx.Modifications {
-		b, err := utils.HexDecodeStringOdd(m.PublicAccount.PublicKey)
-		if err != nil {
-			return nil, err
-		}
-		pV := transactions.TransactionBufferCreateByteVector(builder, b)
-		transactions.CosignatoryModificationBufferStart(builder)
-		transactions.CosignatoryModificationBufferAddType(builder, uint8(m.Type))
-		transactions.CosignatoryModificationBufferAddCosignatoryPublicKey(builder, pV)
-		msb[i] = transactions.TransactionBufferEnd(builder)
-	}
 
-	mV := transactions.TransactionBufferCreateUOffsetVector(builder, msb)
+	mV, err := cosignatoryModificationArrayToBuffer(builder, tx.Modifications)
+	if err != nil {
+		return nil, err
+	}
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -794,9 +787,9 @@ func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 	transactions.ModifyMultisigAccountTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, 123+(33*len(tx.Modifications)))
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder, int32(tx.MinApprovalDelta))
-	transactions.ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder, int32(tx.MinRemovalDelta))
-	transactions.ModifyMultisigAccountTransactionBufferAddNumModifications(builder, len(tx.Modifications))
+	transactions.ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder, tx.MinRemovalDelta)
+	transactions.ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder, tx.MinApprovalDelta)
+	transactions.ModifyMultisigAccountTransactionBufferAddNumModifications(builder, uint8(len(tx.Modifications)))
 	transactions.ModifyMultisigAccountTransactionBufferAddModifications(builder, mV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -807,8 +800,8 @@ func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 type modifyMultisigAccountTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		MinApprovalDelta int                                   `json:"minApprovalDelta"`
-		MinRemovalDelta  int                                   `json:"minRemovalDelta"`
+		MinApprovalDelta uint8                                 `json:"minApprovalDelta"`
+		MinRemovalDelta  uint8                                 `json:"minRemovalDelta"`
 		Modifications    []*multisigCosignatoryModificationDTO `json:"modifications"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -820,10 +813,7 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (*ModifyMultisigAccou
 		return nil, err
 	}
 
-	ms := make([]*MultisigCosignatoryModification, len(dto.Tx.Modifications))
-	for i, m := range dto.Tx.Modifications {
-		ms[i], err = m.toStruct(atx.NetworkType)
-	}
+	ms, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Modifications, atx.NetworkType)
 	if err != nil {
 		return nil, err
 	}
@@ -833,6 +823,171 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (*ModifyMultisigAccou
 		dto.Tx.MinApprovalDelta,
 		dto.Tx.MinRemovalDelta,
 		ms,
+	}, nil
+}
+
+// ModifyContractTransaction
+type ModifyContractTransaction struct {
+	AbstractTransaction
+	DurationDelta int64
+	Multisig      string
+	Hash          Hash
+	Customers     []*MultisigCosignatoryModification
+	Executors     []*MultisigCosignatoryModification
+	Verifiers     []*MultisigCosignatoryModification
+}
+
+func NewModifyContractTransaction(
+	deadline *Deadline, durationDelta int64, multisig string, hash Hash,
+	customers []*MultisigCosignatoryModification,
+	executors []*MultisigCosignatoryModification,
+	verifiers []*MultisigCosignatoryModification,
+	networkType NetworkType) (*ModifyContractTransaction, error) {
+
+	if len(customers) == 0 {
+		return nil, errors.New("customers must not empty")
+	}
+	if len(executors) == 0 {
+		return nil, errors.New("executors must not empty")
+	}
+	if len(verifiers) == 0 {
+		return nil, errors.New("verifiers must not empty")
+	}
+
+	mctx := ModifyContractTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     3,
+			Deadline:    deadline,
+			Type:        ModifyContract,
+			NetworkType: networkType,
+		},
+		DurationDelta: durationDelta,
+		Multisig:      multisig,
+		Hash:          hash,
+		Customers:     customers,
+		Executors:     executors,
+		Verifiers:     verifiers,
+	}
+
+	return &mctx, nil
+}
+
+func (tx *ModifyContractTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *ModifyContractTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DurationDelta": %d,
+			"Multisig": %s,
+			"Hash": %s,
+			"Customers": %s,
+			"Executors": %s,
+			"Verifiers": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DurationDelta,
+		tx.Multisig,
+		tx.Hash,
+		tx.Customers,
+		tx.Executors,
+		tx.Verifiers,
+	)
+}
+
+func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	durationV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.DurationDelta)))
+	multisigV := stringToBuffer(builder, tx.Multisig)
+	hashV := stringToBuffer(builder, string(tx.Hash))
+
+	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
+	if err != nil {
+		return nil, err
+	}
+
+	executorsV, err := cosignatoryModificationArrayToBuffer(builder, tx.Executors)
+	if err != nil {
+		return nil, err
+	}
+
+	verifiersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Verifiers)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.ModifyContractTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, 120+ // AbstractTransaction
+		8+32+32+1+1+1+ // Fields of current transaction
+		(33*(len(tx.Customers)+len(tx.Executors)+len(tx.Verifiers))))
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.ModifyContractTransactionBufferAddDurationDelta(builder, durationV)
+	transactions.ModifyContractTransactionBufferAddMultisigPublicKey(builder, multisigV)
+	transactions.ModifyContractTransactionBufferAddHash(builder, hashV)
+
+	transactions.ModifyContractTransactionBufferAddNumCustomers(builder, uint8(len(tx.Customers)))
+	transactions.ModifyContractTransactionBufferAddNumExecutors(builder, uint8(len(tx.Executors)))
+	transactions.ModifyContractTransactionBufferAddNumVerifiers(builder, uint8(len(tx.Verifiers)))
+	transactions.ModifyContractTransactionBufferAddCustomers(builder, customersV)
+	transactions.ModifyContractTransactionBufferAddExecutors(builder, executorsV)
+	transactions.ModifyContractTransactionBufferAddVerifiers(builder, verifiersV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return modifyContractTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+type modifyContractTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DurationDelta     *uint64DTO                            `json:"duration"`
+		MultisigPublicKey string                                `json:"multisig"`
+		Hash              Hash                                  `json:"hash"`
+		Customers         []*multisigCosignatoryModificationDTO `json:"customers"`
+		Executors         []*multisigCosignatoryModificationDTO `json:"executors"`
+		Verifiers         []*multisigCosignatoryModificationDTO `json:"verifiers"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *modifyContractTransactionDTO) toStruct() (*ModifyContractTransaction, error) {
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	customers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Customers, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	executors, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Executors, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	verifiers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Verifiers, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ModifyContractTransaction{
+		*atx,
+		dto.Tx.DurationDelta.toBigInt().Int64(),
+		dto.Tx.MultisigPublicKey,
+		dto.Tx.Hash,
+		customers,
+		executors,
+		verifiers,
 	}, nil
 }
 
@@ -942,7 +1097,7 @@ func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
 	transactions.RegisterNamespaceTransactionBufferAddNamespaceType(builder, uint8(tx.NamespaceType))
 	transactions.RegisterNamespaceTransactionBufferAddDurationParentId(builder, dV)
 	transactions.RegisterNamespaceTransactionBufferAddNamespaceId(builder, nV)
-	transactions.RegisterNamespaceTransactionBufferAddNamespaceNameSize(builder, len(tx.NamspaceName))
+	transactions.RegisterNamespaceTransactionBufferAddNamespaceNameSize(builder, byte(len(tx.NamspaceName)))
 	transactions.RegisterNamespaceTransactionBufferAddNamespaceName(builder, n)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -1322,7 +1477,7 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.SecretProofTransactionBufferAddHashAlgorithm(builder, byte(tx.HashType))
 	transactions.SecretProofTransactionBufferAddSecret(builder, sV)
-	transactions.SecretProofTransactionBufferAddProofSize(builder, len(p))
+	transactions.SecretProofTransactionBufferAddProofSize(builder, uint16(len(p)))
 	transactions.SecretProofTransactionBufferAddProof(builder, pV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -1467,7 +1622,7 @@ func (dto mosaicDefinitonTransactionPropertiesDTO) toStruct() *MosaicProperties 
 	return NewMosaicProperties(bitMapFlags[2] == '1',
 		bitMapFlags[1] == '1',
 		bitMapFlags[0] == '1',
-		dto[1].Value.toBigInt().Int64(),
+		byte(dto[1].Value.toBigInt().Int64()),
 		duration,
 	)
 }
@@ -1588,10 +1743,11 @@ var transactionTypes = []transactionTypeStruct{
 	{MosaicDefinition, 16717, 0x414d},
 	{MosaicSupplyChange, 16973, 0x424d},
 	{ModifyMultisig, 16725, 0x4155},
+	{ModifyContract, 16727, 0x4157},
 	{RegisterNamespace, 16718, 0x414e},
 	{Transfer, 16724, 0x4154},
-	{Lock, 16716, 0x414C},
-	{SecretLock, 16972, 0x424C},
+	{Lock, 16712, 0x4148},
+	{SecretLock, 16722, 0x4152},
 	{SecretProof, 17228, 0x434C},
 }
 
@@ -1604,6 +1760,7 @@ const (
 	MosaicDefinition
 	MosaicSupplyChange
 	ModifyMultisig
+	ModifyContract
 	RegisterNamespace
 	Transfer
 	Lock
@@ -1746,6 +1903,20 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		return tx, nil
 	case ModifyMultisig:
 		dto := modifyMultisigAccountTransactionDTO{}
+
+		err := json.Unmarshal(b.Bytes(), &dto)
+		if err != nil {
+			return nil, err
+		}
+
+		tx, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		return tx, nil
+	case ModifyContract:
+		dto := modifyContractTransactionDTO{}
 
 		err := json.Unmarshal(b.Bytes(), &dto)
 		if err != nil {
@@ -1966,4 +2137,42 @@ func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*Cosign
 	}
 
 	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.Hash, hex.EncodeToString(sb.Bytes()), a.PublicAccount.PublicKey}, nil
+}
+
+func cosignatoryModificationArrayToBuffer(builder *flatbuffers.Builder, modifications []*MultisigCosignatoryModification) (flatbuffers.UOffsetT, error) {
+	msb := make([]flatbuffers.UOffsetT, len(modifications))
+	for i, m := range modifications {
+		b, err := utils.HexDecodeStringOdd(m.PublicAccount.PublicKey)
+		if err != nil {
+			return 0, err
+		}
+		pV := transactions.TransactionBufferCreateByteVector(builder, b)
+		transactions.CosignatoryModificationBufferStart(builder)
+		transactions.CosignatoryModificationBufferAddType(builder, uint8(m.Type))
+		transactions.CosignatoryModificationBufferAddCosignatoryPublicKey(builder, pV)
+		msb[i] = transactions.TransactionBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
+}
+
+func stringToBuffer(builder *flatbuffers.Builder, hash string) flatbuffers.UOffsetT {
+	b := utils.MustHexDecodeString(hash)
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	return pV
+}
+
+func multisigCosignatoryDTOArrayToStruct(Modifications []*multisigCosignatoryModificationDTO, NetworkType NetworkType) ([]*MultisigCosignatoryModification, error) {
+	ms := make([]*MultisigCosignatoryModification, len(Modifications))
+	var err error = nil
+	for i, m := range Modifications {
+		ms[i], err = m.toStruct(NetworkType)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ms, err
 }

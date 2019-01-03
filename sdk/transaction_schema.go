@@ -88,6 +88,7 @@ func transferTransactionSchema() *schema {
 		},
 	}
 }
+
 func modifyMultisigAccountTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
@@ -102,6 +103,44 @@ func modifyMultisigAccountTransactionSchema() *schema {
 			newScalarAttribute("minApprovalDelta", ByteSize),
 			newScalarAttribute("numModifications", ByteSize),
 			newTableArrayAttribute("modification", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ByteSize),
+					newArrayAttribute("cosignatoryPublicKey", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func modifyContractTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", ShortSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("durationDelta", IntSize),
+			newArrayAttribute("multisigPublicKey", ByteSize),
+			newArrayAttribute("hash", ByteSize),
+			newScalarAttribute("numCustomers", ByteSize),
+			newScalarAttribute("numExecutors", ByteSize),
+			newScalarAttribute("numVerifiers", ByteSize),
+			newTableArrayAttribute("customers", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ByteSize),
+					newArrayAttribute("cosignatoryPublicKey", ByteSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("executors", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ByteSize),
+					newArrayAttribute("cosignatoryPublicKey", ByteSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("verifiers", schema{
 				[]schemaAttribute{
 					newScalarAttribute("type", ByteSize),
 					newArrayAttribute("cosignatoryPublicKey", ByteSize),

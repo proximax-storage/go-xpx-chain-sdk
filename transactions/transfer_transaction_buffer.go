@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -233,14 +234,50 @@ func (rcv *TransferTransactionBuffer) MosaicsLength() int {
 func TransferTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(12)
 }
+func TransferTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func TransferTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func TransferTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func TransferTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func TransferTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func TransferTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func TransferTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func TransferTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func TransferTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func TransferTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func TransferTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func TransferTransactionBufferAddRecipient(builder *flatbuffers.Builder, recipient flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(recipient), 0)
 }
-func TransferTransactionBufferAddMessageSize(builder *flatbuffers.Builder, messageSize int) {
-	builder.PrependUint16Slot(8, uint16(messageSize), 0)
+func TransferTransactionBufferStartRecipientVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
-func TransferTransactionBufferAddNumMosaics(builder *flatbuffers.Builder, numMosaics int) {
-	builder.PrependByteSlot(9, byte(numMosaics), 0)
+func TransferTransactionBufferAddMessageSize(builder *flatbuffers.Builder, messageSize uint16) {
+	builder.PrependUint16Slot(8, messageSize, 0)
+}
+func TransferTransactionBufferAddNumMosaics(builder *flatbuffers.Builder, numMosaics byte) {
+	builder.PrependByteSlot(9, numMosaics, 0)
 }
 func TransferTransactionBufferAddMessage(builder *flatbuffers.Builder, message flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(message), 0)
@@ -250,4 +287,7 @@ func TransferTransactionBufferAddMosaics(builder *flatbuffers.Builder, mosaics f
 }
 func TransferTransactionBufferStartMosaicsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
+}
+func TransferTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

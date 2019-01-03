@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -188,9 +189,48 @@ func (rcv *AggregateTransactionBuffer) TransactionsBytes() []byte {
 func AggregateTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(9)
 }
-func AggregateTransactionBufferAddTransactionsSize(builder *flatbuffers.Builder, transactionsSize int) {
-	builder.PrependUint32Slot(7, uint32(transactionsSize), 0)
+func AggregateTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func AggregateTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func AggregateTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func AggregateTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func AggregateTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func AggregateTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func AggregateTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func AggregateTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func AggregateTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func AggregateTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func AggregateTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func AggregateTransactionBufferAddTransactionsSize(builder *flatbuffers.Builder, transactionsSize uint32) {
+	builder.PrependUint32Slot(7, transactionsSize, 0)
 }
 func AggregateTransactionBufferAddTransactions(builder *flatbuffers.Builder, transactions flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(transactions), 0)
+}
+func AggregateTransactionBufferStartTransactionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func AggregateTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

@@ -1,6 +1,8 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is not Auto-generated
+// This file is need to aggregate a common parts of code for each transactions.
 
 package transactions
 
