@@ -51,6 +51,10 @@ const (
 	blockStorageRoute        = "/diagnostic/storage"
 )
 
+const (
+	contractsInfoRoute = "/contracts"
+)
+
 // const routers path for methods MosaicService
 const (
 	networkRoute = "/network"

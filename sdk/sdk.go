@@ -73,6 +73,7 @@ type Client struct {
 	Network     *NetworkService
 	Transaction *TransactionService
 	Account     *AccountService
+	Contract    *ContractService
 }
 
 type service struct {
@@ -94,6 +95,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Network = (*NetworkService)(&c.common)
 	c.Transaction = (*TransactionService)(&c.common)
 	c.Account = (*AccountService)(&c.common)
+	c.Contract = (*ContractService)(&c.common)
 
 	return c
 }
