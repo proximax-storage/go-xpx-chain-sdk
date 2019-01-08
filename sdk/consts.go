@@ -52,7 +52,8 @@ const (
 )
 
 const (
-	contractsInfoRoute = "/contracts"
+	contractsInfoRoute      = "/contracts"
+	contractsByAccountRoute = "/account/%s/contracts"
 )
 
 // const routers path for methods MosaicService

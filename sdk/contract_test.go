@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"github.com/proximax-storage/proximax-utils-go/mock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -12,7 +13,7 @@ var (
 )
 
 const (
-	testContractInfoJson = `[{
+	testContractInfoJson = `{
 	"contract": {
 		"multisig": "EB8923957301F796C884977234D20B0388A3AD6F865F1ACC7D3A94AFF597D59D",
 		"multisigAddress": "905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA34",
@@ -35,7 +36,9 @@ const (
 			"3DCB6E5EFF4D63A38902EF948E895B01D6EA497EBF84B1460C14CA5BEDCAD9F3"
 		]
 	}
-}]`
+}`
+
+	testContractInfoJsonArr = "[" + testContractInfoJson + "]"
 
 	testContractInfoPubKey = "EB8923957301F796C884977234D20B0388A3AD6F865F1ACC7D3A94AFF597D59D"
 )
@@ -62,13 +65,28 @@ func TestContractService_GetContractInfo(t *testing.T) {
 		Path:                contractsInfoRoute,
 		AcceptedHttpMethods: []string{http.MethodPost},
 		RespHttpCode:        200,
-		RespBody:            testContractInfoJson,
+		RespBody:            testContractInfoJsonArr,
 		ReqJsonBodyStruct: struct {
 			PublicKeys []string `json:"publicKeys"`
 		}{},
 	})
 
 	infos, err := contractClient.GetContractInfo(ctx, testContractInfoPubKey)
+	assert.Nil(t, err)
+	assert.NotNil(t, infos)
+	assert.Equal(t, 1, len(infos))
+	assert.Equal(t, testContractInfo, infos[0])
+}
+
+func TestContractService_GetContractsByAddress(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:                fmt.Sprintf(contractsByAccountRoute, "8599BA6DB5B81BB69F96B88DD80A3B9EB7BBF8849CBD979100E89D69C30356E0"),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            testContractInfoJsonArr,
+	})
+
+	infos, err := contractClient.GetContractsByAddress(ctx, "8599BA6DB5B81BB69F96B88DD80A3B9EB7BBF8849CBD979100E89D69C30356E0")
 	assert.Nil(t, err)
 	assert.NotNil(t, infos)
 	assert.Equal(t, 1, len(infos))
