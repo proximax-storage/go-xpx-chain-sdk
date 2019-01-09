@@ -92,7 +92,7 @@ func main() {
 		sdk.NewDeadline(time.Hour*1),
 		2,
 		multisig,
-		hash,
+		hash.String(),
 		[]*sdk.MultisigCosignatoryModification{
 			{
 				sdk.Add,
