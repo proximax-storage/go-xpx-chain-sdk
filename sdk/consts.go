@@ -52,7 +52,7 @@ const (
 )
 
 const (
-	contractsInfoRoute      = "/contracts"
+	contractsInfoRoute      = "/contract"
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 

@@ -60,7 +60,7 @@ var (
 	}
 )
 
-func TestContractService_GetContractInfo(t *testing.T) {
+func TestContractService_GetContractsInfo(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:                contractsInfoRoute,
 		AcceptedHttpMethods: []string{http.MethodPost},
