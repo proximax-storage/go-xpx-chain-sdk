@@ -7,7 +7,7 @@ type ContractInfo struct {
 	MultisigAddress *Address
 	Start           *big.Int
 	Duration        *big.Int
-	Hash            Hash
+	Content         string
 	Customers       []string
 	Executors       []string
 	Verifiers       []string

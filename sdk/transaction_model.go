@@ -171,7 +171,7 @@ func (ti *TransactionInfo) String() string {
 			"Height": %d,
 			"Index": %d,
 			"Id": %s,
-			"Hash": %s,
+			"Content": %s,
 			"MerkleComponentHash:" %s,
 			"AggregateHash": %s,
 			"AggregateId": %s
@@ -882,7 +882,7 @@ func (tx *ModifyContractTransaction) String() string {
 			"AbstractTransaction": %s,
 			"DurationDelta": %d,
 			"Multisig": %s,
-			"Hash": %s,
+			"Content": %s,
 			"Customers": %s,
 			"Executors": %s,
 			"Verifiers": %s
@@ -1641,7 +1641,7 @@ func (ts *TransactionStatus) String() string {
 		`
 			"Group:" %s,
 			"Status:" %s,
-			"Hash": %s,
+			"Content": %s,
 			"Deadline": %s,
 			"Height": %d
 		`,

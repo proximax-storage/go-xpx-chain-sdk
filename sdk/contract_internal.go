@@ -41,7 +41,7 @@ func (ref *contractInfoDTO) toStruct(networkType NetworkType) (*ContractInfo, er
 		MultisigAddress: NewAddress(contract.MultisigAddress, networkType),
 		Start:           contract.Start.toBigInt(),
 		Duration:        contract.Duration.toBigInt(),
-		Hash:            Hash(contract.Hash),
+		Content:         contract.Hash,
 		Customers:       contract.Customers,
 		Executors:       contract.Executors,
 		Verifiers:       contract.Verifiers,

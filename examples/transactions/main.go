@@ -48,7 +48,7 @@ func main() {
 	go func() {
 		for {
 			data := <-chUnconfirmedAdded.Ch
-			fmt.Printf("UnconfirmedAdded Tx Hash: %v \n", data.GetAbstractTransaction().Hash)
+			fmt.Printf("UnconfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
 			chUnconfirmedAdded.Unsubscribe()
 		}
 	}()
@@ -59,7 +59,7 @@ func main() {
 	go func() {
 		for {
 			data := <-chConfirmedAdded.Ch
-			fmt.Printf("ConfirmedAdded Tx Hash: %v \n", data.GetAbstractTransaction().Hash)
+			fmt.Printf("ConfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
 			chConfirmedAdded.Unsubscribe()
 			fmt.Println("Successful transfer!")
 		}
@@ -73,7 +73,7 @@ func main() {
 		for {
 			data := <-chStatus.Ch
 			chStatus.Unsubscribe()
-			fmt.Printf("Hash: %v \n", data.Hash)
+			fmt.Printf("Content: %v \n", data.Hash)
 			panic(fmt.Sprint("Status: ", data.Status))
 		}
 	}()
@@ -125,7 +125,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("%s\n", restTx)
-	fmt.Printf("Hash: \t\t%v\n", stx.Hash)
+	fmt.Printf("Content: \t\t%v\n", stx.Hash)
 	fmt.Printf("Signer: \t%X\n\n", customerAcc.KeyPair.PublicKey.Raw)
 
 	// The block channel notifies for every new block.
