@@ -907,7 +907,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 
 	durationV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.DurationDelta)))
 	multisigV := stringToBuffer(builder, tx.Multisig)
-	hashV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.Hash))
+	hashV := stringToBuffer(builder, tx.Hash)
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
 	if err != nil {
