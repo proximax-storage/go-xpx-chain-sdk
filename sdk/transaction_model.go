@@ -831,14 +831,14 @@ type ModifyContractTransaction struct {
 	AbstractTransaction
 	DurationDelta int64
 	Multisig      string
-	Hash          Hash
+	Hash          string
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
 	Verifiers     []*MultisigCosignatoryModification
 }
 
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta int64, multisig string, hash Hash,
+	deadline *Deadline, durationDelta int64, multisig string, hash string,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -907,7 +907,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 
 	durationV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.DurationDelta)))
 	multisigV := stringToBuffer(builder, tx.Multisig)
-	hashV := stringToBuffer(builder, string(tx.Hash))
+	hashV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.Hash))
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
 	if err != nil {
@@ -951,7 +951,7 @@ type modifyContractTransactionDTO struct {
 		abstractTransactionDTO
 		DurationDelta     *uint64DTO                            `json:"duration"`
 		MultisigPublicKey string                                `json:"multisig"`
-		Hash              Hash                                  `json:"hash"`
+		Hash              string                                `json:"hash"`
 		Customers         []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors         []*multisigCosignatoryModificationDTO `json:"executors"`
 		Verifiers         []*multisigCosignatoryModificationDTO `json:"verifiers"`
