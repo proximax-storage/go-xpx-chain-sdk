@@ -7,7 +7,6 @@ package sdk
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"math/big"
 )
 
@@ -42,25 +41,10 @@ func BigIntegerToHex(id *big.Int) string {
 }
 
 func FromBigInt(int *big.Int) []uint32 {
-	b := int.Bytes()
-	ln := len(b)
-	utils.ReverseByteArray(b)
-	l, h, s := uint32(0), uint32(0), 4
-	if ln < 4 {
-		s = ln
-	}
-	lb := make([]byte, 4)
-	copy(lb[:s], b[:s])
-	l = binary.LittleEndian.Uint32(lb)
-	if ln > 4 {
-		if ln-4 < 4 {
-			s = ln - 4
-		}
-		hb := make([]byte, 4)
-		copy(hb[:s], b[4:])
-		h = binary.LittleEndian.Uint32(hb)
-	}
-	return []uint32{l, h}
+	var u64 uint64 = uint64(int.Int64())
+	l := uint32(u64 & 0xFFFFFFFF)
+	r := uint32(u64 >> 32)
+	return []uint32{l, r}
 }
 
 type AccountTransactionsOption struct {
