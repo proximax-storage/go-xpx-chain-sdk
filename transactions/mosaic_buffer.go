@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -68,6 +69,8 @@ func MosaicBufferStart(builder *flatbuffers.Builder) {
 func MosaicBufferAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(id), 0)
 }
+
+/* Changed manually */
 func MosaicBufferCreateIdVector(builder *flatbuffers.Builder, data []uint32) flatbuffers.UOffsetT {
 	builder.StartVector(4, len(data), 4)
 	for i := len(data) - 1; i >= 0; i-- {
@@ -78,6 +81,8 @@ func MosaicBufferCreateIdVector(builder *flatbuffers.Builder, data []uint32) fla
 func MosaicBufferAddAmount(builder *flatbuffers.Builder, amount flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(amount), 0)
 }
+
+/* Changed manually */
 func MosaicBufferCreateAmountVector(builder *flatbuffers.Builder, data []uint32) flatbuffers.UOffsetT {
 	builder.StartVector(4, len(data), 4)
 	for i := len(data) - 1; i >= 0; i-- {

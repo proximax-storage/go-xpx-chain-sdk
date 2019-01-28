@@ -8,6 +8,7 @@ import (
 	"bytes"
 	j "encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"golang.org/x/net/websocket"
 	"io"
 	"net/url"
@@ -20,7 +21,7 @@ var (
 	partialRemovedInfoChannels = make(map[string]chan *PartialRemovedInfo)
 	signerInfoChannels         = make(map[string]chan *SignerInfo)
 	unconfirmedRemovedChannels = make(map[string]chan *HashInfo)
-	partialAddedChannels       = make(map[string]chan Transaction)
+	partialAddedChannels       = make(map[string]chan *AggregateTransaction)
 	unconfirmedAddedChannels   = make(map[string]chan Transaction)
 	confirmedAddedChannels     = make(map[string]chan Transaction)
 	connectsWs                 = make(map[string]*websocket.Conn)
@@ -66,6 +67,11 @@ type SubscribeBlock struct {
 type SubscribeTransaction struct {
 	*subscribe
 	Ch chan Transaction
+}
+
+type SubscribeBonded struct {
+	*subscribe
+	Ch chan *AggregateTransaction
 }
 
 type SubscribeHash struct {
@@ -160,7 +166,7 @@ func (s *subscribeInfo) buildType(t []byte) error {
 
 	case "signer":
 		var data SignerInfo
-		err := json.Unmarshal(t, data)
+		err := json.Unmarshal(t, &data)
 		if err != nil {
 			return err
 		}
@@ -170,7 +176,7 @@ func (s *subscribeInfo) buildType(t []byte) error {
 
 	case "unconfirmedRemoved":
 		var data HashInfo
-		err := json.Unmarshal(t, data)
+		err := json.Unmarshal(t, &data)
 		if err != nil {
 			return err
 		}
@@ -193,11 +199,14 @@ func (s *subscribeInfo) buildType(t []byte) error {
 		if err != nil {
 			return err
 		}
-		ch := partialAddedChannels[s.account]
-		ch <- data
 
-		return nil
-
+		if data, ok := data.(*AggregateTransaction); !ok {
+			return errors.New("wrong transaction")
+		} else {
+			ch := partialAddedChannels[s.account]
+			ch <- data
+			return nil
+		}
 	case "unconfirmedAdded":
 		data, err := MapTransaction(bytes.NewBuffer([]byte(t)))
 		if err != nil {
@@ -369,6 +378,10 @@ func (s *SubscribeBlock) Unsubscribe() error {
 }
 
 func (s *SubscribeTransaction) Unsubscribe() error {
+	return s.subscribe.unsubscribe()
+}
+
+func (s *SubscribeBonded) Unsubscribe() error {
 	return s.subscribe.unsubscribe()
 }
 

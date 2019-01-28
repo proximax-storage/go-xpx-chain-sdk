@@ -32,7 +32,7 @@ func (b *BlockInfo) String() string {
 	return str.StructToString(
 		"BlockInfo",
 		str.NewField("NetworkType", str.IntPattern, b.NetworkType),
-		str.NewField("Hash", str.StringPattern, b.Hash),
+		str.NewField("Content", str.StringPattern, b.Hash),
 		str.NewField("GenerationHash", str.StringPattern, b.GenerationHash),
 		str.NewField("TotalFee", str.StringPattern, b.TotalFee),
 		str.NewField("NumTransactions", str.IntPattern, b.NumTransactions),

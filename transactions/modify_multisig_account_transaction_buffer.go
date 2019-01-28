@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -207,15 +208,54 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) ModificationsLength() int {
 func ModifyMultisigAccountTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(11)
 }
-func ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder *flatbuffers.Builder, minRemovalDelta int32) {
-	builder.PrependByteSlot(7, byte(minRemovalDelta), 0)
+func ModifyMultisigAccountTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
 }
-func ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder *flatbuffers.Builder, minApprovalDelta int32) {
-	builder.PrependByteSlot(8, byte(minApprovalDelta), 0)
+func ModifyMultisigAccountTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
 }
-func ModifyMultisigAccountTransactionBufferAddNumModifications(builder *flatbuffers.Builder, numModifications int) {
-	builder.PrependByteSlot(9, byte(numModifications), 0)
+func ModifyMultisigAccountTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func ModifyMultisigAccountTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func ModifyMultisigAccountTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func ModifyMultisigAccountTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func ModifyMultisigAccountTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func ModifyMultisigAccountTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func ModifyMultisigAccountTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func ModifyMultisigAccountTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func ModifyMultisigAccountTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder *flatbuffers.Builder, minRemovalDelta byte) {
+	builder.PrependByteSlot(7, minRemovalDelta, 0)
+}
+func ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder *flatbuffers.Builder, minApprovalDelta byte) {
+	builder.PrependByteSlot(8, minApprovalDelta, 0)
+}
+func ModifyMultisigAccountTransactionBufferAddNumModifications(builder *flatbuffers.Builder, numModifications byte) {
+	builder.PrependByteSlot(9, numModifications, 0)
 }
 func ModifyMultisigAccountTransactionBufferAddModifications(builder *flatbuffers.Builder, modifications flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(modifications), 0)
+}
+func ModifyMultisigAccountTransactionBufferStartModificationsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func ModifyMultisigAccountTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

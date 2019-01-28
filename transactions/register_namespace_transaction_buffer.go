@@ -1,6 +1,7 @@
 // Copyright 2018 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
+// File is Auto-Generated
 
 package transactions
 
@@ -217,18 +218,60 @@ func (rcv *RegisterNamespaceTransactionBuffer) NamespaceName() []byte {
 func RegisterNamespaceTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(12)
 }
-func RegisterNamespaceTransactionBufferAddNamespaceType(builder *flatbuffers.Builder, namespaceType uint8) {
-	builder.PrependByteSlot(7, byte(namespaceType), 0)
+func RegisterNamespaceTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func RegisterNamespaceTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func RegisterNamespaceTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func RegisterNamespaceTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func RegisterNamespaceTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func RegisterNamespaceTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
+	builder.PrependUint16Slot(3, version, 0)
+}
+func RegisterNamespaceTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func RegisterNamespaceTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+}
+func RegisterNamespaceTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func RegisterNamespaceTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func RegisterNamespaceTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func RegisterNamespaceTransactionBufferAddNamespaceType(builder *flatbuffers.Builder, namespaceType byte) {
+	builder.PrependByteSlot(7, namespaceType, 0)
 }
 func RegisterNamespaceTransactionBufferAddDurationParentId(builder *flatbuffers.Builder, durationParentId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(durationParentId), 0)
 }
+func RegisterNamespaceTransactionBufferStartDurationParentIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func RegisterNamespaceTransactionBufferAddNamespaceId(builder *flatbuffers.Builder, namespaceId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(namespaceId), 0)
 }
-func RegisterNamespaceTransactionBufferAddNamespaceNameSize(builder *flatbuffers.Builder, namespaceNameSize int) {
-	builder.PrependByteSlot(10, byte(namespaceNameSize), 0)
+func RegisterNamespaceTransactionBufferStartNamespaceIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func RegisterNamespaceTransactionBufferAddNamespaceNameSize(builder *flatbuffers.Builder, namespaceNameSize byte) {
+	builder.PrependByteSlot(10, namespaceNameSize, 0)
 }
 func RegisterNamespaceTransactionBufferAddNamespaceName(builder *flatbuffers.Builder, namespaceName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(namespaceName), 0)
+}
+func RegisterNamespaceTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }

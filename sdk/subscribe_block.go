@@ -192,10 +192,10 @@ func (c *SubscribeService) Status(add string) (*SubscribeStatus, error) {
 // PartialAdded notifies when an aggregate bonded transaction related to an
 // address is in partial state and waiting to have all required cosigners.
 // The message contains a transaction.
-func (c *SubscribeService) PartialAdded(add string) (*SubscribeTransaction, error) {
+func (c *SubscribeService) PartialAdded(add string) (*SubscribeBonded, error) {
 	c.client = c.getClient(add)
-	subTransaction := new(SubscribeTransaction)
-	subTransaction.Ch = make(chan Transaction)
+	subTransaction := new(SubscribeBonded)
+	subTransaction.Ch = make(chan *AggregateTransaction)
 	partialAddedChannels[add] = subTransaction.Ch
 	subscribe, err := c.newSubscribe(pathPartialAdded + "/" + add)
 	subTransaction.subscribe = subscribe
