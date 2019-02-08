@@ -14,7 +14,6 @@ table ModifyContractTransactionBuffer {
     fee: [uint];
     deadline:[uint];
     durationDelta: [uint];
-    multisigPublicKey: [ubyte];
     hash: [ubyte];
     numCustomers: ubyte;
     numExecutors: ubyte;
