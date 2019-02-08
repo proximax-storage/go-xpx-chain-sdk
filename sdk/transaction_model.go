@@ -830,7 +830,6 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (*ModifyMultisigAccou
 type ModifyContractTransaction struct {
 	AbstractTransaction
 	DurationDelta int64
-	Multisig      string
 	Hash          string
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
@@ -838,7 +837,7 @@ type ModifyContractTransaction struct {
 }
 
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta int64, multisig string, hash string,
+	deadline *Deadline, durationDelta int64, hash string,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -862,7 +861,6 @@ func NewModifyContractTransaction(
 			NetworkType: networkType,
 		},
 		DurationDelta: durationDelta,
-		Multisig:      multisig,
 		Hash:          hash,
 		Customers:     customers,
 		Executors:     executors,
@@ -881,7 +879,6 @@ func (tx *ModifyContractTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DurationDelta": %d,
-			"Multisig": %s,
 			"Content": %s,
 			"Customers": %s,
 			"Executors": %s,
@@ -889,7 +886,6 @@ func (tx *ModifyContractTransaction) String() string {
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DurationDelta,
-		tx.Multisig,
 		tx.Hash,
 		tx.Customers,
 		tx.Executors,
@@ -906,7 +902,6 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 	}
 
 	durationV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.DurationDelta)))
-	multisigV := stringToBuffer(builder, tx.Multisig)
 	hashV := stringToBuffer(builder, tx.Hash)
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
@@ -925,13 +920,12 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 	}
 
 	transactions.ModifyContractTransactionBufferStart(builder)
-	transactions.TransactionBufferAddSize(builder, 120+ // AbstractTransaction
-		8+32+32+1+1+1+ // Fields of current transaction
-		(33*(len(tx.Customers)+len(tx.Executors)+len(tx.Verifiers))))
+	transactions.TransactionBufferAddSize(builder, 120 + // AbstractTransaction
+		8 + 32 + 1 + 1 + 1 + // Fields of current transaction
+		((32 + 1)*(len(tx.Customers)+len(tx.Executors)+len(tx.Verifiers))))
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ModifyContractTransactionBufferAddDurationDelta(builder, durationV)
-	transactions.ModifyContractTransactionBufferAddMultisigPublicKey(builder, multisigV)
 	transactions.ModifyContractTransactionBufferAddHash(builder, hashV)
 
 	transactions.ModifyContractTransactionBufferAddNumCustomers(builder, uint8(len(tx.Customers)))
@@ -950,7 +944,6 @@ type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		DurationDelta     *uint64DTO                            `json:"duration"`
-		MultisigPublicKey string                                `json:"multisig"`
 		Hash              string                                `json:"hash"`
 		Customers         []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors         []*multisigCosignatoryModificationDTO `json:"executors"`
@@ -983,7 +976,6 @@ func (dto *modifyContractTransactionDTO) toStruct() (*ModifyContractTransaction,
 	return &ModifyContractTransaction{
 		*atx,
 		dto.Tx.DurationDelta.toBigInt().Int64(),
-		dto.Tx.MultisigPublicKey,
 		dto.Tx.Hash,
 		customers,
 		executors,
