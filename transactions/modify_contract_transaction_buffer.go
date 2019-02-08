@@ -166,33 +166,8 @@ func (rcv *ModifyContractTransactionBuffer) DurationDeltaLength() int {
 	return 0
 }
 
-func (rcv *ModifyContractTransactionBuffer) MultisigPublicKey(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *ModifyContractTransactionBuffer) MultisigPublicKeyLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyContractTransactionBuffer) MultisigPublicKeyBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
 func (rcv *ModifyContractTransactionBuffer) Hash(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -201,7 +176,7 @@ func (rcv *ModifyContractTransactionBuffer) Hash(j int) byte {
 }
 
 func (rcv *ModifyContractTransactionBuffer) HashLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -209,7 +184,7 @@ func (rcv *ModifyContractTransactionBuffer) HashLength() int {
 }
 
 func (rcv *ModifyContractTransactionBuffer) HashBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -217,7 +192,7 @@ func (rcv *ModifyContractTransactionBuffer) HashBytes() []byte {
 }
 
 func (rcv *ModifyContractTransactionBuffer) NumCustomers() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -225,11 +200,11 @@ func (rcv *ModifyContractTransactionBuffer) NumCustomers() byte {
 }
 
 func (rcv *ModifyContractTransactionBuffer) MutateNumCustomers(n byte) bool {
-	return rcv._tab.MutateByteSlot(24, n)
+	return rcv._tab.MutateByteSlot(22, n)
 }
 
 func (rcv *ModifyContractTransactionBuffer) NumExecutors() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -237,11 +212,11 @@ func (rcv *ModifyContractTransactionBuffer) NumExecutors() byte {
 }
 
 func (rcv *ModifyContractTransactionBuffer) MutateNumExecutors(n byte) bool {
-	return rcv._tab.MutateByteSlot(26, n)
+	return rcv._tab.MutateByteSlot(24, n)
 }
 
 func (rcv *ModifyContractTransactionBuffer) NumVerifiers() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -249,11 +224,11 @@ func (rcv *ModifyContractTransactionBuffer) NumVerifiers() byte {
 }
 
 func (rcv *ModifyContractTransactionBuffer) MutateNumVerifiers(n byte) bool {
-	return rcv._tab.MutateByteSlot(28, n)
+	return rcv._tab.MutateByteSlot(26, n)
 }
 
 func (rcv *ModifyContractTransactionBuffer) Customers(obj *CosignatoryModificationBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -265,7 +240,7 @@ func (rcv *ModifyContractTransactionBuffer) Customers(obj *CosignatoryModificati
 }
 
 func (rcv *ModifyContractTransactionBuffer) CustomersLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -273,7 +248,7 @@ func (rcv *ModifyContractTransactionBuffer) CustomersLength() int {
 }
 
 func (rcv *ModifyContractTransactionBuffer) Executors(obj *CosignatoryModificationBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -285,7 +260,7 @@ func (rcv *ModifyContractTransactionBuffer) Executors(obj *CosignatoryModificati
 }
 
 func (rcv *ModifyContractTransactionBuffer) ExecutorsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -293,7 +268,7 @@ func (rcv *ModifyContractTransactionBuffer) ExecutorsLength() int {
 }
 
 func (rcv *ModifyContractTransactionBuffer) Verifiers(obj *CosignatoryModificationBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -305,7 +280,7 @@ func (rcv *ModifyContractTransactionBuffer) Verifiers(obj *CosignatoryModificati
 }
 
 func (rcv *ModifyContractTransactionBuffer) VerifiersLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -313,7 +288,7 @@ func (rcv *ModifyContractTransactionBuffer) VerifiersLength() int {
 }
 
 func ModifyContractTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(16)
+	builder.StartObject(15)
 }
 func ModifyContractTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -354,41 +329,35 @@ func ModifyContractTransactionBufferAddDurationDelta(builder *flatbuffers.Builde
 func ModifyContractTransactionBufferStartDurationDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func ModifyContractTransactionBufferAddMultisigPublicKey(builder *flatbuffers.Builder, multisigPublicKey flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(multisigPublicKey), 0)
-}
-func ModifyContractTransactionBufferStartMultisigPublicKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
 func ModifyContractTransactionBufferAddHash(builder *flatbuffers.Builder, hash flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(hash), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(hash), 0)
 }
 func ModifyContractTransactionBufferStartHashVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func ModifyContractTransactionBufferAddNumCustomers(builder *flatbuffers.Builder, numCustomers byte) {
-	builder.PrependByteSlot(10, numCustomers, 0)
+	builder.PrependByteSlot(9, numCustomers, 0)
 }
 func ModifyContractTransactionBufferAddNumExecutors(builder *flatbuffers.Builder, numExecutors byte) {
-	builder.PrependByteSlot(11, numExecutors, 0)
+	builder.PrependByteSlot(10, numExecutors, 0)
 }
 func ModifyContractTransactionBufferAddNumVerifiers(builder *flatbuffers.Builder, numVerifiers byte) {
-	builder.PrependByteSlot(12, numVerifiers, 0)
+	builder.PrependByteSlot(11, numVerifiers, 0)
 }
 func ModifyContractTransactionBufferAddCustomers(builder *flatbuffers.Builder, customers flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(customers), 0)
+	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(customers), 0)
 }
 func ModifyContractTransactionBufferStartCustomersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func ModifyContractTransactionBufferAddExecutors(builder *flatbuffers.Builder, executors flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(14, flatbuffers.UOffsetT(executors), 0)
+	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(executors), 0)
 }
 func ModifyContractTransactionBufferStartExecutorsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func ModifyContractTransactionBufferAddVerifiers(builder *flatbuffers.Builder, verifiers flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(verifiers), 0)
+	builder.PrependUOffsetTSlot(14, flatbuffers.UOffsetT(verifiers), 0)
 }
 func ModifyContractTransactionBufferStartVerifiersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
