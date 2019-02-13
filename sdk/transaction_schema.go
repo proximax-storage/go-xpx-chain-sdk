@@ -123,7 +123,6 @@ func modifyContractTransactionSchema() *schema {
 			newArrayAttribute("fee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("durationDelta", IntSize),
-			newArrayAttribute("multisigPublicKey", ByteSize),
 			newArrayAttribute("hash", ByteSize),
 			newScalarAttribute("numCustomers", ByteSize),
 			newScalarAttribute("numExecutors", ByteSize),
