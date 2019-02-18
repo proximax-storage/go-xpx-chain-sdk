@@ -44,7 +44,7 @@ func main() {
 	// The UnconfirmedAdded channel notifies when a transaction related to an
 	// address is in unconfirmed state and waiting to be included in a block.
 	// The message contains the transaction.
-	chUnconfirmedAdded, _ := ws.Subscribe.UnconfirmedAdded(customerAcc.Address.Address)
+	chUnconfirmedAdded, _ := ws.Subscribe.UnconfirmedAdded(customerAcc.Address)
 	go func() {
 		for {
 			data := <-chUnconfirmedAdded.Ch
@@ -55,7 +55,7 @@ func main() {
 	//
 	//// The confirmedAdded channel notifies when a transaction related to an
 	//// address is included in a block. The message contains the transaction.
-	chConfirmedAdded, _ := ws.Subscribe.ConfirmedAdded(customerAcc.Address.Address)
+	chConfirmedAdded, _ := ws.Subscribe.ConfirmedAdded(customerAcc.Address)
 	go func() {
 		for {
 			data := <-chConfirmedAdded.Ch
@@ -67,7 +67,7 @@ func main() {
 
 	//The status channel notifies when a transaction related to an address rises an error.
 	//The message contains the error message and the transaction hash.
-	chStatus, _ := ws.Subscribe.Status(customerAcc.Address.Address)
+	chStatus, _ := ws.Subscribe.Status(customerAcc.Address)
 
 	go func() {
 		for {
@@ -91,7 +91,6 @@ func main() {
 	mctx, err := sdk.NewModifyContractTransaction(
 		sdk.NewDeadline(time.Hour*1),
 		2,
-		multisig,
 		hash.String(),
 		[]*sdk.MultisigCosignatoryModification{
 			{
