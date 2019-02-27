@@ -8,7 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/net/context"
