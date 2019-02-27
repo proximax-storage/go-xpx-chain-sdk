@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/proximax-storage/proximax-utils-go/net"
+	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 )
 

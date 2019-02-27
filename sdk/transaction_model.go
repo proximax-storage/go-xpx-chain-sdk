@@ -12,10 +12,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/flatbuffers/go"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
+	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/nem2-crypto-go"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/transactions"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
-	"github.com/proximax-storage/proximax-utils-go/str"
 	"math/big"
 	"strconv"
 	"strings"
@@ -920,9 +920,9 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 	}
 
 	transactions.ModifyContractTransactionBufferStart(builder)
-	transactions.TransactionBufferAddSize(builder, 120 + // AbstractTransaction
-		8 + 32 + 1 + 1 + 1 + // Fields of current transaction
-		((32 + 1)*(len(tx.Customers)+len(tx.Executors)+len(tx.Verifiers))))
+	transactions.TransactionBufferAddSize(builder, 120+ // AbstractTransaction
+		8+32+1+1+1+ // Fields of current transaction
+		((32+1)*(len(tx.Customers)+len(tx.Executors)+len(tx.Verifiers))))
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ModifyContractTransactionBufferAddDurationDelta(builder, durationV)
@@ -943,11 +943,11 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DurationDelta     *uint64DTO                            `json:"duration"`
-		Hash              string                                `json:"hash"`
-		Customers         []*multisigCosignatoryModificationDTO `json:"customers"`
-		Executors         []*multisigCosignatoryModificationDTO `json:"executors"`
-		Verifiers         []*multisigCosignatoryModificationDTO `json:"verifiers"`
+		DurationDelta *uint64DTO                            `json:"duration"`
+		Hash          string                                `json:"hash"`
+		Customers     []*multisigCosignatoryModificationDTO `json:"customers"`
+		Executors     []*multisigCosignatoryModificationDTO `json:"executors"`
+		Verifiers     []*multisigCosignatoryModificationDTO `json:"verifiers"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
