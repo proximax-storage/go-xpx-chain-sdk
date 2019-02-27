@@ -3,7 +3,7 @@ package sdk
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/proximax-storage/proximax-utils-go/net"
+	"github.com/proximax-storage/go-xpx-utils/net"
 	"golang.org/x/net/context"
 	"net/http"
 )

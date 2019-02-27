@@ -6,7 +6,7 @@ package sdk
 
 import (
 	"github.com/json-iterator/go"
-	"github.com/proximax-storage/proximax-utils-go/str"
+	"github.com/proximax-storage/go-xpx-utils/str"
 	"math/big"
 	"strings"
 	"unsafe"
