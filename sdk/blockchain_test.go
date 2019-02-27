@@ -123,7 +123,7 @@ func init() {
 	wantBlockTransactions = append(wantBlockTransactions, &RegisterNamespaceTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Type:        RegisterNamespace,
-			Version:     uint64(2),
+			Version:     RegisterNamespaceVersion,
 			NetworkType: MijinTest,
 			Signature:   "AE1558A33F4F595AD5DCEAE4EC11606E815A781E75E3EEC7E9F8BB46BDAF16670C8C36C6815F74FD83487178DDAB8FCE4B4B633875A1549D4FB068ABC5B22A0C",
 			Signer:      nil,

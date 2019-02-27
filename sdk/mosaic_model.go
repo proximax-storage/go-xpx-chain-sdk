@@ -9,7 +9,6 @@ import (
 	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
 	"github.com/proximax-storage/proximax-utils-go/str"
 	"math/big"
-	"strings"
 )
 
 // MosaicId
@@ -19,18 +18,14 @@ func (m *MosaicId) String() string {
 	return (*big.Int)(m).String()
 }
 
-func NewMosaicIdFromFullName(name string) (*MosaicId, error) {
-	if len(name) == 0 || strings.Contains(name, " {") {
-		return nil, ErrInvalidMosaicName
+func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicId string) (*MosaicId, error) {
+	if len(ownerPublicId) != 64 {
+		return nil, ErrInvalidOwnerPublicKey
 	}
 
-	parts := strings.Split(name, ":")
+	id, err := generateMosaicId(nonce, ownerPublicId)
 
-	if len(parts) != 2 {
-		return nil, ErrInvalidMosaicName
-	}
-
-	return generateMosaicId(parts[0], parts[1])
+	return bigIntToMosaicId(id), err
 }
 
 func NewMosaicId(id *big.Int) (*MosaicId, error) {
@@ -81,14 +76,10 @@ func (m *Mosaic) String() string {
 // MosaicInfo info structure contains its properties, the owner and the namespace to which it belongs to.
 type MosaicInfo struct {
 	MosaicId   *MosaicId
-	FullName   string
-	Active     bool
-	Index      int
-	MetaId     string
-	Namespace  *NamespaceInfo
 	Supply     *big.Int
 	Height     *big.Int
 	Owner      *PublicAccount
+	Revision   uint32
 	Properties *MosaicProperties
 }
 
@@ -96,26 +87,12 @@ func (m *MosaicInfo) String() string {
 	return str.StructToString(
 		"MosaicInfo",
 		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
-		str.NewField("FullName", str.StringPattern, m.FullName),
-		str.NewField("Active", str.BooleanPattern, m.Active),
-		str.NewField("Index", str.IntPattern, m.Index),
-		str.NewField("MetaId", str.StringPattern, m.MetaId),
-		str.NewField("Namespace", str.StringPattern, m.Namespace),
 		str.NewField("Supply", str.StringPattern, m.Supply),
 		str.NewField("Height", str.StringPattern, m.Height),
 		str.NewField("Owner", str.StringPattern, m.Owner),
+		str.NewField("Revision", str.IntPattern, m.Revision),
 		str.NewField("Properties", str.StringPattern, m.Properties),
 	)
-}
-
-func (m *MosaicInfo) ShortName() string {
-	parts := strings.Split(m.FullName, ":")
-
-	if len(parts) != 2 {
-		return ""
-	}
-
-	return parts[1]
 }
 
 // MosaicProperties  structure describes mosaic properties.
@@ -147,21 +124,6 @@ func (mp *MosaicProperties) String() string {
 		str.NewField("LevyMutable", str.BooleanPattern, mp.LevyMutable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
 		str.NewField("Duration", str.StringPattern, mp.Duration),
-	)
-}
-
-type MosaicName struct {
-	MosaicId *MosaicId
-	Name     string
-	ParentId *NamespaceId
-}
-
-func (m *MosaicName) String() string {
-	return str.StructToString(
-		"MosaicName",
-		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
-		str.NewField("Name", str.StringPattern, m.Name),
-		str.NewField("ParentId", str.StringPattern, m.ParentId),
 	)
 }
 

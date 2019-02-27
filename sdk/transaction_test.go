@@ -22,11 +22,11 @@ const transactionHash = "7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141
 var transaction = &TransferTransaction{
 	AbstractTransaction: AbstractTransaction{
 		Type:        Transfer,
-		Version:     uint64(3),
+		Version:     TransferVersion,
 		NetworkType: MijinTest,
 		Signature:   "ADF80CBC864B65A8D94205E9EC6640FA4AE0E3011B27F8A93D93761E454A9853BF0AB1ECB3DF62E1D2D267D3F1913FAB0E2225CE5EA3937790B78FFA1288870C",
 		Signer:      &PublicAccount{&Address{MijinTest, "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"}, "27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9"},
-		Fee:         uint64DTO{0, 0}.toBigInt(),
+		Fee:         uint64DTO{1, 0}.toBigInt(),
 		Deadline:    &Deadline{time.Unix(0, uint64DTO{1094650402, 17}.toBigInt().Int64()*int64(time.Millisecond))},
 		TransactionInfo: &TransactionInfo{
 			Height:              uint64DTO{42, 0}.toBigInt(),
@@ -60,7 +60,7 @@ const transactionJson = `
       "version":36867,
       "type":16724,
       "fee":[
-         0,
+         1,
          0
       ],
       "deadline":[
@@ -105,18 +105,12 @@ const statusJson = `{
 }`
 
 var (
-	aggregateTransactionSerializationCorr = []byte{209, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		2, 144, 65, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 85, 0, 0, 0, 85, 0, 0, 0, 132, 107, 68, 57, 21, 69, 121, 165, 144, 59, 20, 89,
-		201, 207, 105, 203, 129, 83, 246, 208, 17, 10, 122, 14, 214, 29, 226, 154,
-		228, 129, 11, 242, 3, 144, 84, 65, 144, 80, 185, 131, 126, 250, 180,
-		187, 232, 164, 185, 187, 50, 216, 18, 249, 136, 92, 0, 216, 252,
-		22, 80, 225, 66, 1, 0, 1, 0, 41, 207, 95, 217, 65, 173, 37, 213, 128, 150, 152, 0, 0, 0, 0, 0}
+	aggregateTransactionSerializationCorr = []byte{0xd1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2, 0x90, 0x41, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x55, 0x0, 0x0, 0x0, 0x55, 0x0, 0x0, 0x0, 0x84, 0x6b, 0x44, 0x39, 0x15, 0x45, 0x79, 0xa5, 0x90, 0x3b, 0x14, 0x59, 0xc9, 0xcf, 0x69, 0xcb, 0x81, 0x53, 0xf6, 0xd0, 0x11, 0xa, 0x7a, 0xe, 0xd6, 0x1d, 0xe2, 0x9a, 0xe4, 0x81, 0xb, 0xf2, 0x3, 0x90, 0x54, 0x41, 0x90, 0x50, 0xb9, 0x83, 0x7e, 0xfa, 0xb4, 0xbb, 0xe8, 0xa4, 0xb9, 0xbb, 0x32, 0xd8, 0x12, 0xf9, 0x88, 0x5c, 0x0, 0xd8, 0xfc, 0x16, 0x50, 0xe1, 0x42, 0x1, 0x0, 0x1, 0x0, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0}
 
-	cosisignatureTransactionSigningCorr = "bf3bc39f2292c028cb0ffa438a9f567a7c4d793d2f8522c8deac74befbcb61af6414adf27b2176d6a24fef612aa6db2f562176a11c46ba6d5e05430042cb5705"
+	cosignatureTransactionSigningCorr = "bf3bc39f2292c028cb0ffa438a9f567a7c4d793d2f8522c8deac74befbcb61af6414adf27b2176d6a24fef612aa6db2f562176a11c46ba6d5e05430042cb5705"
 
-	mosaicDefinitionTransactionSerializationCorr = []byte{156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		2, 144, 77, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 155, 138, 22, 28, 245, 9, 35, 144, 21, 153, 17, 174, 167, 46, 189, 60, 7, 1, 7, 4, 109, 111, 115, 97, 105, 99, 115, 2, 16, 39, 0, 0, 0, 0, 0, 0}
+	mosaicDefinitionTransactionSerializationCorr = []byte{0x90, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+		0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3, 0x90, 0x4d, 0x41, 0xa, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x1, 0x7, 0x4, 0x2, 0x10, 0x27, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
 
 	mosaicSupplyChangeTransactionSerializationCorr = []byte{137, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		2, 144, 77, 66, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 136, 105, 116, 110, 155, 26, 112, 87, 1, 10, 0, 0, 0, 0, 0, 0, 0}
@@ -150,48 +144,27 @@ var (
 		0, 104, 179, 251, 177, 135, 41, 193, 253, 226, 37, 197, 127, 140, 224, 128, 250, 130, 143, 0, 103, 228, 81, 163, 253, 129, 250, 98, 136, 66, 176, 183, 99, 0, 207, 137, 63, 252, 196, 124, 51, 231, 246, 138, 177, 219, 86, 54, 92, 21, 107, 7, 54, 130, 74, 12, 30, 39, 63, 158, 0, 184, 223, 143, 1, 235}
 
 	registerRootNamespaceTransactionSerializationCorr = []byte{150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		2, 144, 78, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 16, 39, 0, 0, 0, 0, 0, 0, 126, 233, 179, 184, 175, 223, 83, 64, 12, 110, 101, 119, 110, 97, 109, 101, 115, 112, 97, 99, 101}
+		2, 144, 78, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 16, 39, 0, 0, 0, 0, 0, 0, 126, 233, 179, 184, 175, 223, 83, 192, 12, 110, 101, 119, 110, 97, 109, 101, 115, 112, 97, 99, 101}
 
-	registerSubNamespaceTransactionSerializationCorr = []byte{150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		2, 144, 78, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 126, 233, 179, 184, 175, 223, 83, 64, 3, 18, 152, 27, 120, 121, 163, 113, 12, 115, 117, 98, 110, 97, 109, 101, 115, 112, 97, 99, 101}
+	registerSubNamespaceTransactionSerializationCorr = []byte{0x96, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2, 0x90, 0x4e, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x7e, 0xe9, 0xb3, 0xb8, 0xaf, 0xdf, 0x53, 0x40, 0x3, 0x12, 0x98, 0x1b, 0x78, 0x79, 0xa3, 0xf1, 0xc, 0x73, 0x75, 0x62, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65}
 
-	lockFundsTransactionSerializationCorr = []byte{176, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 144, 72, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 41, 207, 95,
-		217, 65, 173, 37, 213, 128, 150, 152, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 132,
-		152, 179, 141, 137, 193, 220, 138, 68, 142, 165, 130, 73,
-		56, 255, 130, 137, 38, 205, 159, 119, 71, 177, 132, 75, 89, 180, 182,
-		128, 126, 135, 139}
+	lockFundsTransactionSerializationCorr = []byte{0xb0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x90, 0x48, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x84, 0x98, 0xb3, 0x8d, 0x89, 0xc1, 0xdc, 0x8a, 0x44, 0x8e, 0xa5, 0x82, 0x49, 0x38, 0xff, 0x82, 0x89, 0x26, 0xcd, 0x9f, 0x77, 0x47, 0xb1, 0x84, 0x4b, 0x59, 0xb4, 0xb6, 0x80, 0x7e, 0x87, 0x8b}
 
-	secretProofTransactionSigningCorr = "BF000000147827E5FDAB2201ABD3663964B0493166DA7DD18497718F53DF09AAFC55271B57A9E81B4E2F627FD19E9E9B77283D1620FB8E9E32BAC5AC265EB0B43C75B4071026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF3775503904C430000000000000000010000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC7680ADA57DCEC8EEE91C4E3BF3BFA9AF6FFDE90CD1D249D1C6121D7B759A001B104009A493664"
+	secretProofTransactionSigningCorr = "9F0000007164460939684C5BCA586C4F8FCD457677743E17E3AE5CCC6CFAD7865DB47DDDF5C228B24B99F5CCE18BE0788270A5A5B4750A1DBEB213B2DEB4F220DB75E5071026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755019052420000000000000000010000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC704009A493664"
 
-	secretProofTransactionToAggregateCorr = []byte{111, 0, 0, 0, 154, 73, 54, 100, 6, 172, 169, 82, 184, 139, 173, 245, 241, 233, 190, 108, 228, 150, 129, 65, 3, 90, 96, 190, 80, 50, 115, 234, 101, 69, 107, 36, 3, 144, 76, 67, 0, 183, 120, 163, 154, 54, 99, 113, 157, 252, 94, 72, 201, 215, 132, 49, 177, 228, 92, 42, 249, 223, 83, 135, 130, 191, 25, 156, 24, 157, 171, 234, 199, 104, 10, 218, 87, 220, 236, 142, 238, 145, 196, 227, 191, 59, 250, 154, 246, 255, 222, 144, 205, 29, 36, 157, 28, 97, 33, 215, 183, 89, 160, 1, 177, 4, 0, 154, 73, 54, 100}
+	secretProofTransactionToAggregateCorr = []byte{0x4f, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x1, 0x90, 0x52, 0x42, 0x0, 0xb7, 0x78, 0xa3, 0x9a, 0x36, 0x63, 0x71, 0x9d, 0xfc, 0x5e, 0x48, 0xc9, 0xd7, 0x84, 0x31, 0xb1, 0xe4, 0x5c, 0x2a, 0xf9, 0xdf, 0x53, 0x87, 0x82, 0xbf, 0x19, 0x9c, 0x18, 0x9d, 0xab, 0xea, 0xc7, 0x4, 0x0, 0x9a, 0x49, 0x36, 0x64}
 
-	secretProofTransactionSerializationCorr = []byte{191, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 3, 144, 76, 67, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 183, 120, 163, 154, 54,
-		99, 113, 157, 252, 94, 72, 201, 215, 132, 49, 177, 228, 92, 42, 249,
-		223, 83, 135, 130, 191, 25, 156, 24, 157, 171, 234, 199, 104,
-		10, 218, 87, 220, 236, 142, 238, 145, 196, 227, 191, 59, 250,
-		154, 246, 255, 222, 144, 205, 29, 36, 157, 28, 97, 33, 215, 183, 89,
-		160, 1, 177, 4, 0, 154, 73, 54, 100}
+	secretProofTransactionSerializationCorr = []byte{0x9f, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x90, 0x52, 0x42, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xb7, 0x78, 0xa3, 0x9a, 0x36, 0x63, 0x71, 0x9d, 0xfc, 0x5e, 0x48, 0xc9, 0xd7, 0x84, 0x31, 0xb1, 0xe4, 0x5c, 0x2a, 0xf9, 0xdf, 0x53, 0x87, 0x82, 0xbf, 0x19, 0x9c, 0x18, 0x9d, 0xab, 0xea, 0xc7, 0x4, 0x0, 0x9a, 0x49, 0x36, 0x64}
 
-	secretLockTransactionToAggregateCorr = []byte{154, 0, 0, 0, 154, 73, 54, 100, 6, 172, 169, 82, 184, 139, 173, 245, 241, 233, 190, 108, 228, 150, 129, 65, 3, 90, 96, 190, 80, 50, 115, 234, 101, 69, 107, 36, 3, 144, 82, 65, 41, 207, 95, 217, 65, 173, 37, 213, 128, 150, 152, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 183, 120, 163, 154, 54, 99, 113, 157, 252, 94, 72, 201, 215, 132, 49, 177, 228, 92, 42, 249, 223, 83, 135, 130, 191, 25, 156, 24, 157, 171, 234, 199, 104, 10, 218, 87, 220, 236, 142, 238, 145, 196, 227, 191, 59, 250, 154, 246, 255, 222, 144, 205, 29, 36, 157, 28, 97, 33, 215, 183, 89, 160, 1, 177, 144, 232, 254, 189, 103, 29, 212, 27, 238, 148, 236, 59, 165, 131, 28, 182, 8, 163, 18, 194, 242, 3, 186, 132, 172}
+	secretLockTransactionToAggregateCorr = []byte{0x7a, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x1, 0x90, 0x52, 0x41, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xb7, 0x78, 0xa3, 0x9a, 0x36, 0x63, 0x71, 0x9d, 0xfc, 0x5e, 0x48, 0xc9, 0xd7, 0x84, 0x31, 0xb1, 0xe4, 0x5c, 0x2a, 0xf9, 0xdf, 0x53, 0x87, 0x82, 0xbf, 0x19, 0x9c, 0x18, 0x9d, 0xab, 0xea, 0xc7, 0x90, 0xe8, 0xfe, 0xbd, 0x67, 0x1d, 0xd4, 0x1b, 0xee, 0x94, 0xec, 0x3b, 0xa5, 0x83, 0x1c, 0xb6, 0x8, 0xa3, 0x12, 0xc2, 0xf2, 0x3, 0xba, 0x84, 0xac}
 
-	secretLockTransactionSerializationCorr = []byte{234, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 3, 144, 82, 65, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 41, 207,
-		95, 217, 65, 173, 37, 213, 128, 150, 152, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 183, 120,
-		163, 154, 54, 99, 113, 157, 252, 94, 72, 201, 215, 132, 49, 177, 228, 92, 42, 249, 223, 83, 135, 130, 191, 25, 156, 24,
-		157, 171, 234, 199, 104, 10, 218, 87, 220, 236, 142, 238, 145, 196, 227, 191, 59, 250, 154, 246, 255,
-		222, 144, 205, 29, 36, 157, 28, 97, 33, 215, 183, 89, 160, 1, 177, 144, 232, 254, 189, 103, 29, 212, 27, 238, 148,
-		236, 59, 165, 131, 28, 182, 8, 163, 18, 194, 242, 3, 186, 132, 172}
+	secretLockTransactionSerializationCorr = []byte{0xca, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x90, 0x52, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xb7, 0x78, 0xa3, 0x9a, 0x36, 0x63, 0x71, 0x9d, 0xfc, 0x5e, 0x48, 0xc9, 0xd7, 0x84, 0x31, 0xb1, 0xe4, 0x5c, 0x2a, 0xf9, 0xdf, 0x53, 0x87, 0x82, 0xbf, 0x19, 0x9c, 0x18, 0x9d, 0xab, 0xea, 0xc7, 0x90, 0xe8, 0xfe, 0xbd, 0x67, 0x1d, 0xd4, 0x1b, 0xee, 0x94, 0xec, 0x3b, 0xa5, 0x83, 0x1c, 0xb6, 0x8, 0xa3, 0x12, 0xc2, 0xf2, 0x3, 0xba, 0x84, 0xac}
 
-	lockFundsTransactionToAggregateCorr = []byte{96, 0, 0, 0, 154, 73, 54, 100, 6, 172, 169, 82, 184, 139, 173, 245, 241, 233, 190, 108, 228, 150, 129, 65, 3, 90, 96, 190, 80, 50, 115, 234, 101, 69, 107, 36, 3, 144, 72, 65, 41, 207, 95, 217, 65, 173, 37, 213, 128, 150, 152, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 132, 152, 179, 141, 137, 193, 220, 138, 68, 142, 165, 130, 73, 56, 255, 130, 137, 38, 205, 159, 119, 71, 177, 132, 75, 89, 180, 182, 128, 126, 135, 139}
+	lockFundsTransactionToAggregateCorr = []byte{0x60, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x1, 0x90, 0x48, 0x41, 0xe3, 0x29, 0xad, 0x1c, 0xbe, 0x7f, 0xc6, 0xd, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x84, 0x98, 0xb3, 0x8d, 0x89, 0xc1, 0xdc, 0x8a, 0x44, 0x8e, 0xa5, 0x82, 0x49, 0x38, 0xff, 0x82, 0x89, 0x26, 0xcd, 0x9f, 0x77, 0x47, 0xb1, 0x84, 0x4b, 0x59, 0xb4, 0xb6, 0x80, 0x7e, 0x87, 0x8b}
 
-	secretLockTransactionSigningCorr = "EA0000006290685AE13D3365D8264F346CCEA5FF2B32B59FDAF5047355A0707D173DF226F5BF8693D115FC6E1DE97B58BBBEEBD69206E8AE71E1640971799C8EAD975F0A1026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755039052410000000000000000010000000000000029CF5FD941AD25D58096980000000000640000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC7680ADA57DCEC8EEE91C4E3BF3BFA9AF6FFDE90CD1D249D1C6121D7B759A001B190E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC"
+	secretLockTransactionSigningCorr = "CA000000ACCEA3B564B8D2375EE8EAB968E2BCB9101D0D338D7354CE02844F096C35A78A8753393C4605C9657C580E080E6281885B99BB33F41571AAC416B06F792EF0031026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF377550190524100000000000000000100000000000000E329AD1CBE7FC60D8096980000000000640000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC790E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC"
 
-	lockFundsTransactionSigningCorr = "B0000000A18E51355A2DB5A2C04F754E0864B913D4F1292ED1BD3ED1B3F3352C42A3F2A8989AA305F2B2F406DE64A058ED6299BF188EED02BFF540258B312D09F0F206081026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755039048410000000000000000010000000000000029CF5FD941AD25D5809698000000000064000000000000008498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"
+	lockFundsTransactionSigningCorr = "B0000000D01A4B5AC16A61A129D68B9AF507CDCAA376444E9DDDB9FDEAEB25E26B2800CE45265BE388D6ACB6D61625CB19AC7DA22D59C7164A1F82D561F37C19342A85051026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF377550190484100000000000000000100000000000000E329AD1CBE7FC60D809698000000000064000000000000008498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"
 )
 
 func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
@@ -325,8 +298,8 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 	//} this test is not working in original repo and commented out too
 }
 
-func TestCosisignatureTransactionSigning(t *testing.T) {
-	rtx := "{\"meta\":{\"hash\":\"671653C94E2254F2A23EFEDB15D67C38332AED1FBD24B063C0A8E675582B6A96\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E55\",\"index\":0,\"merkleComponentHash\":\"81E5E7AE49998802DABC816EC10158D3A7879702FF29084C2C992CD1289877A7\"},\"transaction\":{\"cosignatures\":[{\"signature\":\"5780C8DF9D46BA2BCF029DCC5D3BF55FE1CB5BE7ABCF30387C4637DDEDFC2152703CA0AD95F21BB9B942F3CC52FCFC2064C7B84CF60D1A9E69195F1943156C07\",\"signer\":\"A5F82EC8EBB341427B6785C8111906CD0DF18838FB11B51CE0E18B5E79DFF630\"}],\"deadline\":[3266625578,11],\"fee\":[0,0],\"signature\":\"939673209A13FF82397578D22CC96EB8516A6760C894D9B7535E3A1E068007B9255CFA9A914C97142A7AE18533E381C846B69D2AE0D60D1DC8A55AD120E2B606\",\"signer\":\"7681ED5023141D9CDCF184E5A7B60B7D466739918ED5DA30F7E71EA7B86EFF2D\",\"transactions\":[{\"meta\":{\"aggregateHash\":\"3D28C804EDD07D5A728E5C5FFEC01AB07AFA5766AE6997B38526D36015A4D006\",\"aggregateId\":\"5A0069D83F17CF0001777E55\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E56\",\"index\":0},\"transaction\":{\"message\":{\"payload\":\"746573742D6D657373616765\",\"type\":0},\"mosaics\":[{\"amount\":[3863990592,95248],\"id\":[3646934825,3576016193]}],\"recipient\":\"9050B9837EFAB4BBE8A4B9BB32D812F9885C00D8FC1650E142\",\"signer\":\"B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\",\"type\":16724,\"version\":36867}}],\"type\":16705,\"version\":36867}}"
+func TestCosignatureTransactionSigning(t *testing.T) {
+	rtx := "{\"meta\":{\"hash\":\"671653C94E2254F2A23EFEDB15D67C38332AED1FBD24B063C0A8E675582B6A96\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E55\",\"index\":0,\"merkleComponentHash\":\"81E5E7AE49998802DABC816EC10158D3A7879702FF29084C2C992CD1289877A7\"},\"transaction\":{\"cosignatures\":[{\"signature\":\"5780C8DF9D46BA2BCF029DCC5D3BF55FE1CB5BE7ABCF30387C4637DDEDFC2152703CA0AD95F21BB9B942F3CC52FCFC2064C7B84CF60D1A9E69195F1943156C07\",\"signer\":\"A5F82EC8EBB341427B6785C8111906CD0DF18838FB11B51CE0E18B5E79DFF630\"}],\"deadline\":[3266625578,11],\"fee\":[1,0],\"signature\":\"939673209A13FF82397578D22CC96EB8516A6760C894D9B7535E3A1E068007B9255CFA9A914C97142A7AE18533E381C846B69D2AE0D60D1DC8A55AD120E2B606\",\"signer\":\"7681ED5023141D9CDCF184E5A7B60B7D466739918ED5DA30F7E71EA7B86EFF2D\",\"transactions\":[{\"meta\":{\"aggregateHash\":\"3D28C804EDD07D5A728E5C5FFEC01AB07AFA5766AE6997B38526D36015A4D006\",\"aggregateId\":\"5A0069D83F17CF0001777E55\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E56\",\"index\":0},\"transaction\":{\"message\":{\"payload\":\"746573742D6D657373616765\",\"type\":0},\"mosaics\":[{\"amount\":[3863990592,95248],\"id\":[3646934825,3576016193]}],\"recipient\":\"9050B9837EFAB4BBE8A4B9BB32D812F9885C00D8FC1650E142\",\"signer\":\"B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\",\"type\":16724,\"version\":36867}}],\"type\":16705,\"version\":36867}}"
 	b := bytes.NewBufferString(rtx)
 	tx, err := MapTransaction(b)
 
@@ -345,15 +318,22 @@ func TestCosisignatureTransactionSigning(t *testing.T) {
 	cstx, err := acc.SignCosignatureTransaction(ctx)
 
 	assert.Nilf(t, err, "Account.SignCosignatureTransaction signing returned error: %s", err)
-	assert.Equal(t, cosisignatureTransactionSigningCorr, cstx.Signature)
+	assert.Equal(t, cosignatureTransactionSigningCorr, cstx.Signature)
 }
 
 func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
-	nsId, err := NewNamespaceIdFromName("sname")
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
 
-	assert.Nilf(t, err, "NewNamespaceIdFromName returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	tx, err := NewMosaicDefinitionTransaction(fakeDeadline, "mosaics", nsId, NewMosaicProperties(true, true, true, 4, big.NewInt(10000)), MijinTest)
+	tx, err := NewMosaicDefinitionTransaction(
+		fakeDeadline,
+		0,
+		account.PublicAccount.PublicKey,
+		NewMosaicProperties(true, true, true, 4, big.NewInt(10000)),
+		MijinTest)
+
+	tx.Fee = big.NewInt(10)
 
 	assert.Nilf(t, err, "NewMosaicDefinitionTransaction returned error: %s", err)
 
@@ -607,17 +587,17 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "signTransactionWith returned error: %s", err)
 	assert.Equal(t, lockFundsTransactionSigningCorr, b.Payload)
-	assert.Equal(t, "B30F5690286CA57E2F038808F5FEEB8D648A25C3866978B3E9D9BA77B34A7576", b.Hash.String())
+	assert.Equal(t, "A01F0533159B3AE4C684BC72E641EF6456BE8A07DEB01838A9696E975FAD4017", b.Hash.String())
 }
 
 func TestSecretLockTransactionSerialization(t *testing.T) {
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
 
 	assert.Nilf(t, err, "NewAddressFromRaw returned error: %s", err)
 
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_256, s, ad, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretLockTransaction returned error: %s", err)
 
@@ -636,9 +616,9 @@ func TestSecretLockTransactionToAggregate(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAddressFromRaw returned error: %s", err)
 
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_256, s, ad, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretLockTransaction returned error: %s", err)
 
@@ -651,7 +631,7 @@ func TestSecretLockTransactionToAggregate(t *testing.T) {
 }
 
 func TestSecretLockTransactionSigning(t *testing.T) {
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 
 	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest)
 
@@ -661,7 +641,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAddressFromRaw returned error: %s", err)
 
-	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_512, s, ad, MijinTest)
+	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), SHA3_256, s, ad, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretLockTransaction returned error: %s", err)
 
@@ -669,14 +649,14 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Sign returned error: %s", err)
 	assert.Equal(t, secretLockTransactionSigningCorr, b.Payload)
-	assert.Equal(t, "B28787BBDB0C4CE2328F0D75EEC07DFCB14B69A9A21B4162353B7FF3A74023C2", b.Hash.String())
+	assert.Equal(t, "D61DD2A3C4D736EF211323370F41F4C76B8FB7EF1E3C1737C0D0BD14B24312D2", b.Hash.String())
 }
 
 func TestSecretProofTransactionSerialization(t *testing.T) {
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 	ss := "9a493664"
 
-	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_512, s, ss, MijinTest)
+	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, s, ss, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
 
@@ -691,10 +671,10 @@ func TestSecretProofTransactionToAggregate(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 	ss := "9a493664"
 
-	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_512, s, ss, MijinTest)
+	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, s, ss, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
 
@@ -711,10 +691,10 @@ func TestSecretProofTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7680ada57dcec8eee91c4e3bf3bfa9af6ffde90cd1d249d1c6121d7b759a001b1"
+	s := "b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7"
 	ss := "9a493664"
 
-	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_512, s, ss, MijinTest)
+	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, s, ss, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
 

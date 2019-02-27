@@ -35,6 +35,10 @@ func BigIntegerToHex(id *big.Int) string {
 }
 
 func FromBigInt(int *big.Int) []uint32 {
+	if int == nil {
+		return []uint32{0, 0}
+	}
+
 	var u64 uint64 = uint64(int.Int64())
 	l := uint32(u64 & 0xFFFFFFFF)
 	r := uint32(u64 >> 32)

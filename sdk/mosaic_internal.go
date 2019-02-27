@@ -5,7 +5,10 @@
 package sdk
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"errors"
+	"golang.org/x/crypto/sha3"
 	"math/big"
 )
 
@@ -27,69 +30,28 @@ func mosaicIdToBigInt(mscId *MosaicId) *big.Int {
 	return (*big.Int)(mscId)
 }
 
-func generateMosaicId(namespaceName string, mosaicName string) (*MosaicId, error) {
-	if mosaicName == "" {
-		return nil, ErrInvalidMosaicName
+func generateMosaicId(nonce uint32, ownerPublicId string) (*big.Int, error) {
+	result := sha3.New256()
+	nonceB := make([]byte, 4)
+	binary.LittleEndian.PutUint32(nonceB, nonce)
+
+	if _, err := result.Write(nonceB); err != nil {
+		return nil, err
 	}
 
-	namespacePath, err := GenerateNamespacePath(namespaceName)
+	ownerBytes, err := hex.DecodeString(ownerPublicId)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if !regValidMosaicName.MatchString(mosaicName) {
-		return nil, ErrInvalidMosaicName
-	}
-
-	bigInt, err := generateId(mosaicName, namespacePath[len(namespacePath)-1])
-	if err != nil {
+	if _, err := result.Write(ownerBytes); err != nil {
 		return nil, err
 	}
 
-	return bigIntToMosaicId(bigInt), nil
-}
+	t := result.Sum(nil)
 
-// mosaicInfoDTO is temporary struct for reading response & fill MosaicName
-type mosaicNameDTO struct {
-	ParentId uint64DTO
-	MosaicId uint64DTO
-	Name     string
-}
-
-func (m *mosaicNameDTO) toStruct() (*MosaicName, error) {
-	mosaicId, err := NewMosaicId(m.MosaicId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	parentId, err := NewNamespaceId(m.ParentId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	return &MosaicName{
-		MosaicId: mosaicId,
-		Name:     m.Name,
-		ParentId: parentId,
-	}, nil
-}
-
-type mosaicNameDTOs []*mosaicNameDTO
-
-func (m *mosaicNameDTOs) toStruct() ([]*MosaicName, error) {
-	dtos := *m
-	mscNames := make([]*MosaicName, 0, len(dtos))
-
-	for _, dto := range dtos {
-		mscName, err := dto.toStruct()
-		if err != nil {
-			return nil, err
-		}
-
-		mscNames = append(mscNames, mscName)
-	}
-
-	return mscNames, nil
+	return uint64DTO{binary.LittleEndian.Uint32(t[0:4]), binary.LittleEndian.Uint32(t[4:8]) & 0x7FFFFFFF}.toBigInt(), nil
 }
 
 type mosaicDTO struct {
@@ -116,19 +78,17 @@ type namespaceMosaicMetaDTO struct {
 }
 
 type mosaicDefinitionDTO struct {
-	MosaicId    uint64DTO
-	NamespaceId uint64DTO
-	Name        string
-	Supply      uint64DTO
-	Height      uint64DTO
-	Owner       string
-	Properties  mosaicPropertiesDTO
-	Levy        interface{}
+	MosaicId   uint64DTO
+	Supply     uint64DTO
+	Height     uint64DTO
+	Owner      string
+	Revision   uint32
+	Properties mosaicPropertiesDTO
+	Levy       interface{}
 }
 
 // mosaicInfoDTO is temporary struct for reading response & fill MosaicInfo
 type mosaicInfoDTO struct {
-	Meta   namespaceMosaicMetaDTO
 	Mosaic mosaicDefinitionDTO
 }
 
@@ -154,27 +114,15 @@ func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error)
 		return nil, errors.New("mosaic Properties is not valid")
 	}
 
-	nsId, err := NewNamespaceId(ref.Mosaic.NamespaceId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
 	mosaicId, err := NewMosaicId(ref.Mosaic.MosaicId.toBigInt())
 
 	mscInfo := &MosaicInfo{
-		Active:     ref.Meta.Active,
-		Index:      ref.Meta.Index,
-		FullName:   ref.Mosaic.Name,
-		MetaId:     ref.Meta.Id,
 		MosaicId:   mosaicId,
 		Supply:     ref.Mosaic.Supply.toBigInt(),
 		Height:     ref.Mosaic.Height.toBigInt(),
 		Owner:      publicAcc,
+		Revision:   ref.Mosaic.Revision,
 		Properties: ref.Mosaic.Properties.toStruct(),
-	}
-
-	if nsId != nil && namespaceIdToBigInt(nsId).Int64() != 0 {
-		mscInfo.Namespace = &NamespaceInfo{NamespaceId: nsId}
 	}
 
 	return mscInfo, nil

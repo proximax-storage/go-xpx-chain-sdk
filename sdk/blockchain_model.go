@@ -19,7 +19,7 @@ type BlockInfo struct {
 	NumTransactions       uint64
 	Signature             string
 	Signer                *PublicAccount
-	Version               uint64
+	Version               uint8
 	Type                  uint64
 	Height                *big.Int
 	Timestamp             *big.Int

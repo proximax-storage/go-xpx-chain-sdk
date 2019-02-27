@@ -33,11 +33,11 @@ func TestNamespacePath_GeneratesCorrectWellKnownChildPath(t *testing.T) {
 func TestNamespacePathSupportsMultiLevelNamespaces(t *testing.T) {
 	ids := make([]*big.Int, 3)
 	var err error
-	ids[0], err = generateId("foo", big.NewInt(0))
+	ids[0], err = generateNamespaceId("foo", big.NewInt(0))
 	assert.Nil(t, err)
-	ids[1], err = generateId("bar", ids[0])
+	ids[1], err = generateNamespaceId("bar", ids[0])
 	assert.Nil(t, err)
-	ids[2], err = generateId("baz", ids[1])
+	ids[2], err = generateNamespaceId("baz", ids[1])
 	assert.Nil(t, err)
 	ids1, err := GenerateNamespacePath("foo.bar.baz")
 	assert.Nil(t, err)
@@ -55,23 +55,9 @@ func TestNamespacePathRejectsNamesWithTooManyParts(t *testing.T) {
 
 // @Test
 func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
-	id, err := generateMosaicId("nem", "xem")
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
 	assert.Nil(t, err)
-	assert.Equal(t, big.NewInt(-3087871471161192663).Int64(), mosaicIdToBigInt(id).Int64())
-}
-
-// @Test
-func TestMosaicIdSupportMultiLevelMosaics(t *testing.T) {
-	var err error
-	ids := make([]*big.Int, 4)
-	ids[0], err = generateId("foo", big.NewInt(0))
+	id, err := generateMosaicId(0, account.PublicAccount.PublicKey)
 	assert.Nil(t, err)
-	ids[1], err = generateId("bar", ids[0])
-	assert.Nil(t, err)
-	ids[2], err = generateId("baz", ids[1])
-	assert.Nil(t, err)
-	ids[3], err = generateId("tokens", ids[2])
-	assert.Nil(t, err)
-	ids1, err := generateMosaicId("foo.bar.baz", "tokens")
-	assert.Equal(t, mosaicIdToBigInt(ids1).Int64(), ids[3].Int64(), `GenerateMosaicId("foo.bar.baz" and "tokens" must by equal !`)
+	assert.Equal(t, big.NewInt(992621222383397347).Int64(), id.Int64())
 }
