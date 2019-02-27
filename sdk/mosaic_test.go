@@ -6,8 +6,8 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/proximax-utils-go/mock"
-	"github.com/proximax-storage/proximax-utils-go/tests"
+	"github.com/proximax-storage/go-xpx-utils/mock"
+	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"

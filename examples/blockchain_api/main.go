@@ -6,7 +6,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"golang.org/x/net/context"
 	"math/big"
 )

@@ -6,8 +6,8 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/proximax-nem2-sdk-go/utils"
-	"github.com/proximax-storage/proximax-utils-go/str"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
+	"github.com/proximax-storage/go-xpx-utils/str"
 	"math/big"
 )
 
