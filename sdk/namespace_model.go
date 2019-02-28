@@ -28,7 +28,13 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 	if list, err := GenerateNamespacePath(namespaceName); err != nil {
 		return nil, err
 	} else {
-		return bigIntToNamespaceId(list[len(list)-1]), nil
+		l := len(list)
+
+		if l == 0 {
+			return nil, ErrInvalidNamespaceName
+		}
+
+		return bigIntToNamespaceId(list[l-1]), nil
 	}
 }
 
