@@ -202,7 +202,7 @@ func (n *namespaceInfoDTOs) toStruct() ([]*NamespaceInfo, error) {
 	return nsInfos, nil
 }
 
-func generateId(name string, parentId *big.Int) (*big.Int, error) {
+func generateNamespaceId(name string, parentId *big.Int) (*big.Int, error) {
 	b := make([]byte, 8)
 
 	if parentId.Int64() != 0 {
@@ -223,5 +223,5 @@ func generateId(name string, parentId *big.Int) (*big.Int, error) {
 
 	t := result.Sum(nil)
 
-	return uint64DTO{binary.LittleEndian.Uint32(t[0:4]), binary.LittleEndian.Uint32(t[4:8])}.toBigInt(), nil
+	return uint64DTO{binary.LittleEndian.Uint32(t[0:4]), binary.LittleEndian.Uint32(t[4:8]) | 0x80000000}.toBigInt(), nil
 }

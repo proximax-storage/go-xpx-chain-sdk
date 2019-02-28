@@ -23,14 +23,19 @@ func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 	return bigIntToNamespaceId(id), nil
 }
 
-// NewNamespaceIdFromName generate Id from namespaceName
+// NewNamespaceIdFromName creates NamespaceId from namespace string name (ex: nem or domain.subdom.subdome)
 func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
-	id, err := generateNamespaceId(namespaceName)
-	if err != nil {
+	if list, err := GenerateNamespacePath(namespaceName); err != nil {
 		return nil, err
-	}
+	} else {
+		l := len(list)
 
-	return bigIntToNamespaceId(id), nil
+		if l == 0 {
+			return nil, ErrInvalidNamespaceName
+		}
+
+		return bigIntToNamespaceId(list[l-1]), nil
+	}
 }
 
 func (m *NamespaceId) String() string {
@@ -131,15 +136,6 @@ func (ref *NamespaceInfo) String() string {
 	)
 }
 
-// generateNamespaceId create NamespaceId from namespace string name (ex: nem or domain.subdom.subdome)
-func generateNamespaceId(namespaceName string) (*big.Int, error) {
-	if list, err := GenerateNamespacePath(namespaceName); err != nil {
-		return nil, err
-	} else {
-		return list[len(list)-1], nil
-	}
-}
-
 // NamespaceName name info structure describes basic information of a namespace and name.
 type NamespaceName struct {
 	NamespaceId *NamespaceId
@@ -179,7 +175,7 @@ func GenerateNamespacePath(name string) ([]*big.Int, error) {
 			return nil, ErrInvalidNamespaceName
 		}
 
-		if namespaceId, err = generateId(part, (*big.Int)(namespaceId)); err != nil {
+		if namespaceId, err = generateNamespaceId(part, (*big.Int)(namespaceId)); err != nil {
 			return nil, err
 		} else {
 			path = append(path, namespaceId)

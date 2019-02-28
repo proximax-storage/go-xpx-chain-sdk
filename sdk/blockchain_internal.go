@@ -31,7 +31,7 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 		return nil, err
 	}
 
-	v, err := ExtractVersion(dto.Block.Version)
+	v := ExtractVersion(dto.Block.Version)
 	if err != nil {
 		return nil, err
 	}
