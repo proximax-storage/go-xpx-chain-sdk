@@ -30,7 +30,7 @@ func mosaicIdToBigInt(mscId *MosaicId) *big.Int {
 	return (*big.Int)(mscId)
 }
 
-func generateMosaicId(nonce uint32, ownerPublicId string) (*big.Int, error) {
+func generateMosaicId(nonce uint32, ownerPublicKey string) (*big.Int, error) {
 	result := sha3.New256()
 	nonceB := make([]byte, 4)
 	binary.LittleEndian.PutUint32(nonceB, nonce)
@@ -39,7 +39,7 @@ func generateMosaicId(nonce uint32, ownerPublicId string) (*big.Int, error) {
 		return nil, err
 	}
 
-	ownerBytes, err := hex.DecodeString(ownerPublicId)
+	ownerBytes, err := hex.DecodeString(ownerPublicKey)
 
 	if err != nil {
 		return nil, err

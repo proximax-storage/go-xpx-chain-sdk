@@ -18,12 +18,12 @@ func (m *MosaicId) String() string {
 	return (*big.Int)(m).String()
 }
 
-func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicId string) (*MosaicId, error) {
-	if len(ownerPublicId) != 64 {
+func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
+	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
 	}
 
-	id, err := generateMosaicId(nonce, ownerPublicId)
+	id, err := generateMosaicId(nonce, ownerPublicKey)
 
 	return bigIntToMosaicId(id), err
 }
