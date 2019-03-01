@@ -2126,6 +2126,10 @@ func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosig
 }
 
 func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
+	if tx.TransactionToCosign.TransactionInfo == nil || tx.TransactionToCosign.TransactionInfo.Hash == "" {
+		return nil, errors.New("cosignature transaction hash is nil")
+	}
+
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
 	b, err := hex.DecodeString((string)(tx.TransactionToCosign.TransactionInfo.Hash))
 	if err != nil {
