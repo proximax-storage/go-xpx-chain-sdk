@@ -18,6 +18,10 @@ func (m *MosaicId) String() string {
 	return (*big.Int)(m).String()
 }
 
+func (m *MosaicId) Equals(id *MosaicId) bool {
+	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
+}
+
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey

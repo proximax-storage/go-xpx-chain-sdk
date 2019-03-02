@@ -1500,6 +1500,18 @@ func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTr
 	return &CosignatureTransaction{txToCosign}, nil
 }
 
+func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction {
+	return &CosignatureTransaction{
+		TransactionToCosign: &AggregateTransaction{
+			AbstractTransaction: AbstractTransaction{
+				TransactionInfo: &TransactionInfo{
+					Hash: hash,
+				},
+			},
+		},
+	}
+}
+
 func (tx *CosignatureTransaction) String() string {
 	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign.String())
 }
