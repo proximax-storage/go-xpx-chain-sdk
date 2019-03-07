@@ -8,8 +8,8 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/nem2-crypto-go"
-	"github.com/proximax-storage/proximax-utils-go/str"
 	"math/big"
 	"strings"
 )

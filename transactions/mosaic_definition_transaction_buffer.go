@@ -149,21 +149,16 @@ func (rcv *MosaicDefinitionTransactionBuffer) DeadlineLength() int {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) ParentId(j int) uint32 {
+func (rcv *MosaicDefinitionTransactionBuffer) MosaicNonce() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) ParentIdLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
+func (rcv *MosaicDefinitionTransactionBuffer) MutateMosaicNonce(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(18, n)
 }
 
 func (rcv *MosaicDefinitionTransactionBuffer) MosaicId(j int) uint32 {
@@ -183,7 +178,7 @@ func (rcv *MosaicDefinitionTransactionBuffer) MosaicIdLength() int {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MosaicNameLength() byte {
+func (rcv *MosaicDefinitionTransactionBuffer) NumOptionalProperties() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -191,11 +186,11 @@ func (rcv *MosaicDefinitionTransactionBuffer) MosaicNameLength() byte {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MutateMosaicNameLength(n byte) bool {
+func (rcv *MosaicDefinitionTransactionBuffer) MutateNumOptionalProperties(n byte) bool {
 	return rcv._tab.MutateByteSlot(22, n)
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) NumOptionalProperties() byte {
+func (rcv *MosaicDefinitionTransactionBuffer) Flags() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -203,11 +198,11 @@ func (rcv *MosaicDefinitionTransactionBuffer) NumOptionalProperties() byte {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MutateNumOptionalProperties(n byte) bool {
+func (rcv *MosaicDefinitionTransactionBuffer) MutateFlags(n byte) bool {
 	return rcv._tab.MutateByteSlot(24, n)
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) Flags() byte {
+func (rcv *MosaicDefinitionTransactionBuffer) Divisibility() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -215,11 +210,11 @@ func (rcv *MosaicDefinitionTransactionBuffer) Flags() byte {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MutateFlags(n byte) bool {
+func (rcv *MosaicDefinitionTransactionBuffer) MutateDivisibility(n byte) bool {
 	return rcv._tab.MutateByteSlot(26, n)
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) Divisibility() byte {
+func (rcv *MosaicDefinitionTransactionBuffer) IndicateDuration() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -227,32 +222,12 @@ func (rcv *MosaicDefinitionTransactionBuffer) Divisibility() byte {
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MutateDivisibility(n byte) bool {
+func (rcv *MosaicDefinitionTransactionBuffer) MutateIndicateDuration(n byte) bool {
 	return rcv._tab.MutateByteSlot(28, n)
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MosaicName() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *MosaicDefinitionTransactionBuffer) IndicateDuration() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *MosaicDefinitionTransactionBuffer) MutateIndicateDuration(n byte) bool {
-	return rcv._tab.MutateByteSlot(32, n)
-}
-
 func (rcv *MosaicDefinitionTransactionBuffer) Duration(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
@@ -261,7 +236,7 @@ func (rcv *MosaicDefinitionTransactionBuffer) Duration(j int) uint32 {
 }
 
 func (rcv *MosaicDefinitionTransactionBuffer) DurationLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -269,7 +244,7 @@ func (rcv *MosaicDefinitionTransactionBuffer) DurationLength() int {
 }
 
 func MosaicDefinitionTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(16)
+	builder.StartObject(14)
 }
 func MosaicDefinitionTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -304,11 +279,8 @@ func MosaicDefinitionTransactionBufferAddDeadline(builder *flatbuffers.Builder, 
 func MosaicDefinitionTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func MosaicDefinitionTransactionBufferAddParentId(builder *flatbuffers.Builder, parentId flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(parentId), 0)
-}
-func MosaicDefinitionTransactionBufferStartParentIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
+func MosaicDefinitionTransactionBufferAddMosaicNonce(builder *flatbuffers.Builder, mosaicNonce uint32) {
+	builder.PrependUint32Slot(7, mosaicNonce, 0)
 }
 func MosaicDefinitionTransactionBufferAddMosaicId(builder *flatbuffers.Builder, mosaicId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(mosaicId), 0)
@@ -316,26 +288,20 @@ func MosaicDefinitionTransactionBufferAddMosaicId(builder *flatbuffers.Builder, 
 func MosaicDefinitionTransactionBufferStartMosaicIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func MosaicDefinitionTransactionBufferAddMosaicNameLength(builder *flatbuffers.Builder, mosaicNameLength byte) {
-	builder.PrependByteSlot(9, mosaicNameLength, 0)
-}
 func MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder *flatbuffers.Builder, numOptionalProperties byte) {
-	builder.PrependByteSlot(10, numOptionalProperties, 0)
+	builder.PrependByteSlot(9, numOptionalProperties, 0)
 }
 func MosaicDefinitionTransactionBufferAddFlags(builder *flatbuffers.Builder, flags byte) {
-	builder.PrependByteSlot(11, flags, 0)
+	builder.PrependByteSlot(10, flags, 0)
 }
 func MosaicDefinitionTransactionBufferAddDivisibility(builder *flatbuffers.Builder, divisibility byte) {
-	builder.PrependByteSlot(12, divisibility, 0)
-}
-func MosaicDefinitionTransactionBufferAddMosaicName(builder *flatbuffers.Builder, mosaicName flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(mosaicName), 0)
+	builder.PrependByteSlot(11, divisibility, 0)
 }
 func MosaicDefinitionTransactionBufferAddIndicateDuration(builder *flatbuffers.Builder, indicateDuration byte) {
-	builder.PrependByteSlot(14, indicateDuration, 0)
+	builder.PrependByteSlot(12, indicateDuration, 0)
 }
 func MosaicDefinitionTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(duration), 0)
+	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(duration), 0)
 }
 func MosaicDefinitionTransactionBufferStartDurationVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

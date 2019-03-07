@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
-package test
+package integration
 
 import (
-	"github.com/proximax-storage/proximax-nem2-sdk-go/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"golang.org/x/net/context"
 	"math/big"
 	"testing"
 )
 
-const (
-	iter     = 1000
-	pageSize = 32
-)
+const iter = 1000
+const testUrl = "http://bctestnet2.xpxsirius.io:3000"
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig("http://190.216.224.11:3000", sdk.MijinTest)
+	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
 	ctx := context.TODO()
 
 	serv := sdk.NewClient(nil, cfg)
@@ -36,7 +34,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 		}
 
 		if len(trans) == 0 {
-			t.Logf("%d block, empty transactiona", h)
+			t.Logf("%d block, empty transactions", h)
 		}
 
 		for j, val := range trans {
@@ -49,19 +47,17 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 			case sdk.MosaicDefinition:
 				tran := val.(*sdk.MosaicDefinitionTransaction)
 
-				if tran.NamespaceId == nil {
-					t.Logf("empty nsId or MosaicId")
+				if tran.MosaicId == nil {
+					t.Logf("empty MosaicId")
 					t.Log(tran)
 					continue
 				}
-				mscInfoArr, err := serv.Mosaic.GetMosaicsFromNamespaceUpToMosaic(ctx, tran.NamespaceId, tran.MosaicId, pageSize)
+				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
 				if err != nil {
 					t.Error(err)
 				}
 
-				for _, mscInfo := range mscInfoArr {
-					t.Logf("%+v", mscInfo)
-				}
+				t.Logf("%+v", mscInfo)
 			case sdk.MosaicSupplyChange:
 				tran := val.(*sdk.MosaicSupplyChangeTransaction)
 
@@ -87,7 +83,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				for _, val := range tran.Mosaics {
 					mosaicIDs = append(mosaicIDs, val.MosaicId)
 				}
-				mscInfoArr, err := serv.Mosaic.GetMosaicNames(ctx, mosaicIDs)
+				mscInfoArr, err := serv.Mosaic.GetMosaics(ctx, mosaicIDs)
 				if err != nil {
 					t.Error(err)
 				}

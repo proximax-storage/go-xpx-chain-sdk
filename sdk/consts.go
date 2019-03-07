@@ -5,11 +5,13 @@
 package sdk
 
 import (
+	"math/big"
 	"regexp"
 )
 
-var XemMosaicId, _ = NewMosaicIdFromFullName("nem:xem")
-var XpxMosaicId, _ = NewMosaicIdFromFullName("prx:xpx")
+// 0x0DC67FBE1CAD29E3 = 992621222383397347
+var XemMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
 
 // const routers path for methods AccountService
 const (
@@ -35,10 +37,8 @@ const (
 
 // const routers path for methods MosaicService
 const (
-	mosaicsRoute              = "/mosaic"
-	mosaicRoute               = "/mosaic/%s"
-	mosaicNamesRoute          = "/mosaic/names"
-	mosaicsFromNamespaceRoute = "/namespace/%s/mosaics"
+	mosaicsRoute = "/mosaic"
+	mosaicRoute  = "/mosaic/%s"
 )
 
 // const routers path for methods BlockchainService
@@ -80,6 +80,5 @@ const (
 
 // regValidNamespace check namespace on valid symbols
 var (
-	regValidNamespace  = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
-	regValidMosaicName = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
+	regValidNamespace = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
 )

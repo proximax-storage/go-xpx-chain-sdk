@@ -30,11 +30,11 @@ var (
 
 // Mosaic errors
 var (
-	ErrEmptyMosaicIds      = errors.New("list mosaics ids must not by empty")
-	ErrNilMosaicId         = errors.New("mosaicId must not be nil")
-	ErrNilMosaicAmount     = errors.New("amount must be not nil")
-	ErrInvalidMosaicName   = errors.New("mosaic name is invalid")
-	ErrNilMosaicProperties = errors.New("mosaic properties must not be nil")
+	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
+	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
+	ErrNilMosaicAmount       = errors.New("amount must be not nil")
+	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
+	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
 )
 
 // Namespace errors
