@@ -5,9 +5,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"golang.org/x/net/context"
 	"math/big"
 )
 

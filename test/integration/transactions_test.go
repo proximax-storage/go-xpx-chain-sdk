@@ -5,13 +5,13 @@
 package integration
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/sha3"
-	"golang.org/x/net/context"
 	"math/big"
 	math "math/rand"
 	"testing"
