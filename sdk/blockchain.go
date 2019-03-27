@@ -6,9 +6,9 @@ package sdk
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/net"
-	"golang.org/x/net/context"
 	"math/big"
 	"net/http"
 )

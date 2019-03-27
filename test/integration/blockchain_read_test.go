@@ -5,8 +5,8 @@
 package integration
 
 import (
+	"context"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"golang.org/x/net/context"
 	"math/big"
 	"testing"
 )

@@ -7,10 +7,10 @@ package sdk
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"github.com/google/go-querystring/query"
 	"github.com/json-iterator/go"
-	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"net/url"
