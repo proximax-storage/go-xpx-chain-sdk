@@ -113,43 +113,6 @@ type abstractTransactionDTO struct {
 	Signer    string     `json:"signer"`
 }
 
-func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTransaction, error) {
-	t, err := TransactionTypeFromRaw(dto.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	nt := ExtractNetworkType(dto.Version)
-
-	tv := TransactionVersion(ExtractVersion(dto.Version))
-
-	pa, err := NewAccountFromPublicKey(dto.Signer, nt)
-	if err != nil {
-		return nil, err
-	}
-
-	var d *Deadline
-	if dto.Deadline != nil {
-		d = &Deadline{time.Unix(0, dto.Deadline.toBigInt().Int64()*int64(time.Millisecond))}
-	}
-
-	var f *big.Int
-	if dto.Fee != nil {
-		f = dto.Fee.toBigInt()
-	}
-
-	return &AbstractTransaction{
-		tInfo,
-		nt,
-		d,
-		t,
-		tv,
-		f,
-		dto.Signature,
-		pa,
-	}, nil
-}
-
 // Transaction Info
 type TransactionInfo struct {
 	Height              *big.Int
@@ -192,21 +155,22 @@ type transactionInfoDTO struct {
 	AggregateId         string     `json:"aggregateId,omitempty"`
 }
 
-func (dto *transactionInfoDTO) toStruct() *TransactionInfo {
-	height := big.NewInt(0)
-	if dto.Height != nil {
-		height = dto.Height.toBigInt()
-	}
-	return &TransactionInfo{
-		height,
-		dto.Index,
-		dto.Id,
-		dto.Hash,
-		dto.MerkleComponentHash,
-		dto.AggregateHash,
-		dto.AggregateId,
-	}
-}
+//ToDo
+//func (dto *transactionInfoDTO) toStruct() *TransactionInfo {
+//	height := big.NewInt(0)
+//	if dto.Height != nil {
+//		height = dto.Height.toBigInt()
+//	}
+//	return &TransactionInfo{
+//		height,
+//		dto.Index,
+//		dto.Id,
+//		dto.Hash,
+//		dto.MerkleComponentHash,
+//		dto.AggregateHash,
+//		dto.AggregateId,
+//	}
+//}
 
 // AggregateTransaction
 type AggregateTransaction struct {
@@ -301,46 +265,47 @@ type aggregateTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *aggregateTransactionDTO) toStruct() (*AggregateTransaction, error) {
-	txsr, err := json.Marshal(dto.Tx.InnerTransactions)
-	if err != nil {
-		return nil, err
-	}
-
-	txs, err := MapTransactions(bytes.NewBuffer(txsr))
-	if err != nil {
-		return nil, err
-	}
-
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	as := make([]*AggregateTransactionCosignature, len(dto.Tx.Cosignatures))
-	for i, a := range dto.Tx.Cosignatures {
-		as[i], err = a.toStruct(atx.NetworkType)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	for _, tx := range txs {
-		iatx := tx.GetAbstractTransaction()
-		iatx.Deadline = atx.Deadline
-		iatx.Signature = atx.Signature
-		iatx.Fee = atx.Fee
-		if iatx.TransactionInfo == nil {
-			iatx.TransactionInfo = atx.TransactionInfo
-		}
-	}
-
-	return &AggregateTransaction{
-		*atx,
-		txs,
-		as,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *aggregateTransactionDTO) toStruct() (*AggregateTransaction, error) {
+//	txsr, err := json.Marshal(dto.Tx.InnerTransactions)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	txs, err := MapTransactions(bytes.NewBuffer(txsr))
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	as := make([]*AggregateTransactionCosignature, len(dto.Tx.Cosignatures))
+//	for i, a := range dto.Tx.Cosignatures {
+//		as[i], err = a.toStruct(atx.NetworkType)
+//	}
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	for _, tx := range txs {
+//		iatx := tx.GetAbstractTransaction()
+//		iatx.Deadline = atx.Deadline
+//		iatx.Signature = atx.Signature
+//		iatx.Fee = atx.Fee
+//		if iatx.TransactionInfo == nil {
+//			iatx.TransactionInfo = atx.TransactionInfo
+//		}
+//	}
+//
+//	return &AggregateTransaction{
+//		*atx,
+//		txs,
+//		as,
+//	}, nil
+//}
 
 // MosaicDefinitionTransaction
 type MosaicDefinitionTransaction struct {
@@ -443,24 +408,25 @@ type mosaicDefinitionTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *mosaicDefinitionTransactionDTO) toStruct() (*MosaicDefinitionTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	return &MosaicDefinitionTransaction{
-		*atx,
-		dto.Tx.Properties.toStruct(),
-		dto.Tx.MosaicNonce,
-		mosaicId,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *mosaicDefinitionTransactionDTO) toStruct() (*MosaicDefinitionTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &MosaicDefinitionTransaction{
+//		*atx,
+//		dto.Tx.Properties.toStruct(),
+//		dto.Tx.MosaicNonce,
+//		mosaicId,
+//	}, nil
+//}
 
 // MosaicSupplyChangeTransaction
 type MosaicSupplyChangeTransaction struct {
@@ -547,24 +513,25 @@ type mosaicSupplyChangeTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (*MosaicSupplyChangeTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	return &MosaicSupplyChangeTransaction{
-		*atx,
-		dto.Tx.MosaicSupplyType,
-		mosaicId,
-		dto.Tx.Delta.toBigInt(),
-	}, nil
-}
+//ToDo: remove it
+//func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (*MosaicSupplyChangeTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &MosaicSupplyChangeTransaction{
+//		*atx,
+//		dto.Tx.MosaicSupplyType,
+//		mosaicId,
+//		dto.Tx.Delta.toBigInt(),
+//	}, nil
+//}
 
 // TransferTransaction
 type TransferTransaction struct {
@@ -677,35 +644,36 @@ type transferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *transferTransactionDTO) toStruct() (*TransferTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
-
-	for i, mosaic := range dto.Tx.Mosaics {
-		msc, err := mosaic.toStruct()
-		if err != nil {
-			return nil, err
-		}
-
-		mosaics[i] = msc
-	}
-
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
-	if err != nil {
-		return nil, err
-	}
-
-	return &TransferTransaction{
-		*atx,
-		dto.Tx.Message.toStruct(),
-		mosaics,
-		a,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *transferTransactionDTO) toStruct() (*TransferTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
+//
+//	for i, mosaic := range dto.Tx.Mosaics {
+//		msc, err := mosaic.toStruct()
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		mosaics[i] = msc
+//	}
+//
+//	a, err := NewAddressFromEncoded(dto.Tx.Address)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &TransferTransaction{
+//		*atx,
+//		dto.Tx.Message.toStruct(),
+//		mosaics,
+//		a,
+//	}, nil
+//}
 
 // ModifyMultisigAccountTransaction
 type ModifyMultisigAccountTransaction struct {
@@ -790,24 +758,25 @@ type modifyMultisigAccountTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyMultisigAccountTransactionDTO) toStruct() (*ModifyMultisigAccountTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	ms, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Modifications, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ModifyMultisigAccountTransaction{
-		*atx,
-		dto.Tx.MinApprovalDelta,
-		dto.Tx.MinRemovalDelta,
-		ms,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *modifyMultisigAccountTransactionDTO) toStruct() (*ModifyMultisigAccountTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	ms, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Modifications, atx.NetworkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &ModifyMultisigAccountTransaction{
+//		*atx,
+//		dto.Tx.MinApprovalDelta,
+//		dto.Tx.MinRemovalDelta,
+//		ms,
+//	}, nil
+//}
 
 // ModifyContractTransaction
 type ModifyContractTransaction struct {
@@ -935,36 +904,37 @@ type modifyContractTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyContractTransactionDTO) toStruct() (*ModifyContractTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	customers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Customers, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	executors, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Executors, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	verifiers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Verifiers, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ModifyContractTransaction{
-		*atx,
-		dto.Tx.DurationDelta.toBigInt().Int64(),
-		dto.Tx.Hash,
-		customers,
-		executors,
-		verifiers,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *modifyContractTransactionDTO) toStruct() (*ModifyContractTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	customers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Customers, atx.NetworkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	executors, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Executors, atx.NetworkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	verifiers, err := multisigCosignatoryDTOArrayToStruct(dto.Tx.Verifiers, atx.NetworkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &ModifyContractTransaction{
+//		*atx,
+//		dto.Tx.DurationDelta.toBigInt().Int64(),
+//		dto.Tx.Hash,
+//		customers,
+//		executors,
+//		verifiers,
+//	}, nil
+//}
 
 // RegisterNamespaceTransaction
 type RegisterNamespaceTransaction struct {
@@ -1092,38 +1062,39 @@ type registerNamespaceTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *registerNamespaceTransactionDTO) toStruct() (*RegisterNamespaceTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	d := big.NewInt(0)
-	n := &NamespaceId{}
-
-	if dto.Tx.NamespaceType == Root {
-		d = dto.Tx.Duration.toBigInt()
-	} else {
-		n, err = dto.Tx.ParentId.toStruct()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	nsId, err := dto.Tx.Id.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
-	return &RegisterNamespaceTransaction{
-		*atx,
-		nsId,
-		dto.Tx.NamespaceType,
-		dto.Tx.NamspaceName,
-		d,
-		n,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *registerNamespaceTransactionDTO) toStruct() (*RegisterNamespaceTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	d := big.NewInt(0)
+//	n := &NamespaceId{}
+//
+//	if dto.Tx.NamespaceType == Root {
+//		d = dto.Tx.Duration.toBigInt()
+//	} else {
+//		n, err = dto.Tx.ParentId.toStruct()
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//
+//	nsId, err := dto.Tx.Id.toStruct()
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &RegisterNamespaceTransaction{
+//		*atx,
+//		nsId,
+//		dto.Tx.NamespaceType,
+//		dto.Tx.NamspaceName,
+//		d,
+//		n,
+//	}, nil
+//}
 
 // LockFundsTransaction
 type LockFundsTransaction struct {
@@ -1220,24 +1191,25 @@ type lockFundsTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *lockFundsTransactionDTO) toStruct() (*LockFundsTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	mosaic, err := dto.Tx.Mosaic.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
-	return &LockFundsTransaction{
-		*atx,
-		mosaic,
-		dto.Tx.Duration.toBigInt(),
-		&SignedTransaction{Lock, "", dto.Tx.Hash},
-	}, nil
-}
+//ToDo: remove it
+//func (dto *lockFundsTransactionDTO) toStruct() (*LockFundsTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaic, err := dto.Tx.Mosaic.toStruct()
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &LockFundsTransaction{
+//		*atx,
+//		mosaic,
+//		dto.Tx.Duration.toBigInt(),
+//		&SignedTransaction{Lock, "", dto.Tx.Hash},
+//	}, nil
+//}
 
 // SecretLockTransaction
 type SecretLockTransaction struct {
@@ -1353,36 +1325,37 @@ type secretLockTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *secretLockTransactionDTO) toStruct() (*SecretLockTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	a, err := NewAddressFromEncoded(dto.Tx.Recipient)
-	if err != nil {
-		return nil, err
-	}
-
-	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	mosaic, err := NewMosaic(mosaicId, dto.Tx.Amount.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	return &SecretLockTransaction{
-		*atx,
-		mosaic,
-		dto.Tx.HashType,
-		dto.Tx.Duration.toBigInt(),
-		dto.Tx.Secret,
-		a,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *secretLockTransactionDTO) toStruct() (*SecretLockTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	a, err := NewAddressFromEncoded(dto.Tx.Recipient)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	mosaic, err := NewMosaic(mosaicId, dto.Tx.Amount.toBigInt())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &SecretLockTransaction{
+//		*atx,
+//		mosaic,
+//		dto.Tx.HashType,
+//		dto.Tx.Duration.toBigInt(),
+//		dto.Tx.Secret,
+//		a,
+//	}, nil
+//}
 
 // SecretProofTransaction
 type SecretProofTransaction struct {
@@ -1475,19 +1448,20 @@ type secretProofTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *secretProofTransactionDTO) toStruct() (*SecretProofTransaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
-	if err != nil {
-		return nil, err
-	}
-
-	return &SecretProofTransaction{
-		*atx,
-		dto.Tx.HashType,
-		dto.Tx.Secret,
-		dto.Tx.Proof,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *secretProofTransactionDTO) toStruct() (*SecretProofTransaction, error) {
+//	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &SecretProofTransaction{
+//		*atx,
+//		dto.Tx.HashType,
+//		dto.Tx.Secret,
+//		dto.Tx.Proof,
+//	}, nil
+//}
 
 type CosignatureTransaction struct {
 	TransactionToCosign *AggregateTransaction
@@ -1541,16 +1515,17 @@ type aggregateTransactionCosignatureDTO struct {
 	Signer    string
 }
 
-func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType) (*AggregateTransactionCosignature, error) {
-	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
-	if err != nil {
-		return nil, err
-	}
-	return &AggregateTransactionCosignature{
-		dto.Signature,
-		acc,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType) (*AggregateTransactionCosignature, error) {
+//	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return &AggregateTransactionCosignature{
+//		dto.Signature,
+//		acc,
+//	}, nil
+//}
 
 func (agt *AggregateTransactionCosignature) String() string {
 	return fmt.Sprintf(
@@ -1585,17 +1560,18 @@ type multisigCosignatoryModificationDTO struct {
 	PublicAccount string                              `json:"cosignatoryPublicKey"`
 }
 
-func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType) (*MultisigCosignatoryModification, error) {
-	acc, err := NewAccountFromPublicKey(dto.PublicAccount, networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &MultisigCosignatoryModification{
-		dto.Type,
-		acc,
-	}, nil
-}
+//ToDo: remove it
+//func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType) (*MultisigCosignatoryModification, error) {
+//	acc, err := NewAccountFromPublicKey(dto.PublicAccount, networkType)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return &MultisigCosignatoryModification{
+//		dto.Type,
+//		acc,
+//	}, nil
+//}
 
 type mosaicDefinitonTransactionPropertiesDTO []struct {
 	Key   int

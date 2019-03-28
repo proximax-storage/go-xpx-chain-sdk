@@ -35,7 +35,7 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 		return nil, err
 	}
 
-	nsInfo, err := nsInfoDTO.toStruct()
+	nsInfo, err := ref.client.NamespaceInfoConverter.Convert(nsInfoDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 		return nil, err
 	}
 
-	nsInfos, err := dtos.toStruct()
+	nsInfos, err := ref.client.NamespaceInfoConverter.ConvertMulti(dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 		return nil, err
 	}
 
-	nsInfos, err := dtos.toStruct()
+	nsInfos, err := ref.client.NamespaceInfoConverter.ConvertMulti(dtos)
 	if err != nil {
 		return nil, err
 	}

@@ -110,70 +110,12 @@ type multisigAccountInfoDTO struct {
 	} `json:"multisig"`
 }
 
-func (dto *multisigAccountInfoDTO) toStruct(networkType NetworkType) (*MultisigAccountInfo, error) {
-	cs := make([]*PublicAccount, len(dto.Multisig.Cosignatories))
-	ms := make([]*PublicAccount, len(dto.Multisig.MultisigAccounts))
-
-	acc, err := NewAccountFromPublicKey(dto.Multisig.Account, networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, c := range dto.Multisig.Cosignatories {
-		cs[i], err = NewAccountFromPublicKey(c, networkType)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	for i, m := range dto.Multisig.MultisigAccounts {
-		ms[i], err = NewAccountFromPublicKey(m, networkType)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &MultisigAccountInfo{
-		Account:          *acc,
-		MinApproval:      dto.Multisig.MinApproval,
-		MinRemoval:       dto.Multisig.MinRemoval,
-		Cosignatories:    cs,
-		MultisigAccounts: ms,
-	}, nil
-}
-
 type multisigAccountGraphInfoDTOEntry struct {
 	Level     int32                    `json:"level"`
 	Multisigs []multisigAccountInfoDTO `json:"multisigEntries"`
 }
 
 type multisigAccountGraphInfoDTOS []multisigAccountGraphInfoDTOEntry
-
-func (dto multisigAccountGraphInfoDTOS) toStruct(networkType NetworkType) (*MultisigAccountGraphInfo, error) {
-	var (
-		ms  = make(map[int32][]*MultisigAccountInfo)
-		err error
-	)
-
-	for _, m := range dto {
-		mAccInfos := make([]*MultisigAccountInfo, len(m.Multisigs))
-
-		for idx, c := range m.Multisigs {
-			mAccInfos[idx], err = c.toStruct(networkType)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		ms[m.Level] = mAccInfos
-	}
-
-	return &MultisigAccountGraphInfo{ms}, nil
-}
 
 type addresses []*Address
 

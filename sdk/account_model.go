@@ -104,46 +104,6 @@ type MultisigAccountGraphInfo struct {
 	MultisigAccounts map[int32][]*MultisigAccountInfo
 }
 
-func NewAccount(networkType NetworkType) (*Account, error) {
-	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
-	if err != nil {
-		return nil, err
-	}
-
-	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Account{pa, kp}, nil
-}
-func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
-	k, err := crypto.NewPrivateKeyfromHexString(pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	kp, err := crypto.NewKeyPair(k, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Account{pa, kp}, nil
-}
-
-func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
-	ad, err := NewAddressFromPublicKey(pKey, networkType)
-	if err != nil {
-		return nil, err
-	}
-	return &PublicAccount{ad, pKey}, nil
-}
-
 // Create an Address from a given raw address
 func NewAddress(address string, networkType NetworkType) *Address {
 	address = strings.Replace(address, "-", "", -1)

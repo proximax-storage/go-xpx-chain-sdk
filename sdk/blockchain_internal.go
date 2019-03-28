@@ -23,37 +23,6 @@ type blockInfoDTO struct {
 	} `json:"block"`
 }
 
-func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
-	nt := ExtractNetworkType(dto.Block.Version)
-
-	pa, err := NewAccountFromPublicKey(dto.Block.Signer, nt)
-	if err != nil {
-		return nil, err
-	}
-
-	v := ExtractVersion(dto.Block.Version)
-	if err != nil {
-		return nil, err
-	}
-
-	return &BlockInfo{
-		NetworkType:           nt,
-		Hash:                  dto.BlockMeta.Hash,
-		GenerationHash:        dto.BlockMeta.GenerationHash,
-		TotalFee:              dto.BlockMeta.TotalFee.toBigInt(),
-		NumTransactions:       dto.BlockMeta.NumTransactions,
-		Signature:             dto.Block.Signature,
-		Signer:                pa,
-		Version:               v,
-		Type:                  dto.Block.Type,
-		Height:                dto.Block.Height.toBigInt(),
-		Timestamp:             dto.Block.Timestamp.toBigInt(),
-		Difficulty:            dto.Block.Difficulty.toBigInt(),
-		PreviousBlockHash:     dto.Block.PreviousBlockHash,
-		BlockTransactionsHash: dto.Block.BlockTransactionsHash,
-	}, nil
-}
-
 // Chain Score
 type chainScoreDTO struct {
 	ScoreHigh uint64DTO `json:"scoreHigh"`
@@ -65,19 +34,3 @@ func (dto *chainScoreDTO) toStruct() *big.Int {
 }
 
 type blockInfoDTOs []*blockInfoDTO
-
-func (b *blockInfoDTOs) toStruct() ([]*BlockInfo, error) {
-	dtos := *b
-	blocks := make([]*BlockInfo, 0, len(dtos))
-
-	for _, dto := range dtos {
-		block, err := dto.toStruct()
-		if err != nil {
-			return nil, err
-		}
-
-		blocks = append(blocks, block)
-	}
-
-	return blocks, nil
-}

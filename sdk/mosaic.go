@@ -33,12 +33,7 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 		return nil, err
 	}
 
-	mscInfo, err := dto.toStruct(ref.client.config.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return mscInfo, nil
+	return ref.client.MosaicInfoConverter.Convert(dto, ref.client.config.NetworkType)
 }
 
 // GetMosaics get list mosaics Info
@@ -59,10 +54,5 @@ func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([
 		return nil, err
 	}
 
-	mscInfos, err := dtos.toStruct(ref.client.config.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return mscInfos, nil
+	return ref.client.MosaicInfoConverter.ConvertMulti(dtos, ref.client.config.NetworkType)
 }

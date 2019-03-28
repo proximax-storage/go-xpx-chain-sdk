@@ -97,60 +97,6 @@ type namespaceInfoDTO struct {
 	Namespace namespaceDTO
 }
 
-//toStruct create & return new NamespaceInfo from namespaceInfoDTO
-func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
-	nsId, err := NewNamespaceId(ref.Namespace.NamespaceId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	pubAcc, err := NewAccountFromPublicKey(ref.Namespace.Owner, NetworkType(ref.Namespace.Type))
-	if err != nil {
-		return nil, err
-	}
-
-	parentId, err := NewNamespaceId(ref.Namespace.ParentId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	levels, err := ref.extractLevels()
-	if err != nil {
-		return nil, err
-	}
-
-	mscIds := make([]*MosaicId, 0, len(ref.Namespace.MosaicIds))
-
-	for _, mscIdDTO := range ref.Namespace.MosaicIds {
-		mscId, err := NewMosaicId(mscIdDTO.toBigInt())
-		if err != nil {
-			return nil, err
-		}
-
-		mscIds = append(mscIds, mscId)
-	}
-
-	ns := &NamespaceInfo{
-		NamespaceId: nsId,
-		FullName:    ref.Namespace.FullName,
-		Active:      ref.Meta.Active,
-		Index:       ref.Meta.Index,
-		MetaId:      ref.Meta.Id,
-		TypeSpace:   NamespaceType(ref.Namespace.Type),
-		Depth:       ref.Namespace.Depth,
-		Levels:      levels,
-		Owner:       pubAcc,
-		StartHeight: ref.Namespace.StartHeight.toBigInt(),
-		EndHeight:   ref.Namespace.EndHeight.toBigInt(),
-	}
-
-	if parentId != nil && namespaceIdToBigInt(parentId).Int64() != 0 {
-		ns.Parent = &NamespaceInfo{NamespaceId: parentId}
-	}
-
-	return ns, nil
-}
-
 func (ref *namespaceInfoDTO) extractLevels() ([]*NamespaceId, error) {
 	levels := make([]*NamespaceId, 0)
 
@@ -185,22 +131,6 @@ func (ref *namespaceInfoDTO) extractLevels() ([]*NamespaceId, error) {
 }
 
 type namespaceInfoDTOs []*namespaceInfoDTO
-
-func (n *namespaceInfoDTOs) toStruct() ([]*NamespaceInfo, error) {
-	dtos := *n
-	nsInfos := make([]*NamespaceInfo, 0, len(dtos))
-
-	for _, nsInfoDTO := range dtos {
-		nsInfo, err := nsInfoDTO.toStruct()
-		if err != nil {
-			return nil, err
-		}
-
-		nsInfos = append(nsInfos, nsInfo)
-	}
-
-	return nsInfos, nil
-}
 
 func generateNamespaceId(name string, parentId *big.Int) (*big.Int, error) {
 	b := make([]byte, 8)

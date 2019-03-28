@@ -74,6 +74,29 @@ type Client struct {
 	Transaction *TransactionService
 	Account     *AccountService
 	Contract    *ContractService
+
+	//Factories
+	AccountFactory AccountFactory
+
+	//Converters
+	MultisigAccountInfoConverter              multisigAccountInfoConverter
+	BlockInfoConverter                        blockInfoConverter
+	MosaicInfoConverter                       mosaicInfoConverter
+	NamespaceInfoConverter                    namespaceInfoConverter
+	MosaicDefinitionTransactionConverter      mosaicDefinitionTransactionConverter
+	AbstractTransactionConverter              abstractTransactionConverter
+	TransactionInfoConverter                  transactionInfoConverter
+	MosaicSupplyChangeTransactionConverter    mosaicSupplyChangeTransactionConverter
+	TransferTransactionConverter              transferTransactionConverter
+	ModifyMultisigAccountTransactionConverter modifyMultisigAccountTransactionConverter
+	ModifyContractTransactionConverter        modifyContractTransactionConverter
+	RegisterNamespaceTransactionConverter     registerNamespaceTransactionConverter
+	LockFundsTransactionConverter             lockFundsTransactionConverter
+	SecretLockTransactionConverter            secretLockTransactionConverter
+	SecretProofTransactionConverter           secretProofTransactionConverter
+	AggregateTransactionCosignatureConverter  aggregateTransactionCosignatureConverter
+	AggregateTransactionConverter             aggregateTransactionConverter
+	MultisigCosignatoryModificationConverter  multisigCosignatoryModificationConverter
 }
 
 type service struct {
@@ -97,17 +120,46 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 
+	bindFactories(c)
+	bindConverters(c)
+
 	return c
 }
 
+func bindFactories(client *Client) {
+	client.AccountFactory = NewAccountFactory()
+}
+
+func bindConverters(client *Client) {
+	client.MultisigAccountInfoConverter = newMultisigAccountInfoDTOConverter(client.AccountFactory)
+	client.BlockInfoConverter = newBlockInfoConverter(client.AccountFactory)
+	client.MosaicInfoConverter = newMosaicInfoConverter(client.AccountFactory)
+	client.NamespaceInfoConverter = newNamespaceInfoConverterImpl(client.AccountFactory)
+
+	client.TransactionInfoConverter = newTransactionInfoConverter()
+	client.AbstractTransactionConverter = newAbstractTransactionConverterImpl(client.AccountFactory)
+	client.MosaicDefinitionTransactionConverter = newMosaicDefinitionTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.MosaicSupplyChangeTransactionConverter = newMosaicSupplyChangeTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.TransferTransactionConverter = newTransferTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.ModifyMultisigAccountTransactionConverter = newModifyMultisigAccountTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.ModifyContractTransactionConverter = newModifyContractTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.RegisterNamespaceTransactionConverter = newRegisterNamespaceTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.LockFundsTransactionConverter = newLockFundsTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.SecretLockTransactionConverter = newSecretLockTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.SecretProofTransactionConverter = newSecretProofTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter)
+	client.AggregateTransactionCosignatureConverter = newAggregateTransactionCosignatureConverter(client.AccountFactory)
+	client.AggregateTransactionConverter = newAggregateTransactionConverter(client.AbstractTransactionConverter, client.TransactionInfoConverter, client.AggregateTransactionCosignatureConverter)
+	client.MultisigCosignatoryModificationConverter = newMultisigCosignatoryModificationConverter(client.AccountFactory)
+}
+
 // DoNewRequest creates new request, Do it & return result in V
-func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
-	req, err := s.NewRequest(method, path, body)
+func (c *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
+	req, err := c.NewRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.Do(ctx, req, v)
+	resp, err := c.Do(ctx, req, v)
 	if err != nil {
 		return nil, err
 	}

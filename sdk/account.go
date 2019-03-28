@@ -88,7 +88,7 @@ func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Ad
 		return nil, err
 	}
 
-	return dto.toStruct(a.client.config.NetworkType)
+	return a.client.MultisigAccountInfoConverter.Convert(dto, a.client.config.NetworkType)
 }
 
 // Gets a MultisigAccountGraphInfo for an account.
@@ -110,7 +110,7 @@ func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, addres
 		return nil, err
 	}
 
-	return dto.toStruct(a.client.config.NetworkType)
+	return a.client.MultisigAccountInfoConverter.ConvertMulti(dto, a.client.config.NetworkType)
 }
 
 // Gets an array of confirmed transactions for which an account is signer or receiver.

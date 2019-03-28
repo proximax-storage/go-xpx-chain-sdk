@@ -34,7 +34,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 		return nil, err
 	}
 
-	return dto.toStruct()
+	return b.client.BlockInfoConverter.Convert(dto)
 }
 
 // Get Transactions from a block information
@@ -82,7 +82,7 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 		return nil, err
 	}
 
-	return dtos.toStruct()
+	return b.client.BlockInfoConverter.ConvertMulti(&dtos)
 }
 
 // Get the Chain Height

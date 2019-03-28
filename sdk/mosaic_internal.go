@@ -7,7 +7,6 @@ package sdk
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"golang.org/x/crypto/sha3"
 	"math/big"
 )
@@ -104,48 +103,7 @@ func (dto *mosaicPropertiesDTO) toStruct() *MosaicProperties {
 	)
 }
 
-func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
-	publicAcc, err := NewAccountFromPublicKey(ref.Mosaic.Owner, networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ref.Mosaic.Properties) < 3 {
-		return nil, errors.New("mosaic Properties is not valid")
-	}
-
-	mosaicId, err := NewMosaicId(ref.Mosaic.MosaicId.toBigInt())
-
-	mscInfo := &MosaicInfo{
-		MosaicId:   mosaicId,
-		Supply:     ref.Mosaic.Supply.toBigInt(),
-		Height:     ref.Mosaic.Height.toBigInt(),
-		Owner:      publicAcc,
-		Revision:   ref.Mosaic.Revision,
-		Properties: ref.Mosaic.Properties.toStruct(),
-	}
-
-	return mscInfo, nil
-}
-
 type mosaicInfoDTOs []*mosaicInfoDTO
-
-func (m *mosaicInfoDTOs) toStruct(networkType NetworkType) ([]*MosaicInfo, error) {
-	dtos := *m
-
-	mscInfos := make([]*MosaicInfo, 0, len(dtos))
-
-	for _, dto := range dtos {
-		mscInfo, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		mscInfos = append(mscInfos, mscInfo)
-	}
-
-	return mscInfos, nil
-}
 
 type mosaicIds struct {
 	MosaicIds []*MosaicId `json:"mosaicIds"`
