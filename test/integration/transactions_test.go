@@ -57,6 +57,55 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	fmt.Println("Successful!")
 }
 
+func TestModifyMetadataTransaction(t *testing.T) {
+	fmt.Println(defaultAccount.PublicAccount.Address)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataAddressTransaction(
+			sdk.NewDeadline(time.Hour),
+			defaultAccount.PublicAccount.Address,
+			[]*sdk.MetadataModification{
+				{
+					sdk.AddMetadata,
+					"jora229",
+					"I Love you",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataMosaicTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.XpxMosaicId,
+			[]*sdk.MetadataModification{
+				{
+					sdk.AddMetadata,
+					"hello",
+					"hell",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+
+	namespaceId, _ := sdk.NewNamespaceIdFromName("jora")
+	fmt.Println(namespaceId)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataNamespaceTransaction(
+			sdk.NewDeadline(time.Hour),
+			namespaceId,
+			[]*sdk.MetadataModification{
+				{
+					sdk.AddMetadata,
+					"hello",
+					"world",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+}
+
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()

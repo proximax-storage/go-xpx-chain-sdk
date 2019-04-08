@@ -20,6 +20,32 @@ func aggregateTransactionSchema() *schema {
 	}
 }
 
+func modifyMetadataTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", ShortSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("metadataType", ByteSize),
+			newArrayAttribute("metadataId", ByteSize),
+			newTableArrayAttribute("modifications", schema{
+				[]schemaAttribute{
+					newScalarAttribute("size", IntSize),
+					newScalarAttribute("modificationType", ByteSize),
+					newScalarAttribute("keySize", ByteSize),
+					newScalarAttribute("valueSize", ShortSize),
+					newArrayAttribute("key", ByteSize),
+					newArrayAttribute("value", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
 func mosaicDefinitionTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
