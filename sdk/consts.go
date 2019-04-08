@@ -24,7 +24,7 @@ const (
 	incomingTransactionsRoute     = "/transactions/incoming"
 	outgoingTransactionsRoute     = "/transactions/outgoing"
 	unconfirmedTransactionsRoute  = "/transactions/unconfirmed"
-	aggregateTransactionsRoute    = "/transactions/aggregateBondedTransactions"
+	aggregateTransactionsRoute    = "/transactions/partial"
 )
 
 // const routers path for methods NamespaceService
