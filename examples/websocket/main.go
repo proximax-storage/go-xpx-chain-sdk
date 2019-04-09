@@ -8,18 +8,77 @@ import (
 	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"math/big"
+	"net/http"
+	"sync"
 	"time"
 )
 
 const (
-	baseUrl     = "http://localhost:3000"
+//wsBaseUrl     = "ws://bcstage1.xpxsirius.io:3000/ws"
+//baseUrl     = "http://bcstage1.xpxsirius.io:3000"
+//networkType = sdk.PublicTest
+//privateKey  = "809CD6699B7F38063E28F606BD3A8AECA6E13B1E688FE8E733D13DB843BC14B7"
+)
+
+//const (
+//	wsBaseUrl     = "ws://192.168.88.41:3000/ws"
+//	baseUrl     = "http://192.168.88.41:3000"
+//	networkType = sdk.MijinTest
+//	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
+//)
+
+const (
+	wsBaseUrl   = "ws://127.0.0.1:3000/ws"
+	baseUrl     = "http://127.0.0.1:3000"
 	networkType = sdk.MijinTest
-	privateKey  = "0F3CC33190A49ABB32E7172E348EA927F975F8829107AAA3D6349BB10797D4F6"
+	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
 )
 
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
 // The notification is received in real time without having to poll the API waiting for a reply.
 func main() {
+
+	destAccount, _ := sdk.NewAccountFromPrivateKey(privateKey, networkType)
+	address := destAccount.PublicAccount.Address
+
+	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
+
+	wsc, err := sdk.NewCatapultWebSocketClient(wsBaseUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	var wg sync.WaitGroup
+
+	//Starting listening messages from websocket
+	go wsc.Listen(&wg)
+
+	if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
+		panic(err)
+	}
+
+	//if err := wsc.AddConfirmedAddedHandlers(address, ConfirmedAddedHandler1, ConfirmedAddedHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	if err = wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
+		panic(err)
+	}
+
+	//time.Sleep(time.Second * 5)
+
+	//doTransferTransaction(address)
+
+	//doBondedAggregateTransaction(address)
+
+	wg.Wait()
+}
+
+// test publish transfer transaction
+func doTransferTransaction(address *sdk.Address) {
+
+	fmt.Println("start publishing transfer transaction")
 
 	conf, err := sdk.NewConfig(baseUrl, networkType)
 	if err != nil {
@@ -28,61 +87,14 @@ func main() {
 
 	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
-	// timeout in milliseconds
-	// 5000 ms = 5 seconds
-	ws, err := sdk.NewConnectWs(baseUrl, 5000)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("websocket negotiated uid:", ws.Uid)
-
-	// The UnconfirmedAdded channel notifies when a transaction related to an
-	// address is in unconfirmed state and waiting to be included in a block.
-	// The message contains the transaction.
-	chUnconfirmedAdded, _ := ws.Subscribe.UnconfirmedAdded(acc.Address)
-	go func() {
-		for {
-			data := <-chUnconfirmedAdded.Ch
-			fmt.Printf("UnconfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
-			chUnconfirmedAdded.Unsubscribe()
-		}
-	}()
-	//
-	//// The confirmedAdded channel notifies when a transaction related to an
-	//// address is included in a block. The message contains the transaction.
-	chConfirmedAdded, _ := ws.Subscribe.ConfirmedAdded(acc.Address)
-	go func() {
-		for {
-			data := <-chConfirmedAdded.Ch
-			fmt.Printf("ConfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
-			chConfirmedAdded.Unsubscribe()
-			fmt.Println("Successful transfer!")
-		}
-	}()
-
-	//The status channel notifies when a transaction related to an address rises an error.
-	//The message contains the error message and the transaction hash.
-	chStatus, _ := ws.Subscribe.Status(acc.Address)
-
-	go func() {
-		for {
-			data := <-chStatus.Ch
-			chStatus.Unsubscribe()
-			fmt.Printf("Content: %v \n", data.Hash)
-			panic(fmt.Sprint("Status: ", data.Status))
-		}
-	}()
-
-	time.Sleep(time.Second * 5)
 	// Use the default http client
-	client := sdk.NewClient(nil, conf)
+	client := sdk.NewClient(http.DefaultClient, conf)
 
 	ttx, err := sdk.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
-		sdk.NewAddress("SBILTA367K2LX2FEXG5TFWAS7GEFYAGY7QLFBYKC", networkType),
+		address,
 		[]*sdk.Mosaic{sdk.Xem(10000000)},
-		sdk.NewPlainMessage(""),
+		sdk.NewPlainMessage("my test transaction"),
 		networkType,
 	)
 
@@ -91,21 +103,136 @@ func main() {
 		panic(fmt.Errorf("TransaferTransaction signing returned error: %s", err))
 	}
 
-	// Get the chain height
 	restTx, err := client.Transaction.Announce(context.Background(), stx)
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Printf("%s\n", restTx)
 	fmt.Printf("Content: \t\t%v\n", stx.Hash)
 	fmt.Printf("Signer: \t%X\n\n", acc.KeyPair.PublicKey.Raw)
 
-	// The block channel notifies for every new block.
-	// The message contains the block information.
-	chBlock, _ := ws.Subscribe.Block()
+	fmt.Println("transfer transaction successfully published")
+}
 
-	for {
-		data := <-chBlock.Ch
-		fmt.Printf("Block received with height: %v \n", data.Height)
+// test publish aggregated transaction
+func doBondedAggregateTransaction(address *sdk.Address) {
+
+	fmt.Println("start publishing bonded aggregated transaction")
+
+	conf, err := sdk.NewConfig(baseUrl, networkType)
+	if err != nil {
+		panic(err)
 	}
+
+	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
+
+	// Use the default http client
+	client := sdk.NewClient(http.DefaultClient, conf)
+
+	ttx1, err := sdk.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour*1),
+		address,
+		[]*sdk.Mosaic{sdk.Xem(50)},
+		sdk.NewPlainMessage("first transaction"),
+		networkType,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	ttx1.ToAggregate(acc.PublicAccount)
+
+	ttx2, err := sdk.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour*1),
+		address,
+		[]*sdk.Mosaic{sdk.Xem(90)},
+		sdk.NewPlainMessage("second transaction"),
+		networkType,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	ttx2.ToAggregate(acc.PublicAccount)
+
+	bondedTx, err := sdk.NewBondedAggregateTransaction(
+		sdk.NewDeadline(time.Hour*3),
+		[]sdk.Transaction{ttx1, ttx2},
+		networkType,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	signedBondedTx, err := acc.Sign(bondedTx)
+	if err != nil {
+		panic(err)
+	}
+
+	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), big.NewInt(240), signedBondedTx, networkType)
+	if err != nil {
+		panic(err)
+	}
+
+	signedLockFound, err := acc.Sign(lockFound)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = client.Transaction.Announce(context.Background(), signedLockFound)
+
+	time.Sleep(time.Second * 30)
+
+	resp, err := client.Transaction.AnnounceAggregateBonded(context.Background(), signedBondedTx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", resp)
+	fmt.Printf("Content: \t\t%v\n", signedBondedTx.Hash)
+	fmt.Printf("Signer: \t%X\n\n", acc.KeyPair.PublicKey.Raw)
+
+	fmt.Println("bonded aggregated transaction successfully published")
+}
+
+// Examples of handler functions for different channels
+
+func BlocksHandler1(blockInfo *sdk.BlockInfo) bool {
+	fmt.Println("called BlockHandler1")
+	//fmt.Println(blockInfo.String())
+	return true
+}
+
+func BlocksHandler2(blockInfo *sdk.BlockInfo) bool {
+	fmt.Println("called BlockHandler2")
+	//fmt.Println(blockInfo.String())
+	return true
+}
+
+func UnconfirmedAddedHandler1(tr sdk.Transaction) bool {
+	fmt.Println("called UnconfirmedAddedHandler1")
+	//fmt.Println(tr.String())
+	return true
+}
+
+func UnconfirmedAddedHandler2(tr sdk.Transaction) bool {
+	fmt.Println("called UnconfirmedAddedHandler2")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func ConfirmedAddedHandler1(tr sdk.Transaction) bool {
+	fmt.Println("called ConfirmedAddedHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func ConfirmedAddedHandler2(tr sdk.Transaction) bool {
+	fmt.Println("called ConfirmedAddedHandler2")
+	//fmt.Println(tr.String())
+	return true
 }

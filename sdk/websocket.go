@@ -5,402 +5,514 @@
 package sdk
 
 import (
-	"bytes"
-	j "encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"golang.org/x/net/websocket"
 	"io"
-	"net/url"
-	"strings"
-	"time"
+	"sync"
+)
+
+const (
+	pathBlock              = "block"
+	pathConfirmedAdded     = "confirmedAdded"
+	pathUnconfirmedAdded   = "unconfirmedAdded"
+	pathUnconfirmedRemoved = "unconfirmedRemoved"
+	pathStatus             = "status"
+	pathPartialAdded       = "partialAdded"
+	pathPartialRemoved     = "partialRemoved"
+	pathCosignature        = "cosignature"
 )
 
 var (
-	statusInfoChannels         = make(map[string]chan *StatusInfo)
-	partialRemovedInfoChannels = make(map[string]chan *PartialRemovedInfo)
-	signerInfoChannels         = make(map[string]chan *SignerInfo)
-	unconfirmedRemovedChannels = make(map[string]chan *HashInfo)
-	partialAddedChannels       = make(map[string]chan *AggregateTransaction)
-	unconfirmedAddedChannels   = make(map[string]chan Transaction)
-	confirmedAddedChannels     = make(map[string]chan Transaction)
-	connectsWs                 = make(map[string]*websocket.Conn)
-	errChannels                = make(map[string]chan *ErrorInfo)
+	unsupportedMessageTypeError = errors.New("unsupported message type")
 )
 
-type sendJson struct {
-	Uid       string `json:"uid"`
-	Subscribe string `json:"subscribe"`
-}
-
-type subscribeInfo struct {
-	name, account string
-}
-
-type serviceWs struct {
-	client *ClientWebsocket
-}
-
-type subscribe struct {
-	Uid       string `json:"uid"`
-	Subscribe string `json:"subscribe"`
-	conn      *websocket.Conn
-	Ch        interface{}
-}
-
-// Catapult Websocket Client configuration
-type ClientWebsocket struct {
-	client    *websocket.Conn
-	Uid       string
-	timeout   *time.Time
-	duration  *time.Duration
-	config    *Config
-	common    serviceWs // Reuse a single struct instead of allocating one for each service on the heap.
-	Subscribe *SubscribeService
-}
-
-type SubscribeBlock struct {
-	*subscribe
-	Ch chan *BlockInfo
-}
-
-type SubscribeTransaction struct {
-	*subscribe
-	Ch chan Transaction
-}
-
-type SubscribeBonded struct {
-	*subscribe
-	Ch chan *AggregateTransaction
-}
-
-type SubscribeHash struct {
-	*subscribe
-	Ch chan *HashInfo
-}
-
-type SubscribePartialRemoved struct {
-	*subscribe
-	Ch chan *PartialRemovedInfo
-}
-
-type SubscribeStatus struct {
-	*subscribe
-	Ch chan *StatusInfo
-}
-
-type SubscribeSigner struct {
-	*subscribe
-	Ch chan *SignerInfo
-}
-
-type SubscribeError struct {
-	*subscribe
-	Ch chan *ErrorInfo
-}
-
-func msgParser(msg []byte) (*subscribe, error) {
-	var message subscribe
-	err := json.Unmarshal(msg, &message)
+func NewCatapultWebSocketClient(endpoint string) (CatapultWebsocketClient, error) {
+	conn, err := websocket.Dial(endpoint, "tcp", "http://localhost")
 	if err != nil {
 		return nil, err
 	}
-	return &message, nil
+
+	var raw []byte
+	if err := websocket.Message.Receive(conn, &raw); err != nil {
+		return nil, err
+	}
+
+	var resp *wsConnectionResponse
+	if err := json.Unmarshal(raw, &resp); err != nil {
+		return nil, err
+	}
+
+	return &CatapultWebsocketClientImpl{
+		conn:             conn,
+		UID:              resp.Uid,
+		eventSubscribers: newEventSubscribers(),
+		messageProcessor: newMessageProcessor(MapTransaction),
+		messagePublisher: newMessagePublisher(conn),
+		errorsChan:       make(chan error, 100),
+	}, nil
 }
 
-func restParser(data []byte) (string, error) {
-	var raw []j.RawMessage
-	err := json.Unmarshal([]byte(fmt.Sprintf("[%v]", string(data))), &raw)
+type CatapultWebsocketClient interface {
+	Listen(wg *sync.WaitGroup)
+
+	AddBlockHandlers(handlers ...blockHandler) error
+	AddConfirmedAddedHandlers(address *Address, handlers ...confirmedAddedHandler) error
+	AddUnconfirmedAddedHandlers(address *Address, handlers ...unconfirmedAddedHandler) error
+	AddUnconfirmedRemovedHandlers(address *Address, handlers ...unconfirmedRemovedHandler) error
+	AddStatusHandlers(address *Address, handlers ...statusHandler) error
+	AddPartialAddedHandlers(address *Address, handlers ...partialAddedHandler) error
+	AddPartialRemovedHandlers(address *Address, handlers ...partialRemovedHandler) error
+	AddCosignatureHandlers(address *Address, handlers ...cosignatureHandler) error
+
+	GetErrorsChan() (chan error, error)
+}
+
+type CatapultWebsocketClientImpl struct {
+	conn             *websocket.Conn
+	UID              string
+	eventSubscribers eventsSubscribers
+	messageProcessor messageProcessor
+	messagePublisher messagePublisher
+
+	errorsChan chan error
+}
+
+func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	var resp []byte
+	for {
+		err := websocket.Message.Receive(c.conn, &resp)
+
+		if err == io.EOF {
+			wg.Done()
+			return
+		}
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		messageInfo, err := c.getMessageInfo(resp)
+		if err != nil {
+			fmt.Println(fmt.Errorf("error getting websocket message info: %s", err))
+			continue
+		}
+
+		if err := c.routeMessage(messageInfo, resp); err != nil {
+			fmt.Println(fmt.Errorf("error routing message websocket message info: %s", err))
+		}
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...blockHandler) error {
+	if !c.eventSubscribers.IsBlockSubscribed() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathBlock); err != nil {
+			return err
+		}
+	}
+
+	err := c.eventSubscribers.AddBlockHandlers(handlers...)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	var subscribe string
-	for _, r := range raw {
-		var obj map[string]interface{}
-		err := json.Unmarshal(r, &obj)
-		if err != nil {
-			return "", err
-		}
-
-		if _, ok := obj["block"]; ok {
-			subscribe = "block"
-		} else if _, ok := obj["status"]; ok {
-			subscribe = "status"
-		} else if _, ok := obj["signer"]; ok {
-			subscribe = "signer"
-		} else if v, ok := obj["meta"]; ok {
-			channelName := v.(map[string]interface{})
-			subscribe = fmt.Sprintf("%v", channelName["channelName"])
-		} else {
-			subscribe = "none"
-		}
-	}
-	return subscribe, nil
+	return nil
 }
 
-func (s *subscribeInfo) buildType(t []byte) error {
-	switch s.name {
-	case "block":
-		var b blockInfoDTO
-		err := json.Unmarshal(t, &b)
-		if err != nil {
+func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *Address, handlers ...confirmedAddedHandler) error {
+	if !c.eventSubscribers.IsAddConfirmedAddedSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathConfirmedAdded, address.Address)); err != nil {
 			return err
 		}
-		data, err := b.toStruct()
-		if err != nil {
-			return err
-		}
-		Block.Ch <- data
-		return nil
+	}
 
-	case "status":
-		var data StatusInfo
-		err := json.Unmarshal(t, &data)
-		if err != nil {
+	err := c.eventSubscribers.AddConfirmedAddedHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *Address, handlers ...unconfirmedAddedHandler) error {
+	if !c.eventSubscribers.IsAddUnconfirmedAddedSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address.Address)); err != nil {
 			return err
 		}
-		ch := statusInfoChannels[s.account]
-		ch <- &data
-		return nil
+	}
 
-	case "signer":
-		var data SignerInfo
-		err := json.Unmarshal(t, &data)
-		if err != nil {
+	err := c.eventSubscribers.AddUnconfirmedAddedHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *Address, handlers ...unconfirmedRemovedHandler) error {
+	if !c.eventSubscribers.IsAddUnconfirmedRemovedSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address.Address)); err != nil {
 			return err
 		}
-		ch := signerInfoChannels[s.account]
-		ch <- &data
-		return nil
+	}
 
-	case "unconfirmedRemoved":
-		var data HashInfo
-		err := json.Unmarshal(t, &data)
-		if err != nil {
-			return err
-		}
-		ch := unconfirmedRemovedChannels[s.account]
-		ch <- &data
-		return nil
+	err := c.eventSubscribers.AddUnconfirmedRemovedHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
 
-	case "partialRemoved":
-		var data PartialRemovedInfo
-		err := json.Unmarshal(t, &data)
-		if err != nil {
-			return err
-		}
-		ch := partialRemovedInfoChannels[s.account]
-		ch <- &data
-		return nil
+	return nil
+}
 
-	case "partialAdded":
-		data, err := MapTransaction(bytes.NewBuffer([]byte(t)))
-		if err != nil {
+func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *Address, handlers ...statusHandler) error {
+	if !c.eventSubscribers.IsAddStatusInfoSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathStatus, address.Address)); err != nil {
 			return err
 		}
 
-		if data, ok := data.(*AggregateTransaction); !ok {
-			return errors.New("wrong transaction")
-		} else {
-			ch := partialAddedChannels[s.account]
-			ch <- data
-			return nil
+	}
+
+	err := c.eventSubscribers.AddStatusInfoHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *Address, handlers ...partialAddedHandler) error {
+	if !c.eventSubscribers.IsAddPartialAddedSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathPartialAdded, address.Address)); err != nil {
+			return err
 		}
-	case "unconfirmedAdded":
-		data, err := MapTransaction(bytes.NewBuffer([]byte(t)))
+	}
+
+	err := c.eventSubscribers.AddPartialAddedHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *Address, handlers ...partialRemovedHandler) error {
+	if !c.eventSubscribers.IsAddPartialRemovedSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathPartialRemoved, address.Address)); err != nil {
+			return err
+		}
+	}
+
+	err := c.eventSubscribers.AddPartialRemovedHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *Address, handlers ...cosignatureHandler) error {
+	if c.eventSubscribers.IsAddCosignatureSubscribed(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathCosignature, address.Address)); err != nil {
+			return err
+		}
+	}
+
+	err := c.eventSubscribers.AddCosignatureHandlers(address, handlers...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) GetErrorsChan() (chan error, error) {
+	if c.errorsChan == nil {
+		return nil, errors.New("channel is not initialized")
+	}
+
+	return c.errorsChan, nil
+}
+
+func (c *CatapultWebsocketClientImpl) getMessageInfo(m []byte) (*wsMessageInfo, error) {
+	var messageInfoDTO wsMessageInfoDTO
+	if err := json.Unmarshal(m, &messageInfoDTO); err != nil {
+		return nil, err
+	}
+
+	return messageInfoDTO.toStruct()
+}
+
+func (c *CatapultWebsocketClientImpl) routeMessage(messageInfo *wsMessageInfo, resp []byte /* err error*/) error {
+	switch messageInfo.ChannelName {
+	case pathBlock:
+		res, err := c.messageProcessor.ProcessBlock(resp)
 		if err != nil {
 			return err
 		}
-		ch := unconfirmedAddedChannels[s.account]
-		ch <- data
-		return nil
 
+		handlers := c.eventSubscribers.GetBlockHandlers()
+
+		for f := range handlers {
+			go func(callFuncPtr *blockHandler, err error) {
+				callFunc := *callFuncPtr
+
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveBlockHandlers(callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishUnsubscribeMessage(c.UID, pathBlock)
+				return
+
+			}(f, err)
+		}
+
+		return err
+	case pathConfirmedAdded:
+		res, err := c.messageProcessor.ProcessConfirmedAdded(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetConfirmedAddedHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *confirmedAddedHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveConfirmedAddedHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathConfirmedAdded, address))
+				return
+
+			}(messageInfo.Address, f, err)
+		}
+
+		return err
+
+	case pathUnconfirmedAdded:
+		res, err := c.messageProcessor.ProcessUnconfirmedAdded(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetUnconfirmedAddedHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *unconfirmedAddedHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveUnconfirmedAddedHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+
+		return err
+
+	case pathUnconfirmedRemoved:
+		res, err := c.messageProcessor.ProcessUnconfirmedRemoved(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetUnconfirmedRemovedHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *unconfirmedRemovedHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveUnconfirmedRemovedHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+		return err
+
+	case pathStatus:
+		res, err := c.messageProcessor.ProcessStatus(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetStatusInfoHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *statusHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveStatusInfoHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathStatus, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+
+		return err
+	case pathPartialAdded:
+		res, err := c.messageProcessor.ProcessPartialAdded(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetPartialAddedHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *partialAddedHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemovePartialAddedHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathPartialAdded, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+
+		return err
+	case pathPartialRemoved:
+		res, err := c.messageProcessor.ProcessPartialRemoved(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetPartialRemovedHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *partialRemovedHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemovePartialRemovedHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathPartialRemoved, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+
+		return err
+	case pathCosignature:
+		res, err := c.messageProcessor.ProcessCosignature(resp)
+		if err != nil {
+			return err
+		}
+
+		handlers, err := c.eventSubscribers.GetCosignatureHandlers(messageInfo.Address)
+		if err != nil {
+			return err
+		}
+
+		for f := range handlers {
+			go func(address *Address, callFuncPtr *cosignatureHandler, err error) {
+				callFunc := *callFuncPtr
+				if rm := callFunc(res); !rm {
+					return
+				}
+
+				shouldUnsubscribe, err := c.eventSubscribers.RemoveCosignatureHandlers(address, callFuncPtr)
+				if err != nil {
+					return
+				}
+
+				if !shouldUnsubscribe {
+					return
+				}
+
+				err = c.messagePublisher.PublishSubscribeMessage(c.UID, fmt.Sprintf("%s/%s", pathCosignature, address))
+				return
+			}(messageInfo.Address, f, err)
+		}
+		return err
 	default:
-		data, err := MapTransaction(bytes.NewBuffer([]byte(t)))
-		if err != nil {
-			return err
-		}
-		ch := confirmedAddedChannels[s.account]
-		ch <- data
-		return nil
+		return unsupportedMessageTypeError
 	}
-}
-
-// Get address from subscribe struct
-func (s *subscribe) getAdd() string {
-	if s.Subscribe != "block" {
-		return strings.Split(s.Subscribe, "/")[1]
-	}
-	return s.Subscribe
-}
-
-// Get subscribe name from subscribe struct
-func (s *subscribe) getSubscribe() string {
-	return strings.Split(s.Subscribe, "/")[0]
-}
-
-func (c *ClientWebsocket) changeURLPort() {
-	c.config.BaseURL.Scheme = "ws"
-	c.config.BaseURL.Path = "/ws"
-	split := strings.Split(c.config.BaseURL.Host, ":")
-	host, port := split[0], "3000"
-	c.config.BaseURL.Host = strings.Join([]string{host, port}, ":")
-}
-
-func (c *ClientWebsocket) buildSubscribe(destination string) *subscribe {
-	b := new(subscribe)
-	b.Uid = c.Uid
-	b.Subscribe = destination
-	return b
-}
-
-func (c *ClientWebsocket) wsConnect() error {
-	c.changeURLPort()
-	conn, err := websocket.Dial(c.config.BaseURL.String(), "", "http://localhost")
-	if err != nil {
-		return err
-	}
-	c.client = conn
-
-	if *c.duration != time.Duration(0) {
-		conn.SetDeadline(*c.timeout)
-	}
-
-	var msg []byte
-	if err = websocket.Message.Receive(c.client, &msg); err != nil {
-		return err
-	}
-
-	imsg, err := msgParser(msg)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if err != nil {
-		return err
-	}
-	c.Uid = imsg.Uid
-
-	return nil
-}
-
-func (c *ClientWebsocket) subsChannel(s *subscribe) error {
-	if err := websocket.JSON.Send(c.client, sendJson{
-		Uid:       s.Uid,
-		Subscribe: s.Subscribe,
-	}); err != nil {
-		return err
-	}
-
-	go func() {
-		var resp []byte
-
-		address := "block"
-		if s.Subscribe != "block" {
-			address = s.getAdd()
-		}
-		errCh := errChannels[address]
-
-		for {
-			if err := websocket.Message.Receive(c.client, &resp); err == io.EOF {
-				err = c.wsConnect()
-				if err != nil {
-					errCh <- &ErrorInfo{
-						Error: err,
-					}
-					return
-				}
-				if err = websocket.JSON.Send(c.client, sendJson{
-					Uid:       s.Uid,
-					Subscribe: s.Subscribe,
-				}); err != nil {
-					errCh <- &ErrorInfo{
-						Error: err,
-					}
-					return
-				}
-				continue
-			} else if err != nil {
-				err = c.wsConnect()
-				if err != nil {
-					errCh <- &ErrorInfo{
-						Error: err,
-					}
-					break
-				}
-			}
-			subName, err := restParser(resp)
-			if err != nil {
-				errCh <- &ErrorInfo{
-					Error: err,
-				}
-				break
-			}
-			b := subscribeInfo{
-				name:    subName,
-				account: s.getAdd(),
-			}
-
-			if err := b.buildType(resp); err != nil {
-				errCh <- &ErrorInfo{
-					Error: err,
-				}
-			}
-		}
-	}()
-	return nil
-}
-
-func NewConnectWs(host string, timeout time.Duration) (*ClientWebsocket, error) {
-	u, err := url.Parse(host)
-	if err != nil {
-		return nil, err
-	}
-	newconf := &Config{BaseURL: u}
-	c := &ClientWebsocket{config: newconf}
-	c.common.client = c
-	c.Subscribe = (*SubscribeService)(&c.common)
-	c.duration = &timeout
-
-	tout := time.Now().Add(*c.duration * time.Millisecond)
-	c.timeout = &tout
-
-	err = c.wsConnect()
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func (s *SubscribeBlock) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeTransaction) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeBonded) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeHash) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribePartialRemoved) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeStatus) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeSigner) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
-}
-
-func (s *SubscribeError) Unsubscribe() error {
-	return s.subscribe.unsubscribe()
 }
