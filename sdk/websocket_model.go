@@ -15,17 +15,17 @@ type SignerInfo struct {
 	ParentHash Hash   `json:"parentHash"`
 }
 
-type subscribeDTO struct {
+type SubscribeDTO struct {
 	Uid       string `json:"uid"`
 	Subscribe string `json:"subscribe"`
 }
 
-type unsubscribeDTO struct {
+type UnsubscribeDTO struct {
 	Uid         string `json:"uid"`
 	Unsubscribe string `json:"unsubscribe"`
 }
 
-type wsConnectionResponse struct {
+type WsConnectionResponse struct {
 	Uid string `json:"uid"`
 }
 
@@ -58,21 +58,21 @@ type PartialRemovedInfo struct {
 	Meta *TransactionInfo
 }
 
-type wsMessageInfo struct {
+type WsMessageInfo struct {
 	Address     *Address
 	ChannelName string
 }
 
-type wsMessageInfoDTO struct {
+type WsMessageInfoDTO struct {
 	Meta wsMessageInfoMetaDTO `json:"meta"`
 }
 
-func (dto *wsMessageInfoDTO) toStruct() (*wsMessageInfo, error) {
-	msg := &wsMessageInfo{
+func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
+	msg := &WsMessageInfo{
 		ChannelName: dto.Meta.ChannelName,
 	}
 
-	if dto.Meta.ChannelName == pathBlock {
+	if dto.Meta.ChannelName == "block" {
 		return msg, nil
 	}
 

@@ -8,11 +8,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
+	"sync"
 	"time"
 )
 
 const (
 	baseUrl            = "http://localhost:3000"
+	wsBaseUrl          = "ws://localhost:3000/ws"
 	networkType        = sdk.MijinTest
 	customerPrivateKey = "0F3CC33190A49ABB32E7172E348EA927F975F8829107AAA3D6349BB10797D4F6"
 	executorPrivateKey = "68B3FBB18729C1FDE225C57F8CE080FA828F0067E451A3FD81FA628842B0B763"
@@ -32,53 +35,57 @@ func main() {
 
 	customerAcc, err := sdk.NewAccountFromPrivateKey(customerPrivateKey, networkType)
 
-	// timeout in milliseconds
-	// 15000 ms = 15 seconds
-	ws, err := sdk.NewConnectWs(baseUrl, 15000)
+	ws, err := websocket.NewCatapultWebSocketClient(wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("websocket negotiated uid:", ws.Uid)
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go ws.Listen(wg)
 
 	// The UnconfirmedAdded channel notifies when a transaction related to an
 	// address is in unconfirmed state and waiting to be included in a block.
 	// The message contains the transaction.
-	chUnconfirmedAdded, _ := ws.Subscribe.UnconfirmedAdded(customerAcc.Address)
-	go func() {
-		for {
-			data := <-chUnconfirmedAdded.Ch
-			fmt.Printf("UnconfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
-			chUnconfirmedAdded.Unsubscribe()
-		}
-	}()
+
+	err = ws.AddUnconfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
+		fmt.Printf("UnconfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
+		return true
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
 	//
 	//// The confirmedAdded channel notifies when a transaction related to an
 	//// address is included in a block. The message contains the transaction.
-	chConfirmedAdded, _ := ws.Subscribe.ConfirmedAdded(customerAcc.Address)
-	go func() {
-		for {
-			data := <-chConfirmedAdded.Ch
-			fmt.Printf("ConfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
-			chConfirmedAdded.Unsubscribe()
-			fmt.Println("Successful transfer!")
-		}
-	}()
+
+	err = ws.AddConfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
+		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
+		fmt.Println("Successful transfer!")
+		return true
+	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	//The status channel notifies when a transaction related to an address rises an error.
 	//The message contains the error message and the transaction hash.
-	chStatus, _ := ws.Subscribe.Status(customerAcc.Address)
 
-	go func() {
-		for {
-			data := <-chStatus.Ch
-			chStatus.Unsubscribe()
-			fmt.Printf("Content: %v \n", data.Hash)
-			panic(fmt.Sprint("Status: ", data.Status))
-		}
-	}()
+	err = ws.AddStatusHandlers(customerAcc.Address, func(info *sdk.StatusInfo) bool {
+		fmt.Printf("Content: %v \n", info.Hash)
+		panic(fmt.Sprint("Status: ", info.Status))
+		return true
+	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	time.Sleep(time.Second * 5)
+
 	// Use the default http client
 	client := sdk.NewClient(nil, conf)
 
@@ -129,10 +136,15 @@ func main() {
 
 	// The block channel notifies for every new block.
 	// The message contains the block information.
-	chBlock, _ := ws.Subscribe.Block()
 
-	for {
-		data := <-chBlock.Ch
-		fmt.Printf("Block received with height: %v \n", data.Height)
+	err = ws.AddBlockHandlers(func(info *sdk.BlockInfo) bool {
+		fmt.Printf("Block received with height: %v \n", info.Height)
+		return true
+	})
+
+	if err != nil {
+		panic(err)
 	}
+
+	wg.Wait()
 }

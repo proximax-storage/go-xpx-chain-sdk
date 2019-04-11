@@ -8,25 +8,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"math/big"
 	"net/http"
 	"sync"
 	"time"
 )
-
-const (
-//wsBaseUrl     = "ws://bcstage1.xpxsirius.io:3000/ws"
-//baseUrl     = "http://bcstage1.xpxsirius.io:3000"
-//networkType = sdk.PublicTest
-//privateKey  = "809CD6699B7F38063E28F606BD3A8AECA6E13B1E688FE8E733D13DB843BC14B7"
-)
-
-//const (
-//	wsBaseUrl     = "ws://192.168.88.41:3000/ws"
-//	baseUrl     = "http://192.168.88.41:3000"
-//	networkType = sdk.MijinTest
-//	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
-//)
 
 const (
 	wsBaseUrl   = "ws://127.0.0.1:3000/ws"
@@ -44,7 +31,7 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := sdk.NewCatapultWebSocketClient(wsBaseUrl)
+	wsc, err := websocket.NewCatapultWebSocketClient(wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -52,30 +39,51 @@ func main() {
 	var wg sync.WaitGroup
 
 	//Starting listening messages from websocket
+	wg.Add(1)
 	go wsc.Listen(&wg)
 
-	if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
-		panic(err)
-	}
+	//if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
+	//	panic(err)
+	//}
 
 	//if err := wsc.AddConfirmedAddedHandlers(address, ConfirmedAddedHandler1, ConfirmedAddedHandler2); err != nil {
 	//	panic(err)
 	//}
 
-	if err = wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
-		panic(err)
-	}
+	//if err := wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
+	//	panic(err)
+	//}
 
-	//time.Sleep(time.Second * 5)
+	//if err := wsc.AddUnconfirmedRemovedHandlers(address, UnconfirmedRemovedHandler1, UnconfirmedRemovedHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	//if err := wsc.AddPartialAddedHandlers(address, PartialAddedHandler1, PartialAddedHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	//if err := wsc.AddPartialRemovedHandlers(address, PartialRemovedHandler1, PartialRemovedHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	//if err := wsc.AddStatusHandlers(address, StatusHandler1, StatusHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	//if err := wsc.AddCosignatureHandlers(address, CosignatureHandler1, CosignatureHandler2); err != nil {
+	//	panic(err)
+	//}
+
+	time.Sleep(time.Second * 5)
 
 	//doTransferTransaction(address)
 
-	//doBondedAggregateTransaction(address)
+	doBondedAggregateTransaction(address)
 
 	wg.Wait()
 }
 
-// test publish transfer transaction
+// publish transfer transaction
 func doTransferTransaction(address *sdk.Address) {
 
 	fmt.Println("start publishing transfer transaction")
@@ -115,7 +123,7 @@ func doTransferTransaction(address *sdk.Address) {
 	fmt.Println("transfer transaction successfully published")
 }
 
-// test publish aggregated transaction
+// publish aggregated transaction
 func doBondedAggregateTransaction(address *sdk.Address) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
@@ -199,7 +207,7 @@ func doBondedAggregateTransaction(address *sdk.Address) {
 	fmt.Println("bonded aggregated transaction successfully published")
 }
 
-// Examples of handler functions for different channels
+// examples of handler functions for different websocket topics
 
 func BlocksHandler1(blockInfo *sdk.BlockInfo) bool {
 	fmt.Println("called BlockHandler1")
@@ -216,11 +224,23 @@ func BlocksHandler2(blockInfo *sdk.BlockInfo) bool {
 func UnconfirmedAddedHandler1(tr sdk.Transaction) bool {
 	fmt.Println("called UnconfirmedAddedHandler1")
 	//fmt.Println(tr.String())
-	return true
+	return false
 }
 
 func UnconfirmedAddedHandler2(tr sdk.Transaction) bool {
 	fmt.Println("called UnconfirmedAddedHandler2")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func UnconfirmedRemovedHandler1(removed *sdk.UnconfirmedRemoved) bool {
+	fmt.Println("called UnconfirmedRemovedHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func UnconfirmedRemovedHandler2(removed *sdk.UnconfirmedRemoved) bool {
+	fmt.Println("called UnconfirmedRemovedHandler2")
 	//fmt.Println(tr.String())
 	return false
 }
@@ -234,5 +254,53 @@ func ConfirmedAddedHandler1(tr sdk.Transaction) bool {
 func ConfirmedAddedHandler2(tr sdk.Transaction) bool {
 	fmt.Println("called ConfirmedAddedHandler2")
 	//fmt.Println(tr.String())
-	return true
+	return false
+}
+
+func PartialAddedHandler1(tr *sdk.AggregateTransaction) bool {
+	fmt.Println("called PartialAddedHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func PartialAddedHandler2(tr *sdk.AggregateTransaction) bool {
+	fmt.Println("called PartialAddedHandler2")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func PartialRemovedHandler1(i *sdk.PartialRemovedInfo) bool {
+	fmt.Println("called PartialRemovedHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func PartialRemovedHandler2(i *sdk.PartialRemovedInfo) bool {
+	fmt.Println("called PartialRemovedHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func StatusHandler1(s *sdk.StatusInfo) bool {
+	fmt.Println("called StatusHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func StatusHandler2(s *sdk.StatusInfo) bool {
+	fmt.Println("called StatusHandler2")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func CosignatureHandler1(tr *sdk.SignerInfo) bool {
+	fmt.Println("called CosignatureHandler1")
+	//fmt.Println(tr.String())
+	return false
+}
+
+func CosignatureHandler2(tr *sdk.SignerInfo) bool {
+	fmt.Println("called CosignatureHandler2")
+	//fmt.Println(tr.String())
+	return false
 }
