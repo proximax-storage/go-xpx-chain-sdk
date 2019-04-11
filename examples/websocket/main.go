@@ -42,41 +42,41 @@ func main() {
 	wg.Add(1)
 	go wsc.Listen(&wg)
 
-	//if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddConfirmedAddedHandlers(address, ConfirmedAddedHandler1, ConfirmedAddedHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddConfirmedAddedHandlers(address, ConfirmedAddedHandler1, ConfirmedAddedHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddUnconfirmedRemovedHandlers(address, UnconfirmedRemovedHandler1, UnconfirmedRemovedHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddUnconfirmedRemovedHandlers(address, UnconfirmedRemovedHandler1, UnconfirmedRemovedHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddPartialAddedHandlers(address, PartialAddedHandler1, PartialAddedHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddPartialAddedHandlers(address, PartialAddedHandler1, PartialAddedHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddPartialRemovedHandlers(address, PartialRemovedHandler1, PartialRemovedHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddPartialRemovedHandlers(address, PartialRemovedHandler1, PartialRemovedHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddStatusHandlers(address, StatusHandler1, StatusHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddStatusHandlers(address, StatusHandler1, StatusHandler2); err != nil {
+		panic(err)
+	}
 
-	//if err := wsc.AddCosignatureHandlers(address, CosignatureHandler1, CosignatureHandler2); err != nil {
-	//	panic(err)
-	//}
+	if err := wsc.AddCosignatureHandlers(address, CosignatureHandler1, CosignatureHandler2); err != nil {
+		panic(err)
+	}
 
 	time.Sleep(time.Second * 5)
 
-	//doTransferTransaction(address)
+	doTransferTransaction(address)
 
 	doBondedAggregateTransaction(address)
 
