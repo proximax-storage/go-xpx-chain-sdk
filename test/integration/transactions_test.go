@@ -57,55 +57,6 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	fmt.Println("Successful!")
 }
 
-func TestModifyMetadataTransaction(t *testing.T) {
-	fmt.Println(defaultAccount.PublicAccount.Address)
-
-	sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewModifyMetadataAddressTransaction(
-			sdk.NewDeadline(time.Hour),
-			defaultAccount.PublicAccount.Address,
-			[]*sdk.MetadataModification{
-				{
-					sdk.AddMetadata,
-					"jora229",
-					"I Love you",
-				},
-			},
-			networkType)
-	}, defaultAccount)
-
-	sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewModifyMetadataMosaicTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.XpxMosaicId,
-			[]*sdk.MetadataModification{
-				{
-					sdk.AddMetadata,
-					"hello",
-					"hell",
-				},
-			},
-			networkType)
-	}, defaultAccount)
-
-	namespaceId, _ := sdk.NewNamespaceIdFromName("jora")
-	fmt.Println(namespaceId)
-
-	sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewModifyMetadataNamespaceTransaction(
-			sdk.NewDeadline(time.Hour),
-			namespaceId,
-			[]*sdk.MetadataModification{
-				{
-					sdk.AddMetadata,
-					"hello",
-					"world",
-				},
-			},
-			networkType)
-	}, defaultAccount)
-}
-
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
@@ -302,6 +253,125 @@ func TestCompleteAggregateTransactionTransaction(t *testing.T) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx},
+			networkType,
+		)
+	}, defaultAccount)
+}
+
+func TestModifyAddressMetadataTransaction(t *testing.T) {
+	fmt.Println(defaultAccount.PublicAccount.Address)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataAddressTransaction(
+			sdk.NewDeadline(time.Hour),
+			defaultAccount.PublicAccount.Address,
+			[]*sdk.MetadataModification{
+				{
+					sdk.AddMetadata,
+					"jora229",
+					"I Love you",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+
+	time.Sleep(2 * time.Second)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataAddressTransaction(
+			sdk.NewDeadline(time.Hour),
+			defaultAccount.PublicAccount.Address,
+			[]*sdk.MetadataModification{
+				{
+					sdk.RemoveMetadata,
+					"jora229",
+					"",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+}
+
+func TestModifyMosaicMetadataTransaction(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	mosaicDefinitionTx, err := sdk.NewMosaicDefinitionTransaction(
+		sdk.NewDeadline(time.Hour),
+		nonce,
+		defaultAccount.PublicAccount.PublicKey,
+		sdk.NewMosaicProperties(true, true, true, 4, big.NewInt(1)),
+		networkType)
+	assert.Nil(t, err)
+	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	assert.Nil(t, err)
+
+	fmt.Println(mosaicId.String())
+
+	metadataTx, err := sdk.NewModifyMetadataMosaicTransaction(
+		sdk.NewDeadline(time.Hour),
+		mosaicId,
+		[]*sdk.MetadataModification{
+			{
+				sdk.AddMetadata,
+				"hello",
+				"hell",
+			},
+		},
+		networkType)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{mosaicDefinitionTx, metadataTx},
+			networkType,
+		)
+	}, defaultAccount)
+}
+
+func TestModifyNamespaceMetadataTransaction(t *testing.T) {
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	namespaceId, err := sdk.NewNamespaceIdFromName(nameHex)
+	assert.Nil(t, err)
+	fmt.Println(namespaceId)
+
+	registrNamespaceTx, err := sdk.NewRegisterRootNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		nameHex,
+		big.NewInt(10),
+		networkType,
+	)
+	assert.Nil(t, err)
+	registrNamespaceTx.ToAggregate(defaultAccount.PublicAccount)
+
+	modifyMetadataTx, err := sdk.NewModifyMetadataNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		namespaceId,
+		[]*sdk.MetadataModification{
+			{
+				sdk.AddMetadata,
+				"hello",
+				"world",
+			},
+		},
+		networkType,
+	)
+	assert.Nil(t, err)
+	modifyMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{registrNamespaceTx, modifyMetadataTx},
 			networkType,
 		)
 	}, defaultAccount)

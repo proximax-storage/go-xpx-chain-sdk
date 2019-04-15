@@ -65,16 +65,38 @@ func (rcv *MetadataModificationBuffer) MutateKeySize(n byte) bool {
 	return rcv._tab.MutateByteSlot(8, n)
 }
 
-func (rcv *MetadataModificationBuffer) ValueSize() uint16 {
+func (rcv *MetadataModificationBuffer) ValueSize(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *MetadataModificationBuffer) MutateValueSize(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *MetadataModificationBuffer) ValueSizeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *MetadataModificationBuffer) ValueSizeBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *MetadataModificationBuffer) MutateValueSize(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *MetadataModificationBuffer) Key(j int) byte {
@@ -157,8 +179,11 @@ func MetadataModificationBufferAddModificationType(builder *flatbuffers.Builder,
 func MetadataModificationBufferAddKeySize(builder *flatbuffers.Builder, keySize byte) {
 	builder.PrependByteSlot(2, keySize, 0)
 }
-func MetadataModificationBufferAddValueSize(builder *flatbuffers.Builder, valueSize uint16) {
-	builder.PrependUint16Slot(3, valueSize, 0)
+func MetadataModificationBufferAddValueSize(builder *flatbuffers.Builder, valueSize flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(valueSize), 0)
+}
+func MetadataModificationBufferStartValueSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func MetadataModificationBufferAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(key), 0)

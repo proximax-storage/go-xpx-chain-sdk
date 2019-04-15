@@ -2582,8 +2582,20 @@ func metadataModificationArrayToBuffer(builder *flatbuffers.Builder, modificatio
 	allSize := uint32(0)
 	for i, m := range modifications {
 		keySize := len(m.Key)
+
+		if keySize == 0 {
+			return 0, 0, errors.New("key must not empty")
+		}
+
 		pKey := transactions.TransactionBufferCreateByteVector(builder, []byte(m.Key))
 		valueSize := len(m.Value)
+
+		// it is hack, because we can have case when size of the value is zero(in RemoveData modification),
+		// but flattbuffer doesn't store int(0) like 4 bytes, it stores like one byte
+		valueB := make([]byte, 2)
+		binary.LittleEndian.PutUint16(valueB, uint16(valueSize))
+		pValueSize := transactions.TransactionBufferCreateByteVector(builder, valueB)
+
 		pValue := transactions.TransactionBufferCreateByteVector(builder, []byte(m.Value))
 
 		size := uint32(4 + 1 + 1 + 2 + keySize + valueSize)
@@ -2592,10 +2604,11 @@ func metadataModificationArrayToBuffer(builder *flatbuffers.Builder, modificatio
 		transactions.MetadataModificationBufferAddSize(builder, size)
 		transactions.MetadataModificationBufferAddModificationType(builder, uint8(m.Type))
 		transactions.MetadataModificationBufferAddKeySize(builder, uint8(keySize))
+		transactions.MetadataModificationBufferAddValueSize(builder, pValueSize)
 		transactions.MetadataModificationBufferAddKey(builder, pKey)
-		transactions.MetadataModificationBufferAddValueSize(builder, uint16(valueSize))
 		transactions.MetadataModificationBufferAddValue(builder, pValue)
-		msb[i] = transactions.TransactionBufferEnd(builder)
+
+		msb[i] = transactions.MetadataModificationBufferEnd(builder)
 
 		allSize = allSize + size
 	}

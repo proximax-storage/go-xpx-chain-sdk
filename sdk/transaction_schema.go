@@ -37,7 +37,7 @@ func modifyMetadataTransactionSchema() *schema {
 					newScalarAttribute("size", IntSize),
 					newScalarAttribute("modificationType", ByteSize),
 					newScalarAttribute("keySize", ByteSize),
-					newScalarAttribute("valueSize", ShortSize),
+					newArrayAttribute("valueSize", ByteSize),
 					newArrayAttribute("key", ByteSize),
 					newArrayAttribute("value", ByteSize),
 				},
