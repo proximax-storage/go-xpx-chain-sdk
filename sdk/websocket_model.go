@@ -15,20 +15,6 @@ type SignerInfo struct {
 	ParentHash Hash   `json:"parentHash"`
 }
 
-type SubscribeDTO struct {
-	Uid       string `json:"uid"`
-	Subscribe string `json:"subscribe"`
-}
-
-type UnsubscribeDTO struct {
-	Uid         string `json:"uid"`
-	Unsubscribe string `json:"unsubscribe"`
-}
-
-type WsConnectionResponse struct {
-	Uid string `json:"uid"`
-}
-
 type UnconfirmedRemoved struct {
 	Meta *TransactionInfo
 }

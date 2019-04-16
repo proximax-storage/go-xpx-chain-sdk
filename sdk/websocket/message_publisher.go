@@ -1,48 +1,61 @@
 package websocket
 
 import (
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"golang.org/x/net/websocket"
 )
 
-func newMessagePublisher(conn *websocket.Conn) messagePublisher {
+func newMessagePublisher(conn *websocket.Conn) MessagePublisher {
 	return &catapultWebsocketMessagePublisher{
 		conn: conn,
 	}
 }
 
-type messagePublisher interface {
-	PublishSubscribeMessage(uid string, path pathType) error
-	PublishUnsubscribeMessage(uid string, path pathType) error
+type MessagePublisher interface {
+	PublishSubscribeMessage(uid string, path Path) error
+	PublishUnsubscribeMessage(uid string, path Path) error
 }
 
 type catapultWebsocketMessagePublisher struct {
 	conn *websocket.Conn
 }
 
-func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, path pathType) error {
-	dto := &sdk.SubscribeDTO{
+func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, path Path) error {
+	dto := &subscribeDTO{
 		Uid:       uid,
 		Subscribe: string(path),
 	}
 
-	if err := websocket.JSON.Send(p.conn, dto); err != nil {
-		return errors.Wrap(err, "error publishing subscribe message into websocket connection")
+	if err := p.conn.WriteJSON(dto); err != nil {
+		return errors.Wrap(err, "publishing subscribe message into websocket connection")
 	}
 
 	return nil
 }
 
-func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string, path pathType) error {
-	dto := &sdk.UnsubscribeDTO{
+func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string, path Path) error {
+	dto := &unsubscribeDTO{
 		Uid:         uid,
 		Unsubscribe: string(path),
 	}
 
-	if err := websocket.JSON.Send(p.conn, dto); err != nil {
-		return errors.Wrap(err, "error publishing unsubscribe message into websocket connection")
+	if err := p.conn.WriteJSON(dto); err != nil {
+		return errors.Wrap(err, "publishing unsubscribe message into websocket connection")
 	}
 
 	return nil
+}
+
+type subscribeDTO struct {
+	Uid       string `json:"uid"`
+	Subscribe string `json:"subscribe"`
+}
+
+type unsubscribeDTO struct {
+	Uid         string `json:"uid"`
+	Unsubscribe string `json:"unsubscribe"`
+}
+
+type wsConnectionResponse struct {
+	Uid string `json:"uid"`
 }

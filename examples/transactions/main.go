@@ -35,7 +35,7 @@ func main() {
 
 	customerAcc, err := sdk.NewAccountFromPrivateKey(customerPrivateKey, networkType)
 
-	ws, err := websocket.NewCatapultWebSocketClient(wsBaseUrl)
+	ws, err := websocket.NewClient(wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}

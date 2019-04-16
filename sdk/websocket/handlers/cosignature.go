@@ -12,23 +12,23 @@ type Handler interface {
 }
 
 type cosignatureHandler struct {
-	messageProcessor sdk.CosignatureProcessor
-	handlers         subscribers.Cosignature
-	errCh            chan<- error
+	messageMapper sdk.CosignatureMapper
+	handlers      subscribers.Cosignature
+	errCh         chan<- error
 }
 
-func NewCosignatureHandler(messageProcessor sdk.CosignatureProcessor, handlers subscribers.Cosignature, errCh chan<- error) *cosignatureHandler {
+func NewCosignatureHandler(messageMapper sdk.CosignatureMapper, handlers subscribers.Cosignature, errCh chan<- error) *cosignatureHandler {
 	return &cosignatureHandler{
-		messageProcessor: messageProcessor,
-		handlers:         handlers,
-		errCh:            errCh,
+		messageMapper: messageMapper,
+		handlers:      handlers,
+		errCh:         errCh,
 	}
 }
 
 func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
-	res, err := h.messageProcessor.ProcessCosignature(resp)
+	res, err := h.messageMapper.MapCosignature(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message processor error")
+		h.errCh <- errors.Wrap(err, "message mapper error")
 		return true
 	}
 
@@ -41,20 +41,20 @@ func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 	for f := range handlers {
 		wg.Add(1)
-		go func(address *sdk.Address, callFuncPtr *subscribers.CosignatureHandler, errCh chan<- error, wg *sync.WaitGroup) {
+		go func(f *subscribers.CosignatureHandler) {
 			defer wg.Done()
 
-			callFunc := *callFuncPtr
+			callFunc := *f
 			if rm := callFunc(res); !rm {
 				return
 			}
 
-			_, err := h.handlers.RemoveHandlers(address, callFuncPtr)
+			_, err := h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				errCh <- errors.Wrap(err, "error removing handler from storage")
+				h.errCh <- errors.Wrap(err, "removing handler from storage")
 				return
 			}
-		}(address, f, h.errCh, &wg)
+		}(f)
 	}
 
 	wg.Wait()

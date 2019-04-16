@@ -5,67 +5,77 @@
 package websocket
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
-	"golang.org/x/net/websocket"
 	"io"
 	"sync"
 )
 
-type pathType string
+type Path string
 
 const (
-	pathBlock              pathType = "block"
-	pathConfirmedAdded     pathType = "confirmedAdded"
-	pathUnconfirmedAdded   pathType = "unconfirmedAdded"
-	pathUnconfirmedRemoved pathType = "unconfirmedRemoved"
-	pathStatus             pathType = "status"
-	pathPartialAdded       pathType = "partialAdded"
-	pathPartialRemoved     pathType = "partialRemoved"
-	pathCosignature        pathType = "cosignature"
+	pathBlock              Path = "block"
+	pathConfirmedAdded     Path = "confirmedAdded"
+	pathUnconfirmedAdded   Path = "unconfirmedAdded"
+	pathUnconfirmedRemoved Path = "unconfirmedRemoved"
+	pathStatus             Path = "status"
+	pathPartialAdded       Path = "partialAdded"
+	pathPartialRemoved     Path = "partialRemoved"
+	pathCosignature        Path = "cosignature"
 )
 
 var (
 	unsupportedMessageTypeError = errors.New("unsupported message type")
 )
 
-func NewCatapultWebSocketClient(endpoint string) (CatapultWebsocketClient, error) {
-	conn, err := websocket.Dial(endpoint, "tcp", "http://localhost")
+func NewClient(endpoint string) (CatapultClient, error) {
+	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var raw []byte
-	if err := websocket.Message.Receive(conn, &raw); err != nil {
+	var resp *wsConnectionResponse
+	err = conn.ReadJSON(&resp)
+	if err != nil {
 		return nil, err
 	}
 
-	var resp *sdk.WsConnectionResponse
-	if err := json.Unmarshal(raw, &resp); err != nil {
-		return nil, err
-	}
+	topicHandlers := make(topicHandlers)
+	errorsChan := make(chan error, 1000)
+	messagePublisher := newMessagePublisher(conn)
+	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers, errorsChan)
 
 	return &CatapultWebsocketClientImpl{
 		conn: conn,
 		UID:  resp.Uid,
 
-		topicHandlers:    make(map[pathType]topicHandler),
-		messagePublisher: newMessagePublisher(conn),
-		errorsChan:       make(chan error, 1000),
+		blockSubscriber:               subscribers.NewBlock(),
+		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
+		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
+		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
+		partialAddedSubscribers:       subscribers.NewPartialAdded(),
+		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
+		statusSubscribers:             subscribers.NewStatus(),
+		cosignatureSubscribers:        subscribers.NewCosignature(),
+
+		topicHandlers:    topicHandlers,
+		messageRouter:    messageRouter,
+		messagePublisher: messagePublisher,
+		errorsChan:       errorsChan,
 	}, nil
 }
 
-type WebsocketClient interface {
+type Client interface {
 	Listen(wg *sync.WaitGroup)
-	GetErrorsChan() (chan error, error)
+	GetErrorsChan() chan error
 }
 
-type CatapultWebsocketClient interface {
-	WebsocketClient
+type CatapultClient interface {
+	Client
 
 	AddBlockHandlers(handlers ...subscribers.BlockHandler) error
 	AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
@@ -90,37 +100,30 @@ type CatapultWebsocketClientImpl struct {
 	statusSubscribers             subscribers.Status
 	cosignatureSubscribers        subscribers.Cosignature
 
-	topicHandlers map[pathType]topicHandler
-
-	messagePublisher messagePublisher
+	topicHandlers    TopicHandlersStorage
+	messageRouter    Router
+	messagePublisher MessagePublisher
 
 	errorsChan chan error
 }
 
 func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
-	var resp []byte
 	for {
-		err := websocket.Message.Receive(c.conn, &resp)
+		_, resp, err := c.conn.ReadMessage()
 
 		if err == io.EOF {
-			c.errorsChan <- errors.Wrap(err, "error websocket disconnect ")
+			c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
 			wg.Done()
 			return
 		}
 
 		if err != nil {
-			c.errorsChan <- errors.Wrap(err, "error receiving message from websocket")
+			c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
 			wg.Done()
 			return
 		}
 
-		messageInfo, err := c.getMessageInfo(resp)
-		if err != nil {
-			c.errorsChan <- errors.Wrap(err, "error getting address and channel name from websocket message")
-			continue
-		}
-
-		go c.routeMessage(messageInfo, resp)
+		go c.messageRouter.RouteMessage(resp)
 	}
 }
 
@@ -129,26 +132,21 @@ func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.B
 		return nil
 	}
 
-	if c.blockSubscriber == nil {
-		c.blockSubscriber = subscribers.NewBlockSubscriber()
-	}
-
-	if _, ok := c.topicHandlers[pathBlock]; !ok {
-		c.topicHandlers[pathBlock] = topicHandler{
-			Handler: hdlrs.NewBlockHandler(sdk.BlockProcessorFn(sdk.ProcessBlock), c.blockSubscriber, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathBlock) {
+		c.topicHandlers.SetTopicHandler(pathBlock, &TopicHandler{
+			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber, c.errorsChan),
 			Topic:   topicFormatFn(formatBlockTopic),
-		}
+		})
 	}
 
 	if !c.blockSubscriber.HasHandlers() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathBlock); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.blockSubscriber.AddHandlers(handlers...)
-	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+	if err := c.blockSubscriber.AddHandlers(handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -159,26 +157,22 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 		return nil
 	}
 
-	if c.confirmedAddedSubscribers == nil {
-		c.confirmedAddedSubscribers = subscribers.NewConfirmedAdded()
-	}
-
-	if _, ok := c.topicHandlers[pathConfirmedAdded]; !ok {
-		c.topicHandlers[pathConfirmedAdded] = topicHandler{
-			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedProcessor(sdk.MapTransaction), c.confirmedAddedSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathConfirmedAdded) {
+		c.topicHandlers.SetTopicHandler(pathConfirmedAdded, &TopicHandler{
+			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.confirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathConfirmedAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.confirmedAddedSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -189,26 +183,22 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.A
 		return nil
 	}
 
-	if c.unconfirmedAddedSubscribers == nil {
-		c.unconfirmedAddedSubscribers = subscribers.NewUnconfirmedAdded()
-	}
-
-	if _, ok := c.topicHandlers[pathUnconfirmedAdded]; !ok {
-		c.topicHandlers[pathUnconfirmedAdded] = topicHandler{
-			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedProcessor(sdk.MapTransaction), c.unconfirmedAddedSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathUnconfirmedAdded) {
+		c.topicHandlers.SetTopicHandler(pathUnconfirmedAdded, &TopicHandler{
+			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.unconfirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.unconfirmedAddedSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -219,26 +209,22 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk
 		return nil
 	}
 
-	if c.unconfirmedRemovedSubscribers == nil {
-		c.unconfirmedRemovedSubscribers = subscribers.NewUnconfirmedRemoved()
-	}
-
-	if _, ok := c.topicHandlers[pathUnconfirmedRemoved]; !ok {
-		c.topicHandlers[pathUnconfirmedRemoved] = topicHandler{
-			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedProcessorFn(sdk.ProcessUnconfirmedRemoved), c.unconfirmedRemovedSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathUnconfirmedRemoved) {
+		c.topicHandlers.SetTopicHandler(pathUnconfirmedRemoved, &TopicHandler{
+			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.unconfirmedRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.unconfirmedRemovedSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -249,26 +235,22 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 		return nil
 	}
 
-	if c.partialAddedSubscribers == nil {
-		c.partialAddedSubscribers = subscribers.NewPartialAdded()
-	}
-
-	if _, ok := c.topicHandlers[pathPartialAdded]; !ok {
-		c.topicHandlers[pathPartialAdded] = topicHandler{
-			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedProcessor(sdk.MapTransaction), c.partialAddedSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathPartialAdded) {
+		c.topicHandlers.SetTopicHandler(pathPartialAdded, &TopicHandler{
+			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.partialAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathPartialAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.partialAddedSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -279,26 +261,22 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Add
 		return nil
 	}
 
-	if c.partialRemovedSubscribers == nil {
-		c.partialRemovedSubscribers = subscribers.NewPartialRemoved()
-	}
-
-	if _, ok := c.topicHandlers[pathPartialRemoved]; !ok {
-		c.topicHandlers[pathPartialRemoved] = topicHandler{
-			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedProcessorFn(sdk.ProcessPartialRemoved), c.partialRemovedSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathPartialRemoved) {
+		c.topicHandlers.SetTopicHandler(pathPartialRemoved, &TopicHandler{
+			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.partialRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathPartialRemoved, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.partialRemovedSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -309,26 +287,22 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, ha
 		return nil
 	}
 
-	if c.statusSubscribers == nil {
-		c.statusSubscribers = subscribers.NewStatus()
-	}
-
-	if _, ok := c.topicHandlers[pathStatus]; !ok {
-		c.topicHandlers[pathStatus] = topicHandler{
-			Handler: hdlrs.NewStatusHandler(sdk.StatusProcessorFn(sdk.ProcessStatus), c.statusSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathStatus) {
+		c.topicHandlers.SetTopicHandler(pathStatus, &TopicHandler{
+			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.statusSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathStatus, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	err := c.statusSubscribers.AddHandlers(address, handlers...)
 	if err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
@@ -339,78 +313,26 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 		return nil
 	}
 
-	if c.cosignatureSubscribers == nil {
-		c.cosignatureSubscribers = subscribers.NewCosignature()
-	}
-
-	if _, ok := c.topicHandlers[pathCosignature]; !ok {
-		c.topicHandlers[pathCosignature] = topicHandler{
-			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureProcessorFn(sdk.ProcessCosignature), c.cosignatureSubscribers, c.errorsChan),
+	if !c.topicHandlers.HasHandler(pathCosignature) {
+		c.topicHandlers.SetTopicHandler(pathCosignature, &TopicHandler{
+			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers, c.errorsChan),
 			Topic:   topicFormatFn(formatPlainTopic),
-		}
+		})
 	}
 
 	if !c.cosignatureSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathType(fmt.Sprintf("%s/%s", pathCosignature, address.Address))); err != nil {
-			return errors.Wrap(err, "error publishing subscribe message into websocket")
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	if err := c.cosignatureSubscribers.AddHandlers(address, handlers...); err != nil {
-		return errors.Wrap(err, "error adding handlers functions into handlers storage")
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) GetErrorsChan() (chan error, error) {
-	return c.errorsChan, nil
-}
-
-func (c *CatapultWebsocketClientImpl) getMessageInfo(m []byte) (*sdk.WsMessageInfo, error) {
-	var messageInfoDTO sdk.WsMessageInfoDTO
-	if err := json.Unmarshal(m, &messageInfoDTO); err != nil {
-		return nil, errors.Wrap(err, "error unmarshaling message info data")
-	}
-
-	return messageInfoDTO.ToStruct()
-}
-
-func (c *CatapultWebsocketClientImpl) routeMessage(messageInfo *sdk.WsMessageInfo, resp []byte) {
-	handler, ok := c.topicHandlers[pathType(messageInfo.ChannelName)]
-	if !ok {
-		c.errorsChan <- errors.Wrap(unsupportedMessageTypeError, "error getting topic handler from topic handlers storage")
-		return
-	}
-
-	if ok := handler.Handle(messageInfo.Address, resp); !ok {
-		if err := c.messagePublisher.PublishUnsubscribeMessage(c.UID, pathType(handler.Format(messageInfo))); err != nil {
-			c.errorsChan <- errors.Wrap(err, "error unsubscribing from topic")
-		}
-	}
-
-	return
-}
-
-type Topic interface {
-	Format(info *sdk.WsMessageInfo) pathType
-}
-
-type topicFormatFn func(info *sdk.WsMessageInfo) pathType
-
-func (ref topicFormatFn) Format(info *sdk.WsMessageInfo) pathType {
-	return ref(info)
-}
-
-func formatPlainTopic(info *sdk.WsMessageInfo) pathType {
-	return pathType(fmt.Sprintf("%s/%s", pathCosignature, info.Address.Address))
-}
-
-func formatBlockTopic(_ *sdk.WsMessageInfo) pathType {
-	return pathBlock
-}
-
-type topicHandler struct {
-	Topic
-	hdlrs.Handler
+func (c *CatapultWebsocketClientImpl) GetErrorsChan() chan error {
+	return c.errorsChan
 }

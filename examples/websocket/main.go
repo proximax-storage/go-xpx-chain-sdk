@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := websocket.NewCatapultWebSocketClient(wsBaseUrl)
+	wsc, err := websocket.NewClient(wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -41,6 +41,8 @@ func main() {
 	//Starting listening messages from websocket
 	wg.Add(1)
 	go wsc.Listen(&wg)
+
+	// Register handlers functions for needed topics
 
 	if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
 		panic(err)
@@ -76,14 +78,14 @@ func main() {
 
 	time.Sleep(time.Second * 5)
 
+	//Publish test transactions
 	doTransferTransaction(address)
-
 	doBondedAggregateTransaction(address)
 
 	wg.Wait()
 }
 
-// publish transfer transaction
+// publish test transfer transaction
 func doTransferTransaction(address *sdk.Address) {
 
 	fmt.Println("start publishing transfer transaction")
@@ -123,7 +125,7 @@ func doTransferTransaction(address *sdk.Address) {
 	fmt.Println("transfer transaction successfully published")
 }
 
-// publish aggregated transaction
+// publish test aggregated transaction
 func doBondedAggregateTransaction(address *sdk.Address) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
@@ -207,7 +209,12 @@ func doBondedAggregateTransaction(address *sdk.Address) {
 	fmt.Println("bonded aggregated transaction successfully published")
 }
 
-// examples of handler functions for different websocket topics
+// Examples of handler functions for different websocket topics.
+//
+// If handler function will return true, this handler will be removed from handler storage for topic and
+// won't be called nex time for topic message.
+// If handler will return true, it will be called for next topic message.
+// If all handlers for the topic will be removed, client will unsubscribe from topic on the websocket server
 
 func BlocksHandler1(blockInfo *sdk.BlockInfo) bool {
 	fmt.Println("called BlockHandler1")
@@ -218,7 +225,7 @@ func BlocksHandler1(blockInfo *sdk.BlockInfo) bool {
 func BlocksHandler2(blockInfo *sdk.BlockInfo) bool {
 	fmt.Println("called BlockHandler2")
 	//fmt.Println(blockInfo.String())
-	return true
+	return false
 }
 
 func UnconfirmedAddedHandler1(tr sdk.Transaction) bool {

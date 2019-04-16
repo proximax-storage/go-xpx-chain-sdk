@@ -7,24 +7,24 @@ import (
 	"sync"
 )
 
-func NewStatusHandler(messageProcessor sdk.StatusProcessor, handlers subscribers.Status, errCh chan<- error) *statusHandler {
+func NewStatusHandler(messageMapper sdk.StatusMapper, handlers subscribers.Status, errCh chan<- error) *statusHandler {
 	return &statusHandler{
-		messageProcessor: messageProcessor,
-		handlers:         handlers,
-		errCh:            errCh,
+		messageMapper: messageMapper,
+		handlers:      handlers,
+		errCh:         errCh,
 	}
 }
 
 type statusHandler struct {
-	messageProcessor sdk.StatusProcessor
-	handlers         subscribers.Status
-	errCh            chan<- error
+	messageMapper sdk.StatusMapper
+	handlers      subscribers.Status
+	errCh         chan<- error
 }
 
 func (h *statusHandler) Handle(address *sdk.Address, resp []byte) bool {
-	res, err := h.messageProcessor.ProcessStatus(resp)
+	res, err := h.messageMapper.MapStatus(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message processor error")
+		h.errCh <- errors.Wrap(err, "message mapper error")
 		return true
 	}
 
@@ -37,23 +37,23 @@ func (h *statusHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 	for f := range handlers {
 		wg.Add(1)
-		go func(callFuncPtr *subscribers.StatusHandler, errCh chan<- error, wg *sync.WaitGroup) {
+		go func(f *subscribers.StatusHandler) {
 			defer wg.Done()
 
-			callFunc := *callFuncPtr
+			callFunc := *f
 
 			if rm := callFunc(res); !rm {
 				return
 			}
 
-			_, err = h.handlers.RemoveHandlers(address, callFuncPtr)
+			_, err = h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				errCh <- errors.Wrap(err, "error removing handler from storage")
+				h.errCh <- errors.Wrap(err, "removing handler from storage")
 				return
 			}
 
 			return
-		}(f, h.errCh, &wg)
+		}(f)
 	}
 
 	wg.Wait()

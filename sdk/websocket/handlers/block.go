@@ -7,24 +7,24 @@ import (
 	"sync"
 )
 
-func NewBlockHandler(messageProcessor sdk.BlockProcessor, handlers subscribers.Block, errCh chan<- error) *blockHandler {
+func NewBlockHandler(messageMapper sdk.BlockMapper, handlers subscribers.Block, errCh chan<- error) *blockHandler {
 	return &blockHandler{
-		messageProcessor: messageProcessor,
-		handlers:         handlers,
-		errCh:            errCh,
+		messageMapper: messageMapper,
+		handlers:      handlers,
+		errCh:         errCh,
 	}
 }
 
 type blockHandler struct {
-	messageProcessor sdk.BlockProcessor
-	handlers         subscribers.Block
-	errCh            chan<- error
+	messageMapper sdk.BlockMapper
+	handlers      subscribers.Block
+	errCh         chan<- error
 }
 
 func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
-	res, err := h.messageProcessor.ProcessBlock(resp)
+	res, err := h.messageMapper.MapBlock(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message processor error")
+		h.errCh <- errors.Wrap(err, "message Mapper error")
 		return true
 	}
 
@@ -37,23 +37,23 @@ func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 	for f := range handlers {
 		wg.Add(1)
-		go func(callFuncPtr *subscribers.BlockHandler, errCh chan<- error, wg *sync.WaitGroup) {
+		go func(f *subscribers.BlockHandler) {
 			defer wg.Done()
 
-			callFunc := *callFuncPtr
+			callFunc := *f
 
 			if rm := callFunc(res); !rm {
 				return
 			}
 
-			_, err = h.handlers.RemoveHandlers(callFuncPtr)
+			_, err = h.handlers.RemoveHandlers(f)
 			if err != nil {
-				errCh <- errors.Wrap(err, "error removing handler from storage")
+				h.errCh <- errors.Wrap(err, "removing handler from storage")
 				return
 			}
 
 			return
-		}(f, h.errCh, &wg)
+		}(f)
 	}
 
 	wg.Wait()

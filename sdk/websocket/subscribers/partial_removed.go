@@ -8,27 +8,12 @@ import (
 
 type (
 	PartialRemovedHandler func(*sdk.PartialRemovedInfo) bool
-
-	partialRemovedHandlers        map[*PartialRemovedHandler]struct{}
-	partialRemovedHandlersStorage struct {
-		sync.RWMutex
-		data partialRemovedHandlers
-	}
-
-	partialRemovedSubscribers        map[string]*partialRemovedHandlersStorage
-	partialRemovedSubscribersStorage struct {
-		sync.RWMutex
-		data partialRemovedSubscribers
-	}
 )
 
 func NewPartialRemoved() PartialRemoved {
-	subscribers := &partialRemovedSubscribersStorage{
-		data: make(partialRemovedSubscribers),
-	}
 
 	return &partialRemovedImpl{
-		subscribers: subscribers,
+		subscribers: make(map[string]map[*PartialRemovedHandler]struct{}),
 	}
 }
 
@@ -36,11 +21,12 @@ type PartialRemoved interface {
 	AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
 	RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) partialRemovedHandlers
+	GetHandlers(address *sdk.Address) map[*PartialRemovedHandler]struct{}
 }
 
 type partialRemovedImpl struct {
-	subscribers *partialRemovedSubscribersStorage
+	sync.RWMutex
+	subscribers map[string]map[*PartialRemovedHandler]struct{}
 }
 
 func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error {
@@ -48,20 +34,15 @@ func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...Parti
 		return nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if _, ok := e.subscribers.data[address.Address]; !ok {
-		e.subscribers.data[address.Address] = &partialRemovedHandlersStorage{
-			data: make(partialRemovedHandlers),
-		}
+	if _, ok := e.subscribers[address.Address]; !ok {
+		e.subscribers[address.Address] = make(map[*PartialRemovedHandler]struct{})
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		e.subscribers.data[address.Address].data[&handlers[i]] = struct{}{}
+		e.subscribers[address.Address][&handlers[i]] = struct{}{}
 	}
 
 	return nil
@@ -72,21 +53,18 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 		return false, nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if external, ok := e.subscribers.data[address.Address]; !ok || len(external.data) == 0 {
+	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
 		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers.data[address.Address].data, handlers[i])
+		delete(e.subscribers[address.Address], handlers[i])
 	}
 
-	if len(e.subscribers.data[address.Address].data) > 0 {
+	if len(e.subscribers[address.Address]) > 0 {
 		return false, nil
 	}
 
@@ -94,24 +72,23 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 }
 
 func (e *partialRemovedImpl) HasHandlers(address *sdk.Address) bool {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
+	e.RLock()
+	defer e.RUnlock()
 
-	_, ok := e.subscribers.data[address.Address]
-	return ok
-}
-
-func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) partialRemovedHandlers {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
-
-	e.subscribers.data[address.Address].RLock()
-	defer e.subscribers.data[address.Address].RUnlock()
-
-	h, ok := e.subscribers.data[address.Address]
-	if !ok {
-		return nil
+	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
+		return true
 	}
 
-	return h.data
+	return false
+}
+
+func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) map[*PartialRemovedHandler]struct{} {
+	e.RLock()
+	defer e.RUnlock()
+
+	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+		return res
+	}
+
+	return nil
 }

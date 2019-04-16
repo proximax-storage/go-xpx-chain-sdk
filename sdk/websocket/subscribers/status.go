@@ -8,27 +8,11 @@ import (
 
 type (
 	StatusHandler func(*sdk.StatusInfo) bool
-
-	statusHandlers        map[*StatusHandler]struct{}
-	statusHandlersStorage struct {
-		sync.RWMutex
-		data statusHandlers
-	}
-
-	statusSubscribers        map[string]*statusHandlersStorage
-	statusSubscribersStorage struct {
-		sync.RWMutex
-		data statusSubscribers
-	}
 )
 
 func NewStatus() Status {
-	subscribers := &statusSubscribersStorage{
-		data: make(statusSubscribers),
-	}
-
 	return &statusImpl{
-		subscribers: subscribers,
+		subscribers: make(map[string]map[*StatusHandler]struct{}),
 	}
 }
 
@@ -36,11 +20,12 @@ type Status interface {
 	AddHandlers(address *sdk.Address, handlers ...StatusHandler) error
 	RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) statusHandlers
+	GetHandlers(address *sdk.Address) map[*StatusHandler]struct{}
 }
 
 type statusImpl struct {
-	subscribers *statusSubscribersStorage
+	sync.RWMutex
+	subscribers map[string]map[*StatusHandler]struct{}
 }
 
 func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler) error {
@@ -48,20 +33,15 @@ func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler
 		return nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if _, ok := e.subscribers.data[address.Address]; !ok {
-		e.subscribers.data[address.Address] = &statusHandlersStorage{
-			data: make(statusHandlers),
-		}
+	if _, ok := e.subscribers[address.Address]; !ok {
+		e.subscribers[address.Address] = make(map[*StatusHandler]struct{})
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		e.subscribers.data[address.Address].data[&handlers[i]] = struct{}{}
+		e.subscribers[address.Address][&handlers[i]] = struct{}{}
 	}
 
 	return nil
@@ -72,21 +52,18 @@ func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHan
 		return false, nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if external, ok := e.subscribers.data[address.Address]; !ok || len(external.data) == 0 {
+	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
 		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers.data[address.Address].data, handlers[i])
+		delete(e.subscribers[address.Address], handlers[i])
 	}
 
-	if len(e.subscribers.data[address.Address].data) > 0 {
+	if len(e.subscribers[address.Address]) > 0 {
 		return false, nil
 	}
 
@@ -94,24 +71,23 @@ func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHan
 }
 
 func (e *statusImpl) HasHandlers(address *sdk.Address) bool {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
+	e.RLock()
+	defer e.RUnlock()
 
-	_, ok := e.subscribers.data[address.Address]
-	return ok
-}
-
-func (e *statusImpl) GetHandlers(address *sdk.Address) statusHandlers {
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
-
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
-	h, ok := e.subscribers.data[address.Address]
-	if !ok {
-		return nil
+	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
+		return true
 	}
 
-	return h.data
+	return false
+}
+
+func (e *statusImpl) GetHandlers(address *sdk.Address) map[*StatusHandler]struct{} {
+	e.Lock()
+	defer e.Unlock()
+
+	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+		return res
+	}
+
+	return nil
 }

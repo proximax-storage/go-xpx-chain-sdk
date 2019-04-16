@@ -8,27 +8,12 @@ import (
 
 type (
 	CosignatureHandler func(*sdk.SignerInfo) bool
-
-	cosignatureHandlers        map[*CosignatureHandler]struct{}
-	cosignatureHandlersStorage struct {
-		sync.RWMutex
-		data cosignatureHandlers
-	}
-
-	cosignatureSubscribers        map[string]*cosignatureHandlersStorage
-	cosignatureSubscribersStorage struct {
-		sync.RWMutex
-		data cosignatureSubscribers
-	}
 )
 
 func NewCosignature() Cosignature {
-	subscribers := &cosignatureSubscribersStorage{
-		data: make(cosignatureSubscribers),
-	}
 
 	return &cosignatureImpl{
-		subscribers: subscribers,
+		subscribers: make(map[string]map[*CosignatureHandler]struct{}),
 	}
 }
 
@@ -36,11 +21,12 @@ type Cosignature interface {
 	AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error
 	RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) cosignatureHandlers
+	GetHandlers(address *sdk.Address) map[*CosignatureHandler]struct{}
 }
 
 type cosignatureImpl struct {
-	subscribers *cosignatureSubscribersStorage
+	sync.RWMutex
+	subscribers map[string]map[*CosignatureHandler]struct{}
 }
 
 func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error {
@@ -48,20 +34,15 @@ func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...Cosignat
 		return nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if _, ok := e.subscribers.data[address.Address]; !ok {
-		e.subscribers.data[address.Address] = &cosignatureHandlersStorage{
-			data: make(cosignatureHandlers),
-		}
+	if _, ok := e.subscribers[address.Address]; !ok {
+		e.subscribers[address.Address] = make(map[*CosignatureHandler]struct{})
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		e.subscribers.data[address.Address].data[&handlers[i]] = struct{}{}
+		e.subscribers[address.Address][&handlers[i]] = struct{}{}
 	}
 
 	return nil
@@ -72,21 +53,18 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 		return false, nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if external, ok := e.subscribers.data[address.Address]; !ok || len(external.data) == 0 {
+	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
 		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers.data[address.Address].data, handlers[i])
+		delete(e.subscribers[address.Address], handlers[i])
 	}
 
-	if len(e.subscribers.data[address.Address].data) > 0 {
+	if len(e.subscribers[address.Address]) > 0 {
 		return false, nil
 	}
 
@@ -94,24 +72,23 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 }
 
 func (e *cosignatureImpl) HasHandlers(address *sdk.Address) bool {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
+	e.RLock()
+	defer e.RUnlock()
 
-	_, ok := e.subscribers.data[address.Address]
-	return ok
-}
-
-func (e *cosignatureImpl) GetHandlers(address *sdk.Address) cosignatureHandlers {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
-
-	e.subscribers.data[address.Address].RLock()
-	defer e.subscribers.data[address.Address].RUnlock()
-
-	h, ok := e.subscribers.data[address.Address]
-	if !ok {
-		return nil
+	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
+		return true
 	}
 
-	return h.data
+	return false
+}
+
+func (e *cosignatureImpl) GetHandlers(address *sdk.Address) map[*CosignatureHandler]struct{} {
+	e.RLock()
+	defer e.RUnlock()
+
+	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+		return res
+	}
+
+	return nil
 }

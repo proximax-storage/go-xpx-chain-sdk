@@ -8,28 +8,11 @@ import (
 
 type (
 	ConfirmedAddedHandler func(sdk.Transaction) bool
-
-	ConfirmedAddedHandlers        map[*ConfirmedAddedHandler]struct{}
-	confirmedAddedHandlersStorage struct {
-		sync.RWMutex
-		data ConfirmedAddedHandlers
-	}
-
-	confirmedAddedSubscribers        map[string]*confirmedAddedHandlersStorage
-	confirmedAddedSubscribersStorage struct {
-		sync.RWMutex
-		data confirmedAddedSubscribers
-	}
 )
 
 func NewConfirmedAdded() ConfirmedAdded {
-
-	subscribers := &confirmedAddedSubscribersStorage{
-		data: make(map[string]*confirmedAddedHandlersStorage),
-	}
-
 	return &confirmedAddedImpl{
-		subscribers: subscribers,
+		subscribers: make(map[string]map[*ConfirmedAddedHandler]struct{}),
 	}
 }
 
@@ -37,11 +20,12 @@ type ConfirmedAdded interface {
 	AddHandlers(address *sdk.Address, handlers ...ConfirmedAddedHandler) error
 	RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) ConfirmedAddedHandlers
+	GetHandlers(address *sdk.Address) map[*ConfirmedAddedHandler]struct{}
 }
 
 type confirmedAddedImpl struct {
-	subscribers *confirmedAddedSubscribersStorage
+	sync.RWMutex
+	subscribers map[string]map[*ConfirmedAddedHandler]struct{}
 }
 
 func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...ConfirmedAddedHandler) error {
@@ -49,20 +33,15 @@ func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...Confi
 		return nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if _, ok := e.subscribers.data[address.Address]; !ok {
-		e.subscribers.data[address.Address] = &confirmedAddedHandlersStorage{
-			data: make(ConfirmedAddedHandlers),
-		}
+	if _, ok := e.subscribers[address.Address]; !ok {
+		e.subscribers[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		e.subscribers.data[address.Address].data[&handlers[i]] = struct{}{}
+		e.subscribers[address.Address][&handlers[i]] = struct{}{}
 	}
 
 	return nil
@@ -73,21 +52,18 @@ func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*C
 		return false, nil
 	}
 
-	e.subscribers.Lock()
-	defer e.subscribers.Unlock()
+	e.Lock()
+	defer e.Unlock()
 
-	if external, ok := e.subscribers.data[address.Address]; !ok || len(external.data) == 0 {
+	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
 		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
 	}
 
-	e.subscribers.data[address.Address].Lock()
-	defer e.subscribers.data[address.Address].Unlock()
-
 	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers.data[address.Address].data, handlers[i])
+		delete(e.subscribers[address.Address], handlers[i])
 	}
 
-	if len(e.subscribers.data[address.Address].data) > 0 {
+	if len(e.subscribers[address.Address]) > 0 {
 		return false, nil
 	}
 
@@ -95,24 +71,23 @@ func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*C
 }
 
 func (e *confirmedAddedImpl) HasHandlers(address *sdk.Address) bool {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
+	e.RLock()
+	defer e.RUnlock()
 
-	_, ok := e.subscribers.data[address.Address]
-	return ok
-}
-
-func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) ConfirmedAddedHandlers {
-	e.subscribers.RLock()
-	defer e.subscribers.RUnlock()
-
-	e.subscribers.data[address.Address].RLock()
-	defer e.subscribers.data[address.Address].RUnlock()
-
-	h, ok := e.subscribers.data[address.Address]
-	if !ok {
-		return nil
+	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
+		return true
 	}
 
-	return h.data
+	return false
+}
+
+func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) map[*ConfirmedAddedHandler]struct{} {
+	e.RLock()
+	defer e.RUnlock()
+
+	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+		return res
+	}
+
+	return nil
 }
