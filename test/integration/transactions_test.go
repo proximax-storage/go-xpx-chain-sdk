@@ -91,6 +91,7 @@ func TestModifyMultisigTransaction(t *testing.T) {
 	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	multisigAccount, err := sdk.NewAccount(sdk.MijinTest)
+	fmt.Println(multisigAccount)
 
 	sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMultisigAccountTransaction(
