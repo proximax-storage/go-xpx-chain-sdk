@@ -74,6 +74,7 @@ type Client struct {
 	Transaction *TransactionService
 	Account     *AccountService
 	Contract    *ContractService
+	Metadata    *MetadataService
 }
 
 type service struct {
@@ -96,6 +97,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Transaction = (*TransactionService)(&c.common)
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
+	c.Metadata = (*MetadataService)(&c.common)
 
 	return c
 }
