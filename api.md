@@ -1,9 +1,3 @@
-# sdk
---
-    import "github.com/go-xpx-catapult-sdk/sdk"
-
-Package sdk provides a client library for the Catapult REST API.
-
 ## Usage
 
 ```go
