@@ -342,6 +342,302 @@ func (dto *aggregateTransactionDTO) toStruct() (*AggregateTransaction, error) {
 	}, nil
 }
 
+// ModifyMetadataTransaction
+type ModifyMetadataTransaction struct {
+	AbstractTransaction
+	MetadataType  MetadataType
+	Modifications []*MetadataModification
+}
+
+func (tx *ModifyMetadataTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"MetadataType": %s,
+			"Modifications": %s 
+		`,
+		tx.AbstractTransaction.String(),
+		tx.MetadataType.String(),
+		tx.Modifications,
+	)
+}
+
+func (tx *ModifyMetadataTransaction) generateBytes(builder *flatbuffers.Builder, metadataV flatbuffers.UOffsetT, sizeOfMetadata uint32) ([]byte, error) {
+
+	mV, sizeOfModifications, err := metadataModificationArrayToBuffer(builder, tx.Modifications)
+	if err != nil {
+		return nil, err
+	}
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.ModifyMetadataTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, int(120+1+sizeOfMetadata+sizeOfModifications))
+
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.ModifyMetadataTransactionBufferAddMetadataType(builder, uint8(tx.MetadataType))
+	transactions.ModifyMetadataTransactionBufferAddMetadataId(builder, metadataV)
+	transactions.ModifyMetadataTransactionBufferAddModifications(builder, mV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return modifyMetadataTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *ModifyMetadataTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+type modifyMetadataTransactionDTO struct {
+	abstractTransactionDTO
+	MetadataType  MetadataType               `json:"metadataType"`
+	Modifications []*metadataModificationDTO `json:"modifications"`
+}
+
+func (dto *modifyMetadataTransactionDTO) toStruct(tInfo *TransactionInfo) (*ModifyMetadataTransaction, error) {
+	atx, err := dto.abstractTransactionDTO.toStruct(tInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	ms, err := metadataDTOArrayToStruct(dto.Modifications, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ModifyMetadataTransaction{
+		*atx,
+		dto.MetadataType,
+		ms,
+	}, nil
+}
+
+// ModifyMetadataAddressTransaction
+type ModifyMetadataAddressTransaction struct {
+	ModifyMetadataTransaction
+	Address *Address
+}
+
+func NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataAddressTransaction, error) {
+	if len(modifications) == 0 {
+		return nil, errors.New("modifications must not empty")
+	}
+
+	mmatx := ModifyMetadataAddressTransaction{
+		ModifyMetadataTransaction: ModifyMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     MetadataAddressVersion,
+				Deadline:    deadline,
+				Type:        MetadataAddress,
+				NetworkType: networkType,
+			},
+			MetadataType:  MetadataAddressType,
+			Modifications: modifications,
+		},
+		Address: address,
+	}
+
+	return &mmatx, nil
+}
+
+func (tx *ModifyMetadataAddressTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"%s,
+			"Address": %s,
+		`,
+		tx.ModifyMetadataTransaction.String(),
+		tx.Address,
+	)
+}
+
+func (tx *ModifyMetadataAddressTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	a, err := base32.StdEncoding.DecodeString(tx.Address.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	aV := transactions.TransactionBufferCreateByteVector(builder, a)
+
+	return tx.ModifyMetadataTransaction.generateBytes(builder, aV, 25)
+}
+
+type modifyMetadataAddressTransactionDTO struct {
+	Tx struct {
+		modifyMetadataTransactionDTO
+		Address string `json:"metadataId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *modifyMetadataAddressTransactionDTO) toStruct() (*ModifyMetadataAddressTransaction, error) {
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ModifyMetadataAddressTransaction{
+		*atx,
+		a,
+	}, nil
+}
+
+// ModifyMetadataMosaicTransaction
+type ModifyMetadataMosaicTransaction struct {
+	ModifyMetadataTransaction
+	MosaicId *MosaicId
+}
+
+func NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataMosaicTransaction, error) {
+	if len(modifications) == 0 {
+		return nil, errors.New("modifications must not empty")
+	}
+
+	mmatx := ModifyMetadataMosaicTransaction{
+		ModifyMetadataTransaction: ModifyMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     MetadataMosaicVersion,
+				Deadline:    deadline,
+				Type:        MetadataMosaic,
+				NetworkType: networkType,
+			},
+			MetadataType:  MetadataMosaicType,
+			Modifications: modifications,
+		},
+		MosaicId: mosaicId,
+	}
+
+	return &mmatx, nil
+}
+
+func (tx *ModifyMetadataMosaicTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"%s,
+			"MosaicId": %s,
+		`,
+		tx.ModifyMetadataTransaction.String(),
+		tx.MosaicId.String(),
+	)
+}
+
+func (tx *ModifyMetadataMosaicTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	mosaicB := make([]byte, 8)
+	binary.LittleEndian.PutUint64(mosaicB, mosaicIdToBigInt(tx.MosaicId).Uint64())
+	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
+
+	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
+}
+
+type modifyMetadataMosaicTransactionDTO struct {
+	Tx struct {
+		modifyMetadataTransactionDTO
+		MosaicId *uint64DTO `json:"metadataId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *modifyMetadataMosaicTransactionDTO) toStruct() (*ModifyMetadataMosaicTransaction, error) {
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := NewMosaicId(dto.Tx.MosaicId.toBigInt())
+	if err != nil {
+		return nil, err
+	}
+
+	return &ModifyMetadataMosaicTransaction{
+		*atx,
+		mosaicId,
+	}, nil
+}
+
+// ModifyMetadataNamespaceTransaction
+type ModifyMetadataNamespaceTransaction struct {
+	ModifyMetadataTransaction
+	NamespaceId *NamespaceId
+}
+
+func NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataNamespaceTransaction, error) {
+	if len(modifications) == 0 {
+		return nil, errors.New("modifications must not empty")
+	}
+
+	mmatx := ModifyMetadataNamespaceTransaction{
+		ModifyMetadataTransaction: ModifyMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     MetadataNamespaceVersion,
+				Deadline:    deadline,
+				Type:        MetadataNamespace,
+				NetworkType: networkType,
+			},
+			MetadataType:  MetadataNamespaceType,
+			Modifications: modifications,
+		},
+		NamespaceId: namespaceId,
+	}
+
+	return &mmatx, nil
+}
+
+func (tx *ModifyMetadataNamespaceTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"%s,
+			"NamespaceId": %s,
+		`,
+		tx.ModifyMetadataTransaction.String(),
+		tx.NamespaceId.String(),
+	)
+}
+
+func (tx *ModifyMetadataNamespaceTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	mosaicB := make([]byte, 8)
+	binary.LittleEndian.PutUint64(mosaicB, namespaceIdToBigInt(tx.NamespaceId).Uint64())
+	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
+
+	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
+}
+
+type modifyMetadataNamespaceTransactionDTO struct {
+	Tx struct {
+		modifyMetadataTransactionDTO
+		NamespaceId *uint64DTO `json:"metadataId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *modifyMetadataNamespaceTransactionDTO) toStruct() (*ModifyMetadataNamespaceTransaction, error) {
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	namespaceId, err := NewNamespaceId(dto.Tx.NamespaceId.toBigInt())
+	if err != nil {
+		return nil, err
+	}
+
+	return &ModifyMetadataNamespaceTransaction{
+		*atx,
+		namespaceId,
+	}, nil
+}
+
 // MosaicDefinitionTransaction
 type MosaicDefinitionTransaction struct {
 	AbstractTransaction
@@ -1597,6 +1893,40 @@ func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType)
 	}, nil
 }
 
+// MetadataModification
+type MetadataModification struct {
+	Type  MetadataModificationType
+	Key   string
+	Value string
+}
+
+func (m *MetadataModification) String() string {
+	return fmt.Sprintf(
+		`
+			"Type"	: %s,
+			"Key" 	: %s,
+			"Value" : %s
+		`,
+		m.Type.String(),
+		m.Key,
+		m.Value,
+	)
+}
+
+type metadataModificationDTO struct {
+	Type  MetadataModificationType `json:"modificationType"`
+	Key   string                   `json:"key"`
+	Value string                   `json:"value"`
+}
+
+func (dto *metadataModificationDTO) toStruct(networkType NetworkType) (*MetadataModification, error) {
+	return &MetadataModification{
+		dto.Type,
+		dto.Key,
+		dto.Value,
+	}, nil
+}
+
 type mosaicDefinitonTransactionPropertiesDTO []struct {
 	Key   int
 	Value uint64DTO
@@ -1732,6 +2062,9 @@ type transactionTypeStruct struct {
 var transactionTypes = []transactionTypeStruct{
 	{AggregateCompleted, 16705, 0x4141},
 	{AggregateBonded, 16961, 0x4241},
+	{MetadataAddress, 16701, 0x413d},
+	{MetadataMosaic, 16957, 0x423d},
+	{MetadataNamespace, 17213, 0x433d},
 	{MosaicDefinition, 16717, 0x414d},
 	{MosaicSupplyChange, 16973, 0x424d},
 	{ModifyMultisig, 16725, 0x4155},
@@ -1749,6 +2082,9 @@ type TransactionType uint16
 const (
 	AggregateCompleted TransactionType = iota
 	AggregateBonded
+	MetadataAddress
+	MetadataMosaic
+	MetadataNamespace
 	MosaicDefinition
 	MosaicSupplyChange
 	ModifyMultisig
@@ -1766,6 +2102,9 @@ type TransactionVersion uint8
 const (
 	AggregateCompletedVersion TransactionVersion = 2
 	AggregateBondedVersion    TransactionVersion = 2
+	MetadataAddressVersion    TransactionVersion = 1
+	MetadataMosaicVersion     TransactionVersion = 1
+	MetadataNamespaceVersion  TransactionVersion = 1
 	MosaicDefinitionVersion   TransactionVersion = 3
 	MosaicSupplyChangeVersion TransactionVersion = 2
 	ModifyMultisigVersion     TransactionVersion = 3
@@ -1801,6 +2140,30 @@ func (t MultisigCosignatoryModificationType) String() string {
 const (
 	Add MultisigCosignatoryModificationType = iota
 	Remove
+)
+
+type MetadataModificationType uint8
+
+func (t MetadataModificationType) String() string {
+	return fmt.Sprintf("%d", t)
+}
+
+const (
+	AddMetadata MetadataModificationType = iota
+	RemoveMetadata
+)
+
+type MetadataType uint8
+
+func (t MetadataType) String() string {
+	return fmt.Sprintf("%d", t)
+}
+
+const (
+	MetadataNone MetadataType = iota
+	MetadataAddressType
+	MetadataMosaicType
+	MetadataNamespaceType
 )
 
 type Hash string
@@ -1886,6 +2249,48 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		return mapAggregateTransaction(b)
 	case AggregateCompleted:
 		return mapAggregateTransaction(b)
+	case MetadataAddress:
+		dto := modifyMetadataAddressTransactionDTO{}
+
+		err := json.Unmarshal(b.Bytes(), &dto)
+		if err != nil {
+			return nil, err
+		}
+
+		tx, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		return tx, nil
+	case MetadataMosaic:
+		dto := modifyMetadataMosaicTransactionDTO{}
+
+		err := json.Unmarshal(b.Bytes(), &dto)
+		if err != nil {
+			return nil, err
+		}
+
+		tx, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		return tx, nil
+	case MetadataNamespace:
+		dto := modifyMetadataNamespaceTransactionDTO{}
+
+		err := json.Unmarshal(b.Bytes(), &dto)
+		if err != nil {
+			return nil, err
+		}
+
+		tx, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		return tx, nil
 	case MosaicDefinition:
 		dto := mosaicDefinitionTransactionDTO{}
 
@@ -2173,11 +2578,64 @@ func cosignatoryModificationArrayToBuffer(builder *flatbuffers.Builder, modifica
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
 }
 
+func metadataModificationArrayToBuffer(builder *flatbuffers.Builder, modifications []*MetadataModification) (flatbuffers.UOffsetT, uint32, error) {
+	msb := make([]flatbuffers.UOffsetT, len(modifications))
+	allSize := uint32(0)
+	for i, m := range modifications {
+		keySize := len(m.Key)
+
+		if keySize == 0 {
+			return 0, 0, errors.New("key must not empty")
+		}
+
+		pKey := transactions.TransactionBufferCreateByteVector(builder, []byte(m.Key))
+		valueSize := len(m.Value)
+
+		// it is hack, because we can have case when size of the value is zero(in RemoveData modification),
+		// but flattbuffer doesn't store int(0) like 4 bytes, it stores like one byte
+		valueB := make([]byte, 2)
+		binary.LittleEndian.PutUint16(valueB, uint16(valueSize))
+		pValueSize := transactions.TransactionBufferCreateByteVector(builder, valueB)
+
+		pValue := transactions.TransactionBufferCreateByteVector(builder, []byte(m.Value))
+
+		size := uint32(4 + 1 + 1 + 2 + keySize + valueSize)
+
+		transactions.MetadataModificationBufferStart(builder)
+		transactions.MetadataModificationBufferAddSize(builder, size)
+		transactions.MetadataModificationBufferAddModificationType(builder, uint8(m.Type))
+		transactions.MetadataModificationBufferAddKeySize(builder, uint8(keySize))
+		transactions.MetadataModificationBufferAddValueSize(builder, pValueSize)
+		transactions.MetadataModificationBufferAddKey(builder, pKey)
+		transactions.MetadataModificationBufferAddValue(builder, pValue)
+
+		msb[i] = transactions.MetadataModificationBufferEnd(builder)
+
+		allSize = allSize + size
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), allSize, nil
+}
+
 func stringToBuffer(builder *flatbuffers.Builder, hash string) flatbuffers.UOffsetT {
 	b := utils.MustHexDecodeString(hash)
 	pV := transactions.TransactionBufferCreateByteVector(builder, b)
 
 	return pV
+}
+
+func metadataDTOArrayToStruct(Modifications []*metadataModificationDTO, NetworkType NetworkType) ([]*MetadataModification, error) {
+	ms := make([]*MetadataModification, len(Modifications))
+	var err error = nil
+	for i, m := range Modifications {
+		ms[i], err = m.toStruct(NetworkType)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ms, err
 }
 
 func multisigCosignatoryDTOArrayToStruct(Modifications []*multisigCosignatoryModificationDTO, NetworkType NetworkType) ([]*MultisigCosignatoryModification, error) {
