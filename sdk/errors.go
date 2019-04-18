@@ -28,6 +28,16 @@ var (
 	ErrNotAcceptedResponseStatusCode = newRespError("not accepted response status code")
 )
 
+// Metadata errors
+var (
+	ErrMetadataEmptyAddresses    = errors.New("list adresses ids must not by empty")
+	ErrMetadataNilAdress         = errors.New("adress must not be blank")
+	ErrMetadataEmptyMosaicIds    = errors.New("list mosaics ids must not by empty")
+	ErrMetadataNilMosaicId       = errors.New("mosaicId must not be nil")
+	ErrMetadataEmptyNamespaceIds = errors.New("list namespaces ids must not by empty")
+	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
+)
+
 // Mosaic errors
 var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
