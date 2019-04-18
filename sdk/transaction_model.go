@@ -710,14 +710,14 @@ func (dto *transferTransactionDTO) toStruct() (*TransferTransaction, error) {
 // ModifyMultisigAccountTransaction
 type ModifyMultisigAccountTransaction struct {
 	AbstractTransaction
-	MinApprovalDelta uint8
-	MinRemovalDelta  uint8
+	MinApprovalDelta int8
+	MinRemovalDelta  int8
 	Modifications    []*MultisigCosignatoryModification
 }
 
-func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
-	if len(modifications) == 0 {
-		return nil, errors.New("modifications must not empty")
+func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
+	if len(modifications) == 0 && minApprovalDelta == 0 && minRemovalDelta == 0 {
+		return nil, errors.New("modify must not be empty")
 	}
 
 	mmatx := ModifyMultisigAccountTransaction{
@@ -783,8 +783,8 @@ func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 type modifyMultisigAccountTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		MinApprovalDelta uint8                                 `json:"minApprovalDelta"`
-		MinRemovalDelta  uint8                                 `json:"minRemovalDelta"`
+		MinApprovalDelta int8                                  `json:"minApprovalDelta"`
+		MinRemovalDelta  int8                                  `json:"minRemovalDelta"`
 		Modifications    []*multisigCosignatoryModificationDTO `json:"modifications"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
