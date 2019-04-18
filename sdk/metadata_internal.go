@@ -111,9 +111,13 @@ func (ref *addressMetadataInfoDTO) toStruct(networkType NetworkType) (*AddressMe
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(metadata.Address)
-	if err != nil {
-		return nil, err
+	var a *Address = nil
+
+	if len(metadata.Address) != 0 {
+		a, err = NewAddressFromEncoded(metadata.Address)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &AddressMetadataInfo{

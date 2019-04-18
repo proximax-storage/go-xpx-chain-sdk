@@ -19,6 +19,11 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type HttpError struct {
+	error
+	StatusCode int
+}
+
 // Provides service configuration
 type Config struct {
 	reputationConfig *reputationConfig
@@ -140,7 +145,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	if resp.StatusCode > 226 || resp.StatusCode < 200 {
 		b := &bytes.Buffer{}
 		b.ReadFrom(resp.Body)
-		return nil, errors.New(b.String())
+		httpError := HttpError{
+			errors.New(b.String()),
+			resp.StatusCode,
+		}
+		return nil, &httpError
 	}
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {

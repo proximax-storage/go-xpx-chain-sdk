@@ -117,18 +117,25 @@ func (ref *MetadataService) GetMetadataByAddress(ctx context.Context, address st
 
 	dto := addressMetadataInfoDTO{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dto)
-	if err != nil {
-		return nil, errors.Wrapf(err, "within GET request %s", url.Encode())
-	}
+	err := ref.getMetadata(ctx, url, &dto)
 
-	if err = handleResponseStatusCode(resp, map[int]error{409: ErrArgumentNotValid}); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
 	info, err := dto.toStruct(ref.client.config.NetworkType)
 	if err != nil {
 		return nil, err
+	}
+
+	if info.MetadataType == MetadataNone {
+		a, err := NewAddressFromRaw(address)
+		if err != nil {
+			return nil, err
+		}
+
+		info.MetadataType = MetadataAddressType
+		info.Address = a
 	}
 
 	return info, nil
@@ -143,18 +150,20 @@ func (ref *MetadataService) GetMetadataByMosaicId(ctx context.Context, mosaicId 
 
 	dto := mosaicMetadataInfoDTO{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dto)
-	if err != nil {
-		return nil, errors.Wrapf(err, "within GET request %s", url.Encode())
-	}
+	err := ref.getMetadata(ctx, url, &dto)
 
-	if err = handleResponseStatusCode(resp, map[int]error{409: ErrArgumentNotValid}); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
 	info, err := dto.toStruct(ref.client.config.NetworkType)
 	if err != nil {
 		return nil, err
+	}
+
+	if info.MetadataType == MetadataNone {
+		info.MetadataType = MetadataMosaicType
+		info.MosaicId = mosaicId
 	}
 
 	return info, nil
@@ -169,12 +178,9 @@ func (ref *MetadataService) GetMetadataByNamespaceId(ctx context.Context, namesp
 
 	dto := namespaceMetadataInfoDTO{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dto)
-	if err != nil {
-		return nil, errors.Wrapf(err, "within GET request %s", url.Encode())
-	}
+	err := ref.getMetadata(ctx, url, &dto)
 
-	if err = handleResponseStatusCode(resp, map[int]error{409: ErrArgumentNotValid}); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -183,5 +189,28 @@ func (ref *MetadataService) GetMetadataByNamespaceId(ctx context.Context, namesp
 		return nil, err
 	}
 
+	if info.MetadataType == MetadataNone {
+		info.MetadataType = MetadataNamespaceType
+		info.NamespaceId = namespaceId
+	}
+
 	return info, nil
+}
+
+func (ref *MetadataService) getMetadata(ctx context.Context, url *net.Url, dto interface{}) error {
+	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		switch e := err.(type) {
+		case *HttpError:
+			if e.StatusCode != 404 {
+				return errors.Wrapf(e, "within GET request %s", url.Encode())
+			}
+		default:
+			return errors.Wrapf(err, "within GET request %s", url.Encode())
+		}
+	} else if err = handleResponseStatusCode(resp, map[int]error{409: ErrArgumentNotValid}); err != nil {
+		return err
+	}
+
+	return nil
 }

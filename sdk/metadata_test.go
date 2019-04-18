@@ -13,7 +13,7 @@ const (
 	testAddressMetadataInfoJson = `{
 	"metadata": {
 		"metadataId": "90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569A",
-		"metadataType": 0,
+		"metadataType": 1,
     	"fields": [
       		{
         		"key": "jora229",
@@ -28,7 +28,7 @@ const (
 			1942264427,
 			1236639028
     	],
-		"metadataType": 1,
+		"metadataType": 2,
     	"fields": [
       		{
         		"key": "hello",
@@ -43,7 +43,7 @@ const (
       		94107370,
       		2911018100
     	],
-		"metadataType": 2,
+		"metadataType": 3,
     	"fields": [
       		{
         		"key": "hello",
@@ -51,6 +51,10 @@ const (
       		}
     	]
   	}
+}`
+	testNotFoundInfoJson = `{
+	"code": "ResourceNotFound",
+	"message": "no resource exists with id '4829DDBFBD2121A007E13AF98558092D193312C10B26CA95CD147FB40CEE3E68'"
 }`
 
 	testAddressMetadataInfoJsonArr   = "[" + testAddressMetadataInfoJson + "]"
@@ -90,6 +94,30 @@ var (
 			Fields: map[string]string{
 				"hello": "world",
 			},
+		},
+		NamespaceId: testMetadataInfoNamespaceId,
+	}
+
+	testAddressMetadataInfo_NotFound = &AddressMetadataInfo{
+		MetadataInfo: MetadataInfo{
+			MetadataType: MetadataAddressType,
+			Fields:       make(map[string]string),
+		},
+		Address: testMetadataAddress,
+	}
+
+	testMosaicMetadataInfo_NotFound = &MosaicMetadataInfo{
+		MetadataInfo: MetadataInfo{
+			MetadataType: MetadataMosaicType,
+			Fields:       make(map[string]string),
+		},
+		MosaicId: testMetadataInfoMosaicId,
+	}
+
+	testNamespaceMetadataInfo_NotFound = &NamespaceMetadataInfo{
+		MetadataInfo: MetadataInfo{
+			MetadataType: MetadataNamespaceType,
+			Fields:       make(map[string]string),
 		},
 		NamespaceId: testMetadataInfoNamespaceId,
 	}
@@ -207,4 +235,55 @@ func TestMetadataService_GetMetadatasByNamespaceId(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, info)
 	assert.Equal(t, testNamespaceMetadataInfo, info)
+}
+
+func TestMetadataService_GetMetadatasByAddress_NotFound(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(metadataByAccountRoute, testMetadataInfoPubKey),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        404,
+		RespBody:            testNotFoundInfoJson,
+	})
+	metadataClient := mock.getPublicTestClientUnsafe().Metadata
+
+	defer mock.Close()
+
+	info, err := metadataClient.GetMetadataByAddress(ctx, testMetadataInfoPubKey)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+	assert.Equal(t, testAddressMetadataInfo_NotFound, info)
+}
+
+func TestMetadataService_GetMetadatasByMosaicId_NotFound(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(metadataByMosaicRoute, testMetadataInfoMosaicId.toHexString()),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        404,
+		RespBody:            testNotFoundInfoJson,
+	})
+	metadataClient := mock.getPublicTestClientUnsafe().Metadata
+
+	defer mock.Close()
+
+	info, err := metadataClient.GetMetadataByMosaicId(ctx, testMetadataInfoMosaicId)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+	assert.Equal(t, testMosaicMetadataInfo_NotFound, info)
+}
+
+func TestMetadataService_GetMetadatasByNamespaceId_NotFound(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(metadataByNamespaceRoute, testMetadataInfoNamespaceId.toHexString()),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        404,
+		RespBody:            testNotFoundInfoJson,
+	})
+	metadataClient := mock.getPublicTestClientUnsafe().Metadata
+
+	defer mock.Close()
+
+	info, err := metadataClient.GetMetadataByNamespaceId(ctx, testMetadataInfoNamespaceId)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+	assert.Equal(t, testNamespaceMetadataInfo_NotFound, info)
 }
