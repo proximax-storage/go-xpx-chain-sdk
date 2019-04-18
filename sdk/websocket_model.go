@@ -15,16 +15,64 @@ type SignerInfo struct {
 	ParentHash Hash   `json:"parentHash"`
 }
 
-type ErrorInfo struct {
-	Error error
+type UnconfirmedRemoved struct {
+	Meta *TransactionInfo
 }
 
-// structure for Subscribe status
-type HashInfo struct {
-	Hash Hash `json:"hash"`
+type unconfirmedRemovedDto struct {
+	Meta *transactionInfoDTO `json:"meta"`
 }
 
-// structure for Subscribe PartialRemoved
+func (dto *unconfirmedRemovedDto) toStruct() *UnconfirmedRemoved {
+	trInfo := dto.Meta.toStruct()
+	return &UnconfirmedRemoved{
+		Meta: trInfo,
+	}
+}
+
+type partialRemovedInfoDTO struct {
+	Meta *transactionInfoDTO `json:"meta"`
+}
+
+func (dto partialRemovedInfoDTO) toStruct() *PartialRemovedInfo {
+	return &PartialRemovedInfo{
+		Meta: dto.Meta.toStruct(),
+	}
+}
+
 type PartialRemovedInfo struct {
-	Meta SubscribeHash `json:"meta"`
+	Meta *TransactionInfo
+}
+
+type WsMessageInfo struct {
+	Address     *Address
+	ChannelName string
+}
+
+type WsMessageInfoDTO struct {
+	Meta wsMessageInfoMetaDTO `json:"meta"`
+}
+
+func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
+	msg := &WsMessageInfo{
+		ChannelName: dto.Meta.ChannelName,
+	}
+
+	if dto.Meta.ChannelName == "block" {
+		return msg, nil
+	}
+
+	address, err := NewAddressFromEncoded(dto.Meta.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	msg.Address = address
+
+	return msg, nil
+}
+
+type wsMessageInfoMetaDTO struct {
+	ChannelName string `json:"channelName"`
+	Address     string `json:"address"`
 }
