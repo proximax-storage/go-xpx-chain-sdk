@@ -59,6 +59,7 @@ type ClientWebsocket struct {
 	Subscribe *SubscribeService
 }
 
+
 type SubscribeBlock struct {
 	*subscribe
 	Ch chan *BlockInfo
@@ -352,6 +353,7 @@ func (c *ClientWebsocket) subsChannel(s *subscribe) error {
 	return nil
 }
 
+// returns entity which you can use to reach different subscribe services from passed host url and waiting timeout
 func NewConnectWs(host string, timeout time.Duration) (*ClientWebsocket, error) {
 	u, err := url.Parse(host)
 	if err != nil {

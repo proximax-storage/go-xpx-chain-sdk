@@ -48,6 +48,7 @@ func (nt NetworkType) String() string {
 // Network error
 var networkTypeError = errors.New("wrong raw NetworkType value")
 
+// TODO
 func ExtractNetworkType(version uint64) NetworkType {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, version)

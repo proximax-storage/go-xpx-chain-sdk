@@ -22,6 +22,7 @@ func (m *MosaicId) Equals(id *MosaicId) bool {
 	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
 }
 
+// returns mosaic id for passed nonce and public key of owner
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
@@ -32,6 +33,7 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 	return bigIntToMosaicId(id), err
 }
 
+// returns mosaic id corresponding passed big int
 func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	if id == nil {
 		return nil, ErrNilMosaicId
@@ -44,12 +46,12 @@ func (m *MosaicId) toHexString() string {
 	return BigIntegerToHex(mosaicIdToBigInt(m))
 }
 
-// MosaicId
 type Mosaic struct {
 	MosaicId *MosaicId
 	Amount   *big.Int
 }
 
+// returns a mosaic for passed mosaic id and amount
 func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
@@ -99,7 +101,6 @@ func (m *MosaicInfo) String() string {
 	)
 }
 
-// MosaicProperties  structure describes mosaic properties.
 type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
@@ -108,6 +109,7 @@ type MosaicProperties struct {
 	Duration      *big.Int
 }
 
+// TODO
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
@@ -131,9 +133,6 @@ func (mp *MosaicProperties) String() string {
 	)
 }
 
-// MosaicSupplyType mosaic supply type :
-// Decrease the supply - DECREASE.
-// Increase the supply - INCREASE.
 type MosaicSupplyType uint8
 
 const (
@@ -145,20 +144,22 @@ func (tx MosaicSupplyType) String() string {
 	return fmt.Sprintf("%d", tx)
 }
 
-// Create xem with using xem as unit
+// returns XEM mosaic with passed amount
 func Xem(amount int64) *Mosaic {
 	return &Mosaic{XemMosaicId, big.NewInt(amount)}
 }
 
-// Create xpx with using xpx as unit
+// returns XPX mosaic with passed amount
 func Xpx(amount int64) *Mosaic {
 	return &Mosaic{XpxMosaicId, big.NewInt(amount)}
 }
 
+// returns XEM with actual passed amount
 func XemRelative(amount int64) *Mosaic {
 	return Xem(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
 }
 
+// returns XPX with actual passed amount
 func XpxRelative(amount int64) *Mosaic {
 	return Xpx(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
 }

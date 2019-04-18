@@ -1,65 +1,64 @@
-# nem2-sdk-go
+# Go XPX ProximaX Catapult SDK
 
 This is the ProximaX forked [nem2-sdk-go](https://github.com/proximax-storage/nem2-sdk-go) Golang client library for Catapult API
 
 
-<p align="center"> 
+<p align="center">
     <img src="./doc/catapult-nem2-sdk-go.jpg">
 </p>
 
-## Usage ##
+## Getting Started
+
+All catapult stuff starts from importing sdk:
 
 ```go
 import "github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 ```
 
-Create a Catapult network configuration 
+Then create a Catapult network configuration
 
-Using the *Testnet* network
+For *Testnet*:
 ```go
 conf, err := sdk.NewConfig("http://localhost:3000",sdk.Testnet)
 ```
-Or using the *Mainnet* network
+Or for *Mainnet*:
 ```go
 conf, err := sdk.NewConfig("http://localhost:3000",sdk.Mainnet)
 ```
 
-Construct a new Catapult client
+Construct a new REST Catapult client
 ```go
 client := sdk.NewClient(nil, conf)
 ```
 
-Using the client to call a method from a Service API
+Use this client to get current blockchain height
 
 ```go
-// Get the chain height
 chainHeight, err := client.Blockchain.GetChainHeight(context.Background())
 ```
-
-## Context ##
 
 A [Context](https://golang.org/pkg/context/) type is the first argument in any service method for specifying
 deadlines, cancelation signals, and other request-scoped values
-```go
-// Get the chain height
-chainHeight, err := client.Blockchain.GetChainHeight(context.Background())
-```
 
-## Wiki / Examples ##
 
-Examples are in the `examples` folder
+## Wiki / Examples
 
-For more examples, go to our [wiki](https://github.com/proximax-storage/nem2-sdk-go/wiki)
+For more examples, check out our [wiki](https://github.com/proximax-storage/nem2-sdk-go/wiki)
 
-## Core Contributors ##
+## API docs
 
- + [@Wondertan](https://github.com/Wondertan) 
+If you want to refer to go docs in markdown, check this [docs](./api.md) out
+
+## Core Contributors
+
+ + [@Wondertan](https://github.com/Wondertan)
  + [@ruslanBik4](https://github.com/ruslanBik4)
  + [@slackve](https://github.com/slackve)
  + [@brambear](https://github.com/alvin-reyes)
  + [@carlocayos](https://github.com/carlocayos)
 
-## Contribution ##
+## [Contribution](CONTRIBUTING.md)
+
 We'd love to get more people involved in the project. Please feel free to raise any issues or PR and we'll review your contribution.
 
-Copyright (c) 2018 ProximaX Limited
+Copyright (c) 2019 ProximaX Limited

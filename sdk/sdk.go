@@ -36,6 +36,7 @@ var defaultRepConfig = reputationConfig{
 	defaultReputation: 0.9,
 }
 
+// TODO
 func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig, error) {
 	if defaultRep < 0 || defaultRep > 1 {
 		return nil, ErrInvalidReputationConfig
@@ -44,12 +45,12 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// Config constructor
+// returns config for HTTP Client from passed node url and network type
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
 	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
 }
 
-// Config constructor
+// TODO
 func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error) {
 	u, err := url.Parse(baseUrl)
 	if err != nil {
@@ -80,8 +81,8 @@ type service struct {
 	client *Client
 }
 
-// NewClient returns a new Catapult API client.
-// If httpClient is nil then it will create http.DefaultClient
+// returns catapult http client from passed existing client and configuration
+// if passed client is nil, http.DefaultClient will be used
 func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -100,6 +101,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
+// TODO
 // DoNewRequest creates new request, Do it & return result in V
 func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
 	req, err := s.NewRequest(method, path, body)
@@ -115,6 +117,7 @@ func (s *Client) DoNewRequest(ctx context.Context, method string, path string, b
 	return resp, nil
 }
 
+// TODO
 // Do sends an API Request and returns a parsed response
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
 
@@ -157,6 +160,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	return resp, err
 }
 
+// TODO
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
 
 	u, err := c.config.BaseURL.Parse(urlStr)

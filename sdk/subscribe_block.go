@@ -26,7 +26,6 @@ const (
 	pathCosignature        = "cosignature"
 )
 
-// Closes the subscription channel.
 func (s *subscribe) closeChannel() error {
 	switch s.Ch.(type) {
 	case chan *BlockInfo:
@@ -122,8 +121,8 @@ func (c *SubscribeService) getClient(add *Address) *ClientWebsocket {
 	}
 }
 
-// Block notifies for every new block.
-// The message contains the BlockInfo struct.
+// returns entity from which you access channel with block infos
+// block info gets into channel when new block is harvested
 func (c *SubscribeService) Block() (*SubscribeBlock, error) {
 	subBlock := new(SubscribeBlock)
 	Block = subBlock
@@ -134,9 +133,8 @@ func (c *SubscribeService) Block() (*SubscribeBlock, error) {
 	return subBlock, err
 }
 
-// ConfirmedAdded notifies when a transaction related to an
-// address is included in a block.
-// The message contains the transaction.
+// returns an entity from which you can access channel with Transaction infos for passed address
+// Transaction info gets into channel when it is included in a block
 func (c *SubscribeService) ConfirmedAdded(add *Address) (*SubscribeTransaction, error) {
 	c.client = c.getClient(add)
 	subTransaction := new(SubscribeTransaction)
@@ -148,9 +146,8 @@ func (c *SubscribeService) ConfirmedAdded(add *Address) (*SubscribeTransaction, 
 	return subTransaction, err
 }
 
-// UnconfirmedAdded notifies when a transaction related to an
-// address is in unconfirmed state and waiting to be included in a block.
-// The message contains the transaction.
+// returns an entity from which you can access channel with Transaction infos for passed address
+// Transaction info gets into channel when it is in unconfirmed state and waiting to be included into a block
 func (c *SubscribeService) UnconfirmedAdded(add *Address) (*SubscribeTransaction, error) {
 	c.client = c.getClient(add)
 	subTransaction := new(SubscribeTransaction)
@@ -162,9 +159,8 @@ func (c *SubscribeService) UnconfirmedAdded(add *Address) (*SubscribeTransaction
 	return subTransaction, err
 }
 
-// UnconfirmedRemoved notifies when a transaction related to an
-// address was in unconfirmed state but not anymore.
-// The message contains the transaction hash.
+// returns an entity from which you can access channel with Transaction infos for passed address
+// Transaction info gets into channel when it was in unconfirmed state but not anymore
 func (c *SubscribeService) UnconfirmedRemoved(add *Address) (*SubscribeHash, error) {
 	c.client = c.getClient(add)
 	subHash := new(SubscribeHash)
@@ -176,8 +172,8 @@ func (c *SubscribeService) UnconfirmedRemoved(add *Address) (*SubscribeHash, err
 	return subHash, err
 }
 
-// Status notifies when a transaction related to an address rises an error.
-// The message contains the error message and the transaction hash.
+// returns an entity from which you can access channel with Transaction status infos for passed address
+// Transaction info gets into channel when it rises an error
 func (c *SubscribeService) Status(add *Address) (*SubscribeStatus, error) {
 	c.client = c.getClient(add)
 	subStatus := new(SubscribeStatus)
@@ -189,9 +185,9 @@ func (c *SubscribeService) Status(add *Address) (*SubscribeStatus, error) {
 	return subStatus, err
 }
 
-// PartialAdded notifies when an aggregate bonded transaction related to an
-// address is in partial state and waiting to have all required cosigners.
-// The message contains a transaction.
+// returns an entity from which you can access channel with Aggregate Bonded Transaction info
+// Aggregate Bonded Transaction info gets into channel when it is in partial state
+// and waiting for actors to send all required cosignature transactions
 func (c *SubscribeService) PartialAdded(add *Address) (*SubscribeBonded, error) {
 	c.client = c.getClient(add)
 	subTransaction := new(SubscribeBonded)
@@ -203,9 +199,8 @@ func (c *SubscribeService) PartialAdded(add *Address) (*SubscribeBonded, error) 
 	return subTransaction, err
 }
 
-// PartialRemoved notifies when a transaction related to an
-// address was in partial state but not anymore.
-// The message contains the transaction hash.
+// returns an entity from which you can access channel with Aggregate Bonded Transaction hash related to passed address
+// Aggregate Bonded Transaction hash gets into channel when it was in partial state but not anymore
 func (c *SubscribeService) PartialRemoved(add *Address) (*SubscribePartialRemoved, error) {
 	c.client = c.getClient(add)
 	subPartialRemoved := new(SubscribePartialRemoved)
@@ -217,9 +212,8 @@ func (c *SubscribeService) PartialRemoved(add *Address) (*SubscribePartialRemove
 	return subPartialRemoved, err
 }
 
-// Cosignature notifies when a cosignature signed transaction related to an
-// address is added to an aggregate bonded transaction with partial state.
-// The message contains the cosignature signed transaction.
+// returns an entity from which you can access channel with cosignature transaction is added to an
+// aggregate bounded transaction with partial state related to passed address
 func (c *SubscribeService) Cosignature(add *Address) (*SubscribeSigner, error) {
 	c.client = c.getClient(add)
 	subCosignature := new(SubscribeSigner)
@@ -231,6 +225,7 @@ func (c *SubscribeService) Cosignature(add *Address) (*SubscribeSigner, error) {
 	return subCosignature, err
 }
 
+// returns an entity from which you can access channel with errors related to passed address
 func (c *SubscribeService) Error(add *Address) *SubscribeError {
 	c.client = c.getClient(add)
 	subError := new(SubscribeError)
