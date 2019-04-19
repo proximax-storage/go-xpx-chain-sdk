@@ -56,6 +56,14 @@ const (
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 
+const (
+	metadatasInfoRoute       = "/metadata"
+	metadataInfoRoute        = "/metadata/%s"
+	metadataByAccountRoute   = "/account/%s/metadata"
+	metadataByMosaicRoute    = "/mosaic/%s/metadata"
+	metadataByNamespaceRoute = "/namespace/%s/metadata"
+)
+
 // const routers path for methods MosaicService
 const (
 	networkRoute = "/network"

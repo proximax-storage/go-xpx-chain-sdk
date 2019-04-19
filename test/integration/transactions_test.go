@@ -10,32 +10,69 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/sha3"
 	"math/big"
 	math "math/rand"
+	"sync"
 	"testing"
 	"time"
 )
 
 const timeout = 2 * time.Minute
 const networkType = sdk.MijinTest
-const privateKey = "EE5FABC70136EE4C729F63FE330AA62073D2C6AA65983E6C6170B74A2EC4DD13"
-
-var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 var cfg, _ = sdk.NewConfig(testUrl, networkType)
 var ctx = context.Background()
 
 var client = sdk.NewClient(nil, cfg)
-var ws, _ = sdk.NewConnectWs(testUrl, 15000000)
+var wsc, _ = websocket.NewClient(wstestUrl)
 
 type CreateTransaction func() (sdk.Transaction, error)
 
+func waitTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
+	}()
+	select {
+	case <-c:
+		return
+	case <-time.After(timeout):
+		t.Error("Timeout request")
+		return
+	}
+}
+
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) {
-	//// The confirmedAdded channel notifies when a transaction related to an
-	//// address is included in a block. The message contains the transaction.
-	chConfirmedAdded, _ := ws.Subscribe.ConfirmedAdded(account.Address)
+
+	var wg sync.WaitGroup
+
+	//Starting listening messages from websocket
+	wg.Add(1)
+	go wsc.Listen(&wg)
+
+	// Register handlers functions for needed topics
+
+	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
+		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
+		fmt.Println("Successful!")
+		wg.Done()
+		return true
+	}); err != nil {
+		panic(err)
+	}
+
+	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
+		fmt.Printf("Got error: %v \n", info)
+		wg.Done()
+		t.Error()
+		return true
+	}); err != nil {
+		panic(err)
+	}
 
 	tx, err := createTransaction()
 
@@ -47,14 +84,7 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	_, err = client.Transaction.Announce(ctx, signTx)
 	assert.Nil(t, err)
 
-	select {
-	case data := <-chConfirmedAdded.Ch:
-		fmt.Printf("ConfirmedAdded Tx Content: %v \n", data.GetAbstractTransaction().Hash)
-	case <-time.After(timeout):
-		t.Error("Timeout request")
-	}
-
-	fmt.Println("Successful!")
+	waitTimeout(t, &wg, timeout)
 }
 
 func TestMosaicDefinitionTransaction(t *testing.T) {
@@ -91,6 +121,7 @@ func TestModifyMultisigTransaction(t *testing.T) {
 	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	multisigAccount, err := sdk.NewAccount(sdk.MijinTest)
+	fmt.Println(multisigAccount)
 
 	sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMultisigAccountTransaction(
@@ -253,6 +284,125 @@ func TestCompleteAggregateTransactionTransaction(t *testing.T) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx},
+			networkType,
+		)
+	}, defaultAccount)
+}
+
+func TestModifyAddressMetadataTransaction(t *testing.T) {
+	fmt.Println(defaultAccount.PublicAccount.Address)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataAddressTransaction(
+			sdk.NewDeadline(time.Hour),
+			defaultAccount.PublicAccount.Address,
+			[]*sdk.MetadataModification{
+				{
+					sdk.AddMetadata,
+					"jora229",
+					"I Love you",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+
+	time.Sleep(2 * time.Second)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewModifyMetadataAddressTransaction(
+			sdk.NewDeadline(time.Hour),
+			defaultAccount.PublicAccount.Address,
+			[]*sdk.MetadataModification{
+				{
+					sdk.RemoveMetadata,
+					"jora229",
+					"",
+				},
+			},
+			networkType)
+	}, defaultAccount)
+}
+
+func TestModifyMosaicMetadataTransaction(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	mosaicDefinitionTx, err := sdk.NewMosaicDefinitionTransaction(
+		sdk.NewDeadline(time.Hour),
+		nonce,
+		defaultAccount.PublicAccount.PublicKey,
+		sdk.NewMosaicProperties(true, true, true, 4, big.NewInt(1)),
+		networkType)
+	assert.Nil(t, err)
+	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	assert.Nil(t, err)
+
+	fmt.Println(mosaicId.String())
+
+	metadataTx, err := sdk.NewModifyMetadataMosaicTransaction(
+		sdk.NewDeadline(time.Hour),
+		mosaicId,
+		[]*sdk.MetadataModification{
+			{
+				sdk.AddMetadata,
+				"hello",
+				"hell",
+			},
+		},
+		networkType)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{mosaicDefinitionTx, metadataTx},
+			networkType,
+		)
+	}, defaultAccount)
+}
+
+func TestModifyNamespaceMetadataTransaction(t *testing.T) {
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	namespaceId, err := sdk.NewNamespaceIdFromName(nameHex)
+	assert.Nil(t, err)
+	fmt.Println(namespaceId)
+
+	registrNamespaceTx, err := sdk.NewRegisterRootNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		nameHex,
+		big.NewInt(10),
+		networkType,
+	)
+	assert.Nil(t, err)
+	registrNamespaceTx.ToAggregate(defaultAccount.PublicAccount)
+
+	modifyMetadataTx, err := sdk.NewModifyMetadataNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		namespaceId,
+		[]*sdk.MetadataModification{
+			{
+				sdk.AddMetadata,
+				"hello",
+				"world",
+			},
+		},
+		networkType,
+	)
+	assert.Nil(t, err)
+	modifyMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{registrNamespaceTx, modifyMetadataTx},
 			networkType,
 		)
 	}, defaultAccount)
