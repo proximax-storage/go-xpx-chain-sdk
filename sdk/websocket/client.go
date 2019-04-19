@@ -15,6 +15,8 @@ import (
 	"sync"
 )
 
+const pathWS = "ws"
+
 type Path string
 
 const (
@@ -32,8 +34,12 @@ var (
 	unsupportedMessageTypeError = errors.New("unsupported message type")
 )
 
-func NewClient(endpoint string) (CatapultClient, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
+func NewClient(cfg *sdk.Config) (CatapultClient, error) {
+	url := *cfg.BaseURL
+	url.Scheme = "ws" // always ws
+	url.Path = pathWS
+
+	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
 	if err != nil {
 		return nil, err
 	}

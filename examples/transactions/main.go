@@ -15,7 +15,6 @@ import (
 
 const (
 	baseUrl            = "http://localhost:3000"
-	wsBaseUrl          = "ws://localhost:3000/ws"
 	networkType        = sdk.MijinTest
 	customerPrivateKey = "0F3CC33190A49ABB32E7172E348EA927F975F8829107AAA3D6349BB10797D4F6"
 	executorPrivateKey = "68B3FBB18729C1FDE225C57F8CE080FA828F0067E451A3FD81FA628842B0B763"
@@ -35,7 +34,7 @@ func main() {
 
 	customerAcc, err := sdk.NewAccountFromPrivateKey(customerPrivateKey, networkType)
 
-	ws, err := websocket.NewClient(wsBaseUrl)
+	ws, err := websocket.NewClient(conf)
 	if err != nil {
 		panic(err)
 	}
