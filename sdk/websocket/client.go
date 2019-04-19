@@ -70,6 +70,8 @@ func NewClient(endpoint string) (CatapultClient, error) {
 }
 
 type Client interface {
+	io.Closer
+
 	Listen(wg *sync.WaitGroup)
 	GetErrorsChan() chan error
 }
@@ -335,4 +337,23 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 
 func (c *CatapultWebsocketClientImpl) GetErrorsChan() chan error {
 	return c.errorsChan
+}
+
+func (c *CatapultWebsocketClientImpl) Close() error {
+	if err := c.conn.Close(); err != nil {
+		return err
+	}
+
+	c.blockSubscriber = nil
+	c.confirmedAddedSubscribers = nil
+	c.unconfirmedAddedSubscribers = nil
+	c.unconfirmedRemovedSubscribers = nil
+	c.partialAddedSubscribers = nil
+	c.partialRemovedSubscribers = nil
+	c.statusSubscribers = nil
+	c.cosignatureSubscribers = nil
+
+	c.topicHandlers = nil
+
+	return nil
 }
