@@ -1,4 +1,0 @@
-[submodule "github.com/proximax-storage/go-xpx-utils"]
-	path = vendor/github.com/proximax-storage/go-xpx-utils
-	url = git@github.com:proximax-storage/go-xpx-utils
-	branch = master

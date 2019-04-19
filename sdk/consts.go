@@ -24,7 +24,7 @@ const (
 	incomingTransactionsRoute     = "/transactions/incoming"
 	outgoingTransactionsRoute     = "/transactions/outgoing"
 	unconfirmedTransactionsRoute  = "/transactions/unconfirmed"
-	aggregateTransactionsRoute    = "/transactions/aggregateBondedTransactions"
+	aggregateTransactionsRoute    = "/transactions/partial"
 )
 
 // const routers path for methods NamespaceService
@@ -54,6 +54,14 @@ const (
 const (
 	contractsInfoRoute      = "/contract"
 	contractsByAccountRoute = "/account/%s/contracts"
+)
+
+const (
+	metadatasInfoRoute       = "/metadata"
+	metadataInfoRoute        = "/metadata/%s"
+	metadataByAccountRoute   = "/account/%s/metadata"
+	metadataByMosaicRoute    = "/mosaic/%s/metadata"
+	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
 // const routers path for methods MosaicService

@@ -5,9 +5,9 @@
 package sdk
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
 	"net/http"
 )
 

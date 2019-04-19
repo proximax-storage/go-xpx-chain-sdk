@@ -7,10 +7,10 @@ package sdk
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"github.com/google/go-querystring/query"
 	"github.com/json-iterator/go"
-	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,6 +18,11 @@ import (
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+type HttpError struct {
+	error
+	StatusCode int
+}
 
 // Provides service configuration
 type Config struct {
@@ -74,6 +79,7 @@ type Client struct {
 	Transaction *TransactionService
 	Account     *AccountService
 	Contract    *ContractService
+	Metadata    *MetadataService
 }
 
 type service struct {
@@ -96,6 +102,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Transaction = (*TransactionService)(&c.common)
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
+	c.Metadata = (*MetadataService)(&c.common)
 
 	return c
 }
@@ -138,7 +145,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	if resp.StatusCode > 226 || resp.StatusCode < 200 {
 		b := &bytes.Buffer{}
 		b.ReadFrom(resp.Body)
-		return nil, errors.New(b.String())
+		httpError := HttpError{
+			errors.New(b.String()),
+			resp.StatusCode,
+		}
+		return nil, &httpError
 	}
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {

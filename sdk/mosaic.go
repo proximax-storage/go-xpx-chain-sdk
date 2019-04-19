@@ -5,9 +5,9 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/net"
-	"golang.org/x/net/context"
 	"net/http"
 )
 
