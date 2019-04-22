@@ -31,7 +31,9 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := websocket.NewClient(wsBaseUrl)
+	ctx := context.Background()
+
+	wsc, err := websocket.NewClient(ctx, wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -75,6 +77,18 @@ func main() {
 	if err := wsc.AddCosignatureHandlers(address, CosignatureHandler1, CosignatureHandler2); err != nil {
 		panic(err)
 	}
+
+	//Running the goroutine which will close websocket connection and listening after 2 minutes.
+	go func() {
+		timer := time.NewTimer(time.Minute * 2)
+
+		for range timer.C {
+			if err := wsc.Close(); err != nil {
+				panic(err)
+			}
+			return
+		}
+	}()
 
 	time.Sleep(time.Second * 5)
 

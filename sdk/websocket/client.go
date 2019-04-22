@@ -5,6 +5,7 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -32,7 +33,9 @@ var (
 	unsupportedMessageTypeError = errors.New("unsupported message type")
 )
 
-func NewClient(endpoint string) (CatapultClient, error) {
+func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
+	ctx, cancelFunc := context.WithCancel(ctx)
+
 	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -50,8 +53,10 @@ func NewClient(endpoint string) (CatapultClient, error) {
 	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers, errorsChan)
 
 	return &CatapultWebsocketClientImpl{
-		conn: conn,
-		UID:  resp.Uid,
+		conn:       conn,
+		ctx:        ctx,
+		cancelFunc: cancelFunc,
+		UID:        resp.Uid,
 
 		blockSubscriber:               subscribers.NewBlock(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
@@ -90,8 +95,10 @@ type CatapultClient interface {
 }
 
 type CatapultWebsocketClientImpl struct {
-	conn *websocket.Conn
-	UID  string
+	conn       *websocket.Conn
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	UID        string
 
 	blockSubscriber               subscribers.Block
 	confirmedAddedSubscribers     subscribers.ConfirmedAdded
@@ -111,21 +118,27 @@ type CatapultWebsocketClientImpl struct {
 
 func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
 	for {
-		_, resp, err := c.conn.ReadMessage()
-
-		if err == io.EOF {
-			c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
+		select {
+		case <-c.ctx.Done():
 			wg.Done()
 			return
-		}
+		default:
+			_, resp, err := c.conn.ReadMessage()
 
-		if err != nil {
-			c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
-			wg.Done()
-			return
-		}
+			if err == io.EOF {
+				c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
+				wg.Done()
+				return
+			}
 
-		go c.messageRouter.RouteMessage(resp)
+			if err != nil {
+				c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
+				wg.Done()
+				return
+			}
+
+			go c.messageRouter.RouteMessage(resp)
+		}
 	}
 }
 
@@ -343,6 +356,8 @@ func (c *CatapultWebsocketClientImpl) Close() error {
 	if err := c.conn.Close(); err != nil {
 		return err
 	}
+
+	c.cancelFunc()
 
 	c.blockSubscriber = nil
 	c.confirmedAddedSubscribers = nil
