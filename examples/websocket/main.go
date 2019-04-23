@@ -40,6 +40,13 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	//start goroutine for listening errors chanel
+	go func() {
+		for err := range wsc.GetErrorsChan() {
+			fmt.Println(err)
+		}
+	}()
+
 	//Starting listening messages from websocket
 	wg.Add(1)
 	go wsc.Listen(&wg)

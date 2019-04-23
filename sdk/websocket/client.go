@@ -30,7 +30,8 @@ const (
 )
 
 var (
-	unsupportedMessageTypeError = errors.New("unsupported message type")
+	ErrUnsupportedMessageType       = errors.New("unsupported message type")
+	ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
 )
 
 func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
@@ -113,14 +114,23 @@ type CatapultWebsocketClientImpl struct {
 	messageRouter    Router
 	messagePublisher MessagePublisher
 
-	errorsChan chan error
+	errorsChan       chan error
+	alreadyListening bool
 }
 
 func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if c.alreadyListening {
+		c.errorsChan <- ErrConnectionIsAlreadyListening
+		return
+	}
+
+	c.alreadyListening = true
+
 	for {
 		select {
 		case <-c.ctx.Done():
-			wg.Done()
 			return
 		default:
 			_, resp, err := c.conn.ReadMessage()
@@ -358,6 +368,9 @@ func (c *CatapultWebsocketClientImpl) Close() error {
 	}
 
 	c.cancelFunc()
+
+	c.alreadyListening = false
+	close(c.errorsChan)
 
 	c.blockSubscriber = nil
 	c.confirmedAddedSubscribers = nil
