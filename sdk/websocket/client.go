@@ -13,7 +13,6 @@ import (
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"io"
-	"sync"
 )
 
 type Path string
@@ -78,7 +77,7 @@ func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
 type Client interface {
 	io.Closer
 
-	Listen(wg *sync.WaitGroup)
+	Listen()
 	GetErrorsChan() chan error
 }
 
@@ -118,9 +117,7 @@ type CatapultWebsocketClientImpl struct {
 	alreadyListening bool
 }
 
-func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (c *CatapultWebsocketClientImpl) Listen() {
 	if c.alreadyListening {
 		c.errorsChan <- ErrConnectionIsAlreadyListening
 		return
@@ -137,13 +134,11 @@ func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
 
 			if err == io.EOF {
 				c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
-				wg.Done()
 				return
 			}
 
 			if err != nil {
 				c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
-				wg.Done()
 				return
 			}
 
