@@ -11,7 +11,6 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"math/big"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -31,16 +30,22 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := websocket.NewClient(wsBaseUrl)
+	ctx := context.Background()
+
+	wsc, err := websocket.NewClient(ctx, wsBaseUrl)
 	if err != nil {
 		panic(err)
 	}
 
-	var wg sync.WaitGroup
+	//start goroutine for listening errors chanel
+	go func() {
+		for err := range wsc.GetErrorsChan() {
+			fmt.Println(err)
+		}
+	}()
 
 	//Starting listening messages from websocket
-	wg.Add(1)
-	go wsc.Listen(&wg)
+	go wsc.Listen()
 
 	// Register handlers functions for needed topics
 
@@ -76,13 +81,25 @@ func main() {
 		panic(err)
 	}
 
+	//Running the goroutine which will close websocket connection and listening after 2 minutes.
+	go func() {
+		timer := time.NewTimer(time.Minute * 2)
+
+		for range timer.C {
+			if err := wsc.Close(); err != nil {
+				panic(err)
+			}
+			return
+		}
+	}()
+
 	time.Sleep(time.Second * 5)
 
 	//Publish test transactions
 	doTransferTransaction(address)
 	doBondedAggregateTransaction(address)
 
-	wg.Wait()
+	<-time.NewTimer(time.Minute * 5).C
 }
 
 // publish test transfer transaction

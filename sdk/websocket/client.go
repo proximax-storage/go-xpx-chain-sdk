@@ -5,6 +5,7 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -12,7 +13,6 @@ import (
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"io"
-	"sync"
 )
 
 type Path string
@@ -29,10 +29,13 @@ const (
 )
 
 var (
-	unsupportedMessageTypeError = errors.New("unsupported message type")
+	ErrUnsupportedMessageType       = errors.New("unsupported message type")
+	ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
 )
 
-func NewClient(endpoint string) (CatapultClient, error) {
+func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
+	ctx, cancelFunc := context.WithCancel(ctx)
+
 	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -50,8 +53,10 @@ func NewClient(endpoint string) (CatapultClient, error) {
 	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers, errorsChan)
 
 	return &CatapultWebsocketClientImpl{
-		conn: conn,
-		UID:  resp.Uid,
+		conn:       conn,
+		ctx:        ctx,
+		cancelFunc: cancelFunc,
+		UID:        resp.Uid,
 
 		blockSubscriber:               subscribers.NewBlock(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
@@ -70,7 +75,9 @@ func NewClient(endpoint string) (CatapultClient, error) {
 }
 
 type Client interface {
-	Listen(wg *sync.WaitGroup)
+	io.Closer
+
+	Listen()
 	GetErrorsChan() chan error
 }
 
@@ -88,8 +95,10 @@ type CatapultClient interface {
 }
 
 type CatapultWebsocketClientImpl struct {
-	conn *websocket.Conn
-	UID  string
+	conn       *websocket.Conn
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	UID        string
 
 	blockSubscriber               subscribers.Block
 	confirmedAddedSubscribers     subscribers.ConfirmedAdded
@@ -104,26 +113,37 @@ type CatapultWebsocketClientImpl struct {
 	messageRouter    Router
 	messagePublisher MessagePublisher
 
-	errorsChan chan error
+	errorsChan       chan error
+	alreadyListening bool
 }
 
-func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
+func (c *CatapultWebsocketClientImpl) Listen() {
+	if c.alreadyListening {
+		c.errorsChan <- ErrConnectionIsAlreadyListening
+		return
+	}
+
+	c.alreadyListening = true
+
 	for {
-		_, resp, err := c.conn.ReadMessage()
-
-		if err == io.EOF {
-			c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
-			wg.Done()
+		select {
+		case <-c.ctx.Done():
 			return
-		}
+		default:
+			_, resp, err := c.conn.ReadMessage()
 
-		if err != nil {
-			c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
-			wg.Done()
-			return
-		}
+			if err == io.EOF {
+				c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
+				return
+			}
 
-		go c.messageRouter.RouteMessage(resp)
+			if err != nil {
+				c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
+				return
+			}
+
+			go c.messageRouter.RouteMessage(resp)
+		}
 	}
 }
 
@@ -335,4 +355,28 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 
 func (c *CatapultWebsocketClientImpl) GetErrorsChan() chan error {
 	return c.errorsChan
+}
+
+func (c *CatapultWebsocketClientImpl) Close() error {
+	if err := c.conn.Close(); err != nil {
+		return err
+	}
+
+	c.cancelFunc()
+
+	c.alreadyListening = false
+	close(c.errorsChan)
+
+	c.blockSubscriber = nil
+	c.confirmedAddedSubscribers = nil
+	c.unconfirmedAddedSubscribers = nil
+	c.unconfirmedRemovedSubscribers = nil
+	c.partialAddedSubscribers = nil
+	c.partialRemovedSubscribers = nil
+	c.statusSubscribers = nil
+	c.cosignatureSubscribers = nil
+
+	c.topicHandlers = nil
+
+	return nil
 }
