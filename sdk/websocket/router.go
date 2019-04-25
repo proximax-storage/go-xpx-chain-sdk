@@ -39,7 +39,7 @@ func (r messageRouter) RouteMessage(m []byte) {
 
 	handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
 	if handler == nil {
-		r.errorsChan <- errors.Wrap(unsupportedMessageTypeError, "getting topic handler from topic handlers storage")
+		r.errorsChan <- errors.Wrap(ErrUnsupportedMessageType, "getting topic handler from topic handlers storage")
 		return
 	}
 

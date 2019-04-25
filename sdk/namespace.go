@@ -108,7 +108,7 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 
 	dtos := namespaceInfoDTOs(make([]*namespaceInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, url.Encode(), addresses(addrs), &dtos)
+	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, url.Encode(), &addresses{addrs}, &dtos)
 	if err != nil {
 		return nil, err
 	}
