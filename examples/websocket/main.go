@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	wsBaseUrl   = "ws://127.0.0.1:3000/ws"
-	baseUrl     = "http://127.0.0.1:3000"
+	baseUrl     = "http://192.168.88.15:3000"
 	networkType = sdk.MijinTest
 	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
 )
@@ -32,7 +31,12 @@ func main() {
 
 	ctx := context.Background()
 
-	wsc, err := websocket.NewClient(ctx, wsBaseUrl)
+	cfg, err := sdk.NewConfig(baseUrl, networkType)
+	if err != nil {
+		panic(err)
+	}
+
+	wsc, err := websocket.NewClient(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
