@@ -42,7 +42,7 @@ func main() {
 	}
 
 	//Starting listening messages from websocket
-	wsc.Listen()
+	go wsc.Listen()
 
 	// Register handlers functions for needed topics
 

@@ -35,7 +35,6 @@ const (
 
 var (
 	ErrUnsupportedMessageType = errors.New("unsupported message type")
-	//ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
 )
 
 func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
