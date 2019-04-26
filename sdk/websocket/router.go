@@ -28,7 +28,7 @@ type messageRouter struct {
 	topicHandlers     TopicHandlersStorage
 }
 
-func (r messageRouter) RouteMessage(m []byte) {
+func (r *messageRouter) RouteMessage(m []byte) {
 	messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
 	if err != nil {
 		panic(errors.Wrap(err, "getting message info"))
