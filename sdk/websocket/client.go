@@ -13,6 +13,7 @@ import (
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"io"
+	"net"
 )
 
 type Path string
@@ -29,8 +30,8 @@ const (
 )
 
 var (
-	ErrUnsupportedMessageType       = errors.New("unsupported message type")
-	ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
+	ErrUnsupportedMessageType = errors.New("unsupported message type")
+	//ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
 )
 
 func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
@@ -48,9 +49,8 @@ func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
 	}
 
 	topicHandlers := make(topicHandlers)
-	errorsChan := make(chan error, 1000)
 	messagePublisher := newMessagePublisher(conn)
-	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers, errorsChan)
+	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers)
 
 	return &CatapultWebsocketClientImpl{
 		conn:       conn,
@@ -70,7 +70,6 @@ func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
 		topicHandlers:    topicHandlers,
 		messageRouter:    messageRouter,
 		messagePublisher: messagePublisher,
-		errorsChan:       errorsChan,
 	}, nil
 }
 
@@ -78,7 +77,6 @@ type Client interface {
 	io.Closer
 
 	Listen()
-	GetErrorsChan() chan error
 }
 
 type CatapultClient interface {
@@ -113,36 +111,47 @@ type CatapultWebsocketClientImpl struct {
 	messageRouter    Router
 	messagePublisher MessagePublisher
 
-	errorsChan       chan error
 	alreadyListening bool
 }
 
 func (c *CatapultWebsocketClientImpl) Listen() {
 	if c.alreadyListening {
-		c.errorsChan <- ErrConnectionIsAlreadyListening
 		return
 	}
 
 	c.alreadyListening = true
 
+	messagesChan := make(chan []byte)
+
+	go func() {
+		defer c.cancelFunc()
+
+		for {
+			_, resp, e := c.conn.ReadMessage()
+			if e != nil {
+				if _, ok := e.(*net.OpError); ok {
+					//Stop ReadMessage goroutine if user called Close function for websocket client
+					return
+				}
+
+				if _, ok := e.(*websocket.CloseError); ok {
+					//ToDo: call function which will implement reconnect functionality here
+					return
+				}
+
+				return
+			}
+
+			messagesChan <- resp
+		}
+	}()
+
 	for {
 		select {
 		case <-c.ctx.Done():
 			return
-		default:
-			_, resp, err := c.conn.ReadMessage()
-
-			if err == io.EOF {
-				c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
-				return
-			}
-
-			if err != nil {
-				c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
-				return
-			}
-
-			go c.messageRouter.RouteMessage(resp)
+		case msg := <-messagesChan:
+			go c.messageRouter.RouteMessage(msg)
 		}
 	}
 }
@@ -154,7 +163,7 @@ func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.B
 
 	if !c.topicHandlers.HasHandler(pathBlock) {
 		c.topicHandlers.SetTopicHandler(pathBlock, &TopicHandler{
-			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber, c.errorsChan),
+			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber),
 			Topic:   topicFormatFn(formatBlockTopic),
 		})
 	}
@@ -179,7 +188,7 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 
 	if !c.topicHandlers.HasHandler(pathConfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathConfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -205,7 +214,7 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.A
 
 	if !c.topicHandlers.HasHandler(pathUnconfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathUnconfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -231,7 +240,7 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk
 
 	if !c.topicHandlers.HasHandler(pathUnconfirmedRemoved) {
 		c.topicHandlers.SetTopicHandler(pathUnconfirmedRemoved, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -257,7 +266,7 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 
 	if !c.topicHandlers.HasHandler(pathPartialAdded) {
 		c.topicHandlers.SetTopicHandler(pathPartialAdded, &TopicHandler{
-			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -283,7 +292,7 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Add
 
 	if !c.topicHandlers.HasHandler(pathPartialRemoved) {
 		c.topicHandlers.SetTopicHandler(pathPartialRemoved, &TopicHandler{
-			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -309,7 +318,7 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, ha
 
 	if !c.topicHandlers.HasHandler(pathStatus) {
 		c.topicHandlers.SetTopicHandler(pathStatus, &TopicHandler{
-			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers, c.errorsChan),
+			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -335,7 +344,7 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 
 	if !c.topicHandlers.HasHandler(pathCosignature) {
 		c.topicHandlers.SetTopicHandler(pathCosignature, &TopicHandler{
-			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers, c.errorsChan),
+			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -353,19 +362,14 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) GetErrorsChan() chan error {
-	return c.errorsChan
-}
-
 func (c *CatapultWebsocketClientImpl) Close() error {
+	c.cancelFunc()
+
 	if err := c.conn.Close(); err != nil {
 		return err
 	}
 
-	c.cancelFunc()
-
 	c.alreadyListening = false
-	close(c.errorsChan)
 
 	c.blockSubscriber = nil
 	c.confirmedAddedSubscribers = nil

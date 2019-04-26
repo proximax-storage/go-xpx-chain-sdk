@@ -21,7 +21,6 @@ func TestCatapultWebsocketClientImpl_AddBlockHandlers(t *testing.T) {
 		blockSubscriber  subscribers.Block
 		topicHandlers    TopicHandlersStorage
 		messagePublisher MessagePublisher
-		errorsChan       chan error
 	}
 	type args struct {
 		handlers []subscribers.BlockHandler
@@ -124,7 +123,6 @@ func TestCatapultWebsocketClientImpl_AddBlockHandlers(t *testing.T) {
 				blockSubscriber:  tt.fields.blockSubscriber,
 				topicHandlers:    tt.fields.topicHandlers,
 				messagePublisher: tt.fields.messagePublisher,
-				errorsChan:       tt.fields.errorsChan,
 			}
 
 			err := c.AddBlockHandlers(tt.args.handlers...)
@@ -963,38 +961,6 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 			}
 			err := c.AddCosignatureHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
-		})
-	}
-}
-
-func TestCatapultWebsocketClientImpl_GetErrorsChan(t *testing.T) {
-	type fields struct {
-		errorsChan chan error
-	}
-
-	errCh := make(chan error)
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   chan error
-	}{
-		{
-			name: "success",
-			fields: fields{
-				errorsChan: errCh,
-			},
-			want: errCh,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &CatapultWebsocketClientImpl{
-				errorsChan: tt.fields.errorsChan,
-			}
-			got := c.GetErrorsChan()
-			assert.Equal(t, got, tt.want)
-
 		})
 	}
 }

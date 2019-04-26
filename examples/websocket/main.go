@@ -37,15 +37,8 @@ func main() {
 		panic(err)
 	}
 
-	//start goroutine for listening errors chanel
-	go func() {
-		for err := range wsc.GetErrorsChan() {
-			fmt.Println(err)
-		}
-	}()
-
 	//Starting listening messages from websocket
-	go wsc.Listen()
+	wsc.Listen()
 
 	// Register handlers functions for needed topics
 
@@ -83,7 +76,7 @@ func main() {
 
 	//Running the goroutine which will close websocket connection and listening after 2 minutes.
 	go func() {
-		timer := time.NewTimer(time.Minute * 2)
+		timer := time.NewTimer(time.Minute)
 
 		for range timer.C {
 			if err := wsc.Close(); err != nil {
@@ -93,13 +86,11 @@ func main() {
 		}
 	}()
 
-	time.Sleep(time.Second * 5)
-
 	//Publish test transactions
 	doTransferTransaction(address)
 	doBondedAggregateTransaction(address)
 
-	<-time.NewTimer(time.Minute * 5).C
+	<-time.NewTimer(time.Minute * 2).C
 }
 
 // publish test transfer transaction
