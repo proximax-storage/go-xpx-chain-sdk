@@ -68,8 +68,8 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 
 	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
 		fmt.Printf("Got error: %v \n", info)
-		t.Error()
 		wg.Done()
+		t.Error()
 		return true
 	}); err != nil {
 		panic(err)
