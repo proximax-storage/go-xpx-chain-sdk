@@ -1,65 +1,26 @@
-# nem2-sdk-go
+# ProximaX Sirius Blockchain Golang SDK
 
-This is the ProximaX forked [nem2-sdk-go](https://github.com/proximax-storage/nem2-sdk-go) Golang client library for Catapult API
+Official ProximaX Sirius Blockchain SDK Library in Golang.
 
+The ProximaX Sirius Catapult Chain Golang SDK works as a lightweight Golang library for interacting with the Sirius Blockchain. It provides a complete library set coverage, and supports synchronous and asynchronous requests. 
 
-<p align="center"> 
-    <img src="./doc/catapult-nem2-sdk-go.jpg">
-</p>
-
-## Usage ##
+## Installation ##
 
 ```go
 import "github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 ```
 
-Create a Catapult network configuration 
-
-Using the *Testnet* network
-```go
-conf, err := sdk.NewConfig("http://localhost:3000",sdk.Testnet)
-```
-Or using the *Mainnet* network
-```go
-conf, err := sdk.NewConfig("http://localhost:3000",sdk.Mainnet)
-```
-
-Construct a new Catapult client
-```go
-client := sdk.NewClient(nil, conf)
-```
-
-Using the client to call a method from a Service API
-
-```go
-// Get the chain height
-chainHeight, err := client.Blockchain.GetChainHeight(context.Background())
-```
-
-## Context ##
-
-A [Context](https://golang.org/pkg/context/) type is the first argument in any service method for specifying
-deadlines, cancelation signals, and other request-scoped values
-```go
-// Get the chain height
-chainHeight, err := client.Blockchain.GetChainHeight(context.Background())
-```
-
-## Wiki / Examples ##
+## Wiki and Examples ##
 
 Examples are in the `examples` folder
 
-For more examples, go to our [wiki](https://github.com/proximax-storage/nem2-sdk-go/wiki)
+For more examples, go to our [wiki](https://github.com/proximax-storage/go-xpx-catapult-sdk/wiki)
 
-## Core Contributors ##
+## Acknowledgement ## 
 
- + [@Wondertan](https://github.com/Wondertan) 
- + [@ruslanBik4](https://github.com/ruslanBik4)
- + [@slackve](https://github.com/slackve)
- + [@brambear](https://github.com/alvin-reyes)
- + [@carlocayos](https://github.com/carlocayos)
+This library is a fork of nem2-go-sdk which was also contributed by ProximaX Limited to NEM Foundation. 
 
 ## Contribution ##
 We'd love to get more people involved in the project. Please feel free to raise any issues or PR and we'll review your contribution.
-
-Copyright (c) 2018 ProximaX Limited
+    
+Copyright (c) 2019 ProximaX Limited
