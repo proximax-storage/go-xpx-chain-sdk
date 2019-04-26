@@ -27,16 +27,18 @@ var cfg, _ = sdk.NewConfig(testUrl, networkType)
 var ctx = context.Background()
 
 var client = sdk.NewClient(nil, cfg)
-var wsc, _ = websocket.NewClient(cfg)
+var wsc, _ = websocket.NewClient(ctx, cfg)
 
 type CreateTransaction func() (sdk.Transaction, error)
 
 func waitTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
 	c := make(chan struct{})
+
 	go func() {
 		defer close(c)
 		wg.Wait()
 	}()
+
 	select {
 	case <-c:
 		return
@@ -48,14 +50,13 @@ func waitTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
 
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) {
 
+	// Starting listening messages from websocket
+	go wsc.Listen()
+
 	var wg sync.WaitGroup
 
-	// Starting listening messages from websocket
-	wg.Add(1)
-	go wsc.Listen(&wg)
-
 	// Register handlers functions for needed topics
-
+	wg.Add(1)
 	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
 		fmt.Println("Successful!")
