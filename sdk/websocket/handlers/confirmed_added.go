@@ -7,25 +7,22 @@ import (
 	"sync"
 )
 
-func NewConfirmedAddedHandler(messageMapper sdk.ConfirmedAddedMapper, handlers subscribers.ConfirmedAdded, errCh chan<- error) *confirmedAddedHandler {
+func NewConfirmedAddedHandler(messageMapper sdk.ConfirmedAddedMapper, handlers subscribers.ConfirmedAdded) *confirmedAddedHandler {
 	return &confirmedAddedHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 type confirmedAddedHandler struct {
 	messageMapper sdk.ConfirmedAddedMapper
 	handlers      subscribers.ConfirmedAdded
-	errCh         chan<- error
 }
 
 func (h *confirmedAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapConfirmedAdded(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapper error"))
 	}
 
 	handlers := h.handlers.GetHandlers(address)
@@ -48,8 +45,7 @@ func (h *confirmedAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err = h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 
 			return

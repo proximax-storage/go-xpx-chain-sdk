@@ -7,25 +7,22 @@ import (
 	"sync"
 )
 
-func NewBlockHandler(messageMapper sdk.BlockMapper, handlers subscribers.Block, errCh chan<- error) *blockHandler {
+func NewBlockHandler(messageMapper sdk.BlockMapper, handlers subscribers.Block) *blockHandler {
 	return &blockHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 type blockHandler struct {
 	messageMapper sdk.BlockMapper
 	handlers      subscribers.Block
-	errCh         chan<- error
 }
 
 func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapBlock(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message Mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapping"))
 	}
 
 	handlers := h.handlers.GetHandlers()
@@ -48,8 +45,7 @@ func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err = h.handlers.RemoveHandlers(f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 
 			return
