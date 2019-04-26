@@ -7,14 +7,18 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"io"
+	"net"
+
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
-	"io"
-	"net"
 )
+
+const pathWS = "ws"
 
 type Path string
 
@@ -34,10 +38,14 @@ var (
 	//ErrConnectionIsAlreadyListening = errors.New("connection is already listening")
 )
 
-func NewClient(ctx context.Context, endpoint string) (CatapultClient, error) {
+func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 	ctx, cancelFunc := context.WithCancel(ctx)
 
-	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
+	url := *cfg.BaseURL
+	url.Scheme = "ws" // always ws
+	url.Path = pathWS
+
+	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
 	if err != nil {
 		return nil, err
 	}

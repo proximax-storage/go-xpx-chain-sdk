@@ -27,7 +27,7 @@ var cfg, _ = sdk.NewConfig(testUrl, networkType)
 var ctx = context.Background()
 
 var client = sdk.NewClient(nil, cfg)
-var wsc, _ = websocket.NewClient(wstestUrl)
+var wsc, _ = websocket.NewClient(cfg)
 
 type CreateTransaction func() (sdk.Transaction, error)
 
@@ -50,7 +50,7 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 
 	var wg sync.WaitGroup
 
-	//Starting listening messages from websocket
+	// Starting listening messages from websocket
 	wg.Add(1)
 	go wsc.Listen(&wg)
 

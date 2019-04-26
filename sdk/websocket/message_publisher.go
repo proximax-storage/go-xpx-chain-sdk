@@ -18,7 +18,7 @@ type MessagePublisher interface {
 }
 
 type catapultWebsocketMessagePublisher struct {
-	sync.RWMutex
+	sync.Mutex
 	conn *websocket.Conn
 }
 

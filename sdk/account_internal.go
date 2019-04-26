@@ -175,11 +175,13 @@ func (dto multisigAccountGraphInfoDTOS) toStruct(networkType NetworkType) (*Mult
 	return &MultisigAccountGraphInfo{ms}, nil
 }
 
-type addresses []*Address
+type addresses struct {
+	Addresses []*Address
+}
 
 func (ref *addresses) MarshalJSON() (buf []byte, err error) {
 	buf = []byte(`{"addresses":[`)
-	for i, address := range *ref {
+	for i, address := range ref.Addresses {
 		b := []byte(`"` + address.Address + `"`)
 		if i > 0 {
 			buf = append(buf, ',')
