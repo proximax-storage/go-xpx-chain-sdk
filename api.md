@@ -23,6 +23,17 @@ Catapult REST API errors
 
 ```go
 var (
+	ErrMetadataEmptyAddresses    = errors.New("list adresses ids must not by empty")
+	ErrMetadataNilAdress         = errors.New("adress must not be blank")
+	ErrMetadataEmptyMosaicIds    = errors.New("list mosaics ids must not by empty")
+	ErrMetadataNilMosaicId       = errors.New("mosaicId must not be nil")
+	ErrMetadataEmptyNamespaceIds = errors.New("list namespaces ids must not by empty")
+	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
+)
+```
+
+```go
+var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
 	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
 	ErrNilMosaicAmount       = errors.New("amount must be not nil")
@@ -87,7 +98,7 @@ mosaic id for XPX mosaic
 ```go
 func BigIntegerToHex(id *big.Int) string
 ```
-TODO analog JAVA Uint64.bigIntegerToHex
+analog JAVA Uint64.bigIntegerToHex
 
 #### func  ExtractVersion
 
@@ -100,7 +111,6 @@ func ExtractVersion(version uint64) uint8
 ```go
 func FromBigInt(int *big.Int) []uint32
 ```
-TODO
 
 #### func  GenerateChecksum
 
@@ -124,14 +134,12 @@ format like `rootname.childname.grandchildname`
 ```go
 func IntToHex(u uint32) string
 ```
-TODO
 
 #### func  NewReputationConfig
 
 ```go
 func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig, error)
 ```
-TODO
 
 #### type AbstractTransaction
 
@@ -228,7 +236,6 @@ signs aggregate signature transaction returns signed cosignature transaction
 ```go
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error)
 ```
-TODO
 
 #### type AccountInfo
 
@@ -359,7 +366,6 @@ returns address entity from passed address string for passed network type
 ```go
 func NewAddressFromEncoded(encoded string) (*Address, error)
 ```
-TODO
 
 #### func  NewAddressFromPublicKey
 
@@ -373,13 +379,22 @@ returns an address from public key for passed network type
 ```go
 func NewAddressFromRaw(address string) (*Address, error)
 ```
-TODO
 
 #### func (*Address) Pretty
 
 ```go
 func (ad *Address) Pretty() string
 ```
+
+#### type AddressMetadataInfo
+
+```go
+type AddressMetadataInfo struct {
+	MetadataInfo
+	Address *Address
+}
+```
+
 
 #### type AggregateTransaction
 
@@ -459,10 +474,38 @@ type BlockInfo struct {
 
 Models Block
 
+#### func  MapBlock
+
+```go
+func MapBlock(m []byte) (*BlockInfo, error)
+```
+
 #### func (*BlockInfo) String
 
 ```go
 func (b *BlockInfo) String() string
+```
+
+#### type BlockMapper
+
+```go
+type BlockMapper interface {
+	MapBlock(m []byte) (*BlockInfo, error)
+}
+```
+
+
+#### type BlockMapperFn
+
+```go
+type BlockMapperFn func(m []byte) (*BlockInfo, error)
+```
+
+
+#### func (BlockMapperFn) MapBlock
+
+```go
+func (p BlockMapperFn) MapBlock(m []byte) (*BlockInfo, error)
 ```
 
 #### type BlockchainService
@@ -512,7 +555,6 @@ returns blockchain storage information
 ```go
 func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error)
 ```
-TODO
 
 #### type BlockchainStorageInfo
 
@@ -545,6 +587,7 @@ type Client struct {
 	Transaction *TransactionService
 	Account     *AccountService
 	Contract    *ContractService
+	Metadata    *MetadataService
 }
 ```
 
@@ -563,41 +606,20 @@ passed client is nil, http.DefaultClient will be used
 ```go
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error)
 ```
-TODO Do sends an API Request and returns a parsed response
+Do sends an API Request and returns a parsed response
 
 #### func (*Client) DoNewRequest
 
 ```go
 func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error)
 ```
-TODO DoNewRequest creates new request, Do it & return result in V
+DoNewRequest creates new request, Do it & return result in V
 
 #### func (*Client) NewRequest
 
 ```go
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error)
 ```
-TODO
-
-#### type ClientWebsocket
-
-```go
-type ClientWebsocket struct {
-	Uid string
-
-	Subscribe *SubscribeService
-}
-```
-
-Catapult Websocket Client configuration
-
-#### func  NewConnectWs
-
-```go
-func NewConnectWs(host string, timeout time.Duration) (*ClientWebsocket, error)
-```
-returns entity which you can use to reach different subscribe services from
-passed host url and waiting timeout
 
 #### type Config
 
@@ -622,7 +644,21 @@ returns config for HTTP Client from passed node url and network type
 ```go
 func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error)
 ```
-TODO
+
+#### type ConfirmedAddedMapper
+
+```go
+type ConfirmedAddedMapper interface {
+	MapConfirmedAdded(m []byte) (Transaction, error)
+}
+```
+
+
+#### func  NewConfirmedAddedMapper
+
+```go
+func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc) ConfirmedAddedMapper
+```
 
 #### type ContractInfo
 
@@ -660,6 +696,28 @@ returns an array of contract infos for passed customer address
 func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKeys ...string) ([]*ContractInfo, error)
 ```
 returns an array of contract infos for passed public keys
+
+#### type CosignatureMapper
+
+```go
+type CosignatureMapper interface {
+	MapCosignature(m []byte) (*SignerInfo, error)
+}
+```
+
+
+#### type CosignatureMapperFn
+
+```go
+type CosignatureMapperFn func(m []byte) (*SignerInfo, error)
+```
+
+
+#### func (CosignatureMapperFn) MapCosignature
+
+```go
+func (p CosignatureMapperFn) MapCosignature(m []byte) (*SignerInfo, error)
+```
 
 #### type CosignatureSignedTransaction
 
@@ -722,15 +780,6 @@ func NewDeadline(d time.Duration) *Deadline
 func (d *Deadline) GetInstant() int64
 ```
 
-#### type ErrorInfo
-
-```go
-type ErrorInfo struct {
-	Error error
-}
-```
-
-
 #### type Hash
 
 ```go
@@ -743,16 +792,6 @@ type Hash string
 ```go
 func (h Hash) String() string
 ```
-
-#### type HashInfo
-
-```go
-type HashInfo struct {
-	Hash Hash `json:"hash"`
-}
-```
-
-structure for Subscribe status
 
 #### type HashType
 
@@ -770,6 +809,15 @@ const SHA3_256 HashType = 0
 ```go
 func (ht HashType) String() string
 ```
+
+#### type HttpError
+
+```go
+type HttpError struct {
+	StatusCode int
+}
+```
+
 
 #### type LockFundsTransaction
 
@@ -827,6 +875,118 @@ The transaction message of 1024 characters.
 func (m *Message) String() string
 ```
 
+#### type MetadataInfo
+
+```go
+type MetadataInfo struct {
+	MetadataType MetadataType
+	Fields       map[string]string
+}
+```
+
+
+#### type MetadataModification
+
+```go
+type MetadataModification struct {
+	Type  MetadataModificationType
+	Key   string
+	Value string
+}
+```
+
+
+#### func (*MetadataModification) String
+
+```go
+func (m *MetadataModification) String() string
+```
+
+#### type MetadataModificationType
+
+```go
+type MetadataModificationType uint8
+```
+
+
+```go
+const (
+	AddMetadata MetadataModificationType = iota
+	RemoveMetadata
+)
+```
+
+#### func (MetadataModificationType) String
+
+```go
+func (t MetadataModificationType) String() string
+```
+
+#### type MetadataService
+
+```go
+type MetadataService service
+```
+
+
+#### func (*MetadataService) GetAddressMetadatasInfo
+
+```go
+func (ref *MetadataService) GetAddressMetadatasInfo(ctx context.Context, addresses ...string) ([]*AddressMetadataInfo, error)
+```
+
+#### func (*MetadataService) GetMetadataByAddress
+
+```go
+func (ref *MetadataService) GetMetadataByAddress(ctx context.Context, address string) (*AddressMetadataInfo, error)
+```
+
+#### func (*MetadataService) GetMetadataByMosaicId
+
+```go
+func (ref *MetadataService) GetMetadataByMosaicId(ctx context.Context, mosaicId *MosaicId) (*MosaicMetadataInfo, error)
+```
+
+#### func (*MetadataService) GetMetadataByNamespaceId
+
+```go
+func (ref *MetadataService) GetMetadataByNamespaceId(ctx context.Context, namespaceId *NamespaceId) (*NamespaceMetadataInfo, error)
+```
+
+#### func (*MetadataService) GetMosaicMetadatasInfo
+
+```go
+func (ref *MetadataService) GetMosaicMetadatasInfo(ctx context.Context, mosaicIds ...*MosaicId) ([]*MosaicMetadataInfo, error)
+```
+
+#### func (*MetadataService) GetNamespaceMetadatasInfo
+
+```go
+func (ref *MetadataService) GetNamespaceMetadatasInfo(ctx context.Context, namespaceIds ...*NamespaceId) ([]*NamespaceMetadataInfo, error)
+```
+
+#### type MetadataType
+
+```go
+type MetadataType uint8
+```
+
+
+```go
+const (
+	MetadataNone MetadataType = iota
+	MetadataAddressType
+	MetadataMosaicType
+	MetadataNamespaceType
+)
+```
+
+#### func (MetadataType) String
+
+```go
+func (t MetadataType) String() string
+```
+
 #### type ModifyContractTransaction
 
 ```go
@@ -865,13 +1025,106 @@ func (tx *ModifyContractTransaction) GetAbstractTransaction() *AbstractTransacti
 func (tx *ModifyContractTransaction) String() string
 ```
 
+#### type ModifyMetadataAddressTransaction
+
+```go
+type ModifyMetadataAddressTransaction struct {
+	ModifyMetadataTransaction
+	Address *Address
+}
+```
+
+ModifyMetadataAddressTransaction
+
+#### func  NewModifyMetadataAddressTransaction
+
+```go
+func NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataAddressTransaction, error)
+```
+
+#### func (*ModifyMetadataAddressTransaction) String
+
+```go
+func (tx *ModifyMetadataAddressTransaction) String() string
+```
+
+#### type ModifyMetadataMosaicTransaction
+
+```go
+type ModifyMetadataMosaicTransaction struct {
+	ModifyMetadataTransaction
+	MosaicId *MosaicId
+}
+```
+
+ModifyMetadataMosaicTransaction
+
+#### func  NewModifyMetadataMosaicTransaction
+
+```go
+func NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataMosaicTransaction, error)
+```
+
+#### func (*ModifyMetadataMosaicTransaction) String
+
+```go
+func (tx *ModifyMetadataMosaicTransaction) String() string
+```
+
+#### type ModifyMetadataNamespaceTransaction
+
+```go
+type ModifyMetadataNamespaceTransaction struct {
+	ModifyMetadataTransaction
+	NamespaceId *NamespaceId
+}
+```
+
+ModifyMetadataNamespaceTransaction
+
+#### func  NewModifyMetadataNamespaceTransaction
+
+```go
+func NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataNamespaceTransaction, error)
+```
+
+#### func (*ModifyMetadataNamespaceTransaction) String
+
+```go
+func (tx *ModifyMetadataNamespaceTransaction) String() string
+```
+
+#### type ModifyMetadataTransaction
+
+```go
+type ModifyMetadataTransaction struct {
+	AbstractTransaction
+	MetadataType  MetadataType
+	Modifications []*MetadataModification
+}
+```
+
+ModifyMetadataTransaction
+
+#### func (*ModifyMetadataTransaction) GetAbstractTransaction
+
+```go
+func (tx *ModifyMetadataTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*ModifyMetadataTransaction) String
+
+```go
+func (tx *ModifyMetadataTransaction) String() string
+```
+
 #### type ModifyMultisigAccountTransaction
 
 ```go
 type ModifyMultisigAccountTransaction struct {
 	AbstractTransaction
-	MinApprovalDelta uint8
-	MinRemovalDelta  uint8
+	MinApprovalDelta int8
+	MinRemovalDelta  int8
 	Modifications    []*MultisigCosignatoryModification
 }
 ```
@@ -1036,6 +1289,16 @@ to which it belongs to.
 func (m *MosaicInfo) String() string
 ```
 
+#### type MosaicMetadataInfo
+
+```go
+type MosaicMetadataInfo struct {
+	MetadataInfo
+	MosaicId *MosaicId
+}
+```
+
+
 #### type MosaicProperties
 
 ```go
@@ -1054,7 +1317,6 @@ type MosaicProperties struct {
 ```go
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties
 ```
-TODO
 
 #### func (*MosaicProperties) String
 
@@ -1221,8 +1483,8 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error)
 returns namespace id from passed namespace name should be used for creating
 root, child and grandchild namespace ids to create root namespace pass namespace
 name in format like `rootname` to create child namespace pass namespace name in
-format like `rootna.childname` to create grand child namespace pass namespace
-name in format like `rootna.childname.grandchildname`
+format like `rootname.childname` to create grand child namespace pass namespace
+name in format like `rootname.childname.grandchildname`
 
 #### func (*NamespaceId) String
 
@@ -1244,28 +1506,24 @@ type NamespaceIds struct {
 ```go
 func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator)
 ```
-TODO
 
 #### func (*NamespaceIds) Encode
 
 ```go
 func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream)
 ```
-TODO
 
 #### func (*NamespaceIds) IsEmpty
 
 ```go
 func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool
 ```
-TODO
 
 #### func (*NamespaceIds) MarshalJSON
 
 ```go
 func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error)
 ```
-TODO
 
 #### type NamespaceInfo
 
@@ -1292,6 +1550,16 @@ type NamespaceInfo struct {
 ```go
 func (ref *NamespaceInfo) String() string
 ```
+
+#### type NamespaceMetadataInfo
+
+```go
+type NamespaceMetadataInfo struct {
+	MetadataInfo
+	NamespaceId *NamespaceId
+}
+```
+
 
 #### type NamespaceName
 
@@ -1339,8 +1607,8 @@ returns an array of namespace names for passed namespace ids
 func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error)
 ```
-TODO what is nsId returns an array of namespace infos for passed owner address
-also it is possible to use pagination
+returns an array of namespace infos for passed owner address also it is possible
+to use pagination
 
 #### func (*NamespaceService) GetNamespacesFromAccounts
 
@@ -1348,8 +1616,8 @@ also it is possible to use pagination
 func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error)
 ```
-TODO what is nsId returns an array of namespace infos for passed owner addresses
-also it is possible to use pagination
+returns an array of namespace infos for passed owner addresses also it is
+possible to use pagination
 
 #### type NamespaceType
 
@@ -1403,7 +1671,6 @@ const (
 ```go
 func ExtractNetworkType(version uint64) NetworkType
 ```
-TODO
 
 #### func  NetworkTypeFromString
 
@@ -1417,15 +1684,57 @@ func NetworkTypeFromString(networkType string) NetworkType
 func (nt NetworkType) String() string
 ```
 
+#### type PartialAddedMapper
+
+```go
+type PartialAddedMapper interface {
+	MapPartialAdded(m []byte) (*AggregateTransaction, error)
+}
+```
+
+
+#### func  NewPartialAddedMapper
+
+```go
+func NewPartialAddedMapper(mapTransactionFunc mapTransactionFunc) PartialAddedMapper
+```
+
 #### type PartialRemovedInfo
 
 ```go
 type PartialRemovedInfo struct {
-	Meta SubscribeHash `json:"meta"`
+	Meta *TransactionInfo
 }
 ```
 
-structure for Subscribe PartialRemoved
+
+#### func  MapPartialRemoved
+
+```go
+func MapPartialRemoved(m []byte) (*PartialRemovedInfo, error)
+```
+
+#### type PartialRemovedMapper
+
+```go
+type PartialRemovedMapper interface {
+	MapPartialRemoved(m []byte) (*PartialRemovedInfo, error)
+}
+```
+
+
+#### type PartialRemovedMapperFn
+
+```go
+type PartialRemovedMapperFn func(m []byte) (*PartialRemovedInfo, error)
+```
+
+
+#### func (PartialRemovedMapperFn) MapPartialRemoved
+
+```go
+func (p PartialRemovedMapperFn) MapPartialRemoved(m []byte) (*PartialRemovedInfo, error)
+```
 
 #### type PublicAccount
 
@@ -1594,6 +1903,12 @@ type SignerInfo struct {
 ```
 
 
+#### func  MapCosignature
+
+```go
+func MapCosignature(m []byte) (*SignerInfo, error)
+```
+
 #### type StatusInfo
 
 ```go
@@ -1604,214 +1919,32 @@ type StatusInfo struct {
 ```
 
 
-#### type SubscribeBlock
+#### func  MapStatus
 
 ```go
-type SubscribeBlock struct {
-	Ch chan *BlockInfo
+func MapStatus(m []byte) (*StatusInfo, error)
+```
+
+#### type StatusMapper
+
+```go
+type StatusMapper interface {
+	MapStatus(m []byte) (*StatusInfo, error)
 }
 ```
 
 
-```go
-var Block *SubscribeBlock
-```
-
-#### func (*SubscribeBlock) Unsubscribe
+#### type StatusMapperFn
 
 ```go
-func (s *SubscribeBlock) Unsubscribe() error
-```
-
-#### type SubscribeBonded
-
-```go
-type SubscribeBonded struct {
-	Ch chan *AggregateTransaction
-}
+type StatusMapperFn func(m []byte) (*StatusInfo, error)
 ```
 
 
-#### func (*SubscribeBonded) Unsubscribe
+#### func (StatusMapperFn) MapStatus
 
 ```go
-func (s *SubscribeBonded) Unsubscribe() error
-```
-
-#### type SubscribeError
-
-```go
-type SubscribeError struct {
-	Ch chan *ErrorInfo
-}
-```
-
-
-#### func (*SubscribeError) Unsubscribe
-
-```go
-func (s *SubscribeError) Unsubscribe() error
-```
-
-#### type SubscribeHash
-
-```go
-type SubscribeHash struct {
-	Ch chan *HashInfo
-}
-```
-
-
-#### func (*SubscribeHash) Unsubscribe
-
-```go
-func (s *SubscribeHash) Unsubscribe() error
-```
-
-#### type SubscribePartialRemoved
-
-```go
-type SubscribePartialRemoved struct {
-	Ch chan *PartialRemovedInfo
-}
-```
-
-
-#### func (*SubscribePartialRemoved) Unsubscribe
-
-```go
-func (s *SubscribePartialRemoved) Unsubscribe() error
-```
-
-#### type SubscribeService
-
-```go
-type SubscribeService serviceWs
-```
-
-
-#### func (*SubscribeService) Block
-
-```go
-func (c *SubscribeService) Block() (*SubscribeBlock, error)
-```
-returns entity from which you access channel with block infos block info gets
-into channel when new block is harvested
-
-#### func (*SubscribeService) ConfirmedAdded
-
-```go
-func (c *SubscribeService) ConfirmedAdded(add *Address) (*SubscribeTransaction, error)
-```
-returns an entity from which you can access channel with Transaction infos for
-passed address Transaction info gets into channel when it is included in a block
-
-#### func (*SubscribeService) Cosignature
-
-```go
-func (c *SubscribeService) Cosignature(add *Address) (*SubscribeSigner, error)
-```
-returns an entity from which you can access channel with cosignature transaction
-is added to an aggregate bounded transaction with partial state related to
-passed address
-
-#### func (*SubscribeService) Error
-
-```go
-func (c *SubscribeService) Error(add *Address) *SubscribeError
-```
-returns an entity from which you can access channel with errors related to
-passed address
-
-#### func (*SubscribeService) PartialAdded
-
-```go
-func (c *SubscribeService) PartialAdded(add *Address) (*SubscribeBonded, error)
-```
-returns an entity from which you can access channel with Aggregate Bonded
-Transaction info Aggregate Bonded Transaction info gets into channel when it is
-in partial state and waiting for actors to send all required cosignature
-transactions
-
-#### func (*SubscribeService) PartialRemoved
-
-```go
-func (c *SubscribeService) PartialRemoved(add *Address) (*SubscribePartialRemoved, error)
-```
-returns an entity from which you can access channel with Aggregate Bonded
-Transaction hash related to passed address Aggregate Bonded Transaction hash
-gets into channel when it was in partial state but not anymore
-
-#### func (*SubscribeService) Status
-
-```go
-func (c *SubscribeService) Status(add *Address) (*SubscribeStatus, error)
-```
-returns an entity from which you can access channel with Transaction status
-infos for passed address Transaction info gets into channel when it rises an
-error
-
-#### func (*SubscribeService) UnconfirmedAdded
-
-```go
-func (c *SubscribeService) UnconfirmedAdded(add *Address) (*SubscribeTransaction, error)
-```
-returns an entity from which you can access channel with Transaction infos for
-passed address Transaction info gets into channel when it is in unconfirmed
-state and waiting to be included into a block
-
-#### func (*SubscribeService) UnconfirmedRemoved
-
-```go
-func (c *SubscribeService) UnconfirmedRemoved(add *Address) (*SubscribeHash, error)
-```
-returns an entity from which you can access channel with Transaction infos for
-passed address Transaction info gets into channel when it was in unconfirmed
-state but not anymore
-
-#### type SubscribeSigner
-
-```go
-type SubscribeSigner struct {
-	Ch chan *SignerInfo
-}
-```
-
-
-#### func (*SubscribeSigner) Unsubscribe
-
-```go
-func (s *SubscribeSigner) Unsubscribe() error
-```
-
-#### type SubscribeStatus
-
-```go
-type SubscribeStatus struct {
-	Ch chan *StatusInfo
-}
-```
-
-
-#### func (*SubscribeStatus) Unsubscribe
-
-```go
-func (s *SubscribeStatus) Unsubscribe() error
-```
-
-#### type SubscribeTransaction
-
-```go
-type SubscribeTransaction struct {
-	Ch chan Transaction
-}
-```
-
-
-#### func (*SubscribeTransaction) Unsubscribe
-
-```go
-func (s *SubscribeTransaction) Unsubscribe() error
+func (p StatusMapperFn) MapStatus(m []byte) (*StatusInfo, error)
 ```
 
 #### type Transaction
@@ -1965,6 +2098,9 @@ type TransactionType uint16
 const (
 	AggregateCompleted TransactionType = iota
 	AggregateBonded
+	MetadataAddress
+	MetadataMosaic
+	MetadataNamespace
 	MosaicDefinition
 	MosaicSupplyChange
 	ModifyMultisig
@@ -1976,7 +2112,6 @@ const (
 	SecretProof
 )
 ```
-TransactionType enums
 
 #### func  TransactionTypeFromRaw
 
@@ -2013,6 +2148,9 @@ type TransactionVersion uint8
 const (
 	AggregateCompletedVersion TransactionVersion = 2
 	AggregateBondedVersion    TransactionVersion = 2
+	MetadataAddressVersion    TransactionVersion = 1
+	MetadataMosaicVersion     TransactionVersion = 1
+	MetadataNamespaceVersion  TransactionVersion = 1
 	MosaicDefinitionVersion   TransactionVersion = 3
 	MosaicSupplyChangeVersion TransactionVersion = 2
 	ModifyMultisigVersion     TransactionVersion = 3
@@ -2024,7 +2162,6 @@ const (
 	SecretProofVersion        TransactionVersion = 1
 )
 ```
-TransactionVersion enums
 
 #### type TransferTransaction
 
@@ -2058,6 +2195,58 @@ func (tx *TransferTransaction) GetAbstractTransaction() *AbstractTransaction
 func (tx *TransferTransaction) String() string
 ```
 
+#### type UnconfirmedAddedMapper
+
+```go
+type UnconfirmedAddedMapper interface {
+	MapUnconfirmedAdded(m []byte) (Transaction, error)
+}
+```
+
+
+#### func  NewUnconfirmedAddedMapper
+
+```go
+func NewUnconfirmedAddedMapper(mapTransactionFunc mapTransactionFunc) UnconfirmedAddedMapper
+```
+
+#### type UnconfirmedRemoved
+
+```go
+type UnconfirmedRemoved struct {
+	Meta *TransactionInfo
+}
+```
+
+
+#### func  MapUnconfirmedRemoved
+
+```go
+func MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error)
+```
+
+#### type UnconfirmedRemovedMapper
+
+```go
+type UnconfirmedRemovedMapper interface {
+	MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error)
+}
+```
+
+
+#### type UnconfirmedRemovedMapperFn
+
+```go
+type UnconfirmedRemovedMapperFn func(m []byte) (*UnconfirmedRemoved, error)
+```
+
+
+#### func (UnconfirmedRemovedMapperFn) MapUnconfirmedRemoved
+
+```go
+func (p UnconfirmedRemovedMapperFn) MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error)
+```
+
 #### type VarSize
 
 ```go
@@ -2071,4 +2260,29 @@ const (
 	ShortSize VarSize = 2
 	IntSize   VarSize = 4
 )
+```
+
+#### type WsMessageInfo
+
+```go
+type WsMessageInfo struct {
+	Address     *Address
+	ChannelName string
+}
+```
+
+
+#### type WsMessageInfoDTO
+
+```go
+type WsMessageInfoDTO struct {
+	Meta wsMessageInfoMetaDTO `json:"meta"`
+}
+```
+
+
+#### func (*WsMessageInfoDTO) ToStruct
+
+```go
+func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error)
 ```
