@@ -94,7 +94,7 @@ func (c *subscribe) unsubscribe() error {
 
 // Generate a new channel and subscribe to the websocket.
 // param route A subscription channel route.
-// return A pointer Subscribe struct or an error.
+// return A pointer Subscribe struct
 func (c *SubscribeService) newSubscribe(route string) (*subscribe, error) {
 	subMsg := c.client.buildSubscribe(route)
 

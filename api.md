@@ -1,3 +1,9 @@
+# sdk
+--
+    import "github.com/go-xpx-catapult-sdk/sdk"
+
+Package sdk provides a client library for the Catapult REST API.
+
 ## Usage
 
 ```go
@@ -107,12 +113,11 @@ func GenerateChecksum(b []byte) ([]byte, error)
 ```go
 func GenerateNamespacePath(name string) ([]*big.Int, error)
 ```
-GenerateNamespacePath create list NamespaceId from string returns an array of
-big ints representation if namespace ids from passed namespace path to create
-root namespace pass namespace name in format like `rootname` to create child
-namespace pass namespace name in format like `rootna.childname` to create grand
-child namespace pass namespace name in format like
-`rootna.childname.grandchildname`
+returns an array of big ints representation if namespace ids from passed
+namespace path to create root namespace pass namespace name in format like
+`rootname` to create child namespace pass namespace name in format like
+`rootname.childname` to create grand child namespace pass namespace name in
+format like `rootname.childname.grandchildname`
 
 #### func  IntToHex
 
@@ -259,57 +264,57 @@ type AccountService service
 ```go
 func (a *AccountService) AggregateBondedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]*AggregateTransaction, error)
 ```
-returns an array of aggregate bounded transactions where an account is signer or
-cosigner
+returns an array of aggregate bounded transactions where passed account is
+signer or cosigner
 
 #### func (*AccountService) GetAccountInfo
 
 ```go
 func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (*AccountInfo, error)
 ```
-returns account info for given address
+returns account info for passed address
 
 #### func (*AccountService) GetAccountsInfo
 
 ```go
 func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Address) ([]*AccountInfo, error)
 ```
-returns an array of account info for given addresses
+returns an array of account infos for passed addresses
 
 #### func (*AccountService) GetMultisigAccountGraphInfo
 
 ```go
 func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, address *Address) (*MultisigAccountGraphInfo, error)
 ```
-returns multisig account info for given address
+returns multisig account info for passed address
 
 #### func (*AccountService) GetMultisigAccountInfo
 
 ```go
 func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Address) (*MultisigAccountInfo, error)
 ```
-returns multisig account info for given address
+returns multisig account info for passed address
 
 #### func (*AccountService) IncomingTransactions
 
 ```go
 func (a *AccountService) IncomingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of transactions for which an account is receiver
+returns an array of transactions for which passed account is receiver
 
 #### func (*AccountService) OutgoingTransactions
 
 ```go
 func (a *AccountService) OutgoingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of transaction for which an account is sender
+returns an array of transaction for which passed account is sender
 
 #### func (*AccountService) Transactions
 
 ```go
 func (a *AccountService) Transactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of confirmed transactions for which an account is sender or
+returns an array of confirmed transactions for which passed account is sender or
 receiver.
 
 #### func (*AccountService) UnconfirmedTransactions
@@ -317,7 +322,7 @@ receiver.
 ```go
 func (a *AccountService) UnconfirmedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of confirmed transactions for which an account is sender or
+returns an array of confirmed transactions for which passed account is sender or
 receiver. unconfirmed transactions are those transactions that have not yet been
 included in a block. unconfirmed transactions are not guaranteed to be included
 in any block.
@@ -347,7 +352,7 @@ type Address struct {
 ```go
 func NewAddress(address string, networkType NetworkType) *Address
 ```
-returns address struc from passed address string for passed network type
+returns address entity from passed address string for passed network type
 
 #### func  NewAddressFromEncoded
 
@@ -392,16 +397,16 @@ type AggregateTransaction struct {
 ```go
 func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error)
 ```
-returns bounded aggregate transaction or error from passed deadline and an array
-of transactions to be included in
+returns bounded aggregate transaction from passed deadline and an array of
+transactions to be included in
 
 #### func  NewCompleteAggregateTransaction
 
 ```go
 func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error)
 ```
-returns complete aggregate transaction or error from passed deadline and an
-array of transactions to be included in
+returns complete aggregate transaction from passed deadline and an array of
+transactions to be included in
 
 #### func (*AggregateTransaction) GetAbstractTransaction
 
@@ -500,7 +505,7 @@ returns blockchain score
 ```go
 func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*BlockchainStorageInfo, error)
 ```
-returns storage information
+returns blockchain storage information
 
 #### func (*BlockchainService) GetBlocksByHeightWithLimit
 
@@ -610,7 +615,7 @@ Provides service configuration
 ```go
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error)
 ```
-returns config for HTTP Client from passed base url and network type
+returns config for HTTP Client from passed node url and network type
 
 #### func  NewConfigWithReputation
 
@@ -710,7 +715,6 @@ type Deadline struct {
 ```go
 func NewDeadline(d time.Duration) *Deadline
 ```
-returns
 
 #### func (*Deadline) GetInstant
 
@@ -878,7 +882,7 @@ type ModifyMultisigAccountTransaction struct {
 ```go
 func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error)
 ```
-returns a modify multisig transaction or error from passed deadline and multisig
+returns a modify multisig transaction from passed deadline and multisig
 modification properties
 
 #### func (*ModifyMultisigAccountTransaction) GetAbstractTransaction
@@ -961,8 +965,8 @@ type MosaicDefinitionTransaction struct {
 ```go
 func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error)
 ```
-returns mosaic definidion transaction or error from passed deadline, nonce,
-public key of announcer and mosaic properties
+returns mosaic definidion transaction from passed deadline, nonce, public key of
+announcer and mosaic properties
 
 #### func (*MosaicDefinitionTransaction) GetAbstractTransaction
 
@@ -989,7 +993,7 @@ MosaicId
 ```go
 func NewMosaicId(id *big.Int) (*MosaicId, error)
 ```
-returns mosaic id corresponding passed big int id
+returns mosaic id corresponding passed big int
 
 #### func  NewMosaicIdFromNonceAndOwner
 
@@ -1096,8 +1100,8 @@ type MosaicSupplyChangeTransaction struct {
 ```go
 func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, supplyType MosaicSupplyType, delta *big.Int, networkType NetworkType) (*MosaicSupplyChangeTransaction, error)
 ```
-returns mosaic supply change transaction or error from passed deadline, mosaic
-id, supply type and supply delta
+returns mosaic supply change transaction from passed deadline, mosaic id, supply
+type and supply delta
 
 #### func (*MosaicSupplyChangeTransaction) GetAbstractTransaction
 
@@ -1465,16 +1469,16 @@ type RegisterNamespaceTransaction struct {
 ```go
 func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration *big.Int, networkType NetworkType) (*RegisterNamespaceTransaction, error)
 ```
-returns a register root namespace transaction or error from passed deadline,
-namespace name and duration
+returns a register root namespace transaction from passed deadline, namespace
+name and duration
 
 #### func  NewRegisterSubNamespaceTransaction
 
 ```go
 func NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string, parentId *NamespaceId, networkType NetworkType) (*RegisterNamespaceTransaction, error)
 ```
-returns a register sub namespace transaction or error from passed deadline,
-namespace name and parent namespace id
+returns a register sub namespace transaction from passed deadline, namespace
+name and parent namespace id
 
 #### func (*RegisterNamespaceTransaction) GetAbstractTransaction
 
@@ -1707,9 +1711,9 @@ passed address Transaction info gets into channel when it is included in a block
 ```go
 func (c *SubscribeService) Cosignature(add *Address) (*SubscribeSigner, error)
 ```
-returns an entity from which you can access channel with cosignature signed
-transaction related to passed address is added to an aggregate bounded
-transaction with partial state
+returns an entity from which you can access channel with cosignature transaction
+is added to an aggregate bounded transaction with partial state related to
+passed address
 
 #### func (*SubscribeService) Error
 
@@ -1735,8 +1739,8 @@ transactions
 func (c *SubscribeService) PartialRemoved(add *Address) (*SubscribePartialRemoved, error)
 ```
 returns an entity from which you can access channel with Aggregate Bonded
-Transaction hash for passed address Aggregate Bonded Transaction hash gets into
-channel when it was in partial state but not anymore
+Transaction hash related to passed address Aggregate Bonded Transaction hash
+gets into channel when it was in partial state but not anymore
 
 #### func (*SubscribeService) Status
 
@@ -1885,23 +1889,22 @@ type TransactionService service
 ```go
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error)
 ```
-returns transaction hash or error after announcing passed signed transaction
+returns transaction hash after announcing passed signed transaction
 
 #### func (*TransactionService) AnnounceAggregateBonded
 
 ```go
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error)
 ```
-returns transaction hash or error after announcing passed signed aggregate
-bounded transaction
+returns transaction hash after announcing passed signed aggregate bounded
+transaction
 
 #### func (*TransactionService) AnnounceAggregateBondedCosignature
 
 ```go
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error)
 ```
-returns transaction hash or error after announcing passed signed cosignature
-transaction
+returns transaction hash after announcing passed signed cosignature transaction
 
 #### func (*TransactionService) GetTransaction
 
@@ -1915,15 +1918,14 @@ returns transaction information for passed transaction id or hash
 ```go
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error)
 ```
-returns transaction status or error for passed transaction id or hash
+returns transaction status for passed transaction id or hash
 
 #### func (*TransactionService) GetTransactionStatuses
 
 ```go
 func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error)
 ```
-returns an array of transaction statuses or error for passed transaction ids or
-hashes
+returns an array of transaction statuses for passed transaction ids or hashes
 
 #### func (*TransactionService) GetTransactions
 
@@ -2041,8 +2043,8 @@ type TransferTransaction struct {
 ```go
 func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error)
 ```
-returns a transfer transaction or error from passed deadline, transfer
-recipient, array of mosaics to transfer and transfer message
+returns a transfer transaction from passed deadline, transfer recipient, array
+of mosaics to transfer and transfer message
 
 #### func (*TransferTransaction) GetAbstractTransaction
 
