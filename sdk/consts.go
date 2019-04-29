@@ -58,6 +58,15 @@ const (
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 
+// routes for metadata service
+const (
+	metadatasInfoRoute       = "/metadata"
+	metadataInfoRoute        = "/metadata/%s"
+	metadataByAccountRoute   = "/account/%s/metadata"
+	metadataByMosaicRoute    = "/mosaic/%s/metadata"
+	metadataByNamespaceRoute = "/namespace/%s/metadata"
+)
+
 // routes for network service
 const (
 	networkRoute = "/network"

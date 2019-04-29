@@ -66,6 +66,15 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *ModifyMultisigAccountTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
@@ -89,6 +98,15 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) SignerBytes() []byte {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
 	return nil
+}
+
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *ModifyMultisigAccountTransactionBuffer) Version() uint16 {
@@ -132,6 +150,15 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) FeeLength() int {
 	return 0
 }
 
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *ModifyMultisigAccountTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
@@ -149,28 +176,37 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) DeadlineLength() int {
 	return 0
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) MinRemovalDelta() byte {
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *ModifyMultisigAccountTransactionBuffer) MinRemovalDelta() int8 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return rcv._tab.GetInt8(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) MutateMinRemovalDelta(n byte) bool {
-	return rcv._tab.MutateByteSlot(18, n)
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateMinRemovalDelta(n int8) bool {
+	return rcv._tab.MutateInt8Slot(18, n)
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) MinApprovalDelta() byte {
+func (rcv *ModifyMultisigAccountTransactionBuffer) MinApprovalDelta() int8 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return rcv._tab.GetInt8(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) MutateMinApprovalDelta(n byte) bool {
-	return rcv._tab.MutateByteSlot(20, n)
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateMinApprovalDelta(n int8) bool {
+	return rcv._tab.MutateInt8Slot(20, n)
 }
 
 func (rcv *ModifyMultisigAccountTransactionBuffer) NumModifications() byte {
@@ -241,11 +277,11 @@ func ModifyMultisigAccountTransactionBufferAddDeadline(builder *flatbuffers.Buil
 func ModifyMultisigAccountTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder *flatbuffers.Builder, minRemovalDelta byte) {
-	builder.PrependByteSlot(7, minRemovalDelta, 0)
+func ModifyMultisigAccountTransactionBufferAddMinRemovalDelta(builder *flatbuffers.Builder, minRemovalDelta int8) {
+	builder.PrependInt8Slot(7, minRemovalDelta, 0)
 }
-func ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder *flatbuffers.Builder, minApprovalDelta byte) {
-	builder.PrependByteSlot(8, minApprovalDelta, 0)
+func ModifyMultisigAccountTransactionBufferAddMinApprovalDelta(builder *flatbuffers.Builder, minApprovalDelta int8) {
+	builder.PrependInt8Slot(8, minApprovalDelta, 0)
 }
 func ModifyMultisigAccountTransactionBufferAddNumModifications(builder *flatbuffers.Builder, numModifications byte) {
 	builder.PrependByteSlot(9, numModifications, 0)

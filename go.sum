@@ -4,6 +4,8 @@ github.com/google/flatbuffers v1.10.0 h1:wHCM5N1xsJ3VwePcIpVqnmjAqRXlR44gv4hpGi+
 github.com/google/flatbuffers v1.10.0/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/google/go-querystring v1.0.0 h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/json-iterator/go v1.1.6 h1:MrUvLMLTMxbqFJ9kzlvat/rYZqZnW3u4wkLzWTaFwKs=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
@@ -20,8 +22,12 @@ github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360 h1
 github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360/go.mod h1:AXztFfpFdhHnmP2KY771/67NR28SFSsk/NOLR2+13nQ=
 github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63 h1:y0qyv3HK1N69ebIBVq2Reg94bgTRRsalKQ2jtFm4X10=
 github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63/go.mod h1:bTUWZWtoRHhTTqatPWwFCKNeAFDzA2jbA1kLidM0/Is=
+<<<<<<< HEAD
 github.com/robertkrimen/godocdown v0.0.0-20130622164427-0bfa04905481 h1:jMxcLa+VjJKhpCwbLUXAD15wJ+hhvXMLujCl3MkXpfM=
 github.com/robertkrimen/godocdown v0.0.0-20130622164427-0bfa04905481/go.mod h1:C9WhFzY47SzYBIvzFqSvHIR6ROgDo4TtdTuRaOMjF/s=
+=======
+github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
+>>>>>>> origin
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
@@ -35,4 +41,5 @@ golang.org/x/net v0.0.0-20190326090315-15845e8f865b h1:LlDMQZ0I/u8J45sbt31TecpsF
 golang.org/x/net v0.0.0-20190326090315-15845e8f865b/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a h1:1BGLXjeY4akVXGgbC9HugT3Jv3hCI0z56oJR5vAMgBU=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
