@@ -26,8 +26,8 @@ func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 // returns namespace id from passed namespace name
 // should be used for creating root, child and grandchild namespace ids
 // to create root namespace pass namespace name in format like `rootname`
-// to create child namespace pass namespace name in format like `rootna.childname`
-// to create grand child namespace pass namespace name in format like `rootna.childname.grandchildname`
+// to create child namespace pass namespace name in format like `rootname.childname`
+// to create grand child namespace pass namespace name in format like `rootname.childname.grandchildname`
 func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 	if list, err := GenerateNamespacePath(namespaceName); err != nil {
 		return nil, err
@@ -54,7 +54,6 @@ type NamespaceIds struct {
 	List []*NamespaceId
 }
 
-// TODO
 func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	buf = []byte(`{"namespaceIds": [`)
 
@@ -71,12 +70,10 @@ func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-// TODO
 func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool {
 	return len((*NamespaceIds)(ptr).List) == 0
 }
 
-// TODO
 func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	if (*NamespaceIds)(ptr) == nil {
 		ptr = (unsafe.Pointer)(&NamespaceIds{})
@@ -99,7 +96,6 @@ func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	}
 }
 
-// TODO
 func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 	buf, err := (*NamespaceIds)(ptr).MarshalJSON()
 	if err == nil {

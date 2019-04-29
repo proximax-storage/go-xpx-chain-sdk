@@ -46,7 +46,6 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 	return nsInfo, nil
 }
 
-// TODO what is nsId
 // returns an array of namespace infos for passed owner address
 // also it is possible to use pagination
 func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
@@ -88,7 +87,6 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 	return nsInfos, nil
 }
 
-// TODO what is nsId
 // returns an array of namespace infos for passed owner addresses
 // also it is possible to use pagination
 func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,

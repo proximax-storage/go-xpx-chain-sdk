@@ -25,7 +25,6 @@ func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 	return signTransactionWith(tx, a)
 }
 
-// TODO
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
@@ -157,7 +156,6 @@ func NewAddress(address string, networkType NetworkType) *Address {
 	return &Address{networkType, address}
 }
 
-// TODO
 func NewAddressFromRaw(address string) (*Address, error) {
 	if nType, ok := addressNet[address[0]]; ok {
 		return NewAddress(address, nType), nil
@@ -176,7 +174,6 @@ func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, er
 	return NewAddress(ad, networkType), nil
 }
 
-// TODO
 func NewAddressFromEncoded(encoded string) (*Address, error) {
 	pH, err := hex.DecodeString(encoded)
 	if err != nil {

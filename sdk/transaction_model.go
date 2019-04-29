@@ -1008,7 +1008,7 @@ type ModifyMultisigAccountTransaction struct {
 
 // returns a modify multisig transaction from passed deadline and multisig modification properties
 func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
-	if len(modifications) == 0 {
+	if len(modifications) == 0 && minApprovalDelta == 0 && minRemovalDelta == 0 {
 		return nil, errors.New("modifications must not empty")
 	}
 

@@ -41,7 +41,6 @@ var defaultRepConfig = reputationConfig{
 	defaultReputation: 0.9,
 }
 
-// TODO
 func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig, error) {
 	if defaultRep < 0 || defaultRep > 1 {
 		return nil, ErrInvalidReputationConfig
@@ -55,7 +54,6 @@ func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
 	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
 }
 
-// TODO
 func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error) {
 	u, err := url.Parse(baseUrl)
 	if err != nil {
@@ -108,7 +106,6 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
-// TODO
 // DoNewRequest creates new request, Do it & return result in V
 func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
 	req, err := s.NewRequest(method, path, body)
@@ -124,7 +121,6 @@ func (s *Client) DoNewRequest(ctx context.Context, method string, path string, b
 	return resp, nil
 }
 
-// TODO
 // Do sends an API Request and returns a parsed response
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
 
@@ -171,7 +167,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	return resp, err
 }
 
-// TODO
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
 
 	u, err := c.config.BaseURL.Parse(urlStr)

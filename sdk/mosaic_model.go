@@ -109,7 +109,6 @@ type MosaicProperties struct {
 	Duration      *big.Int
 }
 
-// TODO
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,

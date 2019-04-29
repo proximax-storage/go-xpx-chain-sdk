@@ -12,7 +12,6 @@ import (
 
 type uint64DTO [2]uint32
 
-// TODO
 func (dto uint64DTO) toBigInt() *big.Int {
 	if dto[0] == 0 && dto[1] == 0 {
 		return &big.Int{}
@@ -25,19 +24,16 @@ func (dto uint64DTO) toBigInt() *big.Int {
 	return &int
 }
 
-// TODO
 func IntToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
 
-// TODO
 // analog JAVA Uint64.bigIntegerToHex
 func BigIntegerToHex(id *big.Int) string {
 	u := FromBigInt(id)
 	return IntToHex(u[1]) + IntToHex(u[0])
 }
 
-// TODO
 func FromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}
