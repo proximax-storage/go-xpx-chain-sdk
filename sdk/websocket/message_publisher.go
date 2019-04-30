@@ -3,6 +3,7 @@ package websocket
 import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"sync"
 )
 
 func newMessagePublisher(conn *websocket.Conn) MessagePublisher {
@@ -17,10 +18,14 @@ type MessagePublisher interface {
 }
 
 type catapultWebsocketMessagePublisher struct {
+	sync.Mutex
 	conn *websocket.Conn
 }
 
 func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, path Path) error {
+	p.Lock()
+	defer p.Unlock()
+
 	dto := &subscribeDTO{
 		Uid:       uid,
 		Subscribe: string(path),
@@ -34,6 +39,9 @@ func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, 
 }
 
 func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string, path Path) error {
+	p.Lock()
+	defer p.Unlock()
+
 	dto := &unsubscribeDTO{
 		Uid:         uid,
 		Unsubscribe: string(path),

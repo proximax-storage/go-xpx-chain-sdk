@@ -39,7 +39,7 @@ func FromBigInt(int *big.Int) []uint32 {
 		return []uint32{0, 0}
 	}
 
-	var u64 uint64 = uint64(int.Int64())
+	var u64 = uint64(int.Int64())
 	l := uint32(u64 & 0xFFFFFFFF)
 	r := uint32(u64 >> 32)
 	return []uint32{l, r}

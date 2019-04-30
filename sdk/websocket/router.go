@@ -8,13 +8,12 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 )
 
-func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandlersStorage, errorsChan chan error) Router {
+func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandlersStorage) Router {
 	return &messageRouter{
 		uid:               uid,
 		topicHandlers:     topicHandlers,
 		messageInfoMapper: messageInfoMapperFn(MapMessageInfo),
 		messagePublisher:  publisher,
-		errorsChan:        errorsChan,
 	}
 }
 
@@ -27,25 +26,22 @@ type messageRouter struct {
 	messagePublisher  MessagePublisher
 	messageInfoMapper MessageInfoMapper
 	topicHandlers     TopicHandlersStorage
-	errorsChan        chan error
 }
 
-func (r messageRouter) RouteMessage(m []byte) {
+func (r *messageRouter) RouteMessage(m []byte) {
 	messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
 	if err != nil {
-		r.errorsChan <- errors.Wrap(err, "getting address and channel name from websocket message")
-		return
+		panic(errors.Wrap(err, "getting message info"))
 	}
 
 	handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
 	if handler == nil {
-		r.errorsChan <- errors.Wrap(unsupportedMessageTypeError, "getting topic handler from topic handlers storage")
-		return
+		panic(errors.Wrap(ErrUnsupportedMessageType, "getting topic handler from topic handlers storage"))
 	}
 
 	if ok := handler.Handle(messageInfo.Address, m); !ok {
 		if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
-			r.errorsChan <- errors.Wrap(err, "unsubscribing from topic")
+			panic(errors.Wrap(err, "unsubscribing from topic"))
 		}
 	}
 

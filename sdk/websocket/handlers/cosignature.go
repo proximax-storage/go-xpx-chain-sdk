@@ -14,22 +14,19 @@ type Handler interface {
 type cosignatureHandler struct {
 	messageMapper sdk.CosignatureMapper
 	handlers      subscribers.Cosignature
-	errCh         chan<- error
 }
 
-func NewCosignatureHandler(messageMapper sdk.CosignatureMapper, handlers subscribers.Cosignature, errCh chan<- error) *cosignatureHandler {
+func NewCosignatureHandler(messageMapper sdk.CosignatureMapper, handlers subscribers.Cosignature) *cosignatureHandler {
 	return &cosignatureHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapCosignature(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapper error"))
 	}
 
 	handlers := h.handlers.GetHandlers(address)
@@ -51,8 +48,7 @@ func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err := h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 		}(f)
 	}

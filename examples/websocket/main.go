@@ -11,13 +11,11 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"math/big"
 	"net/http"
-	"sync"
 	"time"
 )
 
 const (
-	wsBaseUrl   = "ws://127.0.0.1:3000/ws"
-	baseUrl     = "http://127.0.0.1:3000"
+	baseUrl     = "http://192.168.88.15:3000"
 	networkType = sdk.MijinTest
 	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
 )
@@ -31,16 +29,20 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := websocket.NewClient(wsBaseUrl)
+	ctx := context.Background()
+
+	cfg, err := sdk.NewConfig(baseUrl, networkType)
 	if err != nil {
 		panic(err)
 	}
 
-	var wg sync.WaitGroup
+	wsc, err := websocket.NewClient(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	//Starting listening messages from websocket
-	wg.Add(1)
-	go wsc.Listen(&wg)
+	go wsc.Listen()
 
 	// Register handlers functions for needed topics
 
@@ -76,13 +78,23 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(time.Second * 5)
+	//Running the goroutine which will close websocket connection and listening after 2 minutes.
+	go func() {
+		timer := time.NewTimer(time.Minute)
+
+		for range timer.C {
+			if err := wsc.Close(); err != nil {
+				panic(err)
+			}
+			return
+		}
+	}()
 
 	//Publish test transactions
 	doTransferTransaction(address)
 	doBondedAggregateTransaction(address)
 
-	wg.Wait()
+	<-time.NewTimer(time.Minute * 2).C
 }
 
 // publish test transfer transaction
