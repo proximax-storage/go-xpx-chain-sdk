@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	baseUrl            = "http://localhost:3000"
+	baseUrl            = "http://127.0.0.1:3000"
 	networkType        = sdk.MijinTest
 	customerPrivateKey = "0F3CC33190A49ABB32E7172E348EA927F975F8829107AAA3D6349BB10797D4F6"
 	executorPrivateKey = "68B3FBB18729C1FDE225C57F8CE080FA828F0067E451A3FD81FA628842B0B763"
@@ -32,22 +32,24 @@ func main() {
 		panic(err)
 	}
 
+	ctx := context.Background()
 	customerAcc, err := sdk.NewAccountFromPrivateKey(customerPrivateKey, networkType)
 
-	ws, err := websocket.NewClient(conf)
+	ws, err := websocket.NewClient(ctx, conf)
 	if err != nil {
 		panic(err)
 	}
 
 	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go ws.Listen(wg)
+	go ws.Listen()
 
 	// The UnconfirmedAdded channel notifies when a transaction related to an
 	// address is in unconfirmed state and waiting to be included in a block.
 	// The message contains the transaction.
 
+	wg.Add(1)
 	err = ws.AddUnconfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
+		defer wg.Done()
 		fmt.Printf("UnconfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
 		return true
 	})
@@ -60,7 +62,9 @@ func main() {
 	//// The confirmedAdded channel notifies when a transaction related to an
 	//// address is included in a block. The message contains the transaction.
 
+	wg.Add(1)
 	err = ws.AddConfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
+		defer wg.Done()
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction.GetAbstractTransaction().Hash)
 		fmt.Println("Successful transfer!")
 		return true
@@ -73,7 +77,9 @@ func main() {
 	//The status channel notifies when a transaction related to an address rises an error.
 	//The message contains the error message and the transaction hash.
 
+	wg.Add(1)
 	err = ws.AddStatusHandlers(customerAcc.Address, func(info *sdk.StatusInfo) bool {
+		defer wg.Done()
 		fmt.Printf("Content: %v \n", info.Hash)
 		panic(fmt.Sprint("Status: ", info.Status))
 		return true
@@ -136,7 +142,9 @@ func main() {
 	// The block channel notifies for every new block.
 	// The message contains the block information.
 
+	wg.Add(1)
 	err = ws.AddBlockHandlers(func(info *sdk.BlockInfo) bool {
+		defer wg.Done()
 		fmt.Printf("Block received with height: %v \n", info.Height)
 		return true
 	})
@@ -146,4 +154,8 @@ func main() {
 	}
 
 	wg.Wait()
+
+	if err := ws.Close(); err != nil {
+		panic(err)
+	}
 }
