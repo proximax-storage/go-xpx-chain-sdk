@@ -10,6 +10,7 @@ import (
 
 type ContractService service
 
+// returns an array of contract infos for passed public keys
 func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKeys ...string) ([]*ContractInfo, error) {
 	if contractPubKeys == nil {
 		return nil, errors.New("contract public key should not be nil")
@@ -40,6 +41,7 @@ func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKey
 	return infos, nil
 }
 
+// returns an array of contract infos for passed customer address
 func (ref *ContractService) GetContractsByAddress(ctx context.Context, address string) ([]*ContractInfo, error) {
 	if len(address) == 0 {
 		return nil, errors.New("address should not be blank")

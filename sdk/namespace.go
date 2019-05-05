@@ -15,8 +15,7 @@ import (
 // NamespaceService provides a set of methods for obtaining information about the namespace
 type NamespaceService service
 
-// GetNamespace
-// @/namespace/
+// returns a namespace info for passed namespace id
 func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
 	if nsId == nil {
 		return nil, ErrNilNamespaceId
@@ -47,8 +46,8 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 	return nsInfo, nil
 }
 
-// GetNamespacesFromAccount get required params addresses, other skipped if value < 0
-// @/account/%s/namespaces
+// returns an array of namespace infos for passed owner address
+// also it is possible to use pagination
 func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if address == nil {
@@ -88,8 +87,8 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 	return nsInfos, nil
 }
 
-// GetNamespacesFromAccounts get required params addresses, other skipped if value is empty
-// @/account/namespaces
+// returns an array of namespace infos for passed owner addresses
+// also it is possible to use pagination
 func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if len(addrs) == 0 {
@@ -129,8 +128,7 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 	return nsInfos, nil
 }
 
-// GetNamespaceNames
-// @/namespace/names
+// returns an array of namespace names for passed namespace ids
 func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*NamespaceId) ([]*NamespaceName, error) {
 	if len(nsIds) == 0 {
 		return nil, ErrEmptyNamespaceIds
