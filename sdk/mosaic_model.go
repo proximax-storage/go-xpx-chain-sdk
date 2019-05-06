@@ -101,6 +101,12 @@ func (m *MosaicInfo) String() string {
 	)
 }
 
+// structure which includes several properties for defining mosaic
+// `SupplyMutable` - is supply of defined mosaic can be changed in future
+// `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
+// `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
+// `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
+// `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
