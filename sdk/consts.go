@@ -9,11 +9,12 @@ import (
 	"regexp"
 )
 
-// 0x0DC67FBE1CAD29E3 = 992621222383397347
+// mosaic id for XEM mosaic
 var XemMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+// mosaic id for XPX mosaic
 var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
 
-// const routers path for methods AccountService
+// routes for account service
 const (
 	accountsRoute                 = "/account"
 	accountRoute                  = "/account/%s"
@@ -29,7 +30,7 @@ const (
 	aggregateTransactionsRoute    = "/transactions/partial"
 )
 
-// const routers path for methods NamespaceService
+// routes for namespace service
 const (
 	namespaceRoute              = "/namespace/%s"
 	namespacesFromAccountsRoute = "/account/namespaces"
@@ -37,14 +38,14 @@ const (
 	namespacesFromAccountRoutes = "/account/%s/namespaces"
 )
 
-// const routers path for methods MosaicService
+// routes for mosaic service
 const (
 	mosaicsRoute     = "/mosaic"
 	mosaicRoute      = "/mosaic/%s"
 	mosaicNamesRoute = "/mosaic/names"
 )
 
-// const routers path for methods BlockchainService
+// routes for blockchain service
 const (
 	blockHeightRoute         = "/chain/height"
 	blockByHeightRoute       = "/block/%d"
@@ -54,11 +55,13 @@ const (
 	blockStorageRoute        = "/diagnostic/storage"
 )
 
+// routes for contracts service
 const (
 	contractsInfoRoute      = "/contract"
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 
+// routes for metadata service
 const (
 	metadatasInfoRoute       = "/metadata"
 	metadataInfoRoute        = "/metadata/%s"
@@ -67,12 +70,12 @@ const (
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
-// const routers path for methods MosaicService
+// routes for network service
 const (
 	networkRoute = "/network"
 )
 
-// const routers path for methods TransactionService
+// routes for transaction service
 const (
 	transactionsRoute                 = "/transaction"
 	transactionRoute                  = "/transaction/%s"

@@ -19,7 +19,6 @@ func (r *RespErr) Error() string {
 }
 
 // Catapult REST API errors
-
 var (
 	ErrResourceNotFound              = newRespError("resource is not found")
 	ErrArgumentNotValid              = newRespError("argument is not valid")
@@ -61,6 +60,7 @@ var (
 	ErrNilOrZeroLimit  = errors.New("limit should not be nil or zero")
 )
 
+// plain errors
 var (
 	ErrEmptyAddressesIds = errors.New("list of addresses should not be empty")
 	ErrNilAddress        = errors.New("address is nil")
@@ -69,6 +69,7 @@ var (
 	ErrInvalidAddress    = errors.New("wrong address")
 )
 
+// reputations error
 var (
 	ErrInvalidReputationConfig = errors.New("default reputation should be greater than 0 and less than 1")
 )

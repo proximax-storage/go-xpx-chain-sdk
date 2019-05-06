@@ -46,7 +46,6 @@ func (nt NetworkType) String() string {
 	return fmt.Sprintf("%d", nt)
 }
 
-// Network error
 var networkTypeError = errors.New("wrong raw NetworkType value")
 
 func ExtractNetworkType(version uint64) NetworkType {
