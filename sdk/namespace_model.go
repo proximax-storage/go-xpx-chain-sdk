@@ -14,7 +14,7 @@ import (
 
 type NamespaceId big.Int
 
-// returns namespace id from passed big int representation
+// NewNamespaceId generate new NamespaceId from bigInt
 func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 	if id == nil {
 		return nil, ErrNilNamespaceId
@@ -23,11 +23,7 @@ func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 	return bigIntToNamespaceId(id), nil
 }
 
-// returns namespace id from passed namespace name
-// should be used for creating root, child and grandchild namespace ids
-// to create root namespace pass namespace name in format like `rootname`
-// to create child namespace pass namespace name in format like `rootname.childname`
-// to create grand child namespace pass namespace name in format like `rootname.childname.grandchildname`
+// NewNamespaceIdFromName creates NamespaceId from namespace string name (ex: nem or domain.subdom.subdome)
 func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 	if list, err := GenerateNamespacePath(namespaceName); err != nil {
 		return nil, err
@@ -50,6 +46,7 @@ func (n *NamespaceId) toHexString() string {
 	return BigIntegerToHex(namespaceIdToBigInt(n))
 }
 
+// NamespaceIds is a list of NamespaceId
 type NamespaceIds struct {
 	List []*NamespaceId
 }
@@ -105,6 +102,7 @@ func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 
 }
 
+// NamespaceInfo contains the state information of a Namespace.
 type NamespaceInfo struct {
 	NamespaceId *NamespaceId
 	FullName    string
@@ -138,6 +136,7 @@ func (ref *NamespaceInfo) String() string {
 	)
 }
 
+// NamespaceName name info structure describes basic information of a namespace and name.
 type NamespaceName struct {
 	NamespaceId *NamespaceId
 	Name        string
@@ -153,10 +152,7 @@ func (n *NamespaceName) String() string {
 	)
 }
 
-// returns an array of big ints representation if namespace ids from passed namespace path
-// to create root namespace pass namespace name in format like `rootname`
-// to create child namespace pass namespace name in format like `rootname.childname`
-// to create grand child namespace pass namespace name in format like `rootname.childname.grandchildname`
+// GenerateNamespacePath create list NamespaceId from string
 func GenerateNamespacePath(name string) ([]*big.Int, error) {
 	parts := strings.Split(name, ".")
 

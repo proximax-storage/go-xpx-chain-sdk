@@ -13,7 +13,6 @@ require (
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190307090922-52bca9d53c3c
 	github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360
 	github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63 // indirect
-	github.com/robertkrimen/godocdown v0.0.0-20130622164427-0bfa04905481 // indirect
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190422183909-d864b10871cd
 )

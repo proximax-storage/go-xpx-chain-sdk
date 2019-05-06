@@ -49,11 +49,12 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// returns config for HTTP Client from passed node url and network type
+// Config constructor
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
 	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
 }
 
+// Config constructor
 func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error) {
 	u, err := url.Parse(baseUrl)
 	if err != nil {
@@ -85,8 +86,8 @@ type service struct {
 	client *Client
 }
 
-// returns catapult http client from passed existing client and configuration
-// if passed client is nil, http.DefaultClient will be used
+// NewClient returns a new Catapult API client.
+// If httpClient is nil then it will create http.DefaultClient
 func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient

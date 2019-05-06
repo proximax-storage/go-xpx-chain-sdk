@@ -14,7 +14,6 @@ import (
 
 type AccountService service
 
-// returns account info for passed address
 func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (*AccountInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
@@ -40,7 +39,7 @@ func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (
 	return dto.toStruct(a.client.config.reputationConfig)
 }
 
-// returns an array of account infos for passed addresses
+// Gets AccountsInfo for different accounts.
 func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Address) ([]*AccountInfo, error) {
 	if len(addresses) == 0 {
 		return nil, ErrEmptyAddressesIds
@@ -70,7 +69,7 @@ func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Addre
 	return dtos.toStruct(a.client.config.reputationConfig)
 }
 
-// returns multisig account info for passed address
+// Gets a MultisigAccountInfo for an account.
 func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Address) (*MultisigAccountInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
@@ -92,7 +91,7 @@ func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Ad
 	return dto.toStruct(a.client.config.NetworkType)
 }
 
-// returns multisig account info for passed address
+// Gets a MultisigAccountGraphInfo for an account.
 func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, address *Address) (*MultisigAccountGraphInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
@@ -114,30 +113,32 @@ func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, addres
 	return dto.toStruct(a.client.config.NetworkType)
 }
 
-// returns an array of confirmed transactions for which passed account is sender or receiver.
+// Gets an array of confirmed transactions for which an account is signer or receiver.
 func (a *AccountService) Transactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
 	return a.findTransactions(ctx, account, opt, accountTransactionsRoute)
 }
 
-// returns an array of transactions for which passed account is receiver
+// Gets an array of transactions for which an account is the recipient of a transaction.
+// A transaction is said to be incoming with respect to an account if the account is the recipient of a transaction.
 func (a *AccountService) IncomingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
 	return a.findTransactions(ctx, account, opt, incomingTransactionsRoute)
 }
 
-// returns an array of transaction for which passed account is sender
+// Gets an array of transactions for which an account is the sender a transaction.
+// A transaction is said to be outgoing with respect to an account if the account is the sender of a transaction.
 func (a *AccountService) OutgoingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
 	return a.findTransactions(ctx, account, opt, outgoingTransactionsRoute)
 }
 
-
-// returns an array of confirmed transactions for which passed account is sender or receiver.
-// unconfirmed transactions are those transactions that have not yet been included in a block.
-// unconfirmed transactions are not guaranteed to be included in any block.
+// Gets the array of transactions for which an account is the sender or receiver and which have not yet been included in a block.
+// Unconfirmed transactions are those transactions that have not yet been included in a block.
+// Unconfirmed transactions are not guaranteed to be included in any block.
 func (a *AccountService) UnconfirmedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
 	return a.findTransactions(ctx, account, opt, unconfirmedTransactionsRoute)
 }
 
-// returns an array of aggregate bounded transactions where passed account is signer or cosigner
+// Gets an array of transactions for which an account is the sender or has sign the transaction.
+// A transaction is said to be aggregate bonded with respect to an account if there are missing signatures.
 func (a *AccountService) AggregateBondedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]*AggregateTransaction, error) {
 	txs, err := a.findTransactions(ctx, account, opt, aggregateTransactionsRoute)
 	if err != nil {

@@ -13,7 +13,8 @@ import (
 
 type MosaicService service
 
-// returns a mosaic info for passed mosaic id
+// GetMosaic returns
+// @get /mosaic/{mosaicId}
 func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
@@ -40,7 +41,8 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 	return mscInfo, nil
 }
 
-// returns an array of mosaic infos for passed mosaic ids
+// GetMosaics get list mosaics Info
+// post @/mosaic/
 func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
 	if len(mscIds) == 0 {
 		return nil, ErrEmptyMosaicIds

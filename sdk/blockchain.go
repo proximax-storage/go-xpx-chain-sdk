@@ -15,7 +15,7 @@ import (
 
 type BlockchainService service
 
-// returns info for block with passed height
+// Get Block Height
 func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.Int) (*BlockInfo, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -37,7 +37,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 	return dto.toStruct()
 }
 
-// get transactions inside of block with passed height
+// Get Transactions from a block information
 func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *big.Int) ([]Transaction, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -59,6 +59,7 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *bi
 	return MapTransactions(&data)
 }
 
+// GetBlocksByHeightWithLimit Returns blocks information for a given block height and limit
 func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -84,7 +85,7 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 	return dtos.toStruct()
 }
 
-// returns blockchain height
+// Get the Chain Height
 func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, error) {
 	bh := &struct {
 		Height uint64DTO `json:"height"`
@@ -102,7 +103,7 @@ func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, 
 	return bh.Height.toBigInt(), nil
 }
 
-// returns blockchain score
+// Get the Chain Score
 func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, error) {
 	cs := &chainScoreDTO{}
 	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockScoreRoute, nil, &cs)
@@ -117,7 +118,7 @@ func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, e
 	return cs.toStruct(), nil
 }
 
-// returns blockchain storage information
+// Get the Storage Information
 func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*BlockchainStorageInfo, error) {
 	bstorage := &BlockchainStorageInfo{}
 	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockStorageRoute, nil, &bstorage)
