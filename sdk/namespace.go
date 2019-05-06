@@ -16,7 +16,7 @@ import (
 type NamespaceService service
 
 // GetNamespace
-// @/namespace/
+// @/namespace/%s
 func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
 	if nsId == nil {
 		return nil, ErrNilNamespaceId
@@ -148,6 +148,38 @@ func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*Nam
 	}
 
 	return dtos.toStruct()
+}
+
+// GetLinkedMosaicId
+// @/namespace/%s
+func (ref *NamespaceService) GetLinkedMosaicId(ctx context.Context, namespaceId *NamespaceId) (*MosaicId, error) {
+	if namespaceId == nil {
+		return nil, ErrNilAddress
+	}
+
+	info, err := ref.GetNamespace(ctx, namespaceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return info.Alias.MosaicId(), nil
+}
+
+// GetLinkedAddress
+// @/namespace/%s
+func (ref *NamespaceService) GetLinkedAddress(ctx context.Context, namespaceId *NamespaceId) (*Address, error) {
+	if namespaceId == nil {
+		return nil, ErrNilAddress
+	}
+
+	info, err := ref.GetNamespace(ctx, namespaceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return info.Alias.Address(), nil
 }
 
 func (ref *NamespaceService) buildNamespaceHierarchy(ctx context.Context, nsInfo *NamespaceInfo) error {

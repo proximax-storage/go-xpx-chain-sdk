@@ -74,17 +74,23 @@ func (n *namespaceNameDTOs) toStruct() ([]*NamespaceName, error) {
 	return nsNames, nil
 }
 
+// namespaceAliasDTO
+type namespaceAliasDTO struct {
+	MosaicId *uint64DTO
+	Address  string
+	Type     AliasType
+}
+
 // namespaceDTO temporary struct for reading responce & fill NamespaceInfo
 type namespaceDTO struct {
 	NamespaceId  uint64DTO
-	FullName     string
 	Type         int
 	Depth        int
 	Level0       *uint64DTO
 	Level1       *uint64DTO
 	Level2       *uint64DTO
+	Alias        *namespaceAliasDTO
 	ParentId     uint64DTO
-	MosaicIds    []uint64DTO
 	Owner        string
 	OwnerAddress string
 	StartHeight  uint64DTO
@@ -119,26 +125,18 @@ func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
 		return nil, err
 	}
 
-	mscIds := make([]*MosaicId, 0, len(ref.Namespace.MosaicIds))
-
-	for _, mscIdDTO := range ref.Namespace.MosaicIds {
-		mscId, err := NewMosaicId(mscIdDTO.toBigInt())
-		if err != nil {
-			return nil, err
-		}
-
-		mscIds = append(mscIds, mscId)
+	alias, err := NewNamespaceAlias(ref.Namespace.Alias)
+	if err != nil {
+		return nil, err
 	}
 
 	ns := &NamespaceInfo{
 		NamespaceId: nsId,
-		FullName:    ref.Namespace.FullName,
 		Active:      ref.Meta.Active,
-		Index:       ref.Meta.Index,
-		MetaId:      ref.Meta.Id,
 		TypeSpace:   NamespaceType(ref.Namespace.Type),
 		Depth:       ref.Namespace.Depth,
 		Levels:      levels,
+		Alias:       alias,
 		Owner:       pubAcc,
 		StartHeight: ref.Namespace.StartHeight.toBigInt(),
 		EndHeight:   ref.Namespace.EndHeight.toBigInt(),

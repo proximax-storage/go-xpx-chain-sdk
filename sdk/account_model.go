@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
+
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
@@ -43,15 +45,48 @@ func (ref *PublicAccount) String() string {
 	return fmt.Sprintf(`Address: %+v, PublicKey: "%s"`, ref.Address, ref.PublicKey)
 }
 
+type AccountType uint8
+
+// AccountType enums
+const (
+	UnlinkedAccount AccountType = iota
+	MainAccount
+	RemoteAccount
+	RemoteUnlinkedAccount
+)
+
+type AccountProperties struct {
+	Address            *Address
+	AllowedAddresses   []*Address
+	AllowedMosaicId    []*MosaicId
+	AllowedEntityTypes []TransactionType
+	BlockedAddresses   []*Address
+	BlockedMosaicId    []*MosaicId
+	BlockedEntityTypes []TransactionType
+}
+
+func (a *AccountProperties) String() string {
+	return str.StructToString(
+		"AccountProperties",
+		str.NewField("Address", str.StringPattern, a.Address),
+		str.NewField("AllowedAddresses", str.StringPattern, a.AllowedAddresses),
+		str.NewField("AllowedMosaicId", str.StringPattern, a.AllowedMosaicId),
+		str.NewField("AllowedEntityTypes", str.StringPattern, a.AllowedEntityTypes),
+		str.NewField("BlockedAddresses", str.StringPattern, a.BlockedAddresses),
+		str.NewField("BlockedMosaicId", str.StringPattern, a.BlockedMosaicId),
+		str.NewField("BlockedEntityTypes", str.StringPattern, a.BlockedEntityTypes),
+	)
+}
+
 type AccountInfo struct {
-	Address          *Address
-	AddressHeight    *big.Int
-	PublicKey        string
-	PublicKeyHeight  *big.Int
-	Importance       *big.Int
-	ImportanceHeight *big.Int
-	Mosaics          []*Mosaic
-	Reputation       float64
+	Address         *Address
+	AddressHeight   *big.Int
+	PublicKey       string
+	PublicKeyHeight *big.Int
+	AccountType     AccountType
+	LinkedAccount   *PublicAccount
+	Mosaics         []*Mosaic
+	Reputation      float64
 }
 
 func (a *AccountInfo) String() string {
@@ -61,15 +96,24 @@ func (a *AccountInfo) String() string {
 		str.NewField("AddressHeight", str.StringPattern, a.AddressHeight),
 		str.NewField("PublicKey", str.StringPattern, a.PublicKey),
 		str.NewField("PublicKeyHeight", str.StringPattern, a.PublicKeyHeight),
-		str.NewField("Importance", str.StringPattern, a.Importance),
-		str.NewField("ImportanceHeight", str.StringPattern, a.ImportanceHeight),
+		str.NewField("AccountType", str.IntPattern, a.AccountType),
+		str.NewField("LinkedAccount", str.StringPattern, a.LinkedAccount),
 		str.NewField("Mosaics", str.StringPattern, a.Mosaics),
+		str.NewField("Reputation", str.FloatPattern, a.Reputation),
 	)
 }
 
 type Address struct {
 	Type    NetworkType
 	Address string
+}
+
+func (ad *Address) String() string {
+	return str.StructToString(
+		"",
+		str.NewField("Type", str.IntPattern, ad.Type),
+		str.NewField("Address", str.StringPattern, ad.Address),
+	)
 }
 
 func (ad *Address) Pretty() string {
@@ -117,6 +161,7 @@ func NewAccount(networkType NetworkType) (*Account, error) {
 
 	return &Account{pa, kp}, nil
 }
+
 func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
@@ -152,7 +197,12 @@ func NewAddress(address string, networkType NetworkType) *Address {
 }
 
 func NewAddressFromRaw(address string) (*Address, error) {
-	if nType, ok := addressNet[address[0]]; ok {
+	pH, err := base32.StdEncoding.DecodeString(address)
+	if err != nil {
+		return nil, err
+	}
+
+	if nType, ok := addressNet[pH[0]]; ok {
 		return NewAddress(address, nType), nil
 	}
 
@@ -182,6 +232,20 @@ func NewAddressFromEncoded(encoded string) (*Address, error) {
 	}
 
 	return ad, nil
+}
+
+func EncodedStringToAddresses(addresses ...string) ([]*Address, error) {
+	result := make([]*Address, len(addresses))
+	for i, a := range addresses {
+		var err error = nil
+		result[i], err = NewAddressFromEncoded(a)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return result, nil
 }
 
 const NUM_CHECKSUM_BYTES = 4

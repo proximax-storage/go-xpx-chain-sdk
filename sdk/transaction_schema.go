@@ -4,6 +4,61 @@
 
 package sdk
 
+func accountLinkTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", ShortSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("remoteAccountKey", ByteSize),
+			newScalarAttribute("linkAction", ByteSize),
+		},
+	}
+}
+
+func accountPropertyTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", ShortSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("propertyType", ByteSize),
+			newScalarAttribute("modificationCount", ByteSize),
+			newTableArrayAttribute("modifications", schema{
+				[]schemaAttribute{
+					newScalarAttribute("modificationType", ByteSize),
+					newArrayAttribute("value", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func aliasTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", ShortSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("actionType", ByteSize),
+			newArrayAttribute("namespaceId", IntSize),
+			newArrayAttribute("aliasId", ByteSize),
+		},
+	}
+}
+
 func aggregateTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
@@ -12,7 +67,7 @@ func aggregateTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("transactionsSize", IntSize),
 			newArrayAttribute("transactions", ByteSize),
@@ -28,7 +83,7 @@ func modifyMetadataTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("metadataType", ByteSize),
 			newArrayAttribute("metadataId", ByteSize),
@@ -54,7 +109,7 @@ func mosaicDefinitionTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("mosaicNonce", IntSize),
 			newArrayAttribute("mosaicId", IntSize),
@@ -75,7 +130,7 @@ func mosaicSupplyChangeTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("mosaicId", IntSize),
 			newScalarAttribute("direction", ByteSize),
@@ -92,7 +147,7 @@ func transferTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("recipient", ByteSize),
 			newScalarAttribute("messageSize", ShortSize),
@@ -121,7 +176,7 @@ func modifyMultisigAccountTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("minRemovalDelta", ByteSize),
 			newScalarAttribute("minApprovalDelta", ByteSize),
@@ -144,7 +199,7 @@ func modifyContractTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("durationDelta", IntSize),
 			newArrayAttribute("hash", ByteSize),
@@ -181,7 +236,7 @@ func registerNamespaceTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("namespaceType", ByteSize),
 			newArrayAttribute("durationParentId", IntSize),
@@ -200,7 +255,7 @@ func lockFundsTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("mosaicId", IntSize),
 			newArrayAttribute("mosaicAmount", IntSize),
@@ -218,7 +273,7 @@ func secretLockTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("mosaicId", IntSize),
 			newArrayAttribute("mosaicAmount", IntSize),
@@ -238,7 +293,7 @@ func secretProofTransactionSchema() *schema {
 			newArrayAttribute("signer", ByteSize),
 			newScalarAttribute("version", ShortSize),
 			newScalarAttribute("type", ShortSize),
-			newArrayAttribute("fee", IntSize),
+			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("hashAlgorithm", ByteSize),
 			newArrayAttribute("secret", ByteSize),

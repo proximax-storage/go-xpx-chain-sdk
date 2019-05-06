@@ -166,3 +166,38 @@ func (ref *mosaicIds) MarshalJSON() ([]byte, error) {
 
 	return buf, nil
 }
+
+type mosaicNameDTO struct {
+	MosaicId uint64DTO `json:"mosaicId"`
+	Names    []string  `json:"names"`
+}
+
+func (m *mosaicNameDTO) toStruct() (*MosaicName, error) {
+	mosaicId, err := NewMosaicId(m.MosaicId.toBigInt())
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicName{
+		MosaicId: mosaicId,
+		Names:    m.Names,
+	}, nil
+}
+
+type mosaicNameDTOs []*mosaicNameDTO
+
+func (m *mosaicNameDTOs) toStruct() ([]*MosaicName, error) {
+	dtos := *m
+	mscNames := make([]*MosaicName, 0, len(dtos))
+
+	for _, dto := range dtos {
+		mscName, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		mscNames = append(mscNames, mscName)
+	}
+
+	return mscNames, nil
+}

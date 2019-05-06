@@ -66,3 +66,24 @@ func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([
 
 	return mscInfos, nil
 }
+
+// GetMosaicsNames Get readable names for a set of mosaics
+// post @/mosaic/names
+func (ref *MosaicService) GetMosaicsNames(ctx context.Context, mscIds ...*MosaicId) ([]*MosaicName, error) {
+	if len(mscIds) == 0 {
+		return nil, ErrEmptyMosaicIds
+	}
+
+	dtos := mosaicNameDTOs{}
+
+	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, mosaicNamesRoute, &mosaicIds{mscIds}, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dtos.toStruct()
+}

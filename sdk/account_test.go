@@ -12,16 +12,29 @@ import (
 
 var (
 	account = &AccountInfo{
-		Address:          &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
-		AddressHeight:    uint64DTO{1, 0}.toBigInt(),
-		PublicKey:        "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
-		PublicKeyHeight:  uint64DTO{0, 0}.toBigInt(),
-		Importance:       uint64DTO{409090909, 0}.toBigInt(),
-		ImportanceHeight: uint64DTO{1, 0}.toBigInt(),
+		Address:         &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+		AddressHeight:   uint64DTO{1, 0}.toBigInt(),
+		PublicKey:       "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+		PublicKeyHeight: uint64DTO{0, 0}.toBigInt(),
+		AccountType:     MainAccount,
+		LinkedAccount: &PublicAccount{
+			&Address{Type: MijinTest, Address: "SDYVPENRSMSGU24XSSCQPHKKWYUNKYFDLAVTUMMS"},
+			"F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
+		},
 		Mosaics: []*Mosaic{
 			{MosaicId: bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt()), Amount: uint64DTO{3863990592, 95248}.toBigInt()},
 		},
 		Reputation: 0.9,
+	}
+
+	accountProperties = &AccountProperties{
+		Address:            &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+		AllowedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
+		AllowedMosaicId:    []*MosaicId{bigIntToMosaicId(uint64DTO{1486560344, 659392627}.toBigInt())},
+		AllowedEntityTypes: []TransactionType{LinkAccount},
+		BlockedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
+		BlockedMosaicId:    []*MosaicId{bigIntToMosaicId(uint64DTO{1486560344, 659392627}.toBigInt())},
+		BlockedEntityTypes: []TransactionType{LinkAccount},
 	}
 
 	accountClient = mockServer.getPublicTestClientUnsafe().Account
@@ -43,6 +56,8 @@ const (
          0,
          0
       ],
+	  "accountType": 1,
+      "linkedAccountKey": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
       "mosaics":[  
          {  
             "id":[  
@@ -54,16 +69,58 @@ const (
                95248
             ]
          }
-      ],
-      "importance":[  
-         409090909,
-         0
-      ],
-      "importanceHeight":[  
-         1,
-         0
       ]
    }
+}
+`
+	accountPropertiesJson = `{
+  "accountProperties": {
+    "address": "901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58",
+    "properties": [
+      {
+        "propertyType": 1,
+        "values": [
+          "901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58"
+        ]
+      },
+      {
+        "propertyType": 2,
+        "values": [
+          [
+            1486560344,
+            659392627
+          ]
+        ]
+      },
+      {
+        "propertyType": 4,
+        "values": [
+          16716
+        ]
+      },
+      {
+        "propertyType": 129,
+        "values": [
+          "901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58"
+        ]
+      },
+      {
+        "propertyType": 130,
+        "values": [
+          [
+            1486560344,
+            659392627
+          ]
+        ]
+      },
+      {
+        "propertyType": 132,
+        "values": [
+          16716
+        ]
+      }
+    ]
+  }
 }
 `
 )
@@ -73,6 +130,37 @@ var (
 	nemTestAddress2 = "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"
 	publicKey1      = "27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9"
 )
+
+func TestAccountService_GetAccountProperties(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf(accountPropertiesRoute, nemTestAddress1),
+		RespBody: accountPropertiesJson,
+	})
+
+	accP, err := accountClient.GetAccountProperties(context.Background(), &Address{MijinTest, nemTestAddress1})
+
+	assert.Nilf(t, err, "AccountService.GetAccountProperties returned error: %s", err)
+
+	tests.ValidateStringers(t, accountProperties, accP)
+}
+
+func TestAccountService_GetAccountsProperties(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     accountsPropertiesRoute,
+		RespBody: "[" + accountPropertiesJson + "]",
+	})
+
+	accountsProperties, err := accountClient.GetAccountsProperties(
+		context.Background(),
+		&Address{MijinTest, nemTestAddress1},
+	)
+
+	assert.Nilf(t, err, "AccountService.GetAccountsProperties returned error: %s", err)
+
+	for _, accP := range accountsProperties {
+		tests.ValidateStringers(t, accountProperties, accP)
+	}
+}
 
 func TestAccountService_GetAccountInfo(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
@@ -95,7 +183,7 @@ func TestAccountService_GetAccountsInfo(t *testing.T) {
 
 	accounts, err := accountClient.GetAccountsInfo(
 		context.Background(),
-		[]*Address{{MijinTest, nemTestAddress1}},
+		&Address{MijinTest, nemTestAddress1},
 	)
 
 	assert.Nilf(t, err, "AccountService.GetAccountsInfo returned error: %s", err)

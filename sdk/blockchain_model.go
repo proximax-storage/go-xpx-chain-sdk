@@ -24,8 +24,12 @@ type BlockInfo struct {
 	Height                *big.Int
 	Timestamp             *big.Int
 	Difficulty            *big.Int
+	FeeMultiplier         uint32
 	PreviousBlockHash     string
 	BlockTransactionsHash string
+	BlockReceiptsHash     string
+	StateHash             string
+	Beneficiary           *PublicAccount
 }
 
 func (b *BlockInfo) String() string {
@@ -43,8 +47,12 @@ func (b *BlockInfo) String() string {
 		str.NewField("Height", str.StringPattern, b.Height),
 		str.NewField("Timestamp", str.StringPattern, b.Timestamp),
 		str.NewField("Difficulty", str.StringPattern, b.Difficulty),
+		str.NewField("FeeMultiplier", str.IntPattern, b.FeeMultiplier),
 		str.NewField("PreviousBlockHash", str.StringPattern, b.PreviousBlockHash),
 		str.NewField("BlockTransactionsHash", str.StringPattern, b.BlockTransactionsHash),
+		str.NewField("BlockReceiptsHash", str.StringPattern, b.BlockReceiptsHash),
+		str.NewField("StateHash", str.StringPattern, b.StateHash),
+		str.NewField("BeneficiaryPublicKey", str.StringPattern, b.Beneficiary),
 	)
 }
 

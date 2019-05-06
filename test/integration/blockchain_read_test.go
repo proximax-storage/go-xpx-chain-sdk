@@ -6,6 +6,7 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"math/big"
 	"testing"
@@ -13,13 +14,13 @@ import (
 
 const iter = 1000
 const testUrl = "http://127.0.0.1:3000"
-const wstestUrl = "ws://127.0.0.1:3000/ws"
+const networkType = sdk.MijinTest
 const privateKey = "6B4FDEBF207798DC8C2228E73F8AC40E9D49B0D52E8131CA396BDBCFA41913CE"
 
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
+	cfg, _ := sdk.NewConfig(testUrl, networkType)
 	ctx := context.TODO()
 
 	serv := sdk.NewClient(nil, cfg)
@@ -58,7 +59,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -72,7 +73,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -89,7 +90,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfoArr, err := serv.Mosaic.GetMosaics(ctx, mosaicIDs)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				for _, mscInfo := range mscInfoArr {
@@ -99,7 +100,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				tran := val.(*sdk.RegisterNamespaceTransaction)
 				nsInfo, err := serv.Namespace.GetNamespace(ctx, tran.NamespaceId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%#v", nsInfo)
@@ -109,4 +110,19 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 		}
 
 	}
+}
+
+var testMetadataInfoMosaicId, _ = sdk.NewMosaicId(big.NewInt(0x49B59D3473C49A6B))
+var testMetadataInfoNamespaceId, _ = sdk.NewNamespaceId(big.NewInt(0).SetUint64(uint64(0xAD829C74059BF6EA)))
+
+func TestMosaicService_GetAddressMetadatasInfo(t *testing.T) {
+	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
+	ctx := context.TODO()
+
+	serv := sdk.NewClient(nil, cfg)
+	id1, _ := sdk.NewMosaicId(big.NewInt(0x26514E2A1EF33824))
+	id2, _ := sdk.NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+
+	namespacesFromAccounts, _ := serv.Mosaic.GetMosaicsNames(ctx, id1, id2)
+	fmt.Println(namespacesFromAccounts)
 }

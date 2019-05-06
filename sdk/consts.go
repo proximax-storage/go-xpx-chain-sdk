@@ -17,6 +17,8 @@ var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
 const (
 	accountsRoute                 = "/account"
 	accountRoute                  = "/account/%s"
+	accountPropertiesRoute        = "/account/%s/properties"
+	accountsPropertiesRoute       = "/account/properties"
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
@@ -37,8 +39,9 @@ const (
 
 // const routers path for methods MosaicService
 const (
-	mosaicsRoute = "/mosaic"
-	mosaicRoute  = "/mosaic/%s"
+	mosaicsRoute     = "/mosaic"
+	mosaicRoute      = "/mosaic/%s"
+	mosaicNamesRoute = "/mosaic/names"
 )
 
 // const routers path for methods BlockchainService
