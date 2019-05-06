@@ -6,7 +6,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"math/big"
 	"testing"
@@ -110,19 +109,4 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 		}
 
 	}
-}
-
-var testMetadataInfoMosaicId, _ = sdk.NewMosaicId(big.NewInt(0x49B59D3473C49A6B))
-var testMetadataInfoNamespaceId, _ = sdk.NewNamespaceId(big.NewInt(0).SetUint64(uint64(0xAD829C74059BF6EA)))
-
-func TestMosaicService_GetAddressMetadatasInfo(t *testing.T) {
-	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
-	ctx := context.TODO()
-
-	serv := sdk.NewClient(nil, cfg)
-	id1, _ := sdk.NewMosaicId(big.NewInt(0x26514E2A1EF33824))
-	id2, _ := sdk.NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
-
-	namespacesFromAccounts, _ := serv.Mosaic.GetMosaicsNames(ctx, id1, id2)
-	fmt.Println(namespacesFromAccounts)
 }
