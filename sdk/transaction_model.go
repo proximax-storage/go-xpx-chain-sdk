@@ -73,7 +73,7 @@ func (tx *AbstractTransaction) String() string {
 			"Signer": %s
 		`,
 		tx.NetworkType,
-		tx.TransactionInfo.String(),
+		tx.TransactionInfo,
 		tx.Type,
 		tx.Version,
 		tx.Fee,
@@ -254,7 +254,7 @@ func (tx *AggregateTransaction) String() string {
 			"InnerTransactions": %s,
 			"Cosignatures": %s
 		`,
-		tx.AbstractTransaction.String(),
+		tx.AbstractTransaction,
 		tx.InnerTransactions,
 		tx.Cosignatures,
 	)
@@ -353,8 +353,8 @@ func (tx *ModifyMetadataTransaction) String() string {
 			"MetadataType": %s,
 			"Modifications": %s
 		`,
-		tx.AbstractTransaction.String(),
-		tx.MetadataType.String(),
+		tx.AbstractTransaction,
+		tx.MetadataType,
 		tx.Modifications,
 	)
 }
@@ -447,7 +447,7 @@ func (tx *ModifyMetadataAddressTransaction) String() string {
 			"%s,
 			"Address": %s,
 		`,
-		tx.ModifyMetadataTransaction.String(),
+		tx.ModifyMetadataTransaction,
 		tx.Address,
 	)
 }
@@ -523,8 +523,8 @@ func (tx *ModifyMetadataMosaicTransaction) String() string {
 			"%s,
 			"MosaicId": %s,
 		`,
-		tx.ModifyMetadataTransaction.String(),
-		tx.MosaicId.String(),
+		tx.ModifyMetadataTransaction,
+		tx.MosaicId,
 	)
 }
 
@@ -596,8 +596,8 @@ func (tx *ModifyMetadataNamespaceTransaction) String() string {
 			"%s,
 			"NamespaceId": %s,
 		`,
-		tx.ModifyMetadataTransaction.String(),
-		tx.NamespaceId.String(),
+		tx.ModifyMetadataTransaction,
+		tx.NamespaceId,
 	)
 }
 
@@ -683,8 +683,8 @@ func (tx *MosaicDefinitionTransaction) String() string {
 			"MosaicNonce": %d,
 			"MosaicId": [ %s ]
 		`,
-		tx.AbstractTransaction.String(),
-		tx.MosaicProperties.String(),
+		tx.AbstractTransaction,
+		tx.MosaicProperties,
 		tx.MosaicNonce,
 		tx.MosaicId,
 	)
@@ -800,8 +800,8 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 			"MosaicId": [ %v ],
 			"Delta": %d
 		`,
-		tx.AbstractTransaction.String(),
-		tx.MosaicSupplyType.String(),
+		tx.AbstractTransaction,
+		tx.MosaicSupplyType,
 		tx.MosaicId,
 		tx.Delta,
 	)
@@ -903,10 +903,10 @@ func (tx *TransferTransaction) String() string {
 			"Address": %s,
 			"Message": %s,
 		`,
-		tx.AbstractTransaction.String(),
+		tx.AbstractTransaction,
 		tx.Mosaics,
 		tx.Recipient,
-		tx.Message.String(),
+		tx.Message,
 	)
 }
 
@@ -1007,7 +1007,7 @@ type ModifyMultisigAccountTransaction struct {
 }
 
 // returns a modify multisig transaction from passed deadline and multisig modification properties
-func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
+func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
 	if len(modifications) == 0 && minApprovalDelta == 0 && minRemovalDelta == 0 {
 		return nil, errors.New("modifications must not empty")
 	}
@@ -1039,7 +1039,7 @@ func (tx *ModifyMultisigAccountTransaction) String() string {
 			"MinRemovalDelta": %d,
 			"Modifications": %s
 		`,
-		tx.AbstractTransaction.String(),
+		tx.AbstractTransaction,
 		tx.MinApprovalDelta,
 		tx.MinRemovalDelta,
 		tx.Modifications,
@@ -1159,7 +1159,7 @@ func (tx *ModifyContractTransaction) String() string {
 			"Executors": %s,
 			"Verifiers": %s
 		`,
-		tx.AbstractTransaction.String(),
+		tx.AbstractTransaction,
 		tx.DurationDelta,
 		tx.Hash,
 		tx.Customers,
@@ -1336,7 +1336,7 @@ func (tx *RegisterNamespaceTransaction) String() string {
 			"NamespaceName": %s,
 			"Duration": %d
 		`,
-		tx.AbstractTransaction.String(),
+		tx.AbstractTransaction,
 		tx.NamspaceName,
 		tx.Duration,
 	)
@@ -1465,8 +1465,8 @@ func (tx *LockFundsTransaction) String() string {
 			"Duration": %d,
 			"SignedTxHash": %s
 		`,
-		tx.AbstractTransaction.String(),
-		tx.Mosaic.String(),
+		tx.AbstractTransaction,
+		tx.Mosaic,
 		tx.Duration,
 		tx.SignedTransaction.Hash,
 	)
@@ -1585,10 +1585,10 @@ func (tx *SecretLockTransaction) String() string {
 			"Secret": %s,
 			"Recipient": %s
 		`,
-		tx.AbstractTransaction.String(),
-		tx.Mosaic.String(),
+		tx.AbstractTransaction,
+		tx.Mosaic,
 		tx.Duration,
-		tx.HashType.String(),
+		tx.HashType,
 		tx.Secret,
 		tx.Recipient,
 	)
@@ -1718,8 +1718,8 @@ func (tx *SecretProofTransaction) String() string {
 			"Secret": %s,
 			"Proof": %s
 		`,
-		tx.AbstractTransaction.String(),
-		tx.HashType.String(),
+		tx.AbstractTransaction,
+		tx.HashType,
 		tx.Secret,
 		tx.Proof,
 	)
@@ -1808,7 +1808,7 @@ func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction {
 }
 
 func (tx *CosignatureTransaction) String() string {
-	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign.String())
+	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign)
 }
 
 type SignedTransaction struct {
@@ -1866,7 +1866,7 @@ func (m *MultisigCosignatoryModification) String() string {
 			"Type": %s,
 			"PublicAccount": %s
 		`,
-		m.Type.String(),
+		m.Type,
 		m.PublicAccount,
 	)
 }
@@ -1901,7 +1901,7 @@ func (m *MetadataModification) String() string {
 			"Key" 	: %s,
 			"Value" : %s
 		`,
-		m.Type.String(),
+		m.Type,
 		m.Key,
 		m.Value,
 	)
