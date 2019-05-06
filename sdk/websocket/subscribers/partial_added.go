@@ -22,6 +22,7 @@ type PartialAdded interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*PartialAddedHandler]struct{}
+	GetAddresses() []string
 }
 
 type partialAddedImpl struct {
@@ -91,4 +92,13 @@ func (e *partialAddedImpl) GetHandlers(address *sdk.Address) map[*PartialAddedHa
 	}
 
 	return nil
+}
+
+func (e *partialAddedImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

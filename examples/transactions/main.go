@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	baseUrl            = "http://127.0.0.1:3000"
 	networkType        = sdk.MijinTest
 	customerPrivateKey = "0F3CC33190A49ABB32E7172E348EA927F975F8829107AAA3D6349BB10797D4F6"
 	executorPrivateKey = "68B3FBB18729C1FDE225C57F8CE080FA828F0067E451A3FD81FA628842B0B763"
@@ -23,11 +22,15 @@ const (
 	multisig           = "3FE21823C74BAFEAA99100767D0AE573AD90FA362F21A5C2F7A5BDC0840E9660"
 )
 
+var (
+	baseUrls = []string{"http://127.0.0.1:3000"}
+)
+
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
 // The notification is received in real time without having to poll the API waiting for a reply.
 func main() {
 
-	conf, err := sdk.NewConfig(baseUrl, networkType)
+	conf, err := sdk.NewConfig(baseUrls, networkType, sdk.WebsocketReconnectionDefaultTimeout)
 	if err != nil {
 		panic(err)
 	}

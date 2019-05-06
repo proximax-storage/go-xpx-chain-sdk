@@ -19,6 +19,7 @@ func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandle
 
 type Router interface {
 	RouteMessage([]byte)
+	SetUid(string)
 }
 
 type messageRouter struct {
@@ -46,6 +47,10 @@ func (r *messageRouter) RouteMessage(m []byte) {
 	}
 
 	return
+}
+
+func (r *messageRouter) SetUid(uid string) {
+	r.uid = uid
 }
 
 func MapMessageInfo(m []byte) (*sdk.WsMessageInfo, error) {

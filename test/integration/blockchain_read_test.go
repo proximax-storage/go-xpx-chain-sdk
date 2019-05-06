@@ -19,7 +19,7 @@ const privateKey = "6B4FDEBF207798DC8C2228E73F8AC40E9D49B0D52E8131CA396BDBCFA419
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
+	cfg, _ := sdk.NewConfig([]string{testUrl}, sdk.MijinTest, sdk.WebsocketReconnectionDefaultTimeout)
 	ctx := context.TODO()
 
 	serv := sdk.NewClient(nil, cfg)

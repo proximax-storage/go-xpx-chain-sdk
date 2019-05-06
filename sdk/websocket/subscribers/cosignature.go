@@ -22,6 +22,7 @@ type Cosignature interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*CosignatureHandler]struct{}
+	GetAddresses() []string
 }
 
 type cosignatureImpl struct {
@@ -91,4 +92,13 @@ func (e *cosignatureImpl) GetHandlers(address *sdk.Address) map[*CosignatureHand
 	}
 
 	return nil
+}
+
+func (e *cosignatureImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

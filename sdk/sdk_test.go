@@ -74,7 +74,7 @@ func newSdkMockWithRouter(router *mock.Router) *sdkMock {
 }
 
 func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error) {
-	conf, err := NewConfig(m.GetServerURL(), networkType)
+	conf, err := NewConfig([]string{m.GetServerURL()}, networkType, WebsocketReconnectionDefaultTimeout)
 
 	if err != nil {
 		return nil, err

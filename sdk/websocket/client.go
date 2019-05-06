@@ -7,11 +7,12 @@ package websocket
 import (
 	"context"
 	"fmt"
-	"io"
-	"net"
-
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"io"
+	"net"
+	"net/url"
+	"time"
 
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
@@ -40,30 +41,21 @@ var (
 func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 	ctx, cancelFunc := context.WithCancel(ctx)
 
-	url := *cfg.BaseURL
-	url.Scheme = "ws" // always ws
-	url.Path = pathWS
-
-	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp *wsConnectionResponse
-	err = conn.ReadJSON(&resp)
+	conn, uid, err := connect(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	topicHandlers := make(topicHandlers)
 	messagePublisher := newMessagePublisher(conn)
-	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers)
+	messageRouter := NewRouter(uid, messagePublisher, topicHandlers)
 
 	return &CatapultWebsocketClientImpl{
+		config:     cfg,
 		conn:       conn,
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
-		UID:        resp.Uid,
+		UID:        uid,
 
 		blockSubscriber:               subscribers.NewBlock(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
@@ -100,6 +92,7 @@ type CatapultClient interface {
 }
 
 type CatapultWebsocketClientImpl struct {
+	config     *sdk.Config
 	conn       *websocket.Conn
 	ctx        context.Context
 	cancelFunc context.CancelFunc
@@ -118,6 +111,7 @@ type CatapultWebsocketClientImpl struct {
 	messageRouter    Router
 	messagePublisher MessagePublisher
 
+	connectFn        func(cfg *sdk.Config) (*websocket.Conn, string, error)
 	alreadyListening bool
 }
 
@@ -133,6 +127,7 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 	go func() {
 		defer c.cancelFunc()
 
+	ReadMessageLoop:
 		for {
 			_, resp, e := c.conn.ReadMessage()
 			if e != nil {
@@ -142,8 +137,14 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 				}
 
 				if _, ok := e.(*websocket.CloseError); ok {
-					//ToDo: call function which will implement reconnect functionality here
-					return
+					// Start websocket reconnect processing if connection was closed
+					for range time.NewTicker(c.config.WsReconnectionTimeout).C {
+						if err := c.reconnect(); err != nil {
+							continue
+						}
+
+						continue ReadMessageLoop
+					}
 				}
 
 				return
@@ -156,6 +157,12 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 	for {
 		select {
 		case <-c.ctx.Done():
+			if c.conn != nil {
+				if err := c.conn.Close(); err != nil {
+					panic(err)
+				}
+				c.conn = nil
+			}
 			return
 		case msg := <-messagesChan:
 			go c.messageRouter.RouteMessage(msg)
@@ -369,12 +376,80 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) Close() error {
-	c.cancelFunc()
+func (c *CatapultWebsocketClientImpl) reconnect() error {
 
-	if err := c.conn.Close(); err != nil {
+	conn, uid, err := c.connectFn(c.config)
+	if err != nil {
 		return err
 	}
+
+	c.conn = conn
+	c.UID = uid
+
+	c.messagePublisher.SetConn(conn)
+	c.messageRouter.SetUid(uid)
+
+	if c.blockSubscriber.HasHandlers() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s", pathBlock))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.confirmedAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.cosignatureSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.partialAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.partialRemovedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.statusSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.unconfirmedAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.unconfirmedRemovedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, value))); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) Close() error {
+	if c.conn != nil {
+		if err := c.conn.Close(); err != nil {
+			return err
+		}
+
+		c.conn = nil
+	}
+
+	c.cancelFunc()
 
 	c.alreadyListening = false
 
@@ -390,4 +465,45 @@ func (c *CatapultWebsocketClientImpl) Close() error {
 	c.topicHandlers = nil
 
 	return nil
+}
+
+func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
+	var conn *websocket.Conn
+	var err error
+
+	conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(cfg.UsedBaseUrl).String(), nil)
+	if err != nil {
+		for _, u := range cfg.BaseURLs {
+
+			if u == cfg.UsedBaseUrl {
+				continue
+			}
+
+			conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(u).String(), nil)
+			if err != nil {
+				continue
+			}
+
+			cfg.UsedBaseUrl = u
+			break
+		}
+	}
+
+	if conn == nil {
+		return nil, "", err
+	}
+
+	resp := new(wsConnectionResponse)
+	if err = conn.ReadJSON(resp); err != nil {
+		return nil, "", err
+	}
+
+	return conn, resp.Uid, nil
+}
+
+func convertToWsUrl(url *url.URL) *url.URL {
+	copyUrl := *url
+	copyUrl.Scheme = "ws" // always ws
+	copyUrl.Path = pathWS
+	return &copyUrl
 }
