@@ -90,7 +90,6 @@ const (
 	Sub
 )
 
-// regValidNamespace check namespace on valid symbols
 var (
 	regValidNamespace = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
 )

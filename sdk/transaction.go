@@ -14,7 +14,7 @@ import (
 
 type TransactionService service
 
-// returns transaction information for passed transaction id or hash
+// returns Transaction for passed transaction id or hash
 func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
 	var b bytes.Buffer
 
@@ -32,7 +32,7 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 	return MapTransaction(&b)
 }
 
-// returns an array of transaction informations for passed array of transaction ids or hashes
+// returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
@@ -51,22 +51,22 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 	return MapTransactions(&b)
 }
 
-// returns transaction hash after announcing passed signed transaction
+// returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, tx, transactionsRoute)
 }
 
-// returns transaction hash after announcing passed signed aggregate bounded transaction
+// returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, tx, announceAggregateRoute)
 }
 
-// returns transaction hash after announcing passed signed cosignature transaction
+// returns transaction hash after announcing passed CosignatureSignedTransaction
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, c, announceAggregateCosignatureRoute)
 }
 
-// returns transaction status for passed transaction id or hash
+// returns TransactionStatus for passed transaction id or hash
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
@@ -82,7 +82,7 @@ func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id stri
 	return ts.toStruct()
 }
 
-// returns an array of transaction statuses for passed transaction ids or hashes
+// returns an array of TransactionStatus's for passed transaction ids or hashes
 func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
 	txIds := &TransactionHashesDTO{
 		hashes,

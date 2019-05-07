@@ -11,7 +11,6 @@ import (
 	"math/big"
 )
 
-// MosaicId
 type MosaicId big.Int
 
 func (m *MosaicId) String() string {
@@ -22,7 +21,7 @@ func (m *MosaicId) Equals(id *MosaicId) bool {
 	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
 }
 
-// returns mosaic id for passed nonce and public key of owner
+// returns MosaicId for passed nonce and public key of mosaic owner
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
@@ -33,7 +32,7 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 	return bigIntToMosaicId(id), err
 }
 
-// returns mosaic id corresponding passed big int
+// returns MosaicId from big int id
 func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	if id == nil {
 		return nil, ErrNilMosaicId
@@ -51,7 +50,7 @@ type Mosaic struct {
 	Amount   *big.Int
 }
 
-// returns a mosaic for passed mosaic id and amount
+// returns a Mosaic for passed MosaicId and amount
 func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
@@ -79,7 +78,6 @@ func (m *Mosaic) String() string {
 	)
 }
 
-// MosaicInfo info structure contains its properties, the owner and the namespace to which it belongs to.
 type MosaicInfo struct {
 	MosaicId   *MosaicId
 	Supply     *big.Int
@@ -115,6 +113,7 @@ type MosaicProperties struct {
 	Duration      *big.Int
 }
 
+// returns MosaicProperties from actual values
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,

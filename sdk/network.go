@@ -18,7 +18,6 @@ type networkDTO struct {
 	Description string
 }
 
-// returns blockchain network type
 func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, error) {
 	netDTO := &networkDTO{}
 

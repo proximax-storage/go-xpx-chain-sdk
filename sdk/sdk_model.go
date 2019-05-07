@@ -24,16 +24,19 @@ func (dto uint64DTO) toBigInt() *big.Int {
 	return &int
 }
 
+// TODO why it is exported?
 func IntToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
 
 // analog JAVA Uint64.bigIntegerToHex
+// TODO why it is exported?
 func BigIntegerToHex(id *big.Int) string {
 	u := FromBigInt(id)
 	return IntToHex(u[1]) + IntToHex(u[0])
 }
 
+// TODO why it is exported?
 func FromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}

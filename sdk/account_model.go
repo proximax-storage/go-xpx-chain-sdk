@@ -19,8 +19,6 @@ type Account struct {
 	*crypto.KeyPair
 }
 
-// signs given transaction
-// returns a signed transaction
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 	return signTransactionWith(tx, a)
 }
@@ -29,8 +27,6 @@ func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories [
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
 
-// signs aggregate signature transaction
-// returns signed cosignature transaction
 func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
 	return signCosignatureTransaction(a, tx)
 }
@@ -105,7 +101,7 @@ type MultisigAccountGraphInfo struct {
 	MultisigAccounts map[int32][]*MultisigAccountInfo
 }
 
-// returns new account generated for passed network type
+// returns new Account generated for passed NetworkType
 func NewAccount(networkType NetworkType) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
 	if err != nil {
@@ -120,7 +116,7 @@ func NewAccount(networkType NetworkType) (*Account, error) {
 	return &Account{pa, kp}, nil
 }
 
-// returns new account from private key for passed network type
+// returns new Account from private key for passed NetworkType
 func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
@@ -140,7 +136,7 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, e
 	return &Account{pa, kp}, nil
 }
 
-// returns a public account from public key for passed network type
+// returns a PublicAccount from public key for passed NetworkType
 func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
 	ad, err := NewAddressFromPublicKey(pKey, networkType)
 	if err != nil {
@@ -149,13 +145,14 @@ func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccou
 	return &PublicAccount{ad, pKey}, nil
 }
 
-// returns address entity from passed address string for passed network type
+// returns Address from passed address string for passed NetworkType
 func NewAddress(address string, networkType NetworkType) *Address {
 	address = strings.Replace(address, "-", "", -1)
 	address = strings.ToUpper(address)
 	return &Address{networkType, address}
 }
 
+// returns Address from passed address string
 func NewAddressFromRaw(address string) (*Address, error) {
 	if nType, ok := addressNet[address[0]]; ok {
 		return NewAddress(address, nType), nil
@@ -164,7 +161,7 @@ func NewAddressFromRaw(address string) (*Address, error) {
 	return nil, ErrInvalidAddress
 }
 
-// returns an address from public key for passed network type
+// returns an Address from public key for passed NetworkType
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error) {
 	ad, err := generateEncodedAddress(pKey, networkType)
 	if err != nil {
@@ -174,6 +171,7 @@ func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, er
 	return NewAddress(ad, networkType), nil
 }
 
+// TODO description?
 func NewAddressFromEncoded(encoded string) (*Address, error) {
 	pH, err := hex.DecodeString(encoded)
 	if err != nil {

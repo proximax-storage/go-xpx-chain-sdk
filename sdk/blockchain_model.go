@@ -9,8 +9,6 @@ import (
 	"math/big"
 )
 
-// Models
-// Block
 type BlockInfo struct {
 	NetworkType
 	Hash                  string
@@ -48,7 +46,6 @@ func (b *BlockInfo) String() string {
 	)
 }
 
-// Blockchain Storage
 type BlockchainStorageInfo struct {
 	NumBlocks       int `json:"numBlocks"`
 	NumTransactions int `json:"numTransactions"`
