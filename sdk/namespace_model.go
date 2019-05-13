@@ -7,6 +7,7 @@ package sdk
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"github.com/json-iterator/go"
 	"github.com/proximax-storage/go-xpx-utils/str"
 	"math/big"
@@ -249,7 +250,7 @@ func GenerateNamespacePath(name string) ([]*big.Int, error) {
 
 func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	// 0x91 | namespaceId on 8 bytes | 16 bytes 0-pad = 25 bytes
-	a := "91"
+	a := fmt.Sprintf("%X", int(AliasAddress))
 
 	n := namespaceIdToBigInt(namespaceId).Uint64()
 	namespaceB := make([]byte, 8)
