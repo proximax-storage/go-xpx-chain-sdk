@@ -254,7 +254,7 @@ func (tx *AggregateTransaction) String() string {
 			"InnerTransactions": %s,
 			"Cosignatures": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.InnerTransactions,
 		tx.Cosignatures,
 	)
@@ -353,7 +353,7 @@ func (tx *ModifyMetadataTransaction) String() string {
 			"MetadataType": %s,
 			"Modifications": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.MetadataType,
 		tx.Modifications,
 	)
@@ -447,7 +447,7 @@ func (tx *ModifyMetadataAddressTransaction) String() string {
 			"%s,
 			"Address": %s,
 		`,
-		tx.ModifyMetadataTransaction,
+		tx.ModifyMetadataTransaction.String(),
 		tx.Address,
 	)
 }
@@ -523,7 +523,7 @@ func (tx *ModifyMetadataMosaicTransaction) String() string {
 			"%s,
 			"MosaicId": %s,
 		`,
-		tx.ModifyMetadataTransaction,
+		tx.ModifyMetadataTransaction.String(),
 		tx.MosaicId,
 	)
 }
@@ -596,7 +596,7 @@ func (tx *ModifyMetadataNamespaceTransaction) String() string {
 			"%s,
 			"NamespaceId": %s,
 		`,
-		tx.ModifyMetadataTransaction,
+		tx.ModifyMetadataTransaction.String(),
 		tx.NamespaceId,
 	)
 }
@@ -683,7 +683,7 @@ func (tx *MosaicDefinitionTransaction) String() string {
 			"MosaicNonce": %d,
 			"MosaicId": [ %s ]
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.MosaicProperties,
 		tx.MosaicNonce,
 		tx.MosaicId,
@@ -800,7 +800,7 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 			"MosaicId": [ %v ],
 			"Delta": %d
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.MosaicSupplyType,
 		tx.MosaicId,
 		tx.Delta,
@@ -903,7 +903,7 @@ func (tx *TransferTransaction) String() string {
 			"Address": %s,
 			"Message": %s,
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.Mosaics,
 		tx.Recipient,
 		tx.Message,
@@ -1039,7 +1039,7 @@ func (tx *ModifyMultisigAccountTransaction) String() string {
 			"MinRemovalDelta": %d,
 			"Modifications": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.MinApprovalDelta,
 		tx.MinRemovalDelta,
 		tx.Modifications,
@@ -1159,7 +1159,7 @@ func (tx *ModifyContractTransaction) String() string {
 			"Executors": %s,
 			"Verifiers": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.DurationDelta,
 		tx.Hash,
 		tx.Customers,
@@ -1336,7 +1336,7 @@ func (tx *RegisterNamespaceTransaction) String() string {
 			"NamespaceName": %s,
 			"Duration": %d
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.NamspaceName,
 		tx.Duration,
 	)
@@ -1465,7 +1465,7 @@ func (tx *LockFundsTransaction) String() string {
 			"Duration": %d,
 			"SignedTxHash": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.Mosaic,
 		tx.Duration,
 		tx.SignedTransaction.Hash,
@@ -1585,7 +1585,7 @@ func (tx *SecretLockTransaction) String() string {
 			"Secret": %s,
 			"Recipient": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.Mosaic,
 		tx.Duration,
 		tx.HashType,
@@ -1718,7 +1718,7 @@ func (tx *SecretProofTransaction) String() string {
 			"Secret": %s,
 			"Proof": %s
 		`,
-		tx.AbstractTransaction,
+		tx.AbstractTransaction.String(),
 		tx.HashType,
 		tx.Secret,
 		tx.Proof,
