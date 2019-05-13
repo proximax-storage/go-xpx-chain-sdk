@@ -115,7 +115,7 @@ func (rcv *RegisterNamespaceTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *RegisterNamespaceTransactionBuffer) Fee(j int) uint32 {
+func (rcv *RegisterNamespaceTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -124,7 +124,7 @@ func (rcv *RegisterNamespaceTransactionBuffer) Fee(j int) uint32 {
 	return 0
 }
 
-func (rcv *RegisterNamespaceTransactionBuffer) FeeLength() int {
+func (rcv *RegisterNamespaceTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -239,10 +239,10 @@ func RegisterNamespaceTransactionBufferAddVersion(builder *flatbuffers.Builder, 
 func RegisterNamespaceTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func RegisterNamespaceTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+func RegisterNamespaceTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
 }
-func RegisterNamespaceTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func RegisterNamespaceTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func RegisterNamespaceTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {

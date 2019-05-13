@@ -325,7 +325,7 @@ func (rcv *ModifyMetadataTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *ModifyMetadataTransactionBuffer) Fee(j int) uint32 {
+func (rcv *ModifyMetadataTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -334,7 +334,7 @@ func (rcv *ModifyMetadataTransactionBuffer) Fee(j int) uint32 {
 	return 0
 }
 
-func (rcv *ModifyMetadataTransactionBuffer) FeeLength() int {
+func (rcv *ModifyMetadataTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -342,7 +342,7 @@ func (rcv *ModifyMetadataTransactionBuffer) FeeLength() int {
 	return 0
 }
 
-func (rcv *ModifyMetadataTransactionBuffer) MutateFee(j int, n uint32) bool {
+func (rcv *ModifyMetadataTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -389,6 +389,7 @@ func (rcv *ModifyMetadataTransactionBuffer) MutateMetadataType(n byte) bool {
 	return rcv._tab.MutateByteSlot(18, n)
 }
 
+/// In case of address it is 25 bytes array. In case of mosaic or namespace it is 8 byte array(or 2 uint32 array)
 func (rcv *ModifyMetadataTransactionBuffer) MetadataId(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
@@ -414,6 +415,7 @@ func (rcv *ModifyMetadataTransactionBuffer) MetadataIdBytes() []byte {
 	return nil
 }
 
+/// In case of address it is 25 bytes array. In case of mosaic or namespace it is 8 byte array(or 2 uint32 array)
 func (rcv *ModifyMetadataTransactionBuffer) MutateMetadataId(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
@@ -467,10 +469,10 @@ func ModifyMetadataTransactionBufferAddVersion(builder *flatbuffers.Builder, ver
 func ModifyMetadataTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func ModifyMetadataTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+func ModifyMetadataTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
-func ModifyMetadataTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func ModifyMetadataTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func ModifyMetadataTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {

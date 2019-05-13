@@ -20,6 +20,7 @@ const (
 	Private         NetworkType = 200
 	PrivateTest     NetworkType = 176
 	NotSupportedNet NetworkType = 0
+	AliasAddress    NetworkType = 145
 )
 
 func NetworkTypeFromString(networkType string) NetworkType {

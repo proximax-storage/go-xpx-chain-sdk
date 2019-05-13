@@ -1,6 +1,6 @@
 namespace Catapult.Buffers;
 
-table AggregateTransactionBuffer {
+table AccountLinkTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -8,8 +8,8 @@ table AggregateTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    transactionsSize: uint;
-    transactions:[ubyte];
+    remoteAccountKey: [ubyte];
+    linkAction: ubyte;
 }
 
-root_type AggregateTransactionBuffer;
+root_type AccountLinkTransactionBuffer;

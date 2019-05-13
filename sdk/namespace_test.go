@@ -69,23 +69,18 @@ var (
 				  929036875,
 				  2226345261
 				],
+    			"alias": {
+      				"type": 1,
+      				"mosaicId": [
+        				1382215848,
+        				1583663204
+					]
+    			},
 				"owner": "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 				"ownerAddress": "904A1B7A7432C968202264C2CBDE0E8E5547EED3AD66E52BAC",
 				"startHeight": [
 				  1,
 				  0
-				],
-				"subNamespaces": [
-				[
-					0,
-					0
-				]
-				],
-				"mosaicIds": [
-				[
-					0,
-					0
-				]
 				],
 				"endHeight": [
 				  4294967295,
@@ -97,10 +92,16 @@ var (
 	namespaceCorr = &NamespaceInfo{
 		NamespaceId: bigIntToNamespaceId(uint64DTO{929036875, 2226345261}.toBigInt()),
 		Active:      true,
-		Index:       0,
-		MetaId:      "5B55E02EACCB7B00015DB6EB",
 		Depth:       1,
 		TypeSpace:   Root,
+		Alias: &NamespaceAlias{
+			bigIntToMosaicId(uint64DTO{1382215848, 1583663204}.toBigInt()),
+			&Address{
+				MijinTest,
+				"SCJW742TNBMMX2UO4DVKXGP6T3CO6XXR6ZRWMVU2",
+			},
+			MosaicAliasType,
+		},
 		Owner: &PublicAccount{
 			Address: &Address{
 				Type:    NotSupportedNet,

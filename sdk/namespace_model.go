@@ -5,6 +5,9 @@
 package sdk
 
 import (
+	"encoding/binary"
+	"encoding/hex"
+	"fmt"
 	"github.com/json-iterator/go"
 	"github.com/proximax-storage/go-xpx-utils/str"
 	"math/big"
@@ -43,7 +46,7 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 }
 
 func (m *NamespaceId) String() string {
-	return (*big.Int)(m).String()
+	return m.toHexString()
 }
 
 func (n *NamespaceId) toHexString() string {
@@ -105,15 +108,73 @@ func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 
 }
 
+// NamespaceAlias contains aliased mosaicId or address and type of alias
+type NamespaceAlias struct {
+	mosaicId *MosaicId
+	address  *Address
+	Type     AliasType
+}
+
+func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
+	alias := NamespaceAlias{}
+
+	alias.Type = dto.Type
+
+	switch alias.Type {
+	case AddressAliasType:
+		a, err := NewAddressFromEncoded(dto.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		alias.address = a
+	case MosaicAliasType:
+		mosaicId, err := NewMosaicId(dto.MosaicId.toBigInt())
+		if err != nil {
+			return nil, err
+		}
+		alias.mosaicId = mosaicId
+	}
+
+	return &alias, nil
+}
+
+func (ref *NamespaceAlias) Address() *Address {
+	return ref.address
+}
+
+func (ref *NamespaceAlias) MosaicId() *MosaicId {
+	return ref.mosaicId
+}
+
+func (ref *NamespaceAlias) String() string {
+	switch ref.Type {
+	case AddressAliasType:
+		return str.StructToString(
+			"NamespaceAlias",
+			str.NewField("Address", str.StringPattern, ref.Address()),
+			str.NewField("Type", str.IntPattern, ref.Type),
+		)
+	case MosaicAliasType:
+		return str.StructToString(
+			"NamespaceAlias",
+			str.NewField("MosaicId", str.StringPattern, ref.MosaicId()),
+			str.NewField("Type", str.IntPattern, ref.Type),
+		)
+	}
+	return str.StructToString(
+		"NamespaceAlias",
+		str.NewField("Type", str.IntPattern, ref.Type),
+	)
+}
+
 type NamespaceInfo struct {
 	NamespaceId *NamespaceId
-	FullName    string
 	Active      bool
-	Index       int
-	MetaId      string
 	TypeSpace   NamespaceType
 	Depth       int
 	Levels      []*NamespaceId
+	Alias       *NamespaceAlias
 	Parent      *NamespaceInfo
 	Owner       *PublicAccount
 	StartHeight *big.Int
@@ -124,13 +185,11 @@ func (ref *NamespaceInfo) String() string {
 	return str.StructToString(
 		"NamespaceInfo",
 		str.NewField("NamespaceId", str.StringPattern, ref.NamespaceId),
-		str.NewField("FullName", str.StringPattern, ref.FullName),
 		str.NewField("Active", str.BooleanPattern, ref.Active),
-		str.NewField("Index", str.IntPattern, ref.Index),
-		str.NewField("MetaId", str.StringPattern, ref.MetaId),
 		str.NewField("TypeSpace", str.IntPattern, ref.TypeSpace),
 		str.NewField("Depth", str.IntPattern, ref.Depth),
 		str.NewField("Levels", str.StringPattern, ref.Levels),
+		str.NewField("Alias", str.StringPattern, ref.Alias),
 		str.NewField("Parent", str.StringPattern, ref.Parent),
 		str.NewField("Owner", str.StringPattern, ref.Owner),
 		str.NewField("StartHeight", str.StringPattern, ref.StartHeight),
@@ -187,4 +246,18 @@ func GenerateNamespacePath(name string) ([]*big.Int, error) {
 	}
 
 	return path, nil
+}
+
+func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
+	// 0x91 | namespaceId on 8 bytes | 16 bytes 0-pad = 25 bytes
+	a := fmt.Sprintf("%X", int(AliasAddress))
+
+	n := namespaceIdToBigInt(namespaceId).Uint64()
+	namespaceB := make([]byte, 8)
+	binary.LittleEndian.PutUint64(namespaceB, n)
+
+	a += hex.EncodeToString(namespaceB)
+	a += strings.Repeat("00", 16)
+
+	return NewAddressFromEncoded(a)
 }

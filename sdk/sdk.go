@@ -98,7 +98,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
 	c.Network = (*NetworkService)(&c.common)
-	c.Transaction = (*TransactionService)(&c.common)
+	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)

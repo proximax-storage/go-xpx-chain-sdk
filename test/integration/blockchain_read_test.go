@@ -13,13 +13,13 @@ import (
 
 const iter = 1000
 const testUrl = "http://127.0.0.1:3000"
-const wstestUrl = "ws://127.0.0.1:3000/ws"
+const networkType = sdk.MijinTest
 const privateKey = "6B4FDEBF207798DC8C2228E73F8AC40E9D49B0D52E8131CA396BDBCFA41913CE"
 
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
+	cfg, _ := sdk.NewConfig(testUrl, networkType)
 	ctx := context.TODO()
 
 	serv := sdk.NewClient(nil, cfg)
@@ -58,7 +58,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -72,7 +72,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -89,7 +89,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 				mscInfoArr, err := serv.Mosaic.GetMosaics(ctx, mosaicIDs)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				for _, mscInfo := range mscInfoArr {
@@ -99,7 +99,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				tran := val.(*sdk.RegisterNamespaceTransaction)
 				nsInfo, err := serv.Namespace.GetNamespace(ctx, tran.NamespaceId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%#v", nsInfo)

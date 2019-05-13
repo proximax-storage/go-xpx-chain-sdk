@@ -15,7 +15,11 @@ import (
 type MosaicId big.Int
 
 func (m *MosaicId) String() string {
-	return (*big.Int)(m).String()
+	return m.toHexString()
+}
+
+func (m *MosaicId) toHexString() string {
+	return BigIntegerToHex(mosaicIdToBigInt(m))
 }
 
 func (m *MosaicId) Equals(id *MosaicId) bool {
@@ -42,8 +46,18 @@ func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	return bigIntToMosaicId(id), nil
 }
 
-func (m *MosaicId) toHexString() string {
-	return BigIntegerToHex(mosaicIdToBigInt(m))
+func BigIntsToMosaicIds(mosaicIds ...*big.Int) ([]*MosaicId, error) {
+	result := make([]*MosaicId, len(mosaicIds))
+	for i, m := range mosaicIds {
+		var err error = nil
+		result[i], err = NewMosaicId(m)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return result, nil
 }
 
 type Mosaic struct {
@@ -129,6 +143,19 @@ func (mp *MosaicProperties) String() string {
 		str.NewField("LevyMutable", str.BooleanPattern, mp.LevyMutable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
 		str.NewField("Duration", str.StringPattern, mp.Duration),
+	)
+}
+
+type MosaicName struct {
+	MosaicId *MosaicId
+	Names    []string
+}
+
+func (m *MosaicName) String() string {
+	return str.StructToString(
+		"MosaicName",
+		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
+		str.NewField("Names", str.StringPattern, m.Names),
 	)
 }
 

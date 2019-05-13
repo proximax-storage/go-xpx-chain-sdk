@@ -115,7 +115,7 @@ func (rcv *ModifyContractTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *ModifyContractTransactionBuffer) Fee(j int) uint32 {
+func (rcv *ModifyContractTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -124,7 +124,7 @@ func (rcv *ModifyContractTransactionBuffer) Fee(j int) uint32 {
 	return 0
 }
 
-func (rcv *ModifyContractTransactionBuffer) FeeLength() int {
+func (rcv *ModifyContractTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -311,10 +311,10 @@ func ModifyContractTransactionBufferAddVersion(builder *flatbuffers.Builder, ver
 func ModifyContractTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func ModifyContractTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+func ModifyContractTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
 }
-func ModifyContractTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func ModifyContractTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func ModifyContractTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
