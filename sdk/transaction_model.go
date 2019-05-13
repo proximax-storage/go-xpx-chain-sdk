@@ -476,7 +476,7 @@ func (dto *modifyMetadataAddressTransactionDTO) toStruct() (*ModifyMetadataAddre
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -984,7 +984,7 @@ func (dto *transferTransactionDTO) toStruct() (*TransferTransaction, error) {
 		mosaics[i] = msc
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -1650,7 +1650,7 @@ func (dto *secretLockTransactionDTO) toStruct() (*SecretLockTransaction, error) 
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Recipient)
+	a, err := NewAddressFromBase32(dto.Tx.Recipient)
 	if err != nil {
 		return nil, err
 	}

@@ -24,8 +24,7 @@ func (dto uint64DTO) toBigInt() *big.Int {
 	return &int
 }
 
-// TODO why it is exported?
-func IntToHex(u uint32) string {
+func intToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
 
@@ -33,7 +32,7 @@ func IntToHex(u uint32) string {
 // TODO why it is exported?
 func BigIntegerToHex(id *big.Int) string {
 	u := FromBigInt(id)
-	return IntToHex(u[1]) + IntToHex(u[0])
+	return intToHex(u[1]) + intToHex(u[0])
 }
 
 // TODO why it is exported?

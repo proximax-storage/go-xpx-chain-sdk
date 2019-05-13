@@ -20,7 +20,7 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 
 	url := net.NewUrl(fmt.Sprintf(transactionRoute, id))
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 		ids,
 	}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashe
 	}
 
 	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 		Message string `json:"message"`
 	}{}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPut, path, tx, &m)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPut, path, tx, &m)
 	if err != nil {
 		return "", err
 	}

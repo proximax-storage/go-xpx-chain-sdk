@@ -23,7 +23,7 @@ func (ref *MetadataService) GetAddressMetadatasInfo(ctx context.Context, address
 
 	dtos := addressMetadataInfoDTOs(make([]*addressMetadataInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, metadatasInfoRoute, addressesDto, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadatasInfoRoute, addressesDto, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within POST request %s", metadatasInfoRoute)
 	}
@@ -57,7 +57,7 @@ func (ref *MetadataService) GetMosaicMetadatasInfo(ctx context.Context, mosaicId
 
 	dtos := mosaicMetadataInfoDTOs(make([]*mosaicMetadataInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, metadatasInfoRoute, mosaicsDto, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadatasInfoRoute, mosaicsDto, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within POST request %s", metadatasInfoRoute)
 	}
@@ -91,7 +91,7 @@ func (ref *MetadataService) GetNamespaceMetadatasInfo(ctx context.Context, names
 
 	dtos := namespaceMetadataInfoDTOs(make([]*namespaceMetadataInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, metadatasInfoRoute, namespacesDto, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadatasInfoRoute, namespacesDto, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within POST request %s", metadatasInfoRoute)
 	}
@@ -198,7 +198,7 @@ func (ref *MetadataService) GetMetadataByNamespaceId(ctx context.Context, namesp
 }
 
 func (ref *MetadataService) getMetadata(ctx context.Context, url *net.Url, dto interface{}) error {
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		switch e := err.(type) {
 		case *HttpError:

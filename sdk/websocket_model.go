@@ -62,7 +62,7 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 		return msg, nil
 	}
 
-	address, err := NewAddressFromEncoded(dto.Meta.Address)
+	address, err := NewAddressFromBase32(dto.Meta.Address)
 	if err != nil {
 		return nil, err
 	}

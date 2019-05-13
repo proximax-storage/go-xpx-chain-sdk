@@ -106,15 +106,14 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
-// DoNewRequest creates new request, Do it & return result in V
-// TODO why it is exported?
-func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
-	req, err := s.NewRequest(method, path, body)
+// doNewRequest creates new request, Do it & return result in V
+func (s *Client) doNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
+	req, err := s.newRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.Do(ctx, req, v)
+	resp, err := s.do(ctx, req, v)
 	if err != nil {
 		return nil, err
 	}
@@ -122,9 +121,8 @@ func (s *Client) DoNewRequest(ctx context.Context, method string, path string, b
 	return resp, nil
 }
 
-// Do sends an API Request and returns a parsed response
-// TODO why it is exported?
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+// do sends an API Request and returns a parsed response
+func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
 
 	// set the Context for this request
 	req.WithContext(ctx)
@@ -169,8 +167,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	return resp, err
 }
 
-// TODO why it is exported?
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
 
 	u, err := c.config.BaseURL.Parse(urlStr)
 	if err != nil {

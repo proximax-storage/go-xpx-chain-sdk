@@ -25,7 +25,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 
 	dto := &blockInfoDTO{}
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, u, nil, &dto)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, u, nil, &dto)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *bi
 
 	var data bytes.Buffer
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &data)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 
 	dtos := blockInfoDTOs(make([]*blockInfoDTO, 0))
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, 
 		Height uint64DTO `json:"height"`
 	}{}
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockHeightRoute, nil, &bh)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockHeightRoute, nil, &bh)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, 
 
 func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, error) {
 	cs := &chainScoreDTO{}
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockScoreRoute, nil, &cs)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockScoreRoute, nil, &cs)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, e
 
 func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*BlockchainStorageInfo, error) {
 	bstorage := &BlockchainStorageInfo{}
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockStorageRoute, nil, &bstorage)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockStorageRoute, nil, &bstorage)
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 
 	dto := &mosaicInfoDTO{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([
 
 	dtos := mosaicInfoDTOs(make([]*mosaicInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, mosaicsRoute, &mosaicIds{mscIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, mosaicsRoute, &mosaicIds{mscIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}

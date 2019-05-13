@@ -27,7 +27,7 @@ func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (
 
 	dto := &accountInfoDTO{}
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Addre
 
 	dtos := accountInfoDTOs(make([]*accountInfoDTO, 0))
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodPost, accountsRoute, addrs, &dtos)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, accountsRoute, addrs, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Ad
 
 	dto := &multisigAccountInfoDTO{}
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, addres
 
 	dto := &multisigAccountGraphInfoDTOS{}
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func (a *AccountService) findTransactions(ctx context.Context, account *PublicAc
 		return nil, err
 	}
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodGet, u, nil, &b)
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, u, nil, &b)
 	if err != nil {
 		return nil, err
 	}

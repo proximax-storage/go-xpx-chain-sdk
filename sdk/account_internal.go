@@ -59,7 +59,7 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		}
 	}
 
-	add, err := NewAddressFromEncoded(dto.Account.Address)
+	add, err := NewAddressFromBase32(dto.Account.Address)
 	if err != nil {
 		return nil, err
 	}

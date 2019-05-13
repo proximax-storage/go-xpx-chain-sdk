@@ -24,7 +24,7 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 
 	url := net.NewUrl(fmt.Sprintf(namespaceRoute, nsId.toHexString()))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, nsInfoDTO)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, nsInfoDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 
 	dtos := namespaceInfoDTOs(make([]*namespaceInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 
 	dtos := namespaceInfoDTOs(make([]*namespaceInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, url.Encode(), &addresses{addrs}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, url.Encode(), &addresses{addrs}, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*Nam
 
 	dtos := namespaceNameDTOs(make([]*namespaceNameDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &NamespaceIds{nsIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &NamespaceIds{nsIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}

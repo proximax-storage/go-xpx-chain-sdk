@@ -171,8 +171,7 @@ func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, er
 	return NewAddress(ad, networkType), nil
 }
 
-// TODO description?
-func NewAddressFromEncoded(encoded string) (*Address, error) {
+func NewAddressFromBase32(encoded string) (*Address, error) {
 	pH, err := hex.DecodeString(encoded)
 	if err != nil {
 		return nil, err
