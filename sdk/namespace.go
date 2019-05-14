@@ -45,7 +45,7 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 	return nsInfo, nil
 }
 
-// TODO what is pageSize and how to use it?
+// returns NamespaceInfo's corresponding to passed Address and NamespaceId with maximum limit
 func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if address == nil {

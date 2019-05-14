@@ -29,8 +29,7 @@ func intToHex(u uint32) string {
 }
 
 // analog JAVA Uint64.bigIntegerToHex
-// TODO why it is exported?
-func BigIntegerToHex(id *big.Int) string {
+func bigIntegerToHex(id *big.Int) string {
 	u := FromBigInt(id)
 	return intToHex(u[1]) + intToHex(u[0])
 }

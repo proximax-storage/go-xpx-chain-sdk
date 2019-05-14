@@ -59,7 +59,8 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *bi
 	return MapTransactions(&data)
 }
 
-// TODO
+// returns BlockInfo's for range block height - (block height + limit)
+// Example: GetBlocksByHeightWithLimit(ctx, 1, 25) => [BlockInfo25, BlockInfo24, ..., BlockInfo1]
 func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight

@@ -42,7 +42,7 @@ func NewMosaicId(id *big.Int) (*MosaicId, error) {
 }
 
 func (m *MosaicId) toHexString() string {
-	return BigIntegerToHex(mosaicIdToBigInt(m))
+	return bigIntegerToHex(mosaicIdToBigInt(m))
 }
 
 type Mosaic struct {

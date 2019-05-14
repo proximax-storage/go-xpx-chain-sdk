@@ -46,7 +46,7 @@ func (m *NamespaceId) String() string {
 }
 
 func (n *NamespaceId) toHexString() string {
-	return BigIntegerToHex(namespaceIdToBigInt(n))
+	return bigIntegerToHex(namespaceIdToBigInt(n))
 }
 
 type NamespaceIds struct {

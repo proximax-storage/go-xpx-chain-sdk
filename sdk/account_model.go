@@ -23,6 +23,8 @@ func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 	return signTransactionWith(tx, a)
 }
 
+// sign AggregateTransaction with current Account and with every passed cosignatory Account's
+// returns announced Aggregate SignedTransaction
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
