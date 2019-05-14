@@ -37,7 +37,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 	return dto.toStruct()
 }
 
-// returns Transaction's inside of block with passed height
+// returns Transaction's inside of block at passed height
 func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *big.Int) ([]Transaction, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
