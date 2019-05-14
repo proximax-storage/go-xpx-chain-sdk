@@ -15,7 +15,7 @@ import (
 // NamespaceService provides a set of methods for obtaining information about the namespace
 type NamespaceService service
 
-func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
+func (ref *NamespaceService) GetNamespaceInfo(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
 	if nsId == nil {
 		return nil, ErrNilNamespaceId
 	}
@@ -46,7 +46,7 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 }
 
 // returns NamespaceInfo's corresponding to passed Address and NamespaceId with maximum limit
-func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
+func (ref *NamespaceService) GetNamespaceInfosFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
