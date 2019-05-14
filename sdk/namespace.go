@@ -15,7 +15,7 @@ import (
 // NamespaceService provides a set of methods for obtaining information about the namespace
 type NamespaceService service
 
-func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
+func (ref *NamespaceService) GetNamespaceInfo(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
 	if nsId == nil {
 		return nil, ErrNilNamespaceId
 	}
