@@ -3,29 +3,132 @@ package sdk
 import (
 	"encoding/base32"
 	"encoding/hex"
+	"errors"
 	"github.com/proximax-storage/nem2-crypto-go"
 )
 
 var addressNet = map[uint8]NetworkType{
-	'M': Mijin,
-	'S': MijinTest,
-	'X': Public,
-	'V': PublicTest,
-	'Z': Private,
-	'W': PrivateTest,
+	96:  Mijin,
+	144: MijinTest,
+	145: AliasAddress,
+	184: Public,
+	168: PublicTest,
+	200: Private,
+	176: PrivateTest,
 }
 
-type accountInfoDTO struct {
-	Account struct {
-		Address          string         `json:"address"`
-		AddressHeight    uint64DTO      `json:"addressHeight"`
-		PublicKey        string         `json:"publicKey"`
-		PublicKeyHeight  uint64DTO      `json:"publicKeyHeight"`
-		Importance       uint64DTO      `json:"importance"`
-		ImportanceHeight uint64DTO      `json:"importanceHeight"`
-		Mosaics          []*mosaicDTO   `json:"mosaics"`
-		Reputation       *reputationDTO `json:"reputation"`
-	} `json:"account"`
+type propertiesDTO struct {
+	PropertyType PropertyType `json:"propertyType"`
+	MosaicIds    uint64DTOs
+	Addresses    []string
+	EntityTypes  []TransactionType
+}
+
+func (d *propertiesDTO) UnmarshalJSON(data []byte) error {
+	temp := struct {
+		PropertyType PropertyType `json:"propertyType"`
+	}{}
+
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	d.PropertyType = temp.PropertyType
+
+	if temp.PropertyType&AllowAddress != 0 {
+		addresses := struct {
+			Addresses []string `json:"values"`
+		}{}
+		if err := json.Unmarshal(data, &addresses); err != nil {
+			return err
+		}
+		d.Addresses = addresses.Addresses
+	} else if temp.PropertyType&AllowMosaic != 0 {
+		mosaicIds := struct {
+			MosaicIds uint64DTOs `json:"values"`
+		}{}
+		if err := json.Unmarshal(data, &mosaicIds); err != nil {
+			return err
+		}
+		d.MosaicIds = mosaicIds.MosaicIds
+	} else if temp.PropertyType&AllowTransaction != 0 {
+		entityTypes := struct {
+			EntityTypes []TransactionType `json:"values"`
+		}{}
+		if err := json.Unmarshal(data, &entityTypes); err != nil {
+			return err
+		}
+		d.EntityTypes = entityTypes.EntityTypes
+	} else {
+		return errors.New("not supported PropertyType")
+	}
+
+	return nil
+}
+
+type accountPropertiesDTO struct {
+	AccountProperties struct {
+		Address    string           `json:"address"`
+		Properties []*propertiesDTO `json:"properties"`
+	} `json:"accountProperties"`
+}
+
+func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
+	var err error = nil
+	properties := AccountProperties{
+		AllowedAddresses:   make([]*Address, 0),
+		AllowedMosaicId:    make([]*MosaicId, 0),
+		AllowedEntityTypes: make([]TransactionType, 0),
+		BlockedAddresses:   make([]*Address, 0),
+		BlockedMosaicId:    make([]*MosaicId, 0),
+		BlockedEntityTypes: make([]TransactionType, 0),
+	}
+
+	properties.Address, err = NewAddressFromEncoded(ref.AccountProperties.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range ref.AccountProperties.Properties {
+		switch p.PropertyType {
+		case AllowAddress:
+			properties.AllowedAddresses, err = EncodedStringToAddresses(p.Addresses...)
+		case AllowMosaic:
+			properties.AllowedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+		case AllowTransaction:
+			properties.AllowedEntityTypes = p.EntityTypes
+		case BlockAddress:
+			properties.BlockedAddresses, err = EncodedStringToAddresses(p.Addresses...)
+		case BlockMosaic:
+			properties.BlockedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+		case BlockTransaction:
+			properties.BlockedEntityTypes = p.EntityTypes
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &properties, nil
+}
+
+type accountPropertiesDTOs []*accountPropertiesDTO
+
+func (a accountPropertiesDTOs) toStruct() ([]*AccountProperties, error) {
+	var (
+		accountProperties = make([]*AccountProperties, len(a))
+		err               error
+	)
+
+	for idx, dto := range a {
+		accountProperties[idx], err = dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return accountProperties, nil
 }
 
 type reputationDTO struct {
@@ -46,6 +149,19 @@ func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
 	return float64(rep)
 }
 
+type accountInfoDTO struct {
+	Account struct {
+		Address                string         `json:"address"`
+		AddressHeight          uint64DTO      `json:"addressHeight"`
+		PublicKey              string         `json:"publicKey"`
+		PublicKeyHeight        uint64DTO      `json:"publicKeyHeight"`
+		AccountType            AccountType    `json:"accountType"`
+		LinkedAccountPublicKey string         `json:"linkedAccountKey"`
+		Mosaics                []*mosaicDTO   `json:"mosaics"`
+		Reputation             *reputationDTO `json:"reputation"`
+	} `json:"account"`
+}
+
 func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, error) {
 	var (
 		ms  = make([]*Mosaic, len(dto.Account.Mosaics))
@@ -64,15 +180,24 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		return nil, err
 	}
 
+	var linkedAccount *PublicAccount = nil
+
+	if dto.Account.AccountType != UnlinkedAccount && dto.Account.AccountType != RemoteUnlinkedAccount {
+		linkedAccount, err = NewAccountFromPublicKey(dto.Account.LinkedAccountPublicKey, add.Type)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	acc := &AccountInfo{
-		Address:          add,
-		AddressHeight:    dto.Account.AddressHeight.toBigInt(),
-		PublicKey:        dto.Account.PublicKey,
-		PublicKeyHeight:  dto.Account.PublicKeyHeight.toBigInt(),
-		Importance:       dto.Account.Importance.toBigInt(),
-		ImportanceHeight: dto.Account.ImportanceHeight.toBigInt(),
-		Mosaics:          ms,
-		Reputation:       repConfig.defaultReputation,
+		Address:         add,
+		AddressHeight:   dto.Account.AddressHeight.toBigInt(),
+		PublicKey:       dto.Account.PublicKey,
+		PublicKeyHeight: dto.Account.PublicKeyHeight.toBigInt(),
+		AccountType:     dto.Account.AccountType,
+		LinkedAccount:   linkedAccount,
+		Mosaics:         ms,
+		Reputation:      repConfig.defaultReputation,
 	}
 
 	if dto.Account.Reputation != nil {

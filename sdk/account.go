@@ -14,6 +14,60 @@ import (
 
 type AccountService service
 
+func (a *AccountService) GetAccountProperties(ctx context.Context, address *Address) (*AccountProperties, error) {
+	if address == nil {
+		return nil, ErrNilAddress
+	}
+
+	if len(address.Address) == 0 {
+		return nil, ErrBlankAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(accountPropertiesRoute, address.Address))
+
+	dto := &accountPropertiesDTO{}
+
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
+}
+
+func (a *AccountService) GetAccountsProperties(ctx context.Context, addresses ...*Address) ([]*AccountProperties, error) {
+	if len(addresses) == 0 {
+		return nil, ErrEmptyAddressesIds
+	}
+
+	addrs := struct {
+		Messages []string `json:"addresses"`
+	}{
+		Messages: make([]string, len(addresses)),
+	}
+
+	for i, address := range addresses {
+		addrs.Messages[i] = address.Address
+	}
+
+	dtos := accountPropertiesDTOs(make([]*accountPropertiesDTO, 0))
+
+	resp, err := a.client.DoNewRequest(ctx, http.MethodPost, accountsPropertiesRoute, addrs, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dtos.toStruct()
+}
+
 func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (*AccountInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
@@ -39,7 +93,7 @@ func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (
 	return dto.toStruct(a.client.config.reputationConfig)
 }
 
-func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Address) ([]*AccountInfo, error) {
+func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses ...*Address) ([]*AccountInfo, error) {
 	if len(addresses) == 0 {
 		return nil, ErrEmptyAddressesIds
 	}

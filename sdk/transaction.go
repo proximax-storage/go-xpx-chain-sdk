@@ -12,7 +12,10 @@ import (
 	"net/http"
 )
 
-type TransactionService service
+type TransactionService struct {
+	*service
+	BlockchainService *BlockchainService
+}
 
 // returns Transaction for passed transaction id or hash
 func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
@@ -116,4 +119,19 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 	}
 
 	return m.Message, nil
+}
+
+// Gets a transaction's effective paid fee
+func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
+	tx, err := txs.GetTransaction(ctx, transactionId)
+	if err != nil {
+		return -1, err
+	}
+
+	block, err := txs.BlockchainService.GetBlockByHeight(ctx, tx.GetAbstractTransaction().Height)
+	if err != nil {
+		return -1, err
+	}
+
+	return int(block.FeeMultiplier) * tx.Size(), nil
 }

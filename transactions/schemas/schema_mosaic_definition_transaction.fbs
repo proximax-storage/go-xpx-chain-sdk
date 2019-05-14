@@ -6,7 +6,7 @@ table MosaicDefinitionTransactionBuffer {
     signer: [ubyte];
     version: ushort;
     type: ushort;
-    fee: [uint];
+    maxFee: [uint];
     deadline:[uint];
     mosaicNonce:uint;
     mosaicId:[uint];
