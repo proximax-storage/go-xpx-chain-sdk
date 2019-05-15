@@ -130,7 +130,7 @@ func TestNamespaceService_GetNamespace(t *testing.T) {
 	tests.ValidateStringers(t, namespaceCorr, nsInfo)
 }
 
-func TestNamespaceService_GetNamespacesFromAccount(t *testing.T) {
+func TestNamespaceService_GetNamespaceInfosFromAccount(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf(namespacesFromAccountRoutes, testAddress.Address),
 		RespBody: tplInfoArr,

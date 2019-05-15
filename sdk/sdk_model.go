@@ -43,12 +43,12 @@ func intToHex(u uint32) string {
 
 // analog JAVA Uint64.bigIntegerToHex
 func bigIntegerToHex(id *big.Int) string {
-	u := FromBigInt(id)
+	u := fromBigInt(id)
 	return strings.ToUpper(intToHex(u[1]) + intToHex(u[0]))
 }
 
 // TODO why it is exported?
-func FromBigInt(int *big.Int) []uint32 {
+func fromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}
 	}
