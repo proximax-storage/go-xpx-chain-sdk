@@ -121,7 +121,7 @@ func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
 
 	switch alias.Type {
 	case AddressAliasType:
-		a, err := NewAddressFromEncoded(dto.Address)
+		a, err := NewAddressFromBase32(dto.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -258,5 +258,5 @@ func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	a += hex.EncodeToString(namespaceB)
 	a += strings.Repeat("00", 16)
 
-	return NewAddressFromEncoded(a)
+	return NewAddressFromBase32(a)
 }

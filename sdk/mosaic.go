@@ -72,7 +72,7 @@ func (ref *MosaicService) GetMosaicsNames(ctx context.Context, mscIds ...*Mosaic
 
 	dtos := mosaicNameDTOs{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, mosaicNamesRoute, &mosaicIds{mscIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, mosaicNamesRoute, &mosaicIds{mscIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}

@@ -56,7 +56,7 @@ func (a *AccountService) GetAccountsProperties(ctx context.Context, addresses ..
 
 	dtos := accountPropertiesDTOs(make([]*accountPropertiesDTO, 0))
 
-	resp, err := a.client.DoNewRequest(ctx, http.MethodPost, accountsPropertiesRoute, addrs, &dtos)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, accountsPropertiesRoute, addrs, &dtos)
 	if err != nil {
 		return nil, err
 	}

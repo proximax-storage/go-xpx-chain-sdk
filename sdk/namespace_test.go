@@ -62,7 +62,7 @@ var (
 				"namespaceId": [
 				  929036875,
 				  2226345261
-				], 
+				],
 				"type": 0,
 				"depth": 1,
 				"level0": [
@@ -124,7 +124,7 @@ var (
 )
 
 func TestNamespaceService_GetNamespace(t *testing.T) {
-	nsInfo, err := namespaceClient.GetNamespace(ctx, testNamespaceId)
+	nsInfo, err := namespaceClient.GetNamespaceInfo(ctx, testNamespaceId)
 
 	assert.Nilf(t, err, "NamespaceService.GetNamespace returned error: %s", err)
 	tests.ValidateStringers(t, namespaceCorr, nsInfo)
@@ -136,7 +136,7 @@ func TestNamespaceService_GetNamespacesFromAccount(t *testing.T) {
 		RespBody: tplInfoArr,
 	})
 
-	nsInfoArr, err := namespaceClient.GetNamespacesFromAccount(ctx, &testAddress, nil, pageSize)
+	nsInfoArr, err := namespaceClient.GetNamespaceInfosFromAccount(ctx, &testAddress, nil, pageSize)
 
 	assert.Nilf(t, err, "NamespaceService.GetNamespacesFromAccount returned error: %s", err)
 

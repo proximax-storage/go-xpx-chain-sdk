@@ -84,7 +84,7 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 		BlockedEntityTypes: make([]TransactionType, 0),
 	}
 
-	properties.Address, err = NewAddressFromEncoded(ref.AccountProperties.Address)
+	properties.Address, err = NewAddressFromBase32(ref.AccountProperties.Address)
 	if err != nil {
 		return nil, err
 	}

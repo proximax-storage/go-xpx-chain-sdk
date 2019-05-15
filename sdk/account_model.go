@@ -241,7 +241,7 @@ func EncodedStringToAddresses(addresses ...string) ([]*Address, error) {
 	result := make([]*Address, len(addresses))
 	for i, a := range addresses {
 		var err error = nil
-		result[i], err = NewAddressFromEncoded(a)
+		result[i], err = NewAddressFromBase32(a)
 		if err != nil {
 			return nil, err
 		}

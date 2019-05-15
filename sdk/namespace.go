@@ -151,7 +151,7 @@ func (ref *NamespaceService) GetLinkedMosaicId(ctx context.Context, namespaceId 
 		return nil, ErrNilAddress
 	}
 
-	info, err := ref.GetNamespace(ctx, namespaceId)
+	info, err := ref.GetNamespaceInfo(ctx, namespaceId)
 
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (ref *NamespaceService) GetLinkedAddress(ctx context.Context, namespaceId *
 		return nil, ErrNilAddress
 	}
 
-	info, err := ref.GetNamespace(ctx, namespaceId)
+	info, err := ref.GetNamespaceInfo(ctx, namespaceId)
 
 	if err != nil {
 		return nil, err
@@ -185,7 +185,7 @@ func (ref *NamespaceService) buildNamespaceHierarchy(ctx context.Context, nsInfo
 		return nil
 	}
 
-	parentNsInfo, err := ref.GetNamespace(ctx, nsInfo.Parent.NamespaceId)
+	parentNsInfo, err := ref.GetNamespaceInfo(ctx, nsInfo.Parent.NamespaceId)
 	if err != nil {
 		return err
 	}

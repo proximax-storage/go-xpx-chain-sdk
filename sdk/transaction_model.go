@@ -226,7 +226,7 @@ type AccountPropertiesAddressTransaction struct {
 	Modifications []*AccountPropertiesAddressModification
 }
 
-// TODO add description
+// returns AccountPropertiesAddressTransaction from passed PropertyType and AccountPropertiesAddressModification's
 func NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesAddressModification, networkType NetworkType) (*AccountPropertiesAddressTransaction, error) {
 	if len(modifications) == 0 {
@@ -316,7 +316,7 @@ type accountPropertiesAddressModificationDTO struct {
 }
 
 func (dto *accountPropertiesAddressModificationDTO) toStruct() (*AccountPropertiesAddressModification, error) {
-	a, err := NewAddressFromEncoded(dto.Address)
+	a, err := NewAddressFromBase32(dto.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +380,7 @@ type AccountPropertiesMosaicTransaction struct {
 	Modifications []*AccountPropertiesMosaicModification
 }
 
-// TODO description
+// returns AccountPropertiesMosaicTransaction from passed PropertyType and AccountPropertiesMosaicModification's
 func NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesMosaicModification, networkType NetworkType) (*AccountPropertiesMosaicTransaction, error) {
 	if len(modifications) == 0 {
@@ -531,7 +531,7 @@ type AccountPropertiesEntityTypeTransaction struct {
 	Modifications []*AccountPropertiesEntityTypeModification
 }
 
-//TODO description
+// returns AccountPropertiesEntityTypeTransaction from passed PropertyType and AccountPropertiesEntityTypeModification's
 func NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesEntityTypeModification, networkType NetworkType) (*AccountPropertiesEntityTypeTransaction, error) {
 	if len(modifications) == 0 {
@@ -732,7 +732,7 @@ type AddressAliasTransaction struct {
 	Address *Address
 }
 
-//TODO description?
+// returns AddressAliasTransaction from passed Address, NamespaceId and AliasActionType
 func NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*AddressAliasTransaction, error) {
 	if address == nil {
 		return nil, errors.New("address must not be nil")
@@ -800,7 +800,7 @@ func (dto *addressAliasTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -816,7 +816,7 @@ type MosaicAliasTransaction struct {
 	MosaicId *MosaicId
 }
 
-//TODO description?
+// returns MosaicAliasTransaction from passed MosaicId, NamespaceId and AliasActionType
 func NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*MosaicAliasTransaction, error) {
 	if mosaicId == nil {
 		return nil, errors.New("mosaicId must not bu nil")
@@ -898,7 +898,7 @@ type AccountLinkTransaction struct {
 	LinkAction    AccountLinkAction
 }
 
-// TODO description?
+// returns AccountLinkTransaction from passed PublicAccount and AccountLinkAction
 func NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*AccountLinkTransaction, error) {
 	if remoteAccount == nil {
 		return nil, errors.New("remoteAccount must not be nil")
@@ -1717,7 +1717,7 @@ func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*M
 	}, nil
 }
 
-// TODO description?
+// returns TransferTransaction from passed recipient NamespaceId, Mosaic's and transfer Message
 func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error) {
 	if recipient == nil {
 		return nil, errors.New("recipient namespace must not be nil")

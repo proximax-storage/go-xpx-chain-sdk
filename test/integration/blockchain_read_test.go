@@ -97,7 +97,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
-				nsInfo, err := serv.Namespace.GetNamespace(ctx, tran.NamespaceId)
+				nsInfo, err := serv.Namespace.GetNamespaceInfo(ctx, tran.NamespaceId)
 				if err != nil {
 					t.Fatal(err)
 				}
