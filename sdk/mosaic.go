@@ -13,7 +13,7 @@ import (
 
 type MosaicService service
 
-func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfo(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
 	}
