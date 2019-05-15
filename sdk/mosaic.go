@@ -13,7 +13,7 @@ import (
 
 type MosaicService service
 
-func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfo(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
 	}
@@ -39,7 +39,7 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 	return mscInfo, nil
 }
 
-func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfos(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
 	if len(mscIds) == 0 {
 		return nil, ErrEmptyMosaicIds
 	}

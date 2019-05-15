@@ -123,7 +123,7 @@ var (
 	tplInfoArr = "[" + tplInfo + "]"
 )
 
-func TestNamespaceService_GetNamespace(t *testing.T) {
+func TestNamespaceService_GetNamespaceInfo(t *testing.T) {
 	nsInfo, err := namespaceClient.GetNamespaceInfo(ctx, testNamespaceId)
 
 	assert.Nilf(t, err, "NamespaceService.GetNamespace returned error: %s", err)
