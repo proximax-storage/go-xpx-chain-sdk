@@ -39,7 +39,7 @@ func (ref *MosaicService) GetMosaicInfo(ctx context.Context, mosaicId *MosaicId)
 	return mscInfo, nil
 }
 
-func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfos(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
 	if len(mscIds) == 0 {
 		return nil, ErrEmptyMosaicIds
 	}
