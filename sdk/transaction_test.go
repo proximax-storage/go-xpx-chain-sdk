@@ -309,7 +309,8 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	acc2, err := NewAccountFromPrivateKey("b8afae6f4ad13a1b8aad047b488e0738a437c7389d4ff30c359ac068910c1d59", MijinTest) // TODO from original repo: "bug with private key"
+	// TODO: from original repo: "bug with private key"
+	acc2, err := NewAccountFromPrivateKey("b8afae6f4ad13a1b8aad047b488e0738a437c7389d4ff30c359ac068910c1d59", MijinTest)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
@@ -381,6 +382,7 @@ func TestModifyAddressMetadataTransactionSerialization(t *testing.T) {
 func TestAccountPropertiesAddressTransaction(t *testing.T) {
 	blockAccount, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
 	assert.Nil(t, err)
+
 	tx, err := NewAccountPropertiesAddressTransaction(
 		fakeDeadline,
 		BlockAddress,

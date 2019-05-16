@@ -306,7 +306,6 @@ func (tx *AccountPropertiesAddressTransaction) generateBytes() ([]byte, error) {
 	return accountPropertyTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-// TODO why is it exported?
 func (tx *AccountPropertiesAddressTransaction) Size() int {
 	return 120 + 2 + (26 * len(tx.Modifications))
 }
@@ -457,7 +456,6 @@ func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
 	return accountPropertyTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *AccountPropertiesMosaicTransaction) Size() int {
 	return 120 + 2 + (9 * len(tx.Modifications))
 }
@@ -608,7 +606,6 @@ func (tx *AccountPropertiesEntityTypeTransaction) generateBytes() ([]byte, error
 	return accountPropertyTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *AccountPropertiesEntityTypeTransaction) Size() int {
 	return 120 + 2 + (3 * len(tx.Modifications))
 }
@@ -695,7 +692,6 @@ func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV f
 	return aliasTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *AliasTransaction) Size() int {
 	return 120 + 1 + 8
 }
@@ -958,7 +954,6 @@ func (tx *AccountLinkTransaction) generateBytes() ([]byte, error) {
 	return accountLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *AccountLinkTransaction) Size() int {
 	return 120 + 32 + 1
 }
@@ -1074,7 +1069,6 @@ func (tx *AggregateTransaction) generateBytes() ([]byte, error) {
 	return aggregateTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *AggregateTransaction) Size() int {
 	sizeOfInnerTransactions := 0
 	for _, itx := range tx.InnerTransactions {
@@ -1178,7 +1172,6 @@ func (tx *ModifyMetadataTransaction) generateBytes(builder *flatbuffers.Builder,
 	return modifyMetadataTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *ModifyMetadataTransaction) Size() int {
 	sizeOfModifications := 0
 	for _, m := range tx.Modifications {
@@ -1266,7 +1259,6 @@ func (tx *ModifyMetadataAddressTransaction) generateBytes() ([]byte, error) {
 	return tx.ModifyMetadataTransaction.generateBytes(builder, aV, 25)
 }
 
-//TODO why is it exported?
 func (tx *ModifyMetadataAddressTransaction) Size() int {
 	return tx.ModifyMetadataTransaction.Size() + 25
 }
@@ -1344,7 +1336,6 @@ func (tx *ModifyMetadataMosaicTransaction) generateBytes() ([]byte, error) {
 	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
 }
 
-//TODO why is it exported?
 func (tx *ModifyMetadataMosaicTransaction) Size() int {
 	return tx.ModifyMetadataTransaction.Size() + 8
 }
@@ -1422,7 +1413,6 @@ func (tx *ModifyMetadataNamespaceTransaction) generateBytes() ([]byte, error) {
 	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
 }
 
-//TODO why is it exported?
 func (tx *ModifyMetadataNamespaceTransaction) Size() int {
 	return tx.ModifyMetadataTransaction.Size() + 8
 }
@@ -1543,7 +1533,6 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	return mosaicDefinitionTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *MosaicDefinitionTransaction) Size() int {
 	return 120 + 24
 }
@@ -1652,7 +1641,6 @@ func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
 	return mosaicSupplyChangeTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return 137
 }
@@ -1815,7 +1803,6 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 	return transferTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *TransferTransaction) Size() int {
 	return 148 + (16 * len(tx.Mosaics)) + tx.MessageSize()
 }
@@ -1938,7 +1925,6 @@ func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 	return modifyMultisigAccountTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *ModifyMultisigAccountTransaction) Size() int {
 	return 123 + (33 * len(tx.Modifications))
 }
@@ -2084,7 +2070,6 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 	return modifyContractTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *ModifyContractTransaction) Size() int {
 	return 120 + // AbstractTransaction
 		8 + 32 + 1 + 1 + 1 + // Fields of current transaction
@@ -2251,7 +2236,6 @@ func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
 	return registerNamespaceTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *RegisterNamespaceTransaction) Size() int {
 	return 138 + len(tx.NamspaceName)
 }
@@ -2386,7 +2370,6 @@ func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	return lockFundsTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *LockFundsTransaction) Size() int {
 	return 176
 }
@@ -2451,10 +2434,11 @@ func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.
 			Type:        SecretLock,
 			NetworkType: networkType,
 		},
-		Mosaic:    mosaic,
-		Duration:  duration,
-		HashType:  hashType,
-		Secret:    secret, // TODO Add secret validation
+		Mosaic:   mosaic,
+		Duration: duration,
+		HashType: hashType,
+		// TODO: Add secret validation
+		Secret:    secret,
 		Recipient: recipient,
 	}, nil
 }
@@ -2521,7 +2505,6 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	return secretLockTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *SecretLockTransaction) Size() int {
 	return 202
 }
@@ -2594,8 +2577,9 @@ func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret str
 			NetworkType: networkType,
 		},
 		HashType: hashType,
-		Secret:   secret, // TODO Add secret validation
-		Proof:    proof,
+		// TODO: Add secret validation
+		Secret: secret,
+		Proof:  proof,
 	}, nil
 }
 
@@ -2651,12 +2635,10 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	return secretProofTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-//TODO why is it exported?
 func (tx *SecretProofTransaction) Size() int {
 	return 155 + tx.SizeOfProof()
 }
 
-//TODO why is it exported?
 func (tx *SecretProofTransaction) SizeOfProof() int {
 	return len(tx.Proof) / 2
 }
@@ -2797,7 +2779,6 @@ type MetadataModification struct {
 	Value string
 }
 
-//TODO why is it exported?
 func (m *MetadataModification) Size() int {
 	return 4 + 1 + 1 + 2 + len(m.Key) + len(m.Value)
 }

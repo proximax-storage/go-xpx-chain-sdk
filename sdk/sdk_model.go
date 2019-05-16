@@ -47,7 +47,6 @@ func bigIntegerToHex(id *big.Int) string {
 	return strings.ToUpper(intToHex(u[1]) + intToHex(u[0]))
 }
 
-// TODO why it is exported?
 func fromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}
