@@ -26,6 +26,7 @@ import (
 type Transaction interface {
 	GetAbstractTransaction() *AbstractTransaction
 	String() string
+	// number of bytes of serialized transaction
 	Size() int
 	generateBytes() ([]byte, error)
 }
@@ -2915,6 +2916,8 @@ func NewDeadline(d time.Duration) *Deadline {
 	return &Deadline{time.Now().Add(d)}
 }
 
+// Create deadline from blockchain timestamp. The blockchain has self timestamp(Unix timestamp - constant). So, to return this time to Unix, we add this constant.
+// TODO: Add a new class BlockchainTimestamp. Re-work Deadline class and conversion logic
 func NewDeadlineFromBlockchainTimestamp(seconds int64) *Deadline {
 	return &Deadline{time.Unix(0, seconds*int64(time.Millisecond)+TimestampNemesisBlock.UnixNano())}
 }
