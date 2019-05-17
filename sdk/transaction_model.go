@@ -2412,22 +2412,21 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 type SecretLockTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	HashType
 	Duration  *big.Int
-	Secret    string
+	Secret    *Secret
 	Recipient *Address
 }
 
-// returns a secret lock transaction from passed deadline, mosaic, duration, type of hashing, secret hashed string and mosaic recipient
-func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, hashType HashType, secret string, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
+// returns a secret lock transaction from passed deadline, mosaic, duration, secret and mosaic recipient
+func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
 	}
 	if duration == nil {
 		return nil, errors.New("duration must not be nil")
 	}
-	if secret == "" {
-		return nil, errors.New("secret must not be empty")
+	if secret == nil {
+		return nil, errors.New("secret must not be nil")
 	}
 	if recipient == nil {
 		return nil, errors.New("recipient must not be nil")
@@ -2442,8 +2441,7 @@ func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.
 		},
 		Mosaic:    mosaic,
 		Duration:  duration,
-		HashType:  hashType,
-		Secret:    secret, // TODO Add secret validation
+		Secret:    secret,
 		Recipient: recipient,
 	}, nil
 }
@@ -2458,14 +2456,12 @@ func (tx *SecretLockTransaction) String() string {
 			"AbstractTransaction": %s,
 			"Mosaic": %s,
 			"Duration": %d,
-			"HashType": %s,
 			"Secret": %s,
 			"Recipient": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Mosaic,
 		tx.Duration,
-		tx.HashType,
 		tx.Secret,
 		tx.Recipient,
 	)
@@ -2478,7 +2474,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Mosaic.Amount))
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Duration))
 
-	s, err := hex.DecodeString(tx.Secret)
+	s, err := tx.Secret.HashBytes()
 	if err != nil {
 		return nil, err
 	}
@@ -2501,7 +2497,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	transactions.SecretLockTransactionBufferAddMosaicId(builder, mV)
 	transactions.SecretLockTransactionBufferAddMosaicAmount(builder, maV)
 	transactions.SecretLockTransactionBufferAddDuration(builder, dV)
-	transactions.SecretLockTransactionBufferAddHashAlgorithm(builder, byte(tx.HashType))
+	transactions.SecretLockTransactionBufferAddHashAlgorithm(builder, byte(tx.Secret.Type))
 	transactions.SecretLockTransactionBufferAddSecret(builder, sV)
 	transactions.SecretLockTransactionBufferAddRecipient(builder, rV)
 	t := transactions.TransactionBufferEnd(builder)
@@ -2519,10 +2515,10 @@ type secretLockTransactionDTO struct {
 		abstractTransactionDTO
 		MosaicId  *uint64DTO `json:"mosaicId"`
 		Amount    *uint64DTO `json:"amount"`
-		HashType  `json:"hashAlgorithm"`
-		Duration  uint64DTO `json:"duration"`
-		Secret    string    `json:"secret"`
-		Recipient string    `json:"recipient"`
+		HashType  HashType   `json:"hashAlgorithm"`
+		Duration  uint64DTO  `json:"duration"`
+		Secret    string     `json:"secret"`
+		Recipient string     `json:"recipient"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -2548,12 +2544,16 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	secret, err := NewSecret(dto.Tx.Secret, dto.Tx.HashType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &SecretLockTransaction{
 		*atx,
 		mosaic,
-		dto.Tx.HashType,
 		dto.Tx.Duration.toBigInt(),
-		dto.Tx.Secret,
+		secret,
 		a,
 	}, nil
 }
@@ -2561,17 +2561,13 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 type SecretProofTransaction struct {
 	AbstractTransaction
 	HashType
-	Secret string
-	Proof  string
+	Proof *Proof
 }
 
-// returns a secret proof transaction from passed deadline, type of hashing, secret hashed string and secret proof string
-func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret string, proof string, networkType NetworkType) (*SecretProofTransaction, error) {
-	if proof == "" {
-		return nil, errors.New("proof must not be empty")
-	}
-	if secret == "" {
-		return nil, errors.New("secret must not be empty")
+// returns a secret proof transaction from passed deadline, type of hashing, proof
+func NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Proof, networkType NetworkType) (*SecretProofTransaction, error) {
+	if proof == nil {
+		return nil, errors.New("proof must not be nil")
 	}
 
 	return &SecretProofTransaction{
@@ -2582,7 +2578,6 @@ func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret str
 			NetworkType: networkType,
 		},
 		HashType: hashType,
-		Secret:   secret, // TODO Add secret validation
 		Proof:    proof,
 	}, nil
 }
@@ -2596,12 +2591,10 @@ func (tx *SecretProofTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"HashType": %s,
-			"Secret": %s,
 			"Proof": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.HashType,
-		tx.Secret,
 		tx.Proof,
 	)
 }
@@ -2609,17 +2602,21 @@ func (tx *SecretProofTransaction) String() string {
 func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	s, err := hex.DecodeString(tx.Secret)
+	secret, err := tx.Proof.Secret(tx.HashType)
 	if err != nil {
 		return nil, err
 	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, s)
+	secretB, err := secret.HashBytes()
+	if err != nil {
+		return nil, err
+	}
+	sV := transactions.TransactionBufferCreateByteVector(builder, secretB)
 
-	p, err := hex.DecodeString(tx.Proof)
+	proofB, err := tx.Proof.Bytes()
 	if err != nil {
 		return nil, err
 	}
-	pV := transactions.TransactionBufferCreateByteVector(builder, p)
+	pV := transactions.TransactionBufferCreateByteVector(builder, proofB)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -2631,7 +2628,7 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.SecretProofTransactionBufferAddHashAlgorithm(builder, byte(tx.HashType))
 	transactions.SecretProofTransactionBufferAddSecret(builder, sV)
-	transactions.SecretProofTransactionBufferAddProofSize(builder, uint16(tx.SizeOfProof()))
+	transactions.SecretProofTransactionBufferAddProofSize(builder, uint16(tx.Proof.Size()))
 	transactions.SecretProofTransactionBufferAddProof(builder, pV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -2640,18 +2637,13 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *SecretProofTransaction) Size() int {
-	return 155 + tx.SizeOfProof()
-}
-
-func (tx *SecretProofTransaction) SizeOfProof() int {
-	return len(tx.Proof) / 2
+	return 155 + tx.Proof.Size()
 }
 
 type secretProofTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		HashType `json:"hashAlgorithm"`
-		Secret   string `json:"secret"`
 		Proof    string `json:"proof"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -2666,8 +2658,7 @@ func (dto *secretProofTransactionDTO) toStruct() (Transaction, error) {
 	return &SecretProofTransaction{
 		*atx,
 		dto.Tx.HashType,
-		dto.Tx.Secret,
-		dto.Tx.Proof,
+		NewProofFromHexString(dto.Tx.Proof),
 	}, nil
 }
 
@@ -3088,14 +3079,6 @@ type Hash string
 func (h Hash) String() string {
 	return (string)(h)
 }
-
-type HashType uint8
-
-func (ht HashType) String() string {
-	return fmt.Sprintf("%d", ht)
-}
-
-const SHA3_256 HashType = 0
 
 func ExtractVersion(version uint64) uint8 {
 	b := make([]byte, 8)

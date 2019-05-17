@@ -12,7 +12,6 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/sha3"
 	"math/big"
 	math "math/rand"
 	"sync"
@@ -107,7 +106,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 	sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.XemRelative(10),
+			sdk.XpxRelative(10),
 			big.NewInt(100),
 			stx,
 			networkType,
@@ -275,7 +274,7 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.XemRelative(10),
+			sdk.XpxRelative(10),
 			big.NewInt(100),
 			stx,
 			networkType,
@@ -283,41 +282,37 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	}, defaultAccount)
 }
 
-func TestSecretTransactionTransaction(t *testing.T) {
-	proof := make([]byte, 8)
+func TestSecretTransaction(t *testing.T) {
+	for _, hashType := range []sdk.HashType{sdk.SHA_256, sdk.KECCAK_256, sdk.SHA3_256, sdk.RIPEMD_160} {
+		proofB := make([]byte, 8)
+		_, err := rand.Read(proofB)
+		assert.Nil(t, err)
 
-	_, err := rand.Read(proof)
-	assert.Nil(t, err)
+		proof := sdk.NewProofFromBytes(proofB)
+		secret, err := proof.Secret(hashType)
+		assert.Nil(t, err)
+		recipient := defaultAccount.PublicAccount.Address
 
-	result := sha3.New256()
-	_, err = result.Write(proof)
-	assert.Nil(t, err)
+		sendTransaction(t, func() (sdk.Transaction, error) {
+			return sdk.NewSecretLockTransaction(
+				sdk.NewDeadline(time.Hour),
+				sdk.XpxRelative(10),
+				big.NewInt(100),
+				secret,
+				recipient,
+				networkType,
+			)
+		}, defaultAccount)
 
-	secret := hex.EncodeToString(result.Sum(nil))
-
-	recipient := defaultAccount.PublicAccount.Address
-
-	sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewSecretLockTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.XemRelative(10),
-			big.NewInt(100),
-			sdk.SHA3_256,
-			secret,
-			recipient,
-			networkType,
-		)
-	}, defaultAccount)
-
-	sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewSecretProofTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.SHA3_256,
-			secret,
-			hex.EncodeToString(proof),
-			networkType,
-		)
-	}, defaultAccount)
+		sendTransaction(t, func() (sdk.Transaction, error) {
+			return sdk.NewSecretProofTransaction(
+				sdk.NewDeadline(time.Hour),
+				hashType,
+				proof,
+				networkType,
+			)
+		}, defaultAccount)
+	}
 }
 
 func TestCompleteAggregateTransaction(t *testing.T) {
