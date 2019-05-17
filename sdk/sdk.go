@@ -49,7 +49,7 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// returns config for HTTP Client from passed node url and network type
+// returns config for HTTP Client from passed node url and NetworkType
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
 	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
 }
@@ -85,7 +85,7 @@ type service struct {
 	client *Client
 }
 
-// returns catapult http client from passed existing client and configuration
+// returns catapult http.Client from passed existing client and configuration
 // if passed client is nil, http.DefaultClient will be used
 func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
@@ -106,14 +106,14 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
-// DoNewRequest creates new request, Do it & return result in V
-func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
-	req, err := s.NewRequest(method, path, body)
+// doNewRequest creates new request, Do it & return result in V
+func (s *Client) doNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
+	req, err := s.newRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.Do(ctx, req, v)
+	resp, err := s.do(ctx, req, v)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +121,8 @@ func (s *Client) DoNewRequest(ctx context.Context, method string, path string, b
 	return resp, nil
 }
 
-// Do sends an API Request and returns a parsed response
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+// do sends an API Request and returns a parsed response
+func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
 
 	// set the Context for this request
 	req.WithContext(ctx)
@@ -167,7 +167,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	return resp, err
 }
 
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
 
 	u, err := c.config.BaseURL.Parse(urlStr)
 	if err != nil {

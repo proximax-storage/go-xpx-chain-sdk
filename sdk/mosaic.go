@@ -13,8 +13,7 @@ import (
 
 type MosaicService service
 
-// returns a mosaic info for passed mosaic id
-func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfo(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
 	}
@@ -23,7 +22,7 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 
 	dto := &mosaicInfoDTO{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -40,15 +39,14 @@ func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*M
 	return mscInfo, nil
 }
 
-// returns an array of mosaic infos for passed mosaic ids
-func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
+func (ref *MosaicService) GetMosaicInfos(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error) {
 	if len(mscIds) == 0 {
 		return nil, ErrEmptyMosaicIds
 	}
 
 	dtos := mosaicInfoDTOs(make([]*mosaicInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, mosaicsRoute, &mosaicIds{mscIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, mosaicsRoute, &mosaicIds{mscIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +72,7 @@ func (ref *MosaicService) GetMosaicsNames(ctx context.Context, mscIds ...*Mosaic
 
 	dtos := mosaicNameDTOs{}
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, mosaicNamesRoute, &mosaicIds{mscIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, mosaicNamesRoute, &mosaicIds{mscIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}

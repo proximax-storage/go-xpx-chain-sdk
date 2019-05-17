@@ -53,7 +53,7 @@ func TestBigIntegerToHex_bigIntegerNEMAndXEMToHex(t *testing.T) {
 func testBigInt(t *testing.T, str, hexStr string) {
 	i, ok := (&big.Int{}).SetString(str, 10)
 	assert.True(t, ok)
-	result := BigIntegerToHex(i)
+	result := bigIntegerToHex(i)
 	assert.Equal(t, hexStr, result)
 }
 

@@ -84,7 +84,7 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 		BlockedEntityTypes: make([]TransactionType, 0),
 	}
 
-	properties.Address, err = NewAddressFromEncoded(ref.AccountProperties.Address)
+	properties.Address, err = NewAddressFromBase32(ref.AccountProperties.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +94,13 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 		case AllowAddress:
 			properties.AllowedAddresses, err = EncodedStringToAddresses(p.Addresses...)
 		case AllowMosaic:
-			properties.AllowedMosaicId, err = BigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+			properties.AllowedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
 		case AllowTransaction:
 			properties.AllowedEntityTypes = p.EntityTypes
 		case BlockAddress:
 			properties.BlockedAddresses, err = EncodedStringToAddresses(p.Addresses...)
 		case BlockMosaic:
-			properties.BlockedMosaicId, err = BigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+			properties.BlockedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
 		case BlockTransaction:
 			properties.BlockedEntityTypes = p.EntityTypes
 		}
@@ -175,7 +175,7 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		}
 	}
 
-	add, err := NewAddressFromEncoded(dto.Account.Address)
+	add, err := NewAddressFromBase32(dto.Account.Address)
 	if err != nil {
 		return nil, err
 	}

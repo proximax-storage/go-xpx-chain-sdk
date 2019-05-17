@@ -62,7 +62,7 @@ var (
 				"namespaceId": [
 				  929036875,
 				  2226345261
-				], 
+				],
 				"type": 0,
 				"depth": 1,
 				"level0": [
@@ -123,38 +123,38 @@ var (
 	tplInfoArr = "[" + tplInfo + "]"
 )
 
-func TestNamespaceService_GetNamespace(t *testing.T) {
-	nsInfo, err := namespaceClient.GetNamespace(ctx, testNamespaceId)
+func TestNamespaceService_GetNamespaceInfo(t *testing.T) {
+	nsInfo, err := namespaceClient.GetNamespaceInfo(ctx, testNamespaceId)
 
 	assert.Nilf(t, err, "NamespaceService.GetNamespace returned error: %s", err)
 	tests.ValidateStringers(t, namespaceCorr, nsInfo)
 }
 
-func TestNamespaceService_GetNamespacesFromAccount(t *testing.T) {
+func TestNamespaceService_GetNamespaceInfosFromAccount(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf(namespacesFromAccountRoutes, testAddress.Address),
 		RespBody: tplInfoArr,
 	})
 
-	nsInfoArr, err := namespaceClient.GetNamespacesFromAccount(ctx, &testAddress, nil, pageSize)
+	nsInfoArr, err := namespaceClient.GetNamespaceInfosFromAccount(ctx, &testAddress, nil, pageSize)
 
-	assert.Nilf(t, err, "NamespaceService.GetNamespacesFromAccount returned error: %s", err)
+	assert.Nilf(t, err, "NamespaceService.GetNamespaceInfosFromAccount returned error: %s", err)
 
 	for _, nsInfo := range nsInfoArr {
 		tests.ValidateStringers(t, namespaceCorr, nsInfo)
 	}
 }
 
-func TestNamespaceService_GetNamespacesFromAccounts(t *testing.T) {
+func TestNamespaceService_GetNamespaceInfosFromAccounts(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockServer.AddRouter(&mock.Router{
 			Path:     namespacesFromAccountsRoute,
 			RespBody: tplInfoArr,
 		})
 
-		nsInfoArr, err := namespaceClient.GetNamespacesFromAccounts(ctx, testAddresses, nil, pageSize)
+		nsInfoArr, err := namespaceClient.GetNamespaceInfosFromAccounts(ctx, testAddresses, nil, pageSize)
 
-		assert.Nilf(t, err, "NamespaceService.GetNamespacesFromAccounts returned error: %s", err)
+		assert.Nilf(t, err, "NamespaceService.GetNamespaceInfosFromAccounts returned error: %s", err)
 
 		for _, nsInfo := range nsInfoArr {
 			tests.ValidateStringers(t, namespaceCorr, nsInfo)
@@ -162,7 +162,7 @@ func TestNamespaceService_GetNamespacesFromAccounts(t *testing.T) {
 	})
 
 	t.Run("no test addresses", func(t *testing.T) {
-		_, err := namespaceClient.GetNamespacesFromAccounts(ctx, nil, nil, pageSize)
+		_, err := namespaceClient.GetNamespaceInfosFromAccounts(ctx, nil, nil, pageSize)
 
 		assert.NotNil(t, err, "request with empty Addresses must return error")
 	})

@@ -17,7 +17,6 @@ import (
 
 type NamespaceId big.Int
 
-// returns namespace id from passed big int representation
 func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 	if id == nil {
 		return nil, ErrNilNamespaceId
@@ -28,9 +27,9 @@ func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
 
 // returns namespace id from passed namespace name
 // should be used for creating root, child and grandchild namespace ids
-// to create root namespace pass namespace name in format like `rootname`
-// to create child namespace pass namespace name in format like `rootname.childname`
-// to create grand child namespace pass namespace name in format like `rootname.childname.grandchildname`
+// to create root namespace pass namespace name in format like 'rootname'
+// to create child namespace pass namespace name in format like 'rootname.childname'
+// to create grand child namespace pass namespace name in format like 'rootname.childname.grandchildname'
 func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 	if list, err := GenerateNamespacePath(namespaceName); err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func (m *NamespaceId) String() string {
 }
 
 func (n *NamespaceId) toHexString() string {
-	return BigIntegerToHex(namespaceIdToBigInt(n))
+	return bigIntegerToHex(namespaceIdToBigInt(n))
 }
 
 type NamespaceIds struct {
@@ -122,7 +121,7 @@ func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
 
 	switch alias.Type {
 	case AddressAliasType:
-		a, err := NewAddressFromEncoded(dto.Address)
+		a, err := NewAddressFromBase32(dto.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -213,9 +212,9 @@ func (n *NamespaceName) String() string {
 }
 
 // returns an array of big ints representation if namespace ids from passed namespace path
-// to create root namespace pass namespace name in format like `rootname`
-// to create child namespace pass namespace name in format like `rootname.childname`
-// to create grand child namespace pass namespace name in format like `rootname.childname.grandchildname`
+// to create root namespace pass namespace name in format like 'rootname'
+// to create child namespace pass namespace name in format like 'rootname.childname'
+// to create grand child namespace pass namespace name in format like 'rootname.childname.grandchildname'
 func GenerateNamespacePath(name string) ([]*big.Int, error) {
 	parts := strings.Split(name, ".")
 
@@ -259,5 +258,5 @@ func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	a += hex.EncodeToString(namespaceB)
 	a += strings.Repeat("00", 16)
 
-	return NewAddressFromEncoded(a)
+	return NewAddressFromBase32(a)
 }
