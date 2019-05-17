@@ -11,7 +11,6 @@ import (
 	"math/big"
 )
 
-// MosaicId
 type MosaicId big.Int
 
 func (m *MosaicId) String() string {
@@ -19,14 +18,14 @@ func (m *MosaicId) String() string {
 }
 
 func (m *MosaicId) toHexString() string {
-	return BigIntegerToHex(mosaicIdToBigInt(m))
+	return bigIntegerToHex(mosaicIdToBigInt(m))
 }
 
 func (m *MosaicId) Equals(id *MosaicId) bool {
 	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
 }
 
-// returns mosaic id for passed nonce and public key of owner
+// returns MosaicId for passed nonce and public key of mosaic owner
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
@@ -37,7 +36,7 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 	return bigIntToMosaicId(id), err
 }
 
-// returns mosaic id corresponding passed big int
+// returns MosaicId from big int id
 func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	if id == nil {
 		return nil, ErrNilMosaicId
@@ -46,7 +45,8 @@ func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	return bigIntToMosaicId(id), nil
 }
 
-func BigIntsToMosaicIds(mosaicIds ...*big.Int) ([]*MosaicId, error) {
+// returns MosaicId's from their big.Int's representation
+func bigIntsToMosaicIds(mosaicIds ...*big.Int) ([]*MosaicId, error) {
 	result := make([]*MosaicId, len(mosaicIds))
 	for i, m := range mosaicIds {
 		var err error = nil
@@ -65,7 +65,7 @@ type Mosaic struct {
 	Amount   *big.Int
 }
 
-// returns a mosaic for passed mosaic id and amount
+// returns a Mosaic for passed MosaicId and amount
 func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
@@ -93,7 +93,6 @@ func (m *Mosaic) String() string {
 	)
 }
 
-// MosaicInfo info structure contains its properties, the owner and the namespace to which it belongs to.
 type MosaicInfo struct {
 	MosaicId   *MosaicId
 	Supply     *big.Int
@@ -115,6 +114,12 @@ func (m *MosaicInfo) String() string {
 	)
 }
 
+// structure which includes several properties for defining mosaic
+// `SupplyMutable` - is supply of defined mosaic can be changed in future
+// `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
+// `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
+// `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
+// `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
@@ -123,6 +128,7 @@ type MosaicProperties struct {
 	Duration      *big.Int
 }
 
+// returns MosaicProperties from actual values
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,

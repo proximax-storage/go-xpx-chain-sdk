@@ -26,6 +26,7 @@ import (
 type Transaction interface {
 	GetAbstractTransaction() *AbstractTransaction
 	String() string
+	// number of bytes of serialized transaction
 	Size() int
 	generateBytes() ([]byte, error)
 }
@@ -92,8 +93,8 @@ func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v 
 	v = (uint16(tx.NetworkType) << 8) + uint16(tx.Version)
 	signatureV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, 64))
 	signerV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, 32))
-	dV = transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.Deadline.GetInstant())))
-	fV = transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.MaxFee))
+	dV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(big.NewInt(tx.Deadline.GetInstant())))
+	fV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.MaxFee))
 	return
 }
 
@@ -147,7 +148,6 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 	}, nil
 }
 
-// Transaction Info
 type TransactionInfo struct {
 	Height              *big.Int
 	Index               uint32
@@ -205,7 +205,6 @@ func (dto *transactionInfoDTO) toStruct() *TransactionInfo {
 	}
 }
 
-// AccountPropertiesAddressModification
 type AccountPropertiesAddressModification struct {
 	ModificationType PropertyModificationType
 	Address          *Address
@@ -222,13 +221,13 @@ func (mod *AccountPropertiesAddressModification) String() string {
 	)
 }
 
-// AccountPropertiesAddressTransaction
 type AccountPropertiesAddressTransaction struct {
 	AbstractTransaction
 	PropertyType  PropertyType
 	Modifications []*AccountPropertiesAddressModification
 }
 
+// returns AccountPropertiesAddressTransaction from passed PropertyType and AccountPropertiesAddressModification's
 func NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesAddressModification, networkType NetworkType) (*AccountPropertiesAddressTransaction, error) {
 	if len(modifications) == 0 {
@@ -317,7 +316,7 @@ type accountPropertiesAddressModificationDTO struct {
 }
 
 func (dto *accountPropertiesAddressModificationDTO) toStruct() (*AccountPropertiesAddressModification, error) {
-	a, err := NewAddressFromEncoded(dto.Address)
+	a, err := NewAddressFromBase32(dto.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +358,6 @@ func (dto *accountPropertiesAddressTransactionDTO) toStruct() (Transaction, erro
 	}, nil
 }
 
-// AccountPropertiesMosaicModification
 type AccountPropertiesMosaicModification struct {
 	ModificationType PropertyModificationType
 	MosaicId         *MosaicId
@@ -376,13 +374,13 @@ func (mod *AccountPropertiesMosaicModification) String() string {
 	)
 }
 
-// AccountPropertiesMosaicTransaction
 type AccountPropertiesMosaicTransaction struct {
 	AbstractTransaction
 	PropertyType  PropertyType
 	Modifications []*AccountPropertiesMosaicModification
 }
 
+// returns AccountPropertiesMosaicTransaction from passed PropertyType and AccountPropertiesMosaicModification's
 func NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesMosaicModification, networkType NetworkType) (*AccountPropertiesMosaicTransaction, error) {
 	if len(modifications) == 0 {
@@ -510,7 +508,6 @@ func (dto *accountPropertiesMosaicTransactionDTO) toStruct() (Transaction, error
 	}, nil
 }
 
-// AccountPropertiesEntityTypeModification
 type AccountPropertiesEntityTypeModification struct {
 	ModificationType PropertyModificationType
 	EntityType       TransactionType
@@ -527,13 +524,13 @@ func (mod *AccountPropertiesEntityTypeModification) String() string {
 	)
 }
 
-// AccountPropertiesEntityTypeTransaction
 type AccountPropertiesEntityTypeTransaction struct {
 	AbstractTransaction
 	PropertyType  PropertyType
 	Modifications []*AccountPropertiesEntityTypeModification
 }
 
+// returns AccountPropertiesEntityTypeTransaction from passed PropertyType and AccountPropertiesEntityTypeModification's
 func NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType,
 	modifications []*AccountPropertiesEntityTypeModification, networkType NetworkType) (*AccountPropertiesEntityTypeTransaction, error) {
 	if len(modifications) == 0 {
@@ -656,7 +653,6 @@ func (dto *accountPropertiesEntityTypeTransactionDTO) toStruct() (Transaction, e
 	}, nil
 }
 
-// AliasTransaction
 type AliasTransaction struct {
 	AbstractTransaction
 	ActionType  AliasActionType
@@ -675,7 +671,7 @@ func (tx *AliasTransaction) String() string {
 }
 
 func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV flatbuffers.UOffsetT, sizeOfAlias int) ([]byte, error) {
-	nV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(namespaceIdToBigInt(tx.NamespaceId)))
+	nV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(namespaceIdToBigInt(tx.NamespaceId)))
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -728,12 +724,12 @@ func (dto *aliasTransactionDTO) toStruct(tInfo *TransactionInfo) (*AliasTransact
 	}, nil
 }
 
-// AddressAliasTransaction
 type AddressAliasTransaction struct {
 	AliasTransaction
 	Address *Address
 }
 
+// returns AddressAliasTransaction from passed Address, NamespaceId and AliasActionType
 func NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*AddressAliasTransaction, error) {
 	if address == nil {
 		return nil, errors.New("address must not be nil")
@@ -801,7 +797,7 @@ func (dto *addressAliasTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -812,12 +808,12 @@ func (dto *addressAliasTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-// MosaicAliasTransaction
 type MosaicAliasTransaction struct {
 	AliasTransaction
 	MosaicId *MosaicId
 }
 
+// returns MosaicAliasTransaction from passed MosaicId, NamespaceId and AliasActionType
 func NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*MosaicAliasTransaction, error) {
 	if mosaicId == nil {
 		return nil, errors.New("mosaicId must not bu nil")
@@ -893,14 +889,13 @@ func (dto *mosaicAliasTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-// AccountLinkTransaction
 type AccountLinkTransaction struct {
 	AbstractTransaction
 	RemoteAccount *PublicAccount
 	LinkAction    AccountLinkAction
 }
 
-// Create an account link transaction
+// returns AccountLinkTransaction from passed PublicAccount and AccountLinkAction
 func NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*AccountLinkTransaction, error) {
 	if remoteAccount == nil {
 		return nil, errors.New("remoteAccount must not be nil")
@@ -996,7 +991,7 @@ type AggregateTransaction struct {
 	Cosignatures      []*AggregateTransactionCosignature
 }
 
-// returns complete aggregate transaction from passed deadline and an array of transactions to be included in
+// returns complete AggregateTransaction from passed array of own Transaction's to be included in
 func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error) {
 	if innerTxs == nil {
 		return nil, errors.New("innerTransactions must not be nil")
@@ -1012,7 +1007,7 @@ func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction,
 	}, nil
 }
 
-// returns bounded aggregate transaction from passed deadline and an array of transactions to be included in
+// returns bounded AggregateTransaction from passed array of transactions to be included in
 func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error) {
 	if innerTxs == nil {
 		return nil, errors.New("innerTransactions must not be nil")
@@ -1132,7 +1127,6 @@ func (dto *aggregateTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-// ModifyMetadataTransaction
 type ModifyMetadataTransaction struct {
 	AbstractTransaction
 	MetadataType  MetadataType
@@ -1214,12 +1208,12 @@ func (dto *modifyMetadataTransactionDTO) toStruct(tInfo *TransactionInfo) (*Modi
 	}, nil
 }
 
-// ModifyMetadataAddressTransaction
 type ModifyMetadataAddressTransaction struct {
 	ModifyMetadataTransaction
 	Address *Address
 }
 
+// returns ModifyMetadataAddressTransaction from passed Address to be modified, and an array of MetadataModification's
 func NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataAddressTransaction, error) {
 	if len(modifications) == 0 {
 		return nil, errors.New("modifications must not empty")
@@ -1283,7 +1277,7 @@ func (dto *modifyMetadataAddressTransactionDTO) toStruct() (Transaction, error) 
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -1294,12 +1288,12 @@ func (dto *modifyMetadataAddressTransactionDTO) toStruct() (Transaction, error) 
 	}, nil
 }
 
-// ModifyMetadataMosaicTransaction
 type ModifyMetadataMosaicTransaction struct {
 	ModifyMetadataTransaction
 	MosaicId *MosaicId
 }
 
+// returns ModifyMetadataMosaicTransaction from passed MosaicId to be modified, and an array of MetadataModification's
 func NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataMosaicTransaction, error) {
 	if len(modifications) == 0 {
 		return nil, errors.New("modifications must not empty")
@@ -1371,12 +1365,12 @@ func (dto *modifyMetadataMosaicTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-// ModifyMetadataNamespaceTransaction
 type ModifyMetadataNamespaceTransaction struct {
 	ModifyMetadataTransaction
 	NamespaceId *NamespaceId
 }
 
+// returns ModifyMetadataNamespaceTransaction from passed NamespaceId to be modified, and an array of MetadataModification's
 func NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataNamespaceTransaction, error) {
 	if len(modifications) == 0 {
 		return nil, errors.New("modifications must not empty")
@@ -1455,7 +1449,7 @@ type MosaicDefinitionTransaction struct {
 	*MosaicId
 }
 
-// returns mosaic definidion transaction from passed deadline, nonce, public key of announcer and mosaic properties
+// returns MosaicDefinitionTransaction from passed nonce, public key of announcer and MosaicProperties
 func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
@@ -1516,8 +1510,8 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 		f += 4
 	}
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(mosaicIdToBigInt(tx.MosaicId)))
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.MosaicProperties.Duration))
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(mosaicIdToBigInt(tx.MosaicId)))
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.MosaicProperties.Duration))
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1579,7 +1573,7 @@ type MosaicSupplyChangeTransaction struct {
 	Delta *big.Int
 }
 
-// returns mosaic supply change transaction from passed deadline, mosaic id, supply type and supply delta
+// returns MosaicSupplyChangeTransaction from passed MosaicId, MosaicSupplyTypeand supply delta
 func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, supplyType MosaicSupplyType, delta *big.Int, networkType NetworkType) (*MosaicSupplyChangeTransaction, error) {
 	if mosaicId == nil || mosaicIdToBigInt(mosaicId).Int64() == 0 {
 		return nil, ErrNilMosaicId
@@ -1627,8 +1621,8 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(mosaicIdToBigInt(tx.MosaicId)))
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Delta))
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(mosaicIdToBigInt(tx.MosaicId)))
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Delta))
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1687,7 +1681,7 @@ type TransferTransaction struct {
 	Recipient *Address
 }
 
-// returns a transfer transaction with address from passed deadline, transfer recipient, array of mosaics to transfer and transfer message
+// returns a TransferTransaction from passed transfer recipient Adderess, array of Mosaic's to transfer and transfer Message
 func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error) {
 	if recipient == nil {
 		return nil, errors.New("recipient must not be nil")
@@ -1712,7 +1706,7 @@ func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*M
 	}, nil
 }
 
-// Create a transfer transaction with aliased(by namespace) address
+// returns TransferTransaction from passed recipient NamespaceId, Mosaic's and transfer Message
 func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error) {
 	if recipient == nil {
 		return nil, errors.New("recipient namespace must not be nil")
@@ -1767,8 +1761,8 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 	ml := len(tx.Mosaics)
 	mb := make([]flatbuffers.UOffsetT, ml)
 	for i, mos := range tx.Mosaics {
-		id := transactions.MosaicBufferCreateIdVector(builder, FromBigInt(mosaicIdToBigInt(mos.MosaicId)))
-		am := transactions.MosaicBufferCreateAmountVector(builder, FromBigInt(mos.Amount))
+		id := transactions.MosaicBufferCreateIdVector(builder, fromBigInt(mosaicIdToBigInt(mos.MosaicId)))
+		am := transactions.MosaicBufferCreateAmountVector(builder, fromBigInt(mos.Amount))
 		transactions.MosaicBufferStart(builder)
 		transactions.MosaicBufferAddId(builder, id)
 		transactions.MosaicBufferAddAmount(builder, am)
@@ -1845,7 +1839,7 @@ func (dto *transferTransactionDTO) toStruct() (Transaction, error) {
 		mosaics[i] = msc
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Address)
+	a, err := NewAddressFromBase32(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -1865,7 +1859,7 @@ type ModifyMultisigAccountTransaction struct {
 	Modifications    []*MultisigCosignatoryModification
 }
 
-// returns a modify multisig transaction from passed deadline and multisig modification properties
+// returns a ModifyMultisigAccountTransaction from passed min approval and removal deltas and array of MultisigCosignatoryModification's
 func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error) {
 	if len(modifications) == 0 && minApprovalDelta == 0 && minRemovalDelta == 0 {
 		return nil, errors.New("modifications must not empty")
@@ -1964,7 +1958,6 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) 
 	}, nil
 }
 
-// ModifyContractTransaction
 type ModifyContractTransaction struct {
 	AbstractTransaction
 	DurationDelta int64
@@ -1974,6 +1967,7 @@ type ModifyContractTransaction struct {
 	Verifiers     []*MultisigCosignatoryModification
 }
 
+// returns ModifyContractTransaction from passed duration delta in blocks, file hash, arrays of customers, replicators and verificators
 func NewModifyContractTransaction(
 	deadline *Deadline, durationDelta int64, hash string,
 	customers []*MultisigCosignatoryModification,
@@ -2039,7 +2033,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 		return nil, err
 	}
 
-	durationV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(big.NewInt(tx.DurationDelta)))
+	durationV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(big.NewInt(tx.DurationDelta)))
 	hashV := stringToBuffer(builder, tx.Hash)
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
@@ -2134,7 +2128,7 @@ type RegisterNamespaceTransaction struct {
 	ParentId     *NamespaceId
 }
 
-// returns a register root namespace transaction from passed deadline, namespace name and duration
+// returns a RegisterNamespaceTransaction from passed namespace name and duration in blocks
 func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration *big.Int, networkType NetworkType) (*RegisterNamespaceTransaction, error) {
 	if len(namespaceName) == 0 {
 		return nil, ErrInvalidNamespaceName
@@ -2163,7 +2157,7 @@ func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName strin
 	}, nil
 }
 
-// returns a register sub namespace transaction from passed deadline, namespace name and parent namespace id
+// returns a RegisterNamespaceTransaction from passed namespace name and parent NamespaceId
 func NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string, parentId *NamespaceId, networkType NetworkType) (*RegisterNamespaceTransaction, error) {
 	if len(namespaceName) == 0 {
 		return nil, ErrInvalidNamespaceName
@@ -2214,12 +2208,12 @@ func (tx *RegisterNamespaceTransaction) String() string {
 func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	nV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(namespaceIdToBigInt(tx.NamespaceId)))
+	nV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(namespaceIdToBigInt(tx.NamespaceId)))
 	var dV flatbuffers.UOffsetT
 	if tx.NamespaceType == Root {
-		dV = transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Duration))
+		dV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Duration))
 	} else {
-		dV = transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(namespaceIdToBigInt(tx.ParentId)))
+		dV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(namespaceIdToBigInt(tx.ParentId)))
 	}
 	n := builder.CreateString(tx.NamspaceName)
 
@@ -2298,7 +2292,7 @@ type LockFundsTransaction struct {
 	*SignedTransaction
 }
 
-// returns a lock funds transaction from passed deadline, mosaic, duration, and signed transaction
+// returns a LockFundsTransaction from passed Mosaic, duration in blocks and SignedTransaction
 func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
@@ -2348,9 +2342,9 @@ func (tx *LockFundsTransaction) String() string {
 func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mv := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(mosaicIdToBigInt(tx.Mosaic.MosaicId)))
-	maV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Mosaic.Amount))
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Duration))
+	mv := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(mosaicIdToBigInt(tx.Mosaic.MosaicId)))
+	maV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Mosaic.Amount))
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Duration))
 
 	h, err := hex.DecodeString((string)(tx.SignedTransaction.Hash))
 	if err != nil {
@@ -2418,7 +2412,7 @@ type SecretLockTransaction struct {
 	Recipient *Address
 }
 
-// returns a secret lock transaction from passed deadline, mosaic, duration, type of hashing, secret hashed string and mosaic recipient
+// returns a SecretLockTransaction from passed Mosaic, duration in blocks, HashType, secret and mosaic recipient Address
 func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, hashType HashType, secret string, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
@@ -2440,10 +2434,11 @@ func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.
 			Type:        SecretLock,
 			NetworkType: networkType,
 		},
-		Mosaic:    mosaic,
-		Duration:  duration,
-		HashType:  hashType,
-		Secret:    secret, // TODO Add secret validation
+		Mosaic:   mosaic,
+		Duration: duration,
+		HashType: hashType,
+		// TODO: Add secret validation
+		Secret:    secret,
 		Recipient: recipient,
 	}, nil
 }
@@ -2474,9 +2469,9 @@ func (tx *SecretLockTransaction) String() string {
 func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(mosaicIdToBigInt(tx.Mosaic.MosaicId)))
-	maV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Mosaic.Amount))
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, FromBigInt(tx.Duration))
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(mosaicIdToBigInt(tx.Mosaic.MosaicId)))
+	maV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Mosaic.Amount))
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Duration))
 
 	s, err := hex.DecodeString(tx.Secret)
 	if err != nil {
@@ -2533,7 +2528,7 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromEncoded(dto.Tx.Recipient)
+	a, err := NewAddressFromBase32(dto.Tx.Recipient)
 	if err != nil {
 		return nil, err
 	}
@@ -2565,7 +2560,7 @@ type SecretProofTransaction struct {
 	Proof  string
 }
 
-// returns a secret proof transaction from passed deadline, type of hashing, secret hashed string and secret proof string
+// returns a SecretProofTransaction from passed HashType, secret and proof
 func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret string, proof string, networkType NetworkType) (*SecretProofTransaction, error) {
 	if proof == "" {
 		return nil, errors.New("proof must not be empty")
@@ -2582,8 +2577,9 @@ func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret str
 			NetworkType: networkType,
 		},
 		HashType: hashType,
-		Secret:   secret, // TODO Add secret validation
-		Proof:    proof,
+		// TODO: Add secret validation
+		Secret: secret,
+		Proof:  proof,
 	}, nil
 }
 
@@ -2675,7 +2671,7 @@ type CosignatureTransaction struct {
 	TransactionToCosign *AggregateTransaction
 }
 
-// returns a cosignature transaction from passed aggreagate bounded
+// returns a CosignatureTransaction from passed AggregateTransaction
 func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTransaction, error) {
 	if txToCosign == nil {
 		return nil, errors.New("txToCosign must not be nil")
@@ -2683,7 +2679,7 @@ func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTr
 	return &CosignatureTransaction{txToCosign}, nil
 }
 
-// returns a cosignature transaction from passed hash of aggreagate bounded
+// returns a CosignatureTransaction from passed hash of bounded AggregateTransaction
 func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction {
 	return &CosignatureTransaction{
 		TransactionToCosign: &AggregateTransaction{
@@ -2901,12 +2897,12 @@ func NewDeadline(d time.Duration) *Deadline {
 	return &Deadline{time.Now().Add(d)}
 }
 
-// Create deadline from from blockchain timestamp
+// Create deadline from blockchain timestamp. The blockchain has self timestamp(Unix timestamp - constant). So, to return this time to Unix, we add this constant.
+// TODO: Add a new class BlockchainTimestamp. Re-work Deadline class and conversion logic
 func NewDeadlineFromBlockchainTimestamp(seconds int64) *Deadline {
 	return &Deadline{time.Unix(0, seconds*int64(time.Millisecond)+TimestampNemesisBlock.UnixNano())}
 }
 
-// Message
 type Message struct {
 	Type    uint8
 	Payload string
@@ -2969,7 +2965,6 @@ func (t TransactionType) String() string {
 	return fmt.Sprintf("%x", uint16(t))
 }
 
-// TransactionType error
 var transactionTypeError = errors.New("wrong raw TransactionType int")
 
 type TransactionVersion uint8

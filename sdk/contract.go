@@ -10,7 +10,6 @@ import (
 
 type ContractService service
 
-// returns an array of contract infos for passed public keys
 func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKeys ...string) ([]*ContractInfo, error) {
 	if contractPubKeys == nil {
 		return nil, errors.New("contract public key should not be nil")
@@ -24,7 +23,7 @@ func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKey
 
 	dtos := contractInfoDTOs(make([]*contractInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, contractsInfoRoute, pubKeys, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, contractsInfoRoute, pubKeys, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within POST request %s", contractsInfoRoute)
 	}
@@ -41,7 +40,6 @@ func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKey
 	return infos, nil
 }
 
-// returns an array of contract infos for passed customer address
 func (ref *ContractService) GetContractsByAddress(ctx context.Context, address string) ([]*ContractInfo, error) {
 	if len(address) == 0 {
 		return nil, errors.New("address should not be blank")
@@ -51,7 +49,7 @@ func (ref *ContractService) GetContractsByAddress(ctx context.Context, address s
 
 	dtos := contractInfoDTOs(make([]*contractInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within GET request %s", url.Encode())
 	}

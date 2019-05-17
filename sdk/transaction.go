@@ -17,13 +17,13 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
-// returns transaction information for passed transaction id or hash
+// returns Transaction for passed transaction id or hash
 func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
 	var b bytes.Buffer
 
 	url := net.NewUrl(fmt.Sprintf(transactionRoute, id))
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -35,14 +35,14 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 	return MapTransaction(&b)
 }
 
-// returns an array of transaction informations for passed array of transaction ids or hashes
+// returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
 		ids,
 	}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -54,26 +54,26 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 	return MapTransactions(&b)
 }
 
-// returns transaction hash after announcing passed signed transaction
+// returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, tx, transactionsRoute)
 }
 
-// returns transaction hash after announcing passed signed aggregate bounded transaction
+// returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, tx, announceAggregateRoute)
 }
 
-// returns transaction hash after announcing passed signed cosignature transaction
+// returns transaction hash after announcing passed CosignatureSignedTransaction
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error) {
 	return txs.announceTransaction(ctx, c, announceAggregateCosignatureRoute)
 }
 
-// returns transaction status for passed transaction id or hash
+// returns TransactionStatus for passed transaction id or hash
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +85,14 @@ func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id stri
 	return ts.toStruct()
 }
 
-// returns an array of transaction statuses for passed transaction ids or hashes
+// returns an array of TransactionStatus's for passed transaction ids or hashes
 func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
 	txIds := &TransactionHashesDTO{
 		hashes,
 	}
 
 	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 		Message string `json:"message"`
 	}{}
 
-	resp, err := txs.client.DoNewRequest(ctx, http.MethodPut, path, tx, &m)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPut, path, tx, &m)
 	if err != nil {
 		return "", err
 	}

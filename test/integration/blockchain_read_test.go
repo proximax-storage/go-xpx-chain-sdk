@@ -56,7 +56,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
+				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -70,7 +70,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
+				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -87,7 +87,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				for _, val := range tran.Mosaics {
 					mosaicIDs = append(mosaicIDs, val.MosaicId)
 				}
-				mscInfoArr, err := serv.Mosaic.GetMosaics(ctx, mosaicIDs)
+				mscInfoArr, err := serv.Mosaic.GetMosaicInfos(ctx, mosaicIDs)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -97,7 +97,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
-				nsInfo, err := serv.Namespace.GetNamespace(ctx, tran.NamespaceId)
+				nsInfo, err := serv.Namespace.GetNamespaceInfo(ctx, tran.NamespaceId)
 				if err != nil {
 					t.Fatal(err)
 				}

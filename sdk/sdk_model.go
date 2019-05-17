@@ -37,17 +37,17 @@ func (dto uint64DTOs) toBigInts() []*big.Int {
 	return result
 }
 
-func IntToHex(u uint32) string {
+func intToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
 
 // analog JAVA Uint64.bigIntegerToHex
-func BigIntegerToHex(id *big.Int) string {
-	u := FromBigInt(id)
-	return strings.ToUpper(IntToHex(u[1]) + IntToHex(u[0]))
+func bigIntegerToHex(id *big.Int) string {
+	u := fromBigInt(id)
+	return strings.ToUpper(intToHex(u[1]) + intToHex(u[0]))
 }
 
-func FromBigInt(int *big.Int) []uint32 {
+func fromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}
 	}
