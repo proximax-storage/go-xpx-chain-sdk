@@ -88,7 +88,7 @@ func (ref *NamespaceService) GetNamespaceInfosFromAccount(ctx context.Context, a
 
 // returns NamespaceInfo's corresponding to passed Address's and NamespaceId with maximum limit
 // TODO: fix pagination
-func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
+func (ref *NamespaceService) GetNamespaceInfosFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if len(addrs) == 0 {
 		return nil, ErrEmptyAddressesIds
