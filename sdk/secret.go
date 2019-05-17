@@ -16,9 +16,13 @@ func (ht HashType) String() string {
 }
 
 const (
+	/// Input is hashed using Sha-3-256.
 	SHA3_256 HashType = iota
+	/// Input is hashed using Keccak-256.
 	KECCAK_256
-	RIPEMD_160
+	/// Input is hashed twice: first with SHA-256 and then with RIPEMD-160.
+	HASH_160
+	/// Input is hashed twice with SHA-256.
 	SHA_256
 )
 
@@ -47,9 +51,9 @@ func NewSecret(hash string, hashType HashType) (*Secret, error) {
 		if l != 64 {
 			return nil, errors.New("the length of Secret is wrong")
 		}
-	case RIPEMD_160:
+	case HASH_160:
 		if l != 40 && l != 64 {
-			return nil, errors.New("the length of RIPEMD_160 Secret is wrong")
+			return nil, errors.New("the length of HASH_160 Secret is wrong")
 		}
 		if l == 40 {
 			hash = hash + strings.Repeat("0", 24)
@@ -145,7 +149,7 @@ func generateSecret(proof string, hashType HashType) ([]byte, error) {
 		return crypto.HashesSha3_256(proofB)
 	case KECCAK_256:
 		return crypto.HashesKeccak_256(proofB)
-	case RIPEMD_160:
+	case HASH_160:
 		secretFirstB, err := crypto.HashesSha_256(proofB)
 
 		if err != nil {

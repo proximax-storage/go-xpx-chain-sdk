@@ -283,7 +283,7 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 }
 
 func TestSecretTransaction(t *testing.T) {
-	for _, hashType := range []sdk.HashType{sdk.SHA_256, sdk.KECCAK_256, sdk.SHA3_256, sdk.RIPEMD_160} {
+	for _, hashType := range []sdk.HashType{sdk.SHA_256, sdk.KECCAK_256, sdk.SHA3_256, sdk.HASH_160} {
 		proofB := make([]byte, 8)
 		_, err := rand.Read(proofB)
 		assert.Nil(t, err)

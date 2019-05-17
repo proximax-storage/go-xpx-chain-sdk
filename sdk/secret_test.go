@@ -23,13 +23,13 @@ func TestGenerateSecret_KECCAK_256(t *testing.T) {
 	assert.Equal(t, KECCAK_256, secret.Type)
 }
 
-func TestGenerateSecret_RIPEMD_160(t *testing.T) {
+func TestGenerateSecret_HASH_160(t *testing.T) {
 	proof := NewProofFromUint8(97)
 
-	secret, err := proof.Secret(RIPEMD_160)
+	secret, err := proof.Secret(HASH_160)
 	assert.Nil(t, err)
 	assert.Equal(t, "994355199E516FF76C4FA4AAB39337B9D84CF12B000000000000000000000000", secret.Hash)
-	assert.Equal(t, RIPEMD_160, secret.Type)
+	assert.Equal(t, HASH_160, secret.Type)
 }
 
 func TestGenerateSecret_SHA_256(t *testing.T) {
