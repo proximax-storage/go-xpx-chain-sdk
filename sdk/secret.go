@@ -43,6 +43,7 @@ func (s *Secret) HashBytes() ([]byte, error) {
 	return hex.DecodeString(s.Hash)
 }
 
+// returns Secret from passed hash string and HashType
 func NewSecret(hash string, hashType HashType) (*Secret, error) {
 	l := len(hash)
 
