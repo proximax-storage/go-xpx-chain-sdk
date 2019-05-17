@@ -116,7 +116,7 @@ func TestMosaicService_GetMosaic(t *testing.T) {
 		RespBody: testMosaicInfoJson,
 	})
 
-	mscInfo, err := mosaicClient.GetMosaic(ctx, mosaicCorr.MosaicId)
+	mscInfo, err := mosaicClient.GetMosaicInfo(ctx, mosaicCorr.MosaicId)
 
 	assert.Nilf(t, err, "MosaicService.GetMosaic returned error: %s", err)
 	tests.ValidateStringers(t, mosaicCorr, mscInfo)
@@ -132,7 +132,7 @@ func TestMosaicService_GetMosaics(t *testing.T) {
 			}{},
 		})
 
-		mscInfoArr, err := mosaicClient.GetMosaics(ctx, []*MosaicId{mosaicCorr.MosaicId})
+		mscInfoArr, err := mosaicClient.GetMosaicInfos(ctx, []*MosaicId{mosaicCorr.MosaicId})
 
 		assert.Nilf(t, err, "MosaicService.GetMosaics returned error: %s", err)
 
@@ -142,7 +142,7 @@ func TestMosaicService_GetMosaics(t *testing.T) {
 	})
 
 	t.Run("empty url params", func(t *testing.T) {
-		_, err := mosaicClient.GetMosaics(ctx, []*MosaicId{})
+		_, err := mosaicClient.GetMosaicInfos(ctx, []*MosaicId{})
 
 		assert.NotNil(t, err, "MosaicService.GetMosaics returned error: %s", err)
 	})
