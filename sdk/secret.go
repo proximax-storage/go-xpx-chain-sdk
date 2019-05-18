@@ -76,10 +76,12 @@ func (p *Proof) String() string {
 	)
 }
 
+// bytes representation of Proof
 func (p *Proof) Bytes() ([]byte, error) {
 	return hex.DecodeString(p.hexProof)
 }
 
+// bytes length of Proof
 func (p *Proof) Size() int {
 	return len(p.hexProof) / 2
 }
@@ -122,6 +124,7 @@ func NewProofFromUint64(number uint64) *Proof {
 	return &Proof{hex.EncodeToString(numberB)}
 }
 
+// returns Secret generated from Proof with passed HashType
 func (p *Proof) Secret(hashType HashType) (*Secret, error) {
 	secretB, err := generateSecret(p.hexProof, hashType)
 
