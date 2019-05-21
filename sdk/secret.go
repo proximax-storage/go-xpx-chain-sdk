@@ -59,6 +59,8 @@ func NewSecret(hash string, hashType HashType) (*Secret, error) {
 		if l == 40 {
 			hash = hash + strings.Repeat("0", 24)
 		}
+	default:
+		return nil, errors.New("Not supported HashType NewSecret")
 	}
 
 	secret := Secret{hash, hashType}
@@ -171,5 +173,5 @@ func generateSecret(proof string, hashType HashType) ([]byte, error) {
 		return crypto.HashesSha_256(secretFirstB)
 	}
 
-	return nil, errors.New("Not supported HashType")
+	return nil, errors.New("Not supported HashType generateSecret")
 }
