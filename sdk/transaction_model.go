@@ -2596,7 +2596,7 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	}
 	sV := transactions.TransactionBufferCreateByteVector(builder, secret.Hash)
 
-	pV := transactions.TransactionBufferCreateByteVector(builder, tx.Proof.Hash)
+	pV := transactions.TransactionBufferCreateByteVector(builder, tx.Proof.Data)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {

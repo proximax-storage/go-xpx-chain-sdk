@@ -78,7 +78,7 @@ func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error) {
 }
 
 type Proof struct {
-	Hash []byte
+	Data []byte
 }
 
 func (p *Proof) String() string {
@@ -90,12 +90,12 @@ func (p *Proof) String() string {
 
 // bytes representation of Proof
 func (p *Proof) ProofString() string {
-	return strings.ToUpper(hex.EncodeToString(p.Hash))
+	return strings.ToUpper(hex.EncodeToString(p.Data))
 }
 
 // bytes length of Proof
 func (p *Proof) Size() int {
-	return len(p.Hash)
+	return len(p.Data)
 }
 
 func NewProofFromBytes(proof []byte) *Proof {
@@ -142,7 +142,7 @@ func NewProofFromUint64(number uint64) *Proof {
 
 // returns Secret generated from Proof with passed HashType
 func (p *Proof) Secret(hashType HashType) (*Secret, error) {
-	secretB, err := generateSecret(p.Hash, hashType)
+	secretB, err := generateSecret(p.Data, hashType)
 
 	if err != nil {
 		return nil, err
