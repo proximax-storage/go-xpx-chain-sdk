@@ -2466,11 +2466,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Mosaic.Amount))
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Duration))
 
-	s, err := tx.Secret.HashBytes()
-	if err != nil {
-		return nil, err
-	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, s)
+	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash)
 
 	addr, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
 	if err != nil {
@@ -2536,7 +2532,7 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	secret, err := NewSecret(dto.Tx.Secret, dto.Tx.HashType)
+	secret, err := NewSecretFromHexString(dto.Tx.Secret, dto.Tx.HashType)
 	if err != nil {
 		return nil, err
 	}
@@ -2598,17 +2594,9 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	secretB, err := secret.HashBytes()
-	if err != nil {
-		return nil, err
-	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, secretB)
+	sV := transactions.TransactionBufferCreateByteVector(builder, secret.Hash)
 
-	proofB, err := tx.Proof.Bytes()
-	if err != nil {
-		return nil, err
-	}
-	pV := transactions.TransactionBufferCreateByteVector(builder, proofB)
+	pV := transactions.TransactionBufferCreateByteVector(builder, tx.Proof.Hash)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -2647,10 +2635,15 @@ func (dto *secretProofTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	proof, err := NewProofFromHexString(dto.Tx.Proof)
+	if err != nil {
+		return nil, err
+	}
+
 	return &SecretProofTransaction{
 		*atx,
 		dto.Tx.HashType,
-		NewProofFromHexString(dto.Tx.Proof),
+		proof,
 	}, nil
 }
 

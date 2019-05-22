@@ -843,7 +843,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 }
 
 func TestSecretLockTransactionSerialization(t *testing.T) {
-	secret, err := NewSecret("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
+	secret, err := NewSecretFromHexString("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
 	assert.Nil(t, err)
 
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
@@ -869,7 +869,7 @@ func TestSecretLockTransactionToAggregate(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAddressFromRaw returned error: %s", err)
 
-	secret, err := NewSecret("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
+	secret, err := NewSecretFromHexString("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
 	assert.Nil(t, err)
 
 	tx, err := NewSecretLockTransaction(fakeDeadline, XemRelative(10), big.NewInt(100), secret, ad, MijinTest)
@@ -885,7 +885,7 @@ func TestSecretLockTransactionToAggregate(t *testing.T) {
 }
 
 func TestSecretLockTransactionSigning(t *testing.T) {
-	secret, err := NewSecret("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
+	secret, err := NewSecretFromHexString("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
 	assert.Nil(t, err)
 
 	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest)
@@ -908,7 +908,8 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 }
 
 func TestSecretProofTransactionSerialization(t *testing.T) {
-	proof := NewProofFromHexString("9a493664")
+	proof, err := NewProofFromHexString("9a493664")
+	assert.Nil(t, err)
 	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, proof, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
@@ -924,7 +925,8 @@ func TestSecretProofTransactionToAggregate(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
-	proof := NewProofFromHexString("9a493664")
+	proof, err := NewProofFromHexString("9a493664")
+	assert.Nil(t, err)
 	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, proof, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
@@ -942,7 +944,8 @@ func TestSecretProofTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	proof := NewProofFromHexString("9a493664")
+	proof, err := NewProofFromHexString("9a493664")
+	assert.Nil(t, err)
 	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, proof, MijinTest)
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)

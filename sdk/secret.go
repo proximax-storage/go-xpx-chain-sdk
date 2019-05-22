@@ -27,7 +27,7 @@ const (
 )
 
 type Secret struct {
-	Hash string
+	Hash []byte
 	Type HashType
 }
 
@@ -35,29 +35,29 @@ func (s *Secret) String() string {
 	return fmt.Sprintf(
 		`"[ Type": %d, "Hash": %s ]`,
 		s.Type,
-		s.Hash,
+		s.HashString(),
 	)
 }
 
-func (s *Secret) HashBytes() ([]byte, error) {
-	return hex.DecodeString(s.Hash)
+func (s *Secret) HashString() string {
+	return strings.ToUpper(hex.EncodeToString(s.Hash))
 }
 
-// returns Secret from passed hash string and HashType
-func NewSecret(hash string, hashType HashType) (*Secret, error) {
+// returns Secret from passed hash and HashType
+func NewSecret(hash []byte, hashType HashType) (*Secret, error) {
 	l := len(hash)
 
 	switch hashType {
 	case SHA3_256, KECCAK_256, SHA_256:
-		if l != 64 {
+		if l != 32 {
 			return nil, errors.New("the length of Secret is wrong")
 		}
 	case HASH_160:
-		if l != 40 && l != 64 {
+		if l != 20 && l != 32 {
 			return nil, errors.New("the length of HASH_160 Secret is wrong")
 		}
-		if l == 40 {
-			hash = hash + strings.Repeat("0", 24)
+		if l == 20 {
+			hash = append(hash, make([]byte, 12)...)
 		}
 	default:
 		return nil, errors.New("Not supported HashType NewSecret")
@@ -67,74 +67,88 @@ func NewSecret(hash string, hashType HashType) (*Secret, error) {
 	return &secret, nil
 }
 
+// returns Secret from passed hex string hash and HashType
+func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error) {
+	bytes, err := hex.DecodeString(hash)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSecret(bytes, hashType)
+}
+
 type Proof struct {
-	hexProof string
+	Hash []byte
 }
 
 func (p *Proof) String() string {
 	return fmt.Sprintf(
 		`[ %s ]`,
-		p.hexProof,
+		p.ProofString(),
 	)
 }
 
 // bytes representation of Proof
-func (p *Proof) Bytes() ([]byte, error) {
-	return hex.DecodeString(p.hexProof)
+func (p *Proof) ProofString() string {
+	return strings.ToUpper(hex.EncodeToString(p.Hash))
 }
 
 // bytes length of Proof
 func (p *Proof) Size() int {
-	return len(p.hexProof) / 2
+	return len(p.Hash)
 }
 
 func NewProofFromBytes(proof []byte) *Proof {
-	return &Proof{hex.EncodeToString(proof)}
+	return &Proof{proof}
 }
 
 func NewProofFromString(proof string) *Proof {
-	return &Proof{hex.EncodeToString([]byte(proof))}
+	return &Proof{[]byte(proof)}
 }
 
-func NewProofFromHexString(hex string) *Proof {
-	return &Proof{hex}
+func NewProofFromHexString(hexProof string) (*Proof, error) {
+	proofB, err := hex.DecodeString(hexProof)
+	if err != nil {
+		return nil, err
+	}
+	return &Proof{proofB}, nil
 }
 
 func NewProofFromUint8(number uint8) *Proof {
 	numberB := []byte{number}
-	return &Proof{hex.EncodeToString(numberB)}
+	return &Proof{numberB}
 }
 
 func NewProofFromUint16(number uint16) *Proof {
 	numberB := make([]byte, 2)
 	binary.LittleEndian.PutUint16(numberB, number)
 
-	return &Proof{hex.EncodeToString(numberB)}
+	return &Proof{numberB}
 }
 
 func NewProofFromUint32(number uint32) *Proof {
 	numberB := make([]byte, 4)
 	binary.LittleEndian.PutUint32(numberB, number)
 
-	return &Proof{hex.EncodeToString(numberB)}
+	return &Proof{numberB}
 }
 
 func NewProofFromUint64(number uint64) *Proof {
 	numberB := make([]byte, 8)
 	binary.LittleEndian.PutUint64(numberB, number)
 
-	return &Proof{hex.EncodeToString(numberB)}
+	return &Proof{numberB}
 }
 
 // returns Secret generated from Proof with passed HashType
 func (p *Proof) Secret(hashType HashType) (*Secret, error) {
-	secretB, err := generateSecret(p.hexProof, hashType)
+	secretB, err := generateSecret(p.Hash, hashType)
 
 	if err != nil {
 		return nil, err
 	}
 
-	secret, err := NewSecret(strings.ToUpper(hex.EncodeToString(secretB)), hashType)
+	secret, err := NewSecret(secretB, hashType)
 
 	if err != nil {
 		return nil, err
@@ -143,13 +157,7 @@ func (p *Proof) Secret(hashType HashType) (*Secret, error) {
 	return secret, nil
 }
 
-func generateSecret(proof string, hashType HashType) ([]byte, error) {
-	proofB, err := hex.DecodeString(proof)
-
-	if err != nil {
-		return nil, err
-	}
-
+func generateSecret(proofB []byte, hashType HashType) ([]byte, error) {
 	switch hashType {
 	case SHA3_256:
 		return crypto.HashesSha3_256(proofB)
