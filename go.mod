@@ -12,7 +12,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190307090922-52bca9d53c3c
 	github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360
-	github.com/proximax-storage/xpx-crypto-go v0.0.0-20190517090728-4c143aaad905
+	github.com/proximax-storage/xpx-crypto-go v0.0.0-20190522100024-6fcc9a816133
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 )

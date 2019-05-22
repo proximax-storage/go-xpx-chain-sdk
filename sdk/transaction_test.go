@@ -40,7 +40,7 @@ var transaction = &TransferTransaction{
 		{bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt()), uint64DTO{10000000, 0}.toBigInt()},
 	},
 	Recipient: &Address{MijinTest, "SBJUINHAC3FKCMVLL2WHBQFPPXYEHOMQY6E2SPVR"},
-	Message:   &Message{Type: 0, Payload: ""},
+	Message:   NewPlainMessage(""),
 }
 
 var fakeDeadline = NewDeadlineFromBlockchainTimestamp(1459468800)
