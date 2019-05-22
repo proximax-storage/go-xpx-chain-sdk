@@ -12,9 +12,9 @@ import (
 )
 
 const iter = 1000
-const testUrl = "http://127.0.0.1:3000"
-const networkType = sdk.MijinTest
-const privateKey = "6B4FDEBF207798DC8C2228E73F8AC40E9D49B0D52E8131CA396BDBCFA41913CE"
+const testUrl = "http://bcstage1.xpxsirius.io:3000"
+const networkType = sdk.PublicTest
+const privateKey = "D54AC0CB0FF50FB44233782B3A6B5FDE2F1C83B9AE2F1352119F93713F3AB923"
 
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 

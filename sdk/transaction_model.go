@@ -16,7 +16,7 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"github.com/proximax-storage/nem2-crypto-go"
+	"github.com/proximax-storage/xpx-crypto-go"
 	"math/big"
 	"strings"
 	"sync"
@@ -91,8 +91,8 @@ func (tx *AbstractTransaction) String() string {
 
 func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v uint16, signatureV, signerV, dV, fV flatbuffers.UOffsetT, err error) {
 	v = (uint16(tx.NetworkType) << 8) + uint16(tx.Version)
-	signatureV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, 64))
-	signerV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, 32))
+	signatureV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignatureSize))
+	signerV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignerSize))
 	dV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(big.NewInt(tx.Deadline.GetInstant())))
 	fV = transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.MaxFee))
 	return
@@ -307,7 +307,7 @@ func (tx *AccountPropertiesAddressTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *AccountPropertiesAddressTransaction) Size() int {
-	return 120 + 2 + (26 * len(tx.Modifications))
+	return AccountPropertyAddressHeader + (AccountPropertiesAddressModificationSize * len(tx.Modifications))
 }
 
 type accountPropertiesAddressModificationDTO struct {
@@ -427,7 +427,7 @@ func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
 	for i, m := range tx.Modifications {
-		mosaicB := make([]byte, 8)
+		mosaicB := make([]byte, MosaicSize)
 		binary.LittleEndian.PutUint64(mosaicB, mosaicIdToBigInt(m.MosaicId).Uint64())
 		mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
@@ -457,7 +457,7 @@ func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *AccountPropertiesMosaicTransaction) Size() int {
-	return 120 + 2 + (9 * len(tx.Modifications))
+	return AccountPropertyMosaicHeader + (AccountPropertiesMosaicModificationSize * len(tx.Modifications))
 }
 
 type accountPropertiesMosaicModificationDTO struct {
@@ -607,7 +607,7 @@ func (tx *AccountPropertiesEntityTypeTransaction) generateBytes() ([]byte, error
 }
 
 func (tx *AccountPropertiesEntityTypeTransaction) Size() int {
-	return 120 + 2 + (3 * len(tx.Modifications))
+	return AccountPropertyEntityTypeHeader + (AccountPropertiesEntityModificationSize * len(tx.Modifications))
 }
 
 type accountPropertiesEntityTypeModificationDTO struct {
@@ -693,7 +693,7 @@ func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV f
 }
 
 func (tx *AliasTransaction) Size() int {
-	return 120 + 1 + 8
+	return AliasTransactionHeader
 }
 
 func (tx *AliasTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -776,11 +776,11 @@ func (tx *AddressAliasTransaction) generateBytes() ([]byte, error) {
 
 	aV := transactions.TransactionBufferCreateByteVector(builder, a)
 
-	return tx.AliasTransaction.generateBytes(builder, aV, 25)
+	return tx.AliasTransaction.generateBytes(builder, aV, AddressSize)
 }
 
 func (tx *AddressAliasTransaction) Size() int {
-	return tx.AliasTransaction.Size() + 25
+	return tx.AliasTransaction.Size() + AddressSize
 }
 
 type addressAliasTransactionDTO struct {
@@ -853,15 +853,15 @@ func (tx *MosaicAliasTransaction) String() string {
 
 func (tx *MosaicAliasTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	mosaicB := make([]byte, 8)
+	mosaicB := make([]byte, MosaicSize)
 	binary.LittleEndian.PutUint64(mosaicB, mosaicIdToBigInt(tx.MosaicId).Uint64())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.AliasTransaction.generateBytes(builder, mV, 8)
+	return tx.AliasTransaction.generateBytes(builder, mV, MosaicSize)
 }
 
 func (tx *MosaicAliasTransaction) Size() int {
-	return tx.AliasTransaction.Size() + 8
+	return tx.AliasTransaction.Size() + MosaicSize
 }
 
 type mosaicAliasTransactionDTO struct {
@@ -955,7 +955,7 @@ func (tx *AccountLinkTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *AccountLinkTransaction) Size() int {
-	return 120 + 32 + 1
+	return AccountLinkTransactionSize
 }
 
 type accountLinkTransactionDTO struct {
@@ -1072,9 +1072,9 @@ func (tx *AggregateTransaction) generateBytes() ([]byte, error) {
 func (tx *AggregateTransaction) Size() int {
 	sizeOfInnerTransactions := 0
 	for _, itx := range tx.InnerTransactions {
-		sizeOfInnerTransactions += itx.Size() - 64 - 16
+		sizeOfInnerTransactions += itx.Size() - SignatureSize - MaxFeeSize - DeadLineSize
 	}
-	return 120 + 4 + sizeOfInnerTransactions
+	return AggregateBondedHeader + sizeOfInnerTransactions
 }
 
 type aggregateTransactionDTO struct {
@@ -1177,7 +1177,7 @@ func (tx *ModifyMetadataTransaction) Size() int {
 	for _, m := range tx.Modifications {
 		sizeOfModifications += m.Size()
 	}
-	return 120 + 1 + sizeOfModifications
+	return MetadataHeaderSize + sizeOfModifications
 }
 
 func (tx *ModifyMetadataTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -1256,11 +1256,11 @@ func (tx *ModifyMetadataAddressTransaction) generateBytes() ([]byte, error) {
 
 	aV := transactions.TransactionBufferCreateByteVector(builder, a)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, aV, 25)
+	return tx.ModifyMetadataTransaction.generateBytes(builder, aV, AddressSize)
 }
 
 func (tx *ModifyMetadataAddressTransaction) Size() int {
-	return tx.ModifyMetadataTransaction.Size() + 25
+	return tx.ModifyMetadataTransaction.Size() + AddressSize
 }
 
 type modifyMetadataAddressTransactionDTO struct {
@@ -1329,15 +1329,15 @@ func (tx *ModifyMetadataMosaicTransaction) String() string {
 
 func (tx *ModifyMetadataMosaicTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	mosaicB := make([]byte, 8)
+	mosaicB := make([]byte, MosaicSize)
 	binary.LittleEndian.PutUint64(mosaicB, mosaicIdToBigInt(tx.MosaicId).Uint64())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
+	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, MosaicSize)
 }
 
 func (tx *ModifyMetadataMosaicTransaction) Size() int {
-	return tx.ModifyMetadataTransaction.Size() + 8
+	return tx.ModifyMetadataTransaction.Size() + MosaicSize
 }
 
 type modifyMetadataMosaicTransactionDTO struct {
@@ -1406,15 +1406,15 @@ func (tx *ModifyMetadataNamespaceTransaction) String() string {
 
 func (tx *ModifyMetadataNamespaceTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	mosaicB := make([]byte, 8)
-	binary.LittleEndian.PutUint64(mosaicB, namespaceIdToBigInt(tx.NamespaceId).Uint64())
-	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
+	namespaceB := make([]byte, NamespaceSize)
+	binary.LittleEndian.PutUint64(namespaceB, namespaceIdToBigInt(tx.NamespaceId).Uint64())
+	mV := transactions.TransactionBufferCreateByteVector(builder, namespaceB)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, 8)
+	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, NamespaceSize)
 }
 
 func (tx *ModifyMetadataNamespaceTransaction) Size() int {
-	return tx.ModifyMetadataTransaction.Size() + 8
+	return tx.ModifyMetadataTransaction.Size() + NamespaceSize
 }
 
 type modifyMetadataNamespaceTransactionDTO struct {
@@ -1534,7 +1534,7 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *MosaicDefinitionTransaction) Size() int {
-	return 120 + 24
+	return MosaicDefinitionTransactionSize
 }
 
 type mosaicDefinitionTransactionDTO struct {
@@ -1642,7 +1642,7 @@ func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *MosaicSupplyChangeTransaction) Size() int {
-	return 137
+	return MosaicSupplyChangeTransactionSize
 }
 
 type mosaicSupplyChangeTransactionDTO struct {
@@ -1804,7 +1804,7 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *TransferTransaction) Size() int {
-	return 148 + (16 * len(tx.Mosaics)) + tx.MessageSize()
+	return TransferHeaderSize + ((MosaicSize + AmountSize) * len(tx.Mosaics)) + tx.MessageSize()
 }
 
 func (tx *TransferTransaction) MessageSize() int {
@@ -1926,7 +1926,7 @@ func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *ModifyMultisigAccountTransaction) Size() int {
-	return 123 + (33 * len(tx.Modifications))
+	return ModifyMultisigHeaderSize + ((KeySize + 1 /* MultisigModificationType size */) * len(tx.Modifications))
 }
 
 type modifyMultisigAccountTransactionDTO struct {
@@ -2071,9 +2071,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *ModifyContractTransaction) Size() int {
-	return 120 + // AbstractTransaction
-		8 + 32 + 1 + 1 + 1 + // Fields of current transaction
-		((32 + 1) * (len(tx.Customers) + len(tx.Executors) + len(tx.Verifiers)))
+	return ModifyContractHeaderSize + ((KeySize + 1 /* ContractModificationType size */) * (len(tx.Customers) + len(tx.Executors) + len(tx.Verifiers)))
 }
 
 type modifyContractTransactionDTO struct {
@@ -2237,7 +2235,7 @@ func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *RegisterNamespaceTransaction) Size() int {
-	return 138 + len(tx.NamspaceName)
+	return RegisterNamespaceHeaderSize + len(tx.NamspaceName)
 }
 
 type registerNamespaceTransactionDTO struct {
@@ -2371,7 +2369,7 @@ func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *LockFundsTransaction) Size() int {
-	return 176
+	return LockSize
 }
 
 type lockFundsTransactionDTO struct {
@@ -2406,22 +2404,21 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 type SecretLockTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	HashType
 	Duration  *big.Int
-	Secret    string
+	Secret    *Secret
 	Recipient *Address
 }
 
-// returns a SecretLockTransaction from passed Mosaic, duration in blocks, HashType, secret and mosaic recipient Address
-func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, hashType HashType, secret string, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
+// returns a SecretLockTransaction from passed Mosaic, duration in blocks, Secret and mosaic recipient Address
+func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
 	}
 	if duration == nil {
 		return nil, errors.New("duration must not be nil")
 	}
-	if secret == "" {
-		return nil, errors.New("secret must not be empty")
+	if secret == nil {
+		return nil, errors.New("secret must not be nil")
 	}
 	if recipient == nil {
 		return nil, errors.New("recipient must not be nil")
@@ -2434,10 +2431,8 @@ func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.
 			Type:        SecretLock,
 			NetworkType: networkType,
 		},
-		Mosaic:   mosaic,
-		Duration: duration,
-		HashType: hashType,
-		// TODO: Add secret validation
+		Mosaic:    mosaic,
+		Duration:  duration,
 		Secret:    secret,
 		Recipient: recipient,
 	}, nil
@@ -2453,14 +2448,12 @@ func (tx *SecretLockTransaction) String() string {
 			"AbstractTransaction": %s,
 			"Mosaic": %s,
 			"Duration": %d,
-			"HashType": %s,
 			"Secret": %s,
 			"Recipient": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Mosaic,
 		tx.Duration,
-		tx.HashType,
 		tx.Secret,
 		tx.Recipient,
 	)
@@ -2473,11 +2466,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Mosaic.Amount))
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, fromBigInt(tx.Duration))
 
-	s, err := hex.DecodeString(tx.Secret)
-	if err != nil {
-		return nil, err
-	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, s)
+	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash)
 
 	addr, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
 	if err != nil {
@@ -2496,7 +2485,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	transactions.SecretLockTransactionBufferAddMosaicId(builder, mV)
 	transactions.SecretLockTransactionBufferAddMosaicAmount(builder, maV)
 	transactions.SecretLockTransactionBufferAddDuration(builder, dV)
-	transactions.SecretLockTransactionBufferAddHashAlgorithm(builder, byte(tx.HashType))
+	transactions.SecretLockTransactionBufferAddHashAlgorithm(builder, byte(tx.Secret.Type))
 	transactions.SecretLockTransactionBufferAddSecret(builder, sV)
 	transactions.SecretLockTransactionBufferAddRecipient(builder, rV)
 	t := transactions.TransactionBufferEnd(builder)
@@ -2506,7 +2495,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *SecretLockTransaction) Size() int {
-	return 202
+	return SecretLockSize
 }
 
 type secretLockTransactionDTO struct {
@@ -2514,10 +2503,10 @@ type secretLockTransactionDTO struct {
 		abstractTransactionDTO
 		MosaicId  *uint64DTO `json:"mosaicId"`
 		Amount    *uint64DTO `json:"amount"`
-		HashType  `json:"hashAlgorithm"`
-		Duration  uint64DTO `json:"duration"`
-		Secret    string    `json:"secret"`
-		Recipient string    `json:"recipient"`
+		HashType  HashType   `json:"hashAlgorithm"`
+		Duration  uint64DTO  `json:"duration"`
+		Secret    string     `json:"secret"`
+		Recipient string     `json:"recipient"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -2543,12 +2532,16 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	secret, err := NewSecretFromHexString(dto.Tx.Secret, dto.Tx.HashType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &SecretLockTransaction{
 		*atx,
 		mosaic,
-		dto.Tx.HashType,
 		dto.Tx.Duration.toBigInt(),
-		dto.Tx.Secret,
+		secret,
 		a,
 	}, nil
 }
@@ -2556,17 +2549,13 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 type SecretProofTransaction struct {
 	AbstractTransaction
 	HashType
-	Secret string
-	Proof  string
+	Proof *Proof
 }
 
-// returns a SecretProofTransaction from passed HashType, secret and proof
-func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret string, proof string, networkType NetworkType) (*SecretProofTransaction, error) {
-	if proof == "" {
-		return nil, errors.New("proof must not be empty")
-	}
-	if secret == "" {
-		return nil, errors.New("secret must not be empty")
+// returns a SecretProofTransaction from passed HashType and Proof
+func NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Proof, networkType NetworkType) (*SecretProofTransaction, error) {
+	if proof == nil {
+		return nil, errors.New("proof must not be nil")
 	}
 
 	return &SecretProofTransaction{
@@ -2577,9 +2566,7 @@ func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret str
 			NetworkType: networkType,
 		},
 		HashType: hashType,
-		// TODO: Add secret validation
-		Secret: secret,
-		Proof:  proof,
+		Proof:    proof,
 	}, nil
 }
 
@@ -2592,12 +2579,10 @@ func (tx *SecretProofTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"HashType": %s,
-			"Secret": %s,
 			"Proof": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.HashType,
-		tx.Secret,
 		tx.Proof,
 	)
 }
@@ -2605,17 +2590,13 @@ func (tx *SecretProofTransaction) String() string {
 func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	s, err := hex.DecodeString(tx.Secret)
+	secret, err := tx.Proof.Secret(tx.HashType)
 	if err != nil {
 		return nil, err
 	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, s)
+	sV := transactions.TransactionBufferCreateByteVector(builder, secret.Hash)
 
-	p, err := hex.DecodeString(tx.Proof)
-	if err != nil {
-		return nil, err
-	}
-	pV := transactions.TransactionBufferCreateByteVector(builder, p)
+	pV := transactions.TransactionBufferCreateByteVector(builder, tx.Proof.Data)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -2627,7 +2608,7 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.SecretProofTransactionBufferAddHashAlgorithm(builder, byte(tx.HashType))
 	transactions.SecretProofTransactionBufferAddSecret(builder, sV)
-	transactions.SecretProofTransactionBufferAddProofSize(builder, uint16(tx.SizeOfProof()))
+	transactions.SecretProofTransactionBufferAddProofSize(builder, uint16(tx.Proof.Size()))
 	transactions.SecretProofTransactionBufferAddProof(builder, pV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -2636,18 +2617,13 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *SecretProofTransaction) Size() int {
-	return 155 + tx.SizeOfProof()
-}
-
-func (tx *SecretProofTransaction) SizeOfProof() int {
-	return len(tx.Proof) / 2
+	return SecretProofHeaderSize + tx.Proof.Size()
 }
 
 type secretProofTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		HashType `json:"hashAlgorithm"`
-		Secret   string `json:"secret"`
 		Proof    string `json:"proof"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -2659,11 +2635,15 @@ func (dto *secretProofTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	proof, err := NewProofFromHexString(dto.Tx.Proof)
+	if err != nil {
+		return nil, err
+	}
+
 	return &SecretProofTransaction{
 		*atx,
 		dto.Tx.HashType,
-		dto.Tx.Secret,
-		dto.Tx.Proof,
+		proof,
 	}, nil
 }
 
@@ -2780,7 +2760,7 @@ type MetadataModification struct {
 }
 
 func (m *MetadataModification) Size() int {
-	return 4 + 1 + 1 + 2 + len(m.Key) + len(m.Value)
+	return SizeSize + 1 /* MetadataModificationType size */ + 1 /* KeySize size */ + 2 /* ValueSize size */ + len(m.Key) + len(m.Value)
 }
 
 func (m *MetadataModification) String() string {
@@ -2936,6 +2916,60 @@ func (m *messageDTO) toStruct() *Message {
 	return &Message{m.Type, string(b)}
 }
 
+const (
+	AddressSize                              int = 25
+	AmountSize                               int = 8
+	KeySize                                  int = 32
+	Hash256                                  int = 32
+	MosaicSize                               int = 8
+	NamespaceSize                            int = 8
+	SizeSize                                 int = 4
+	SignerSize                               int = KeySize
+	SignatureSize                            int = 64
+	VersionSize                              int = 2
+	TypeSize                                 int = 2
+	MaxFeeSize                               int = 8
+	DeadLineSize                             int = 8
+	DurationSize                             int = 8
+	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
+	PropertyTypeSize                         int = 2
+	PropertyModificationTypeSize             int = 1
+	AccountPropertiesAddressModificationSize int = PropertyModificationTypeSize + AddressSize
+	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicSize
+	AccountPropertiesEntityModificationSize  int = PropertyModificationTypeSize + TypeSize
+	AccountPropertyAddressHeader             int = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyMosaicHeader              int = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyEntityTypeHeader          int = TransactionHeaderSize + PropertyTypeSize
+	LinkActionSize                           int = 1
+	AccountLinkTransactionSize               int = TransactionHeaderSize + KeySize + LinkActionSize
+	AliasActionSize                          int = 1
+	AliasTransactionHeader                   int = TransactionHeaderSize + NamespaceSize + AliasActionSize
+	AggregateBondedHeader                    int = TransactionHeaderSize + SizeSize
+	HashTypeSize                             int = 1
+	LockSize                                 int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + Hash256
+	MetadataTypeSize                         int = 1
+	MetadataHeaderSize                       int = TransactionHeaderSize + MetadataTypeSize
+	ModificationsSizeSize                    int = 1
+	ModifyContractHeaderSize                 int = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
+	MinApprovalSize                          int = 1
+	MinRemovalSize                           int = 1
+	ModifyMultisigHeaderSize                 int = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
+	MosaicNonceSize                          int = 4
+	MosaicPropertySize                       int = 4
+	MosaicDefinitionTransactionSize          int = TransactionHeaderSize + MosaicNonceSize + MosaicSize + DurationSize + MosaicPropertySize
+	MosaicSupplyDirectionSize                int = 1
+	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicSize + AmountSize + MosaicSupplyDirectionSize
+	NamespaceTypeSize                        int = 1
+	NamespaceNameSizeSize                    int = 1
+	RegisterNamespaceHeaderSize              int = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
+	SecretLockSize                           int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
+	ProofSizeSize                            int = 2
+	SecretProofHeaderSize                    int = TransactionHeaderSize + HashTypeSize + Hash256 + ProofSizeSize
+	MosaicsSizeSize                          int = 1
+	MessageSizeSize                          int = 2
+	TransferHeaderSize                       int = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+)
+
 type TransactionType uint16
 
 const (
@@ -3084,14 +3118,6 @@ func (h Hash) String() string {
 	return (string)(h)
 }
 
-type HashType uint8
-
-func (ht HashType) String() string {
-	return fmt.Sprintf("%d", ht)
-}
-
-const SHA3_256 HashType = 0
-
 func ExtractVersion(version uint64) uint8 {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, version)
@@ -3210,9 +3236,12 @@ func createTransactionHash(p string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	sb := make([]byte, len(b)-36)
-	copy(sb[:32], b[4:32+4])
-	copy(sb[32:], b[68:])
+
+	const HalfOfSignature = SignatureSize / 2
+
+	sb := make([]byte, len(b)-SizeSize-HalfOfSignature)
+	copy(sb[:HalfOfSignature], b[SizeSize:SizeSize+HalfOfSignature])
+	copy(sb[HalfOfSignature:], b[SizeSize+SignatureSize:])
 
 	r, err := crypto.HashesSha3_256(sb)
 	if err != nil {
@@ -3235,12 +3264,15 @@ func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
 		return nil, err
 	}
 
-	rB := make([]byte, len(b)-64-16)
-	copy(rB[4:32+4], sb[:32])
-	copy(rB[32+4:32+4+4], b[100:104])
-	copy(rB[32+4+4:32+4+4+len(b)-120], b[100+2+2+16:100+2+2+16+len(b)-120])
+	rB := make([]byte, len(b)-SignatureSize-MaxFeeSize-DeadLineSize)
+	copy(rB[SizeSize:SignerSize+SizeSize], sb[:SignerSize])
+	copy(
+		rB[SignerSize+SizeSize:SignerSize+SizeSize+VersionSize+TypeSize],
+		b[SizeSize+SignerSize+SignatureSize:SizeSize+SignerSize+SignatureSize+VersionSize+TypeSize],
+	)
+	copy(rB[SignerSize+SizeSize+VersionSize+TypeSize:], b[TransactionHeaderSize:])
 
-	s := big.NewInt(int64(len(b) - 64 - 16)).Bytes()
+	s := big.NewInt(int64(len(rB))).Bytes()
 	utils.ReverseByteArray(s)
 
 	copy(rB[:len(s)], s)
@@ -3254,18 +3286,18 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 	if err != nil {
 		return nil, err
 	}
-	sb := make([]byte, len(b)-100)
-	copy(sb, b[100:])
+	sb := make([]byte, len(b)-SizeSize-SignerSize-SignatureSize)
+	copy(sb, b[SizeSize+SignerSize+SignatureSize:])
 	signature, err := s.Sign(sb)
 	if err != nil {
 		return nil, err
 	}
 
 	p := make([]byte, len(b))
-	copy(p[:4], b[:4])
-	copy(p[4:64+4], signature.Bytes())
-	copy(p[64+4:64+4+32], a.KeyPair.PublicKey.Raw)
-	copy(p[100:], b[100:])
+	copy(p[:SizeSize], b[:SizeSize])
+	copy(p[SizeSize:SizeSize+SignatureSize], signature.Bytes())
+	copy(p[SizeSize+SignatureSize:SizeSize+SignatureSize+SignerSize], a.KeyPair.PublicKey.Raw)
+	copy(p[SizeSize+SignatureSize+SignerSize:], b[SizeSize+SignatureSize+SignerSize:])
 
 	ph := hex.EncodeToString(p)
 	h, err := createTransactionHash(ph)

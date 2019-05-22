@@ -9,7 +9,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"github.com/proximax-storage/nem2-crypto-go"
+	"github.com/proximax-storage/xpx-crypto-go"
 	"math/big"
 	"strings"
 )
