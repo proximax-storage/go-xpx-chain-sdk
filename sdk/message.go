@@ -59,10 +59,7 @@ func NewPlainMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.Pri
 		return nil, err
 	}
 
-	blockChiper := xpxcrypto.NewBlockCipher(skp, rkp, nil)
-
-	plaintText, err := blockChiper.Decrypt(encodedData)
-
+	plaintText, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Decrypt(encodedData)
 	if err != nil {
 		return nil, err
 	}
@@ -105,10 +102,7 @@ func NewSecureMessageFromPlaintText(plaintText string, sender *xpxcrypto.Private
 		return nil, err
 	}
 
-	blockChiper := xpxcrypto.NewBlockCipher(skp, rkp, nil)
-
-	encodedData, err := blockChiper.Encrypt([]byte(plaintText))
-
+	encodedData, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Encrypt([]byte(plaintText))
 	if err != nil {
 		return nil, err
 	}
