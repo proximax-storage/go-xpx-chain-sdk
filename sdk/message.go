@@ -40,6 +40,10 @@ func (m *PlainMessage) Payload() []byte {
 	return m.payload
 }
 
+func (m *PlainMessage) Message() string {
+	return string(m.payload)
+}
+
 func NewPlainMessage(payload string) *PlainMessage {
 	return &PlainMessage{[]byte(payload)}
 }

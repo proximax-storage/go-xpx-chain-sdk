@@ -189,13 +189,12 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	transfer := result.Transaction.(*sdk.TransferTransaction)
-	plainMessage, err := sdk.NewPlainMessageFromEncodedData(
-		transfer.Message.Payload(),
-		recipientAccount.PrivateKey,
-		defaultAccount.KeyPair.PublicKey,
+	plainMessage, err := recipientAccount.DecryptMessage(
+		transfer.Message.(*sdk.SecureMessage),
+		defaultAccount.PublicAccount,
 	)
 
-	assert.Equal(t, message, string(plainMessage.Payload()))
+	assert.Equal(t, message, plainMessage.Message())
 }
 
 func TestModifyMultisigTransaction(t *testing.T) {
