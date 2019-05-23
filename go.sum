@@ -22,8 +22,8 @@ github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360 h1
 github.com/proximax-storage/nem2-crypto-go v0.0.0-20190314095242-375f4c1fe360/go.mod h1:AXztFfpFdhHnmP2KY771/67NR28SFSsk/NOLR2+13nQ=
 github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63 h1:y0qyv3HK1N69ebIBVq2Reg94bgTRRsalKQ2jtFm4X10=
 github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63/go.mod h1:bTUWZWtoRHhTTqatPWwFCKNeAFDzA2jbA1kLidM0/Is=
-github.com/proximax-storage/xpx-crypto-go v0.0.0-20190517090728-4c143aaad905 h1:l7pNKr2PN8JKdx5iiktBzWBLrQdpf71qGegrAbMqA9k=
-github.com/proximax-storage/xpx-crypto-go v0.0.0-20190517090728-4c143aaad905/go.mod h1:xd4fXxVEd5V9GuWQwZb/A/FiHv4TkpGiRUocRJcwj+A=
+github.com/proximax-storage/xpx-crypto-go v0.0.0-20190522100024-6fcc9a816133 h1:Jq/PU6nACbqN/cUxE7c8xQ6P8G8Qbw7hnsCORpQ8F+Y=
+github.com/proximax-storage/xpx-crypto-go v0.0.0-20190522100024-6fcc9a816133/go.mod h1:xd4fXxVEd5V9GuWQwZb/A/FiHv4TkpGiRUocRJcwj+A=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=

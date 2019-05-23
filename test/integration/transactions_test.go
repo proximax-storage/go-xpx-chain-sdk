@@ -8,13 +8,13 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	math "math/rand"
-	"sync"
 	"testing"
 	"time"
 )
@@ -30,21 +30,25 @@ var listening = false
 
 type CreateTransaction func() (sdk.Transaction, error)
 
-func initListeners(t *testing.T, account *sdk.Account) *sync.WaitGroup {
+type Result struct {
+	sdk.Transaction
+	error
+}
+
+func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
 	if !listening {
 		// Starting listening messages from websocket
 		go wsc.Listen()
 		listening = true
 	}
 
-	var wg sync.WaitGroup
+	out := make(chan Result)
 
 	// Register handlers functions for needed topics
-	wg.Add(1)
 	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
 		fmt.Println("Successful!")
-		wg.Done()
+		out <- Result{transaction, nil}
 		return true
 	}); err != nil {
 		panic(err)
@@ -53,31 +57,26 @@ func initListeners(t *testing.T, account *sdk.Account) *sync.WaitGroup {
 	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
 		fmt.Printf("Got error: %v \n", info)
 		t.Error()
-		wg.Done()
+		out <- Result{nil, errors.New(info.Status)}
 		return true
 	}); err != nil {
 		panic(err)
 	}
 
-	return &wg
+	return out
 }
 
-func waitTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
-	c := make(chan struct{})
-	go func() {
-		defer close(c)
-		wg.Wait()
-	}()
+func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 	select {
-	case <-c:
-		return
+	case result := <-wg:
+		return result
 	case <-time.After(timeout):
 		t.Error("Timeout request")
-		return
+		return Result{nil, errors.New("Timeout error")}
 	}
 }
 
-func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) {
+func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) Result {
 	tx, err := createTransaction()
 	assert.Nil(t, err)
 
@@ -91,10 +90,10 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	_, err = client.Transaction.Announce(ctx, signTx)
 	assert.Nil(t, err)
 
-	waitTimeout(t, wg, timeout)
+	return waitTimeout(t, wg, timeout)
 }
 
-func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.AggregateTransaction, error), account *sdk.Account, cosignatories ...*sdk.Account) {
+func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.AggregateTransaction, error), account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
 	assert.Nil(t, err)
 
@@ -103,7 +102,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 
 	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "payload", signTx.Hash}
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.XpxRelative(10),
@@ -113,11 +112,15 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 		)
 	}, account)
 
+	if result.error != nil {
+		return result
+	}
+
 	wg := initListeners(t, account)
 	_, err = client.Transaction.AnnounceAggregateBonded(ctx, signTx)
 	assert.Nil(t, err)
 
-	waitTimeout(t, wg, timeout)
+	return waitTimeout(t, wg, timeout)
 }
 
 func TestAccountLinkTransaction(t *testing.T) {
@@ -128,20 +131,21 @@ func TestAccountLinkTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(childAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewAccountLinkTransaction(
 			sdk.NewDeadline(time.Hour),
 			childAccount.PublicAccount,
 			sdk.AccountLink,
 			networkType)
 	}, rootAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
@@ -149,10 +153,11 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 			sdk.NewMosaicProperties(true, true, true, 4, big.NewInt(1)),
 			networkType)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestTransferTransaction(t *testing.T) {
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", networkType),
@@ -161,6 +166,35 @@ func TestTransferTransaction(t *testing.T) {
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestTransferTransaction_SecureMessage(t *testing.T) {
+	const message = "I love you forever"
+	recipientAccount, err := sdk.NewAccount(networkType)
+	assert.Nil(t, err)
+
+	secureMessage, err := sdk.NewSecureMessageFromPlaintText(message, defaultAccount.PrivateKey, recipientAccount.KeyPair.PublicKey)
+	assert.Nil(t, err)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			recipientAccount.PublicAccount.Address,
+			[]*sdk.Mosaic{},
+			secureMessage,
+			networkType,
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	transfer := result.Transaction.(*sdk.TransferTransaction)
+	plainMessage, err := recipientAccount.DecryptMessage(
+		transfer.Message.(*sdk.SecureMessage),
+		defaultAccount.PublicAccount,
+	)
+
+	assert.Equal(t, message, plainMessage.Message())
 }
 
 func TestModifyMultisigTransaction(t *testing.T) {
@@ -172,7 +206,7 @@ func TestModifyMultisigTransaction(t *testing.T) {
 	multisigAccount, err := sdk.NewAccount(networkType)
 	fmt.Println(multisigAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMultisigAccountTransaction(
 			sdk.NewDeadline(time.Hour),
 			2,
@@ -190,6 +224,7 @@ func TestModifyMultisigTransaction(t *testing.T) {
 			networkType,
 		)
 	}, multisigAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestModifyContracTransaction(t *testing.T) {
@@ -201,7 +236,7 @@ func TestModifyContracTransaction(t *testing.T) {
 	contractAccount, err := sdk.NewAccount(networkType)
 	fmt.Println(contractAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyContractTransaction(
 			sdk.NewDeadline(time.Hour),
 			2,
@@ -239,6 +274,7 @@ func TestModifyContracTransaction(t *testing.T) {
 			networkType,
 		)
 	}, contractAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestRegisterRootNamespaceTransaction(t *testing.T) {
@@ -248,7 +284,7 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	nameHex := hex.EncodeToString(name)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewRegisterRootNamespaceTransaction(
 			sdk.NewDeadline(time.Hour),
 			nameHex,
@@ -256,6 +292,7 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestLockFundsTransactionTransaction(t *testing.T) {
@@ -271,7 +308,7 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	//mosaic, err := sdk.NewMosaic(id, big.NewInt(10000000))
 	//assert.Nil(t, err)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.XpxRelative(10),
@@ -280,6 +317,7 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestSecretTransaction(t *testing.T) {
@@ -293,7 +331,7 @@ func TestSecretTransaction(t *testing.T) {
 		assert.Nil(t, err)
 		recipient := defaultAccount.PublicAccount.Address
 
-		sendTransaction(t, func() (sdk.Transaction, error) {
+		result := sendTransaction(t, func() (sdk.Transaction, error) {
 			return sdk.NewSecretLockTransaction(
 				sdk.NewDeadline(time.Hour),
 				sdk.XpxRelative(10),
@@ -303,8 +341,9 @@ func TestSecretTransaction(t *testing.T) {
 				networkType,
 			)
 		}, defaultAccount)
+		assert.Nil(t, result.error)
 
-		sendTransaction(t, func() (sdk.Transaction, error) {
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
 			return sdk.NewSecretProofTransaction(
 				sdk.NewDeadline(time.Hour),
 				hashType,
@@ -312,6 +351,7 @@ func TestSecretTransaction(t *testing.T) {
 				networkType,
 			)
 		}, defaultAccount)
+		assert.Nil(t, result.error)
 	}
 }
 
@@ -326,13 +366,14 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	ttx.ToAggregate(defaultAccount.PublicAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx},
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestAggregateBoundedTransaction(t *testing.T) {
@@ -358,13 +399,14 @@ func TestAggregateBoundedTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	ttx2.ToAggregate(receiverAccount.PublicAccount)
 
-	sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
 		return sdk.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx1, ttx2},
 			networkType,
 		)
 	}, defaultAccount, receiverAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestAddressAliasTransaction(t *testing.T) {
@@ -396,18 +438,19 @@ func TestAddressAliasTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	aliasTx.ToAggregate(defaultAccount.PublicAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{registerTx, aliasTx},
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 
 	senderAccount, err := sdk.NewAccount(networkType)
 	assert.Nil(t, err)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewTransferTransactionWithNamespace(
 			sdk.NewDeadline(time.Hour),
 			nsId,
@@ -416,6 +459,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 			networkType,
 		)
 	}, senderAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestMosaicAliasTransaction(t *testing.T) {
@@ -462,19 +506,20 @@ func TestMosaicAliasTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	aliasTx.ToAggregate(defaultAccount.PublicAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{registerTx, mosaicDefinitionTx, aliasTx},
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestModifyAddressMetadataTransaction(t *testing.T) {
 	fmt.Println(defaultAccount.PublicAccount.Address)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMetadataAddressTransaction(
 			sdk.NewDeadline(time.Hour),
 			defaultAccount.PublicAccount.Address,
@@ -487,10 +532,11 @@ func TestModifyAddressMetadataTransaction(t *testing.T) {
 			},
 			networkType)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 
 	time.Sleep(2 * time.Second)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMetadataAddressTransaction(
 			sdk.NewDeadline(time.Hour),
 			defaultAccount.PublicAccount.Address,
@@ -503,6 +549,7 @@ func TestModifyAddressMetadataTransaction(t *testing.T) {
 			},
 			networkType)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestModifyMosaicMetadataTransaction(t *testing.T) {
@@ -537,17 +584,18 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	metadataTx.ToAggregate(defaultAccount.PublicAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{mosaicDefinitionTx, metadataTx},
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 
 	time.Sleep(2 * time.Second)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMetadataMosaicTransaction(
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
@@ -560,6 +608,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 			},
 			networkType)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestModifyNamespaceMetadataTransaction(t *testing.T) {
@@ -597,17 +646,18 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	modifyMetadataTx.ToAggregate(defaultAccount.PublicAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{registrNamespaceTx, modifyMetadataTx},
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 
 	time.Sleep(2 * time.Second)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyMetadataNamespaceTransaction(
 			sdk.NewDeadline(time.Hour),
 			namespaceId,
@@ -620,6 +670,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 			},
 			networkType)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestAccountPropertiesAddressTransaction(t *testing.T) {
@@ -630,7 +681,7 @@ func TestAccountPropertiesAddressTransaction(t *testing.T) {
 
 	fmt.Println(blockAccount, testAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewAccountPropertiesAddressTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.BlockAddress,
@@ -643,6 +694,7 @@ func TestAccountPropertiesAddressTransaction(t *testing.T) {
 			networkType,
 		)
 	}, testAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestAccountPropertiesMosaicTransaction(t *testing.T) {
@@ -654,7 +706,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 
 	fmt.Println(mosaicId.String())
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
@@ -663,13 +715,14 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			networkType,
 		)
 	}, defaultAccount)
+	assert.Nil(t, result.error)
 
 	testAccount, err := sdk.NewAccount(networkType)
 	assert.Nil(t, err)
 
 	fmt.Println(testAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewAccountPropertiesMosaicTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.BlockMosaic,
@@ -682,6 +735,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			networkType,
 		)
 	}, testAccount)
+	assert.Nil(t, result.error)
 }
 
 func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
@@ -690,7 +744,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 
 	fmt.Println(testAccount)
 
-	sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewAccountPropertiesEntityTypeTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.BlockTransaction,
@@ -703,4 +757,5 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 			networkType,
 		)
 	}, testAccount)
+	assert.Nil(t, result.error)
 }

@@ -31,8 +31,8 @@ func TestGenerateNewAccount_NEM(t *testing.T) {
 	t.Log("Private Key: " + a)
 
 	assert.NotNil(t, acc.KeyPair.PrivateKey.String(), "Error generating new KeyPair")
-
 }
+
 func TestGenerateEncodedAddress_NEM(t *testing.T) {
 
 	for nType, testAddress := range testAddressesForEncoded {
@@ -44,8 +44,8 @@ func TestGenerateEncodedAddress_NEM(t *testing.T) {
 
 		assert.Equal(t, testAddress, res, "Wrong address")
 	}
-
 }
+
 func TestGenerateEncodedAddress(t *testing.T) {
 	res, err := generateEncodedAddress("321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E", 144)
 	if err != nil {
@@ -53,5 +53,21 @@ func TestGenerateEncodedAddress(t *testing.T) {
 	}
 
 	assert.Equal(t, "SBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVVTOKK5M", res, "Wrong address %s", res)
+}
 
+func TestEncryptMessageAndDecryptMessage(t *testing.T) {
+	const networkType = MijinTest
+	const message = "Hello guys, let's do this!"
+	sender, err := NewAccount(networkType)
+	assert.Nil(t, err)
+	recipient, err := NewAccount(networkType)
+	assert.Nil(t, err)
+
+	secureMessage, err := sender.EncryptMessage(message, recipient.PublicAccount)
+	assert.Nil(t, err)
+
+	plainMessage, err := recipient.DecryptMessage(secureMessage, sender.PublicAccount)
+	assert.Nil(t, err)
+
+	assert.Equal(t, message, plainMessage.Message())
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/google/flatbuffers/go"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
-	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/xpx-crypto-go"
 	"math/big"
 	"strings"
@@ -1676,13 +1675,13 @@ func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (Transaction, error) {
 
 type TransferTransaction struct {
 	AbstractTransaction
-	*Message
+	Message   Message
 	Mosaics   []*Mosaic
 	Recipient *Address
 }
 
 // returns a TransferTransaction from passed transfer recipient Adderess, array of Mosaic's to transfer and transfer Message
-func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error) {
+func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message Message, networkType NetworkType) (*TransferTransaction, error) {
 	if recipient == nil {
 		return nil, errors.New("recipient must not be nil")
 	}
@@ -1707,7 +1706,7 @@ func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*M
 }
 
 // returns TransferTransaction from passed recipient NamespaceId, Mosaic's and transfer Message
-func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error) {
+func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message, networkType NetworkType) (*TransferTransaction, error) {
 	if recipient == nil {
 		return nil, errors.New("recipient namespace must not be nil")
 	}
@@ -1769,10 +1768,9 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 		mb[i] = transactions.MosaicBufferEnd(builder)
 	}
 
-	p := []byte(tx.Payload)
-	mp := transactions.TransactionBufferCreateByteVector(builder, p)
+	mp := transactions.TransactionBufferCreateByteVector(builder, tx.Message.Payload())
 	transactions.MessageBufferStart(builder)
-	transactions.MessageBufferAddType(builder, tx.Message.Type)
+	transactions.MessageBufferAddType(builder, uint8(tx.Message.Type()))
 	transactions.MessageBufferAddPayload(builder, mp)
 	m := transactions.TransactionBufferEnd(builder)
 
@@ -1808,8 +1806,8 @@ func (tx *TransferTransaction) Size() int {
 }
 
 func (tx *TransferTransaction) MessageSize() int {
-	// Message + null pointer
-	return len(tx.Payload) + 1
+	// Message + MessageType
+	return len(tx.Message.Payload()) + 1
 }
 
 type transferTransactionDTO struct {
@@ -1844,9 +1842,14 @@ func (dto *transferTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	m, err := dto.Tx.Message.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
 	return &TransferTransaction{
 		*atx,
-		dto.Tx.Message.toStruct(),
+		m,
 		mosaics,
 		a,
 	}, nil
@@ -2881,39 +2884,6 @@ func NewDeadline(d time.Duration) *Deadline {
 // TODO: Add a new class BlockchainTimestamp. Re-work Deadline class and conversion logic
 func NewDeadlineFromBlockchainTimestamp(seconds int64) *Deadline {
 	return &Deadline{time.Unix(0, seconds*int64(time.Millisecond)+TimestampNemesisBlock.UnixNano())}
-}
-
-type Message struct {
-	Type    uint8
-	Payload string
-}
-
-// The transaction message of 1024 characters.
-func NewPlainMessage(payload string) *Message {
-	return &Message{0, payload}
-}
-
-func (m *Message) String() string {
-	return str.StructToString(
-		"Message",
-		str.NewField("Type", str.IntPattern, m.Type),
-		str.NewField("Payload", str.StringPattern, m.Payload),
-	)
-}
-
-type messageDTO struct {
-	Type    uint8  `json:"type"`
-	Payload string `json:"payload"`
-}
-
-func (m *messageDTO) toStruct() *Message {
-	b, err := hex.DecodeString(m.Payload)
-
-	if err != nil {
-		return &Message{0, ""}
-	}
-
-	return &Message{m.Type, string(b)}
 }
 
 const (

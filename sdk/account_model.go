@@ -35,6 +35,26 @@ func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*Cosig
 	return signCosignatureTransaction(a, tx)
 }
 
+func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error) {
+	rpk, err := crypto.NewPublicKeyfromHex(recipientPublicAccount.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSecureMessageFromPlaintText(message, a.KeyPair.PrivateKey, rpk)
+}
+
+func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAccount *PublicAccount) (*PlainMessage, error) {
+	spk, err := crypto.NewPublicKeyfromHex(senderPublicAccount.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewPlainMessageFromEncodedData(encryptedMessage.Payload(), a.KeyPair.PrivateKey, spk)
+}
+
 type PublicAccount struct {
 	Address   *Address
 	PublicKey string
