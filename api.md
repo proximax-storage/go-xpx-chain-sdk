@@ -7,6 +7,66 @@ Package sdk provides a client library for the Catapult REST API.
 ## Usage
 
 ```go
+const (
+	AddressSize                              int = 25
+	AmountSize                               int = 8
+	KeySize                                  int = 32
+	Hash256                                  int = 32
+	MosaicSize                               int = 8
+	NamespaceSize                            int = 8
+	SizeSize                                 int = 4
+	SignerSize                               int = KeySize
+	SignatureSize                            int = 64
+	VersionSize                              int = 2
+	TypeSize                                 int = 2
+	MaxFeeSize                               int = 8
+	DeadLineSize                             int = 8
+	DurationSize                             int = 8
+	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
+	PropertyTypeSize                         int = 2
+	PropertyModificationTypeSize             int = 1
+	AccountPropertiesAddressModificationSize int = PropertyModificationTypeSize + AddressSize
+	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicSize
+	AccountPropertiesEntityModificationSize  int = PropertyModificationTypeSize + TypeSize
+	AccountPropertyAddressHeader             int = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyMosaicHeader              int = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyEntityTypeHeader          int = TransactionHeaderSize + PropertyTypeSize
+	LinkActionSize                           int = 1
+	AccountLinkTransactionSize               int = TransactionHeaderSize + KeySize + LinkActionSize
+	AliasActionSize                          int = 1
+	AliasTransactionHeader                   int = TransactionHeaderSize + NamespaceSize + AliasActionSize
+	AggregateBondedHeader                    int = TransactionHeaderSize + SizeSize
+	HashTypeSize                             int = 1
+	LockSize                                 int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + Hash256
+	MetadataTypeSize                         int = 1
+	MetadataHeaderSize                       int = TransactionHeaderSize + MetadataTypeSize
+	ModificationsSizeSize                    int = 1
+	ModifyContractHeaderSize                 int = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
+	MinApprovalSize                          int = 1
+	MinRemovalSize                           int = 1
+	ModifyMultisigHeaderSize                 int = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
+	MosaicNonceSize                          int = 4
+	MosaicPropertySize                       int = 4
+	MosaicDefinitionTransactionSize          int = TransactionHeaderSize + MosaicNonceSize + MosaicSize + DurationSize + MosaicPropertySize
+	MosaicSupplyDirectionSize                int = 1
+	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicSize + AmountSize + MosaicSupplyDirectionSize
+	NamespaceTypeSize                        int = 1
+	NamespaceNameSizeSize                    int = 1
+	RegisterNamespaceHeaderSize              int = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
+	SecretLockSize                           int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
+	ProofSizeSize                            int = 2
+	SecretProofHeaderSize                    int = TransactionHeaderSize + HashTypeSize + Hash256 + ProofSizeSize
+	MosaicsSizeSize                          int = 1
+	MessageSizeSize                          int = 2
+	TransferHeaderSize                       int = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+)
+```
+
+```go
+const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
+```
+
+```go
 const NUM_CHECKSUM_BYTES = 4
 ```
 
@@ -31,6 +91,7 @@ var (
 	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
 )
 ```
+Metadata errors
 
 ```go
 var (
@@ -93,23 +154,10 @@ var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
 ```
 mosaic id for XPX mosaic
 
-#### func  BigIntegerToHex
-
-```go
-func BigIntegerToHex(id *big.Int) string
-```
-analog JAVA Uint64.bigIntegerToHex
-
 #### func  ExtractVersion
 
 ```go
 func ExtractVersion(version uint64) uint8
-```
-
-#### func  FromBigInt
-
-```go
-func FromBigInt(int *big.Int) []uint32
 ```
 
 #### func  GenerateChecksum
@@ -125,15 +173,9 @@ func GenerateNamespacePath(name string) ([]*big.Int, error)
 ```
 returns an array of big ints representation if namespace ids from passed
 namespace path to create root namespace pass namespace name in format like
-`rootname` to create child namespace pass namespace name in format like
-`rootname.childname` to create grand child namespace pass namespace name in
-format like `rootname.childname.grandchildname`
-
-#### func  IntToHex
-
-```go
-func IntToHex(u uint32) string
-```
+'rootname' to create child namespace pass namespace name in format like
+'rootname.childname' to create grand child namespace pass namespace name in
+format like 'rootname.childname.grandchildname'
 
 #### func  NewReputationConfig
 
@@ -150,7 +192,7 @@ type AbstractTransaction struct {
 	Deadline    *Deadline
 	Type        TransactionType
 	Version     TransactionVersion
-	Fee         *big.Int
+	MaxFee      *big.Int
 	Signature   string
 	Signer      *PublicAccount
 }
@@ -208,47 +250,59 @@ type Account struct {
 ```go
 func NewAccount(networkType NetworkType) (*Account, error)
 ```
-returns new account generated for passed network type
+returns new Account generated for passed NetworkType
 
 #### func  NewAccountFromPrivateKey
 
 ```go
 func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error)
 ```
-returns new account from private key for passed network type
+returns new Account from private key for passed NetworkType
+
+#### func (*Account) DecryptMessage
+
+```go
+func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAccount *PublicAccount) (*PlainMessage, error)
+```
+
+#### func (*Account) EncryptMessage
+
+```go
+func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error)
+```
 
 #### func (*Account) Sign
 
 ```go
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error)
 ```
-signs given transaction returns a signed transaction
 
 #### func (*Account) SignCosignatureTransaction
 
 ```go
 func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error)
 ```
-signs aggregate signature transaction returns signed cosignature transaction
 
 #### func (*Account) SignWithCosignatures
 
 ```go
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error)
 ```
+sign AggregateTransaction with current Account and with every passed cosignatory
+Account's returns announced Aggregate SignedTransaction
 
 #### type AccountInfo
 
 ```go
 type AccountInfo struct {
-	Address          *Address
-	AddressHeight    *big.Int
-	PublicKey        string
-	PublicKeyHeight  *big.Int
-	Importance       *big.Int
-	ImportanceHeight *big.Int
-	Mosaics          []*Mosaic
-	Reputation       float64
+	Address         *Address
+	AddressHeight   *big.Int
+	PublicKey       string
+	PublicKeyHeight *big.Int
+	AccountType     AccountType
+	LinkedAccount   *PublicAccount
+	Mosaics         []*Mosaic
+	Reputation      float64
 }
 ```
 
@@ -257,6 +311,240 @@ type AccountInfo struct {
 
 ```go
 func (a *AccountInfo) String() string
+```
+
+#### type AccountLinkAction
+
+```go
+type AccountLinkAction uint8
+```
+
+
+```go
+const (
+	AccountLink AccountLinkAction = iota
+	AccountUnlink
+)
+```
+AccountLinkAction enums
+
+#### type AccountLinkTransaction
+
+```go
+type AccountLinkTransaction struct {
+	AbstractTransaction
+	RemoteAccount *PublicAccount
+	LinkAction    AccountLinkAction
+}
+```
+
+
+#### func  NewAccountLinkTransaction
+
+```go
+func NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*AccountLinkTransaction, error)
+```
+returns AccountLinkTransaction from passed PublicAccount and AccountLinkAction
+
+#### func (*AccountLinkTransaction) GetAbstractTransaction
+
+```go
+func (tx *AccountLinkTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AccountLinkTransaction) Size
+
+```go
+func (tx *AccountLinkTransaction) Size() int
+```
+
+#### func (*AccountLinkTransaction) String
+
+```go
+func (tx *AccountLinkTransaction) String() string
+```
+
+#### type AccountProperties
+
+```go
+type AccountProperties struct {
+	Address            *Address
+	AllowedAddresses   []*Address
+	AllowedMosaicId    []*MosaicId
+	AllowedEntityTypes []TransactionType
+	BlockedAddresses   []*Address
+	BlockedMosaicId    []*MosaicId
+	BlockedEntityTypes []TransactionType
+}
+```
+
+
+#### func (*AccountProperties) String
+
+```go
+func (a *AccountProperties) String() string
+```
+
+#### type AccountPropertiesAddressModification
+
+```go
+type AccountPropertiesAddressModification struct {
+	ModificationType PropertyModificationType
+	Address          *Address
+}
+```
+
+
+#### func (*AccountPropertiesAddressModification) String
+
+```go
+func (mod *AccountPropertiesAddressModification) String() string
+```
+
+#### type AccountPropertiesAddressTransaction
+
+```go
+type AccountPropertiesAddressTransaction struct {
+	AbstractTransaction
+	PropertyType  PropertyType
+	Modifications []*AccountPropertiesAddressModification
+}
+```
+
+
+#### func  NewAccountPropertiesAddressTransaction
+
+```go
+func NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType,
+	modifications []*AccountPropertiesAddressModification, networkType NetworkType) (*AccountPropertiesAddressTransaction, error)
+```
+returns AccountPropertiesAddressTransaction from passed PropertyType and
+AccountPropertiesAddressModification's
+
+#### func (*AccountPropertiesAddressTransaction) GetAbstractTransaction
+
+```go
+func (tx *AccountPropertiesAddressTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AccountPropertiesAddressTransaction) Size
+
+```go
+func (tx *AccountPropertiesAddressTransaction) Size() int
+```
+
+#### func (*AccountPropertiesAddressTransaction) String
+
+```go
+func (tx *AccountPropertiesAddressTransaction) String() string
+```
+
+#### type AccountPropertiesEntityTypeModification
+
+```go
+type AccountPropertiesEntityTypeModification struct {
+	ModificationType PropertyModificationType
+	EntityType       TransactionType
+}
+```
+
+
+#### func (*AccountPropertiesEntityTypeModification) String
+
+```go
+func (mod *AccountPropertiesEntityTypeModification) String() string
+```
+
+#### type AccountPropertiesEntityTypeTransaction
+
+```go
+type AccountPropertiesEntityTypeTransaction struct {
+	AbstractTransaction
+	PropertyType  PropertyType
+	Modifications []*AccountPropertiesEntityTypeModification
+}
+```
+
+
+#### func  NewAccountPropertiesEntityTypeTransaction
+
+```go
+func NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType,
+	modifications []*AccountPropertiesEntityTypeModification, networkType NetworkType) (*AccountPropertiesEntityTypeTransaction, error)
+```
+returns AccountPropertiesEntityTypeTransaction from passed PropertyType and
+AccountPropertiesEntityTypeModification's
+
+#### func (*AccountPropertiesEntityTypeTransaction) GetAbstractTransaction
+
+```go
+func (tx *AccountPropertiesEntityTypeTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AccountPropertiesEntityTypeTransaction) Size
+
+```go
+func (tx *AccountPropertiesEntityTypeTransaction) Size() int
+```
+
+#### func (*AccountPropertiesEntityTypeTransaction) String
+
+```go
+func (tx *AccountPropertiesEntityTypeTransaction) String() string
+```
+
+#### type AccountPropertiesMosaicModification
+
+```go
+type AccountPropertiesMosaicModification struct {
+	ModificationType PropertyModificationType
+	MosaicId         *MosaicId
+}
+```
+
+
+#### func (*AccountPropertiesMosaicModification) String
+
+```go
+func (mod *AccountPropertiesMosaicModification) String() string
+```
+
+#### type AccountPropertiesMosaicTransaction
+
+```go
+type AccountPropertiesMosaicTransaction struct {
+	AbstractTransaction
+	PropertyType  PropertyType
+	Modifications []*AccountPropertiesMosaicModification
+}
+```
+
+
+#### func  NewAccountPropertiesMosaicTransaction
+
+```go
+func NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType PropertyType,
+	modifications []*AccountPropertiesMosaicModification, networkType NetworkType) (*AccountPropertiesMosaicTransaction, error)
+```
+returns AccountPropertiesMosaicTransaction from passed PropertyType and
+AccountPropertiesMosaicModification's
+
+#### func (*AccountPropertiesMosaicTransaction) GetAbstractTransaction
+
+```go
+func (tx *AccountPropertiesMosaicTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AccountPropertiesMosaicTransaction) Size
+
+```go
+func (tx *AccountPropertiesMosaicTransaction) Size() int
+```
+
+#### func (*AccountPropertiesMosaicTransaction) String
+
+```go
+func (tx *AccountPropertiesMosaicTransaction) String() string
 ```
 
 #### type AccountService
@@ -271,78 +559,103 @@ type AccountService service
 ```go
 func (a *AccountService) AggregateBondedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]*AggregateTransaction, error)
 ```
-returns an array of aggregate bounded transactions where passed account is
-signer or cosigner
+returns an array of AggregateTransaction's where passed account is signer or
+cosigner
 
 #### func (*AccountService) GetAccountInfo
 
 ```go
 func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (*AccountInfo, error)
 ```
-returns account info for passed address
+
+#### func (*AccountService) GetAccountProperties
+
+```go
+func (a *AccountService) GetAccountProperties(ctx context.Context, address *Address) (*AccountProperties, error)
+```
 
 #### func (*AccountService) GetAccountsInfo
 
 ```go
-func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses []*Address) ([]*AccountInfo, error)
+func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses ...*Address) ([]*AccountInfo, error)
 ```
-returns an array of account infos for passed addresses
+
+#### func (*AccountService) GetAccountsProperties
+
+```go
+func (a *AccountService) GetAccountsProperties(ctx context.Context, addresses ...*Address) ([]*AccountProperties, error)
+```
 
 #### func (*AccountService) GetMultisigAccountGraphInfo
 
 ```go
 func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, address *Address) (*MultisigAccountGraphInfo, error)
 ```
-returns multisig account info for passed address
 
 #### func (*AccountService) GetMultisigAccountInfo
 
 ```go
 func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Address) (*MultisigAccountInfo, error)
 ```
-returns multisig account info for passed address
 
 #### func (*AccountService) IncomingTransactions
 
 ```go
 func (a *AccountService) IncomingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of transactions for which passed account is receiver
+returns an array of Transaction's for which passed account is receiver
 
 #### func (*AccountService) OutgoingTransactions
 
 ```go
 func (a *AccountService) OutgoingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of transaction for which passed account is sender
+returns an array of Transaction's for which passed account is sender
 
 #### func (*AccountService) Transactions
 
 ```go
 func (a *AccountService) Transactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of confirmed transactions for which passed account is sender or
-receiver.
+returns an array of confirmed Transaction's for which passed account is sender
+or receiver.
 
 #### func (*AccountService) UnconfirmedTransactions
 
 ```go
 func (a *AccountService) UnconfirmedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error)
 ```
-returns an array of confirmed transactions for which passed account is sender or
-receiver. unconfirmed transactions are those transactions that have not yet been
-included in a block. unconfirmed transactions are not guaranteed to be included
-in any block.
+returns an array of confirmed Transaction's for which passed account is sender
+or receiver. unconfirmed transactions are those transactions that have not yet
+been included in a block. they are not guaranteed to be included in any block.
 
 #### type AccountTransactionsOption
 
 ```go
 type AccountTransactionsOption struct {
-	PageSize int    `url:"pageSize,omitempty"`
-	Id       string `url:"id,omitempty"`
+	PageSize int              `url:"pageSize,omitempty"`
+	Id       string           `url:"id,omitempty"`
+	Ordering TransactionOrder `url:"ordering,omitempty"`
 }
 ```
 
+
+#### type AccountType
+
+```go
+type AccountType uint8
+```
+
+
+```go
+const (
+	UnlinkedAccount AccountType = iota
+	MainAccount
+	RemoteAccount
+	RemoteUnlinkedAccount
+)
+```
+AccountType enums
 
 #### type Address
 
@@ -354,17 +667,29 @@ type Address struct {
 ```
 
 
+#### func  EncodedStringToAddresses
+
+```go
+func EncodedStringToAddresses(addresses ...string) ([]*Address, error)
+```
+
 #### func  NewAddress
 
 ```go
 func NewAddress(address string, networkType NetworkType) *Address
 ```
-returns address entity from passed address string for passed network type
+returns Address from passed address string for passed NetworkType
 
-#### func  NewAddressFromEncoded
+#### func  NewAddressFromBase32
 
 ```go
-func NewAddressFromEncoded(encoded string) (*Address, error)
+func NewAddressFromBase32(encoded string) (*Address, error)
+```
+
+#### func  NewAddressFromNamespace
+
+```go
+func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error)
 ```
 
 #### func  NewAddressFromPublicKey
@@ -372,18 +697,55 @@ func NewAddressFromEncoded(encoded string) (*Address, error)
 ```go
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error)
 ```
-returns an address from public key for passed network type
+returns an Address from public key for passed NetworkType
 
 #### func  NewAddressFromRaw
 
 ```go
 func NewAddressFromRaw(address string) (*Address, error)
 ```
+returns Address from passed address string
 
 #### func (*Address) Pretty
 
 ```go
 func (ad *Address) Pretty() string
+```
+
+#### func (*Address) String
+
+```go
+func (ad *Address) String() string
+```
+
+#### type AddressAliasTransaction
+
+```go
+type AddressAliasTransaction struct {
+	AliasTransaction
+	Address *Address
+}
+```
+
+
+#### func  NewAddressAliasTransaction
+
+```go
+func NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*AddressAliasTransaction, error)
+```
+returns AddressAliasTransaction from passed Address, NamespaceId and
+AliasActionType
+
+#### func (*AddressAliasTransaction) Size
+
+```go
+func (tx *AddressAliasTransaction) Size() int
+```
+
+#### func (*AddressAliasTransaction) String
+
+```go
+func (tx *AddressAliasTransaction) String() string
 ```
 
 #### type AddressMetadataInfo
@@ -412,21 +774,27 @@ type AggregateTransaction struct {
 ```go
 func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error)
 ```
-returns bounded aggregate transaction from passed deadline and an array of
-transactions to be included in
+returns bounded AggregateTransaction from passed array of transactions to be
+included in
 
 #### func  NewCompleteAggregateTransaction
 
 ```go
 func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error)
 ```
-returns complete aggregate transaction from passed deadline and an array of
-transactions to be included in
+returns complete AggregateTransaction from passed array of own Transaction's to
+be included in
 
 #### func (*AggregateTransaction) GetAbstractTransaction
 
 ```go
 func (tx *AggregateTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AggregateTransaction) Size
+
+```go
+func (tx *AggregateTransaction) Size() int
 ```
 
 #### func (*AggregateTransaction) String
@@ -451,6 +819,66 @@ type AggregateTransactionCosignature struct {
 func (agt *AggregateTransactionCosignature) String() string
 ```
 
+#### type AliasActionType
+
+```go
+type AliasActionType uint8
+```
+
+
+```go
+const (
+	AliasLink AliasActionType = iota
+	AliasUnlink
+)
+```
+AliasActionType enums
+
+#### type AliasTransaction
+
+```go
+type AliasTransaction struct {
+	AbstractTransaction
+	ActionType  AliasActionType
+	NamespaceId *NamespaceId
+}
+```
+
+
+#### func (*AliasTransaction) GetAbstractTransaction
+
+```go
+func (tx *AliasTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*AliasTransaction) Size
+
+```go
+func (tx *AliasTransaction) Size() int
+```
+
+#### func (*AliasTransaction) String
+
+```go
+func (tx *AliasTransaction) String() string
+```
+
+#### type AliasType
+
+```go
+type AliasType uint8
+```
+
+
+```go
+const (
+	NoneAliasType AliasType = iota
+	MosaicAliasType
+	AddressAliasType
+)
+```
+AliasType enums
+
 #### type BlockInfo
 
 ```go
@@ -467,12 +895,15 @@ type BlockInfo struct {
 	Height                *big.Int
 	Timestamp             *big.Int
 	Difficulty            *big.Int
+	FeeMultiplier         uint32
 	PreviousBlockHash     string
 	BlockTransactionsHash string
+	BlockReceiptsHash     string
+	StateHash             string
+	Beneficiary           *PublicAccount
 }
 ```
 
-Models Block
 
 #### func  MapBlock
 
@@ -520,41 +951,41 @@ type BlockchainService service
 ```go
 func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.Int) (*BlockInfo, error)
 ```
-returns info for block with passed height
+returns BlockInfo for passed block's height
 
 #### func (*BlockchainService) GetBlockTransactions
 
 ```go
 func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *big.Int) ([]Transaction, error)
 ```
-get transactions inside of block with passed height
+returns Transaction's inside of block at passed height
 
 #### func (*BlockchainService) GetBlockchainHeight
 
 ```go
 func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, error)
 ```
-returns blockchain height
 
 #### func (*BlockchainService) GetBlockchainScore
 
 ```go
 func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, error)
 ```
-returns blockchain score
 
 #### func (*BlockchainService) GetBlockchainStorage
 
 ```go
 func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*BlockchainStorageInfo, error)
 ```
-returns blockchain storage information
 
 #### func (*BlockchainService) GetBlocksByHeightWithLimit
 
 ```go
 func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error)
 ```
+returns BlockInfo's for range block height - (block height + limit) Example:
+GetBlocksByHeightWithLimit(ctx, 1, 25) => [BlockInfo25, BlockInfo24, ...,
+BlockInfo1]
 
 #### type BlockchainStorageInfo
 
@@ -566,7 +997,6 @@ type BlockchainStorageInfo struct {
 }
 ```
 
-Blockchain Storage
 
 #### func (*BlockchainStorageInfo) String
 
@@ -598,28 +1028,8 @@ Catapult API Client configuration
 ```go
 func NewClient(httpClient *http.Client, conf *Config) *Client
 ```
-returns catapult http client from passed existing client and configuration if
+returns catapult http.Client from passed existing client and configuration if
 passed client is nil, http.DefaultClient will be used
-
-#### func (*Client) Do
-
-```go
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error)
-```
-Do sends an API Request and returns a parsed response
-
-#### func (*Client) DoNewRequest
-
-```go
-func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error)
-```
-DoNewRequest creates new request, Do it & return result in V
-
-#### func (*Client) NewRequest
-
-```go
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error)
-```
 
 #### type Config
 
@@ -637,7 +1047,7 @@ Provides service configuration
 ```go
 func NewConfig(baseUrl string, networkType NetworkType) (*Config, error)
 ```
-returns config for HTTP Client from passed node url and network type
+returns config for HTTP Client from passed node url and NetworkType
 
 #### func  NewConfigWithReputation
 
@@ -688,14 +1098,12 @@ type ContractService service
 ```go
 func (ref *ContractService) GetContractsByAddress(ctx context.Context, address string) ([]*ContractInfo, error)
 ```
-returns an array of contract infos for passed customer address
 
 #### func (*ContractService) GetContractsInfo
 
 ```go
 func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKeys ...string) ([]*ContractInfo, error)
 ```
-returns an array of contract infos for passed public keys
 
 #### type CosignatureMapper
 
@@ -744,14 +1152,15 @@ type CosignatureTransaction struct {
 ```go
 func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTransaction, error)
 ```
-returns a cosignature transaction from passed aggreagate bounded
+returns a CosignatureTransaction from passed AggregateTransaction
 
 #### func  NewCosignatureTransactionFromHash
 
 ```go
 func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction
 ```
-returns a cosignature transaction from passed hash of aggreagate bounded
+returns a CosignatureTransaction from passed hash of bounded
+AggregateTransaction
 
 #### func (*CosignatureTransaction) String
 
@@ -773,6 +1182,16 @@ type Deadline struct {
 ```go
 func NewDeadline(d time.Duration) *Deadline
 ```
+
+#### func  NewDeadlineFromBlockchainTimestamp
+
+```go
+func NewDeadlineFromBlockchainTimestamp(seconds int64) *Deadline
+```
+Create deadline from blockchain timestamp. The blockchain has self
+timestamp(Unix timestamp - constant). So, to return this time to Unix, we add
+this constant. TODO: Add a new class BlockchainTimestamp. Re-work Deadline class
+and conversion logic
 
 #### func (*Deadline) GetInstant
 
@@ -801,7 +1220,16 @@ type HashType uint8
 
 
 ```go
-const SHA3_256 HashType = 0
+const (
+	/// Input is hashed using Sha-3-256.
+	SHA3_256 HashType = iota
+	/// Input is hashed using Keccak-256.
+	KECCAK_256
+	/// Input is hashed twice: first with SHA-256 and then with RIPEMD-160.
+	HASH_160
+	/// Input is hashed twice with SHA-256.
+	SHA_256
+)
 ```
 
 #### func (HashType) String
@@ -836,13 +1264,19 @@ type LockFundsTransaction struct {
 ```go
 func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error)
 ```
-returns a lock funds transaction from passed deadline, mosaic, duration, and
-signed transaction
+returns a LockFundsTransaction from passed Mosaic, duration in blocks and
+SignedTransaction
 
 #### func (*LockFundsTransaction) GetAbstractTransaction
 
 ```go
 func (tx *LockFundsTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*LockFundsTransaction) Size
+
+```go
+func (tx *LockFundsTransaction) Size() int
 ```
 
 #### func (*LockFundsTransaction) String
@@ -854,25 +1288,26 @@ func (tx *LockFundsTransaction) String() string
 #### type Message
 
 ```go
-type Message struct {
-	Type    uint8
-	Payload string
+type Message interface {
+	Type() MessageType
+	Payload() []byte
+	String() string
 }
 ```
 
-Message
 
-#### func  NewPlainMessage
+#### type MessageType
 
 ```go
-func NewPlainMessage(payload string) *Message
+type MessageType uint8
 ```
-The transaction message of 1024 characters.
 
-#### func (*Message) String
 
 ```go
-func (m *Message) String() string
+const (
+	PlainMessageType MessageType = iota
+	SecureMessageType
+)
 ```
 
 #### type MetadataInfo
@@ -895,6 +1330,12 @@ type MetadataModification struct {
 }
 ```
 
+
+#### func (*MetadataModification) Size
+
+```go
+func (m *MetadataModification) Size() int
+```
 
 #### func (*MetadataModification) String
 
@@ -1000,7 +1441,6 @@ type ModifyContractTransaction struct {
 }
 ```
 
-ModifyContractTransaction
 
 #### func  NewModifyContractTransaction
 
@@ -1012,11 +1452,19 @@ func NewModifyContractTransaction(
 	verifiers []*MultisigCosignatoryModification,
 	networkType NetworkType) (*ModifyContractTransaction, error)
 ```
+returns ModifyContractTransaction from passed duration delta in blocks, file
+hash, arrays of customers, replicators and verificators
 
 #### func (*ModifyContractTransaction) GetAbstractTransaction
 
 ```go
 func (tx *ModifyContractTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*ModifyContractTransaction) Size
+
+```go
+func (tx *ModifyContractTransaction) Size() int
 ```
 
 #### func (*ModifyContractTransaction) String
@@ -1034,12 +1482,19 @@ type ModifyMetadataAddressTransaction struct {
 }
 ```
 
-ModifyMetadataAddressTransaction
 
 #### func  NewModifyMetadataAddressTransaction
 
 ```go
 func NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataAddressTransaction, error)
+```
+returns ModifyMetadataAddressTransaction from passed Address to be modified, and
+an array of MetadataModification's
+
+#### func (*ModifyMetadataAddressTransaction) Size
+
+```go
+func (tx *ModifyMetadataAddressTransaction) Size() int
 ```
 
 #### func (*ModifyMetadataAddressTransaction) String
@@ -1057,12 +1512,19 @@ type ModifyMetadataMosaicTransaction struct {
 }
 ```
 
-ModifyMetadataMosaicTransaction
 
 #### func  NewModifyMetadataMosaicTransaction
 
 ```go
 func NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataMosaicTransaction, error)
+```
+returns ModifyMetadataMosaicTransaction from passed MosaicId to be modified, and
+an array of MetadataModification's
+
+#### func (*ModifyMetadataMosaicTransaction) Size
+
+```go
+func (tx *ModifyMetadataMosaicTransaction) Size() int
 ```
 
 #### func (*ModifyMetadataMosaicTransaction) String
@@ -1080,12 +1542,19 @@ type ModifyMetadataNamespaceTransaction struct {
 }
 ```
 
-ModifyMetadataNamespaceTransaction
 
 #### func  NewModifyMetadataNamespaceTransaction
 
 ```go
 func NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification, networkType NetworkType) (*ModifyMetadataNamespaceTransaction, error)
+```
+returns ModifyMetadataNamespaceTransaction from passed NamespaceId to be
+modified, and an array of MetadataModification's
+
+#### func (*ModifyMetadataNamespaceTransaction) Size
+
+```go
+func (tx *ModifyMetadataNamespaceTransaction) Size() int
 ```
 
 #### func (*ModifyMetadataNamespaceTransaction) String
@@ -1104,12 +1573,17 @@ type ModifyMetadataTransaction struct {
 }
 ```
 
-ModifyMetadataTransaction
 
 #### func (*ModifyMetadataTransaction) GetAbstractTransaction
 
 ```go
 func (tx *ModifyMetadataTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*ModifyMetadataTransaction) Size
+
+```go
+func (tx *ModifyMetadataTransaction) Size() int
 ```
 
 #### func (*ModifyMetadataTransaction) String
@@ -1133,15 +1607,21 @@ type ModifyMultisigAccountTransaction struct {
 #### func  NewModifyMultisigAccountTransaction
 
 ```go
-func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta uint8, minRemovalDelta uint8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error)
+func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification, networkType NetworkType) (*ModifyMultisigAccountTransaction, error)
 ```
-returns a modify multisig transaction from passed deadline and multisig
-modification properties
+returns a ModifyMultisigAccountTransaction from passed min approval and removal
+deltas and array of MultisigCosignatoryModification's
 
 #### func (*ModifyMultisigAccountTransaction) GetAbstractTransaction
 
 ```go
 func (tx *ModifyMultisigAccountTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*ModifyMultisigAccountTransaction) Size
+
+```go
+func (tx *ModifyMultisigAccountTransaction) Size() int
 ```
 
 #### func (*ModifyMultisigAccountTransaction) String
@@ -1165,7 +1645,7 @@ type Mosaic struct {
 ```go
 func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error)
 ```
-returns a mosaic for passed mosaic id and amount
+returns a Mosaic for passed MosaicId and amount
 
 #### func  Xem
 
@@ -1201,6 +1681,36 @@ returns XPX with actual passed amount
 func (m *Mosaic) String() string
 ```
 
+#### type MosaicAliasTransaction
+
+```go
+type MosaicAliasTransaction struct {
+	AliasTransaction
+	MosaicId *MosaicId
+}
+```
+
+
+#### func  NewMosaicAliasTransaction
+
+```go
+func NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespaceId *NamespaceId, actionType AliasActionType, networkType NetworkType) (*MosaicAliasTransaction, error)
+```
+returns MosaicAliasTransaction from passed MosaicId, NamespaceId and
+AliasActionType
+
+#### func (*MosaicAliasTransaction) Size
+
+```go
+func (tx *MosaicAliasTransaction) Size() int
+```
+
+#### func (*MosaicAliasTransaction) String
+
+```go
+func (tx *MosaicAliasTransaction) String() string
+```
+
 #### type MosaicDefinitionTransaction
 
 ```go
@@ -1218,13 +1728,19 @@ type MosaicDefinitionTransaction struct {
 ```go
 func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error)
 ```
-returns mosaic definidion transaction from passed deadline, nonce, public key of
-announcer and mosaic properties
+returns MosaicDefinitionTransaction from passed nonce, public key of announcer
+and MosaicProperties
 
 #### func (*MosaicDefinitionTransaction) GetAbstractTransaction
 
 ```go
 func (tx *MosaicDefinitionTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*MosaicDefinitionTransaction) Size
+
+```go
+func (tx *MosaicDefinitionTransaction) Size() int
 ```
 
 #### func (*MosaicDefinitionTransaction) String
@@ -1239,21 +1755,20 @@ func (tx *MosaicDefinitionTransaction) String() string
 type MosaicId big.Int
 ```
 
-MosaicId
 
 #### func  NewMosaicId
 
 ```go
 func NewMosaicId(id *big.Int) (*MosaicId, error)
 ```
-returns mosaic id corresponding passed big int
+returns MosaicId from big int id
 
 #### func  NewMosaicIdFromNonceAndOwner
 
 ```go
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error)
 ```
-returns mosaic id for passed nonce and public key of owner
+returns MosaicId for passed nonce and public key of mosaic owner
 
 #### func (*MosaicId) Equals
 
@@ -1280,8 +1795,6 @@ type MosaicInfo struct {
 }
 ```
 
-MosaicInfo info structure contains its properties, the owner and the namespace
-to which it belongs to.
 
 #### func (*MosaicInfo) String
 
@@ -1299,6 +1812,22 @@ type MosaicMetadataInfo struct {
 ```
 
 
+#### type MosaicName
+
+```go
+type MosaicName struct {
+	MosaicId *MosaicId
+	Names    []string
+}
+```
+
+
+#### func (*MosaicName) String
+
+```go
+func (m *MosaicName) String() string
+```
+
 #### type MosaicProperties
 
 ```go
@@ -1311,12 +1840,23 @@ type MosaicProperties struct {
 }
 ```
 
+structure which includes several properties for defining mosaic `SupplyMutable`
+- is supply of defined mosaic can be changed in future `Transferable` - if this
+property is set to "false", only transfer transactions having the creator as
+sender or as recipient can transfer mosaics of that type. If set to "true" the
+mosaics can be transferred to and from arbitrary accounts `LevyMutable` - if
+this property is set to "true", whenever other users transact with your mosaic,
+owner gets a levy fee from them `Divisibility` - divisibility determines up to
+what decimal place the mosaic can be divided into `Duration` - duration in
+blocks mosaic will be available. After the renew mosaic is inactive and can be
+renewed
 
 #### func  NewMosaicProperties
 
 ```go
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties
 ```
+returns MosaicProperties from actual values
 
 #### func (*MosaicProperties) String
 
@@ -1331,19 +1871,24 @@ type MosaicService service
 ```
 
 
-#### func (*MosaicService) GetMosaic
+#### func (*MosaicService) GetMosaicInfo
 
 ```go
-func (ref *MosaicService) GetMosaic(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error)
+func (ref *MosaicService) GetMosaicInfo(ctx context.Context, mosaicId *MosaicId) (*MosaicInfo, error)
 ```
-returns a mosaic info for passed mosaic id
 
-#### func (*MosaicService) GetMosaics
+#### func (*MosaicService) GetMosaicInfos
 
 ```go
-func (ref *MosaicService) GetMosaics(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error)
+func (ref *MosaicService) GetMosaicInfos(ctx context.Context, mscIds []*MosaicId) ([]*MosaicInfo, error)
 ```
-returns an array of mosaic infos for passed mosaic ids
+
+#### func (*MosaicService) GetMosaicsNames
+
+```go
+func (ref *MosaicService) GetMosaicsNames(ctx context.Context, mscIds ...*MosaicId) ([]*MosaicName, error)
+```
+GetMosaicsNames Get readable names for a set of mosaics post @/mosaic/names
 
 #### type MosaicSupplyChangeTransaction
 
@@ -1362,13 +1907,19 @@ type MosaicSupplyChangeTransaction struct {
 ```go
 func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, supplyType MosaicSupplyType, delta *big.Int, networkType NetworkType) (*MosaicSupplyChangeTransaction, error)
 ```
-returns mosaic supply change transaction from passed deadline, mosaic id, supply
-type and supply delta
+returns MosaicSupplyChangeTransaction from passed MosaicId, MosaicSupplyTypeand
+supply delta
 
 #### func (*MosaicSupplyChangeTransaction) GetAbstractTransaction
 
 ```go
 func (tx *MosaicSupplyChangeTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*MosaicSupplyChangeTransaction) Size
+
+```go
+func (tx *MosaicSupplyChangeTransaction) Size() int
 ```
 
 #### func (*MosaicSupplyChangeTransaction) String
@@ -1461,6 +2012,40 @@ const (
 func (t MultisigCosignatoryModificationType) String() string
 ```
 
+#### type NamespaceAlias
+
+```go
+type NamespaceAlias struct {
+	Type AliasType
+}
+```
+
+NamespaceAlias contains aliased mosaicId or address and type of alias
+
+#### func  NewNamespaceAlias
+
+```go
+func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error)
+```
+
+#### func (*NamespaceAlias) Address
+
+```go
+func (ref *NamespaceAlias) Address() *Address
+```
+
+#### func (*NamespaceAlias) MosaicId
+
+```go
+func (ref *NamespaceAlias) MosaicId() *MosaicId
+```
+
+#### func (*NamespaceAlias) String
+
+```go
+func (ref *NamespaceAlias) String() string
+```
+
 #### type NamespaceId
 
 ```go
@@ -1473,7 +2058,6 @@ type NamespaceId big.Int
 ```go
 func NewNamespaceId(id *big.Int) (*NamespaceId, error)
 ```
-returns namespace id from passed big int representation
 
 #### func  NewNamespaceIdFromName
 
@@ -1482,9 +2066,9 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error)
 ```
 returns namespace id from passed namespace name should be used for creating
 root, child and grandchild namespace ids to create root namespace pass namespace
-name in format like `rootname` to create child namespace pass namespace name in
-format like `rootname.childname` to create grand child namespace pass namespace
-name in format like `rootname.childname.grandchildname`
+name in format like 'rootname' to create child namespace pass namespace name in
+format like 'rootname.childname' to create grand child namespace pass namespace
+name in format like 'rootname.childname.grandchildname'
 
 #### func (*NamespaceId) String
 
@@ -1530,13 +2114,11 @@ func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error)
 ```go
 type NamespaceInfo struct {
 	NamespaceId *NamespaceId
-	FullName    string
 	Active      bool
-	Index       int
-	MetaId      string
 	TypeSpace   NamespaceType
 	Depth       int
 	Levels      []*NamespaceId
+	Alias       *NamespaceAlias
 	Parent      *NamespaceInfo
 	Owner       *PublicAccount
 	StartHeight *big.Int
@@ -1587,37 +2169,49 @@ type NamespaceService service
 NamespaceService provides a set of methods for obtaining information about the
 namespace
 
-#### func (*NamespaceService) GetNamespace
+#### func (*NamespaceService) GetLinkedAddress
 
 ```go
-func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error)
+func (ref *NamespaceService) GetLinkedAddress(ctx context.Context, namespaceId *NamespaceId) (*Address, error)
 ```
-returns a namespace info for passed namespace id
+GetLinkedAddress @/namespace/%s
+
+#### func (*NamespaceService) GetLinkedMosaicId
+
+```go
+func (ref *NamespaceService) GetLinkedMosaicId(ctx context.Context, namespaceId *NamespaceId) (*MosaicId, error)
+```
+GetLinkedMosaicId @/namespace/%s
+
+#### func (*NamespaceService) GetNamespaceInfo
+
+```go
+func (ref *NamespaceService) GetNamespaceInfo(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error)
+```
+
+#### func (*NamespaceService) GetNamespaceInfosFromAccount
+
+```go
+func (ref *NamespaceService) GetNamespaceInfosFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
+	pageSize int) ([]*NamespaceInfo, error)
+```
+returns NamespaceInfo's corresponding to passed Address and NamespaceId with
+maximum limit TODO: fix pagination
+
+#### func (*NamespaceService) GetNamespaceInfosFromAccounts
+
+```go
+func (ref *NamespaceService) GetNamespaceInfosFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
+	pageSize int) ([]*NamespaceInfo, error)
+```
+returns NamespaceInfo's corresponding to passed Address's and NamespaceId with
+maximum limit TODO: fix pagination
 
 #### func (*NamespaceService) GetNamespaceNames
 
 ```go
 func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*NamespaceId) ([]*NamespaceName, error)
 ```
-returns an array of namespace names for passed namespace ids
-
-#### func (*NamespaceService) GetNamespacesFromAccount
-
-```go
-func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
-	pageSize int) ([]*NamespaceInfo, error)
-```
-returns an array of namespace infos for passed owner address also it is possible
-to use pagination
-
-#### func (*NamespaceService) GetNamespacesFromAccounts
-
-```go
-func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
-	pageSize int) ([]*NamespaceInfo, error)
-```
-returns an array of namespace infos for passed owner addresses also it is
-possible to use pagination
 
 #### type NamespaceType
 
@@ -1645,7 +2239,6 @@ type NetworkService service
 ```go
 func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, error)
 ```
-returns blockchain network type
 
 #### type NetworkType
 
@@ -1663,6 +2256,7 @@ const (
 	Private         NetworkType = 200
 	PrivateTest     NetworkType = 176
 	NotSupportedNet NetworkType = 0
+	AliasAddress    NetworkType = 145
 )
 ```
 
@@ -1736,6 +2330,165 @@ type PartialRemovedMapperFn func(m []byte) (*PartialRemovedInfo, error)
 func (p PartialRemovedMapperFn) MapPartialRemoved(m []byte) (*PartialRemovedInfo, error)
 ```
 
+#### type PlainMessage
+
+```go
+type PlainMessage struct {
+}
+```
+
+
+#### func  NewPlainMessage
+
+```go
+func NewPlainMessage(payload string) *PlainMessage
+```
+
+#### func  NewPlainMessageFromEncodedData
+
+```go
+func NewPlainMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.PrivateKey, sender *xpxcrypto.PublicKey) (*PlainMessage, error)
+```
+
+#### func (*PlainMessage) Message
+
+```go
+func (m *PlainMessage) Message() string
+```
+
+#### func (*PlainMessage) Payload
+
+```go
+func (m *PlainMessage) Payload() []byte
+```
+
+#### func (*PlainMessage) String
+
+```go
+func (m *PlainMessage) String() string
+```
+
+#### func (*PlainMessage) Type
+
+```go
+func (m *PlainMessage) Type() MessageType
+```
+
+#### type Proof
+
+```go
+type Proof struct {
+	Data []byte
+}
+```
+
+
+#### func  NewProofFromBytes
+
+```go
+func NewProofFromBytes(proof []byte) *Proof
+```
+
+#### func  NewProofFromHexString
+
+```go
+func NewProofFromHexString(hexProof string) (*Proof, error)
+```
+
+#### func  NewProofFromString
+
+```go
+func NewProofFromString(proof string) *Proof
+```
+
+#### func  NewProofFromUint16
+
+```go
+func NewProofFromUint16(number uint16) *Proof
+```
+
+#### func  NewProofFromUint32
+
+```go
+func NewProofFromUint32(number uint32) *Proof
+```
+
+#### func  NewProofFromUint64
+
+```go
+func NewProofFromUint64(number uint64) *Proof
+```
+
+#### func  NewProofFromUint8
+
+```go
+func NewProofFromUint8(number uint8) *Proof
+```
+
+#### func (*Proof) ProofString
+
+```go
+func (p *Proof) ProofString() string
+```
+bytes representation of Proof
+
+#### func (*Proof) Secret
+
+```go
+func (p *Proof) Secret(hashType HashType) (*Secret, error)
+```
+returns Secret generated from Proof with passed HashType
+
+#### func (*Proof) Size
+
+```go
+func (p *Proof) Size() int
+```
+bytes length of Proof
+
+#### func (*Proof) String
+
+```go
+func (p *Proof) String() string
+```
+
+#### type PropertyModificationType
+
+```go
+type PropertyModificationType uint8
+```
+
+
+```go
+const (
+	AddProperty PropertyModificationType = iota
+	RemoveProperty
+)
+```
+PropertyModificationType enums
+
+#### type PropertyType
+
+```go
+type PropertyType uint8
+```
+
+
+```go
+const (
+	AllowAddress     PropertyType = 0x01
+	AllowMosaic      PropertyType = 0x02
+	AllowTransaction PropertyType = 0x04
+	Sentinel         PropertyType = 0x05
+	BlockAddress     PropertyType = 0x80 + 0x01
+	BlockMosaic      PropertyType = 0x80 + 0x02
+	BlockTransaction PropertyType = 0x80 + 0x04
+)
+```
+Account property type 0x01 The property type is an address. 0x02 The property
+type is mosaic id. 0x04 The property type is a transaction type. 0x05 Property
+type sentinel. 0x80 + type The property is interpreted as a blocking operation.
+
 #### type PublicAccount
 
 ```go
@@ -1751,7 +2504,7 @@ type PublicAccount struct {
 ```go
 func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error)
 ```
-returns a public account from public key for passed network type
+returns a PublicAccount from public key for passed NetworkType
 
 #### func (*PublicAccount) String
 
@@ -1778,21 +2531,27 @@ type RegisterNamespaceTransaction struct {
 ```go
 func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration *big.Int, networkType NetworkType) (*RegisterNamespaceTransaction, error)
 ```
-returns a register root namespace transaction from passed deadline, namespace
-name and duration
+returns a RegisterNamespaceTransaction from passed namespace name and duration
+in blocks
 
 #### func  NewRegisterSubNamespaceTransaction
 
 ```go
 func NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string, parentId *NamespaceId, networkType NetworkType) (*RegisterNamespaceTransaction, error)
 ```
-returns a register sub namespace transaction from passed deadline, namespace
-name and parent namespace id
+returns a RegisterNamespaceTransaction from passed namespace name and parent
+NamespaceId
 
 #### func (*RegisterNamespaceTransaction) GetAbstractTransaction
 
 ```go
 func (tx *RegisterNamespaceTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*RegisterNamespaceTransaction) Size
+
+```go
+func (tx *RegisterNamespaceTransaction) Size() int
 ```
 
 #### func (*RegisterNamespaceTransaction) String
@@ -1815,15 +2574,50 @@ type RespErr struct {
 func (r *RespErr) Error() string
 ```
 
+#### type Secret
+
+```go
+type Secret struct {
+	Hash []byte
+	Type HashType
+}
+```
+
+
+#### func  NewSecret
+
+```go
+func NewSecret(hash []byte, hashType HashType) (*Secret, error)
+```
+returns Secret from passed hash and HashType
+
+#### func  NewSecretFromHexString
+
+```go
+func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error)
+```
+returns Secret from passed hex string hash and HashType
+
+#### func (*Secret) HashString
+
+```go
+func (s *Secret) HashString() string
+```
+
+#### func (*Secret) String
+
+```go
+func (s *Secret) String() string
+```
+
 #### type SecretLockTransaction
 
 ```go
 type SecretLockTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	HashType
 	Duration  *big.Int
-	Secret    string
+	Secret    *Secret
 	Recipient *Address
 }
 ```
@@ -1832,15 +2626,21 @@ type SecretLockTransaction struct {
 #### func  NewSecretLockTransaction
 
 ```go
-func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, hashType HashType, secret string, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error)
+func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error)
 ```
-returns a secret lock transaction from passed deadline, mosaic, duration, type
-of hashing, secret hashed string and mosaic recipient
+returns a SecretLockTransaction from passed Mosaic, duration in blocks, Secret
+and mosaic recipient Address
 
 #### func (*SecretLockTransaction) GetAbstractTransaction
 
 ```go
 func (tx *SecretLockTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*SecretLockTransaction) Size
+
+```go
+func (tx *SecretLockTransaction) Size() int
 ```
 
 #### func (*SecretLockTransaction) String
@@ -1855,8 +2655,7 @@ func (tx *SecretLockTransaction) String() string
 type SecretProofTransaction struct {
 	AbstractTransaction
 	HashType
-	Secret string
-	Proof  string
+	Proof *Proof
 }
 ```
 
@@ -1864,10 +2663,9 @@ type SecretProofTransaction struct {
 #### func  NewSecretProofTransaction
 
 ```go
-func NewSecretProofTransaction(deadline *Deadline, hashType HashType, secret string, proof string, networkType NetworkType) (*SecretProofTransaction, error)
+func NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Proof, networkType NetworkType) (*SecretProofTransaction, error)
 ```
-returns a secret proof transaction from passed deadline, type of hashing, secret
-hashed string and secret proof string
+returns a SecretProofTransaction from passed HashType and Proof
 
 #### func (*SecretProofTransaction) GetAbstractTransaction
 
@@ -1875,10 +2673,54 @@ hashed string and secret proof string
 func (tx *SecretProofTransaction) GetAbstractTransaction() *AbstractTransaction
 ```
 
+#### func (*SecretProofTransaction) Size
+
+```go
+func (tx *SecretProofTransaction) Size() int
+```
+
 #### func (*SecretProofTransaction) String
 
 ```go
 func (tx *SecretProofTransaction) String() string
+```
+
+#### type SecureMessage
+
+```go
+type SecureMessage struct {
+}
+```
+
+
+#### func  NewSecureMessage
+
+```go
+func NewSecureMessage(encodedData []byte) *SecureMessage
+```
+
+#### func  NewSecureMessageFromPlaintText
+
+```go
+func NewSecureMessageFromPlaintText(plaintText string, sender *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey) (*SecureMessage, error)
+```
+
+#### func (*SecureMessage) Payload
+
+```go
+func (m *SecureMessage) Payload() []byte
+```
+
+#### func (*SecureMessage) String
+
+```go
+func (m *SecureMessage) String() string
+```
+
+#### func (*SecureMessage) Type
+
+```go
+func (m *SecureMessage) Type() MessageType
 ```
 
 #### type SignedTransaction
@@ -1953,6 +2795,8 @@ func (p StatusMapperFn) MapStatus(m []byte) (*StatusInfo, error)
 type Transaction interface {
 	GetAbstractTransaction() *AbstractTransaction
 	String() string
+	// number of bytes of serialized transaction
+	Size() int
 	// contains filtered or unexported methods
 }
 ```
@@ -2002,7 +2846,6 @@ type TransactionInfo struct {
 }
 ```
 
-Transaction Info
 
 #### func (*TransactionInfo) String
 
@@ -2010,10 +2853,26 @@ Transaction Info
 func (ti *TransactionInfo) String() string
 ```
 
+#### type TransactionOrder
+
+```go
+type TransactionOrder string
+```
+
+
+```go
+const (
+	TRANSACTION_ORDER_ASC  TransactionOrder = "id"
+	TRANSACTION_ORDER_DESC TransactionOrder = "-id"
+)
+```
+
 #### type TransactionService
 
 ```go
-type TransactionService service
+type TransactionService struct {
+	BlockchainService *BlockchainService
+}
 ```
 
 
@@ -2022,51 +2881,57 @@ type TransactionService service
 ```go
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error)
 ```
-returns transaction hash after announcing passed signed transaction
+returns transaction hash after announcing passed SignedTransaction
 
 #### func (*TransactionService) AnnounceAggregateBonded
 
 ```go
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error)
 ```
-returns transaction hash after announcing passed signed aggregate bounded
-transaction
+returns transaction hash after announcing passed aggregate bounded
+SignedTransaction
 
 #### func (*TransactionService) AnnounceAggregateBondedCosignature
 
 ```go
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error)
 ```
-returns transaction hash after announcing passed signed cosignature transaction
+returns transaction hash after announcing passed CosignatureSignedTransaction
 
 #### func (*TransactionService) GetTransaction
 
 ```go
 func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error)
 ```
-returns transaction information for passed transaction id or hash
+returns Transaction for passed transaction id or hash
+
+#### func (*TransactionService) GetTransactionEffectiveFee
+
+```go
+func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error)
+```
+Gets a transaction's effective paid fee
 
 #### func (*TransactionService) GetTransactionStatus
 
 ```go
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error)
 ```
-returns transaction status for passed transaction id or hash
+returns TransactionStatus for passed transaction id or hash
 
 #### func (*TransactionService) GetTransactionStatuses
 
 ```go
 func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error)
 ```
-returns an array of transaction statuses for passed transaction ids or hashes
+returns an array of TransactionStatus's for passed transaction ids or hashes
 
 #### func (*TransactionService) GetTransactions
 
 ```go
 func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error)
 ```
-returns an array of transaction informations for passed array of transaction ids
-or hashes
+returns an array of Transaction's for passed array of transaction ids or hashes
 
 #### type TransactionStatus
 
@@ -2096,39 +2961,27 @@ type TransactionType uint16
 
 ```go
 const (
-	AggregateCompleted TransactionType = iota
-	AggregateBonded
-	MetadataAddress
-	MetadataMosaic
-	MetadataNamespace
-	MosaicDefinition
-	MosaicSupplyChange
-	ModifyMultisig
-	ModifyContract
-	RegisterNamespace
-	Transfer
-	Lock
-	SecretLock
-	SecretProof
+	AccountPropertyAddress    TransactionType = 0x4150
+	AccountPropertyMosaic     TransactionType = 0x4250
+	AccountPropertyEntityType TransactionType = 0x4350
+	AddressAlias              TransactionType = 0x424e
+	AggregateBonded           TransactionType = 0x4241
+	AggregateCompleted        TransactionType = 0x4141
+	LinkAccount               TransactionType = 0x414c
+	Lock                      TransactionType = 0x4148
+	MetadataAddress           TransactionType = 0x413d
+	MetadataMosaic            TransactionType = 0x423d
+	MetadataNamespace         TransactionType = 0x433d
+	ModifyContract            TransactionType = 0x4157
+	ModifyMultisig            TransactionType = 0x4155
+	MosaicAlias               TransactionType = 0x434e
+	MosaicDefinition          TransactionType = 0x414d
+	MosaicSupplyChange        TransactionType = 0x424d
+	RegisterNamespace         TransactionType = 0x414e
+	SecretLock                TransactionType = 0x4152
+	SecretProof               TransactionType = 0x4252
+	Transfer                  TransactionType = 0x4154
 )
-```
-
-#### func  TransactionTypeFromRaw
-
-```go
-func TransactionTypeFromRaw(value uint32) (TransactionType, error)
-```
-
-#### func (TransactionType) Hex
-
-```go
-func (t TransactionType) Hex() uint16
-```
-
-#### func (TransactionType) Raw
-
-```go
-func (t TransactionType) Raw() uint32
 ```
 
 #### func (TransactionType) String
@@ -2146,20 +2999,26 @@ type TransactionVersion uint8
 
 ```go
 const (
-	AggregateCompletedVersion TransactionVersion = 2
-	AggregateBondedVersion    TransactionVersion = 2
-	MetadataAddressVersion    TransactionVersion = 1
-	MetadataMosaicVersion     TransactionVersion = 1
-	MetadataNamespaceVersion  TransactionVersion = 1
-	MosaicDefinitionVersion   TransactionVersion = 3
-	MosaicSupplyChangeVersion TransactionVersion = 2
-	ModifyMultisigVersion     TransactionVersion = 3
-	ModifyContractVersion     TransactionVersion = 3
-	RegisterNamespaceVersion  TransactionVersion = 2
-	TransferVersion           TransactionVersion = 3
-	LockVersion               TransactionVersion = 1
-	SecretLockVersion         TransactionVersion = 1
-	SecretProofVersion        TransactionVersion = 1
+	AccountPropertyAddressVersion    TransactionVersion = 1
+	AccountPropertyMosaicVersion     TransactionVersion = 1
+	AccountPropertyEntityTypeVersion TransactionVersion = 1
+	AddressAliasVersion              TransactionVersion = 1
+	AggregateBondedVersion           TransactionVersion = 2
+	AggregateCompletedVersion        TransactionVersion = 2
+	LinkAccountVersion               TransactionVersion = 2
+	LockVersion                      TransactionVersion = 1
+	MetadataAddressVersion           TransactionVersion = 1
+	MetadataMosaicVersion            TransactionVersion = 1
+	MetadataNamespaceVersion         TransactionVersion = 1
+	ModifyContractVersion            TransactionVersion = 3
+	ModifyMultisigVersion            TransactionVersion = 3
+	MosaicAliasVersion               TransactionVersion = 1
+	MosaicDefinitionVersion          TransactionVersion = 3
+	MosaicSupplyChangeVersion        TransactionVersion = 2
+	RegisterNamespaceVersion         TransactionVersion = 2
+	SecretLockVersion                TransactionVersion = 1
+	SecretProofVersion               TransactionVersion = 1
+	TransferVersion                  TransactionVersion = 3
 )
 ```
 
@@ -2168,7 +3027,7 @@ const (
 ```go
 type TransferTransaction struct {
 	AbstractTransaction
-	*Message
+	Message   Message
 	Mosaics   []*Mosaic
 	Recipient *Address
 }
@@ -2178,15 +3037,35 @@ type TransferTransaction struct {
 #### func  NewTransferTransaction
 
 ```go
-func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message *Message, networkType NetworkType) (*TransferTransaction, error)
+func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message Message, networkType NetworkType) (*TransferTransaction, error)
 ```
-returns a transfer transaction from passed deadline, transfer recipient, array
-of mosaics to transfer and transfer message
+returns a TransferTransaction from passed transfer recipient Adderess, array of
+Mosaic's to transfer and transfer Message
+
+#### func  NewTransferTransactionWithNamespace
+
+```go
+func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message, networkType NetworkType) (*TransferTransaction, error)
+```
+returns TransferTransaction from passed recipient NamespaceId, Mosaic's and
+transfer Message
 
 #### func (*TransferTransaction) GetAbstractTransaction
 
 ```go
 func (tx *TransferTransaction) GetAbstractTransaction() *AbstractTransaction
+```
+
+#### func (*TransferTransaction) MessageSize
+
+```go
+func (tx *TransferTransaction) MessageSize() int
+```
+
+#### func (*TransferTransaction) Size
+
+```go
+func (tx *TransferTransaction) Size() int
 ```
 
 #### func (*TransferTransaction) String
