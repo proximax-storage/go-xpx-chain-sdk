@@ -11,13 +11,16 @@ import (
 
 // mosaic id for XEM mosaic
 var XemMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+
 // mosaic id for XPX mosaic
 var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
 
-// routes for account service
+// routes for AccountService
 const (
 	accountsRoute                 = "/account"
 	accountRoute                  = "/account/%s"
+	accountPropertiesRoute        = "/account/%s/properties"
+	accountsPropertiesRoute       = "/account/properties"
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
@@ -28,7 +31,7 @@ const (
 	aggregateTransactionsRoute    = "/transactions/partial"
 )
 
-// routes for namespace service
+// routes for NamespaceService
 const (
 	namespaceRoute              = "/namespace/%s"
 	namespacesFromAccountsRoute = "/account/namespaces"
@@ -36,13 +39,14 @@ const (
 	namespacesFromAccountRoutes = "/account/%s/namespaces"
 )
 
-// routes for mosaic service
+// routes for MosaicService
 const (
-	mosaicsRoute = "/mosaic"
-	mosaicRoute  = "/mosaic/%s"
+	mosaicsRoute     = "/mosaic"
+	mosaicRoute      = "/mosaic/%s"
+	mosaicNamesRoute = "/mosaic/names"
 )
 
-// routes for blockchain service
+// routes for BlockchainService
 const (
 	blockHeightRoute         = "/chain/height"
 	blockByHeightRoute       = "/block/%d"
@@ -52,13 +56,13 @@ const (
 	blockStorageRoute        = "/diagnostic/storage"
 )
 
-// routes for contracts service
+// routes for ContractsService
 const (
 	contractsInfoRoute      = "/contract"
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 
-// routes for metadata service
+// routes for MetadataService
 const (
 	metadatasInfoRoute       = "/metadata"
 	metadataInfoRoute        = "/metadata/%s"
@@ -67,12 +71,12 @@ const (
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
-// routes for network service
+// routes for NetworkService
 const (
 	networkRoute = "/network"
 )
 
-// routes for transaction service
+// routes for TransactionService
 const (
 	transactionsRoute                 = "/transaction"
 	transactionRoute                  = "/transaction/%s"
@@ -89,7 +93,6 @@ const (
 	Sub
 )
 
-// regValidNamespace check namespace on valid symbols
 var (
 	regValidNamespace = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
 )

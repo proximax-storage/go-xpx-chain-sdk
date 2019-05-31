@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 type uint64DTO [2]uint32
@@ -24,17 +25,29 @@ func (dto uint64DTO) toBigInt() *big.Int {
 	return &int
 }
 
-func IntToHex(u uint32) string {
+type uint64DTOs []*uint64DTO
+
+func (dto uint64DTOs) toBigInts() []*big.Int {
+	result := make([]*big.Int, len(dto))
+
+	for i, b := range dto {
+		result[i] = b.toBigInt()
+	}
+
+	return result
+}
+
+func intToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
 
 // analog JAVA Uint64.bigIntegerToHex
-func BigIntegerToHex(id *big.Int) string {
-	u := FromBigInt(id)
-	return IntToHex(u[1]) + IntToHex(u[0])
+func bigIntegerToHex(id *big.Int) string {
+	u := fromBigInt(id)
+	return strings.ToUpper(intToHex(u[1]) + intToHex(u[0]))
 }
 
-func FromBigInt(int *big.Int) []uint32 {
+func fromBigInt(int *big.Int) []uint32 {
 	if int == nil {
 		return []uint32{0, 0}
 	}
@@ -45,7 +58,15 @@ func FromBigInt(int *big.Int) []uint32 {
 	return []uint32{l, r}
 }
 
+type TransactionOrder string
+
+const (
+	TRANSACTION_ORDER_ASC  TransactionOrder = "id"
+	TRANSACTION_ORDER_DESC TransactionOrder = "-id"
+)
+
 type AccountTransactionsOption struct {
-	PageSize int    `url:"pageSize,omitempty"`
-	Id       string `url:"id,omitempty"`
+	PageSize int              `url:"pageSize,omitempty"`
+	Id       string           `url:"id,omitempty"`
+	Ordering TransactionOrder `url:"ordering,omitempty"`
 }

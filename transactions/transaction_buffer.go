@@ -23,8 +23,8 @@ func TransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
 func TransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func TransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+func TransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
 func TransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)

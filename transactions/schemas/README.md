@@ -11,11 +11,12 @@ git clone https://github.com/google/flatbuffers.git
 cd flatbuffers
 cmake -G "Unix Makefiles"
 make
+cd -
 ```
 You can use syntax like:
 
 ```$xslt
-flatc -go *.fbs
+./flatbuffers/flatc --go *.fbs
 ```
 
 

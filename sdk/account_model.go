@@ -9,30 +9,50 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"github.com/proximax-storage/nem2-crypto-go"
+	"github.com/proximax-storage/xpx-crypto-go"
 	"math/big"
 	"strings"
 )
+
+const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
 
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
 }
 
-// signs given transaction
-// returns a signed transaction
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 	return signTransactionWith(tx, a)
 }
 
+// sign AggregateTransaction with current Account and with every passed cosignatory Account's
+// returns announced Aggregate SignedTransaction
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
 
-// signs aggregate signature transaction
-// returns signed cosignature transaction
 func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
 	return signCosignatureTransaction(a, tx)
+}
+
+func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error) {
+	rpk, err := crypto.NewPublicKeyfromHex(recipientPublicAccount.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSecureMessageFromPlaintText(message, a.KeyPair.PrivateKey, rpk)
+}
+
+func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAccount *PublicAccount) (*PlainMessage, error) {
+	spk, err := crypto.NewPublicKeyfromHex(senderPublicAccount.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewPlainMessageFromEncodedData(encryptedMessage.Payload(), a.KeyPair.PrivateKey, spk)
 }
 
 type PublicAccount struct {
@@ -44,15 +64,48 @@ func (ref *PublicAccount) String() string {
 	return fmt.Sprintf(`Address: %+v, PublicKey: "%s"`, ref.Address, ref.PublicKey)
 }
 
+type AccountType uint8
+
+// AccountType enums
+const (
+	UnlinkedAccount AccountType = iota
+	MainAccount
+	RemoteAccount
+	RemoteUnlinkedAccount
+)
+
+type AccountProperties struct {
+	Address            *Address
+	AllowedAddresses   []*Address
+	AllowedMosaicId    []*MosaicId
+	AllowedEntityTypes []TransactionType
+	BlockedAddresses   []*Address
+	BlockedMosaicId    []*MosaicId
+	BlockedEntityTypes []TransactionType
+}
+
+func (a *AccountProperties) String() string {
+	return str.StructToString(
+		"AccountProperties",
+		str.NewField("Address", str.StringPattern, a.Address),
+		str.NewField("AllowedAddresses", str.StringPattern, a.AllowedAddresses),
+		str.NewField("AllowedMosaicId", str.StringPattern, a.AllowedMosaicId),
+		str.NewField("AllowedEntityTypes", str.StringPattern, a.AllowedEntityTypes),
+		str.NewField("BlockedAddresses", str.StringPattern, a.BlockedAddresses),
+		str.NewField("BlockedMosaicId", str.StringPattern, a.BlockedMosaicId),
+		str.NewField("BlockedEntityTypes", str.StringPattern, a.BlockedEntityTypes),
+	)
+}
+
 type AccountInfo struct {
-	Address          *Address
-	AddressHeight    *big.Int
-	PublicKey        string
-	PublicKeyHeight  *big.Int
-	Importance       *big.Int
-	ImportanceHeight *big.Int
-	Mosaics          []*Mosaic
-	Reputation       float64
+	Address         *Address
+	AddressHeight   *big.Int
+	PublicKey       string
+	PublicKeyHeight *big.Int
+	AccountType     AccountType
+	LinkedAccount   *PublicAccount
+	Mosaics         []*Mosaic
+	Reputation      float64
 }
 
 func (a *AccountInfo) String() string {
@@ -62,15 +115,24 @@ func (a *AccountInfo) String() string {
 		str.NewField("AddressHeight", str.StringPattern, a.AddressHeight),
 		str.NewField("PublicKey", str.StringPattern, a.PublicKey),
 		str.NewField("PublicKeyHeight", str.StringPattern, a.PublicKeyHeight),
-		str.NewField("Importance", str.StringPattern, a.Importance),
-		str.NewField("ImportanceHeight", str.StringPattern, a.ImportanceHeight),
+		str.NewField("AccountType", str.IntPattern, a.AccountType),
+		str.NewField("LinkedAccount", str.StringPattern, a.LinkedAccount),
 		str.NewField("Mosaics", str.StringPattern, a.Mosaics),
+		str.NewField("Reputation", str.FloatPattern, a.Reputation),
 	)
 }
 
 type Address struct {
 	Type    NetworkType
 	Address string
+}
+
+func (ad *Address) String() string {
+	return str.StructToString(
+		"",
+		str.NewField("Type", str.IntPattern, ad.Type),
+		str.NewField("Address", str.StringPattern, ad.Address),
+	)
 }
 
 func (ad *Address) Pretty() string {
@@ -105,7 +167,7 @@ type MultisigAccountGraphInfo struct {
 	MultisigAccounts map[int32][]*MultisigAccountInfo
 }
 
-// returns new account generated for passed network type
+// returns new Account generated for passed NetworkType
 func NewAccount(networkType NetworkType) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
 	if err != nil {
@@ -120,7 +182,7 @@ func NewAccount(networkType NetworkType) (*Account, error) {
 	return &Account{pa, kp}, nil
 }
 
-// returns new account from private key for passed network type
+// returns new Account from private key for passed NetworkType
 func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
@@ -140,7 +202,7 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, e
 	return &Account{pa, kp}, nil
 }
 
-// returns a public account from public key for passed network type
+// returns a PublicAccount from public key for passed NetworkType
 func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
 	ad, err := NewAddressFromPublicKey(pKey, networkType)
 	if err != nil {
@@ -149,22 +211,28 @@ func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccou
 	return &PublicAccount{ad, pKey}, nil
 }
 
-// returns address entity from passed address string for passed network type
+// returns Address from passed address string for passed NetworkType
 func NewAddress(address string, networkType NetworkType) *Address {
 	address = strings.Replace(address, "-", "", -1)
 	address = strings.ToUpper(address)
 	return &Address{networkType, address}
 }
 
+// returns Address from passed address string
 func NewAddressFromRaw(address string) (*Address, error) {
-	if nType, ok := addressNet[address[0]]; ok {
+	pH, err := base32.StdEncoding.DecodeString(address)
+	if err != nil {
+		return nil, err
+	}
+
+	if nType, ok := addressNet[pH[0]]; ok {
 		return NewAddress(address, nType), nil
 	}
 
 	return nil, ErrInvalidAddress
 }
 
-// returns an address from public key for passed network type
+// returns an Address from public key for passed NetworkType
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error) {
 	ad, err := generateEncodedAddress(pKey, networkType)
 	if err != nil {
@@ -174,7 +242,7 @@ func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, er
 	return NewAddress(ad, networkType), nil
 }
 
-func NewAddressFromEncoded(encoded string) (*Address, error) {
+func NewAddressFromBase32(encoded string) (*Address, error) {
 	pH, err := hex.DecodeString(encoded)
 	if err != nil {
 		return nil, err
@@ -187,6 +255,20 @@ func NewAddressFromEncoded(encoded string) (*Address, error) {
 	}
 
 	return ad, nil
+}
+
+func EncodedStringToAddresses(addresses ...string) ([]*Address, error) {
+	result := make([]*Address, len(addresses))
+	for i, a := range addresses {
+		var err error = nil
+		result[i], err = NewAddressFromBase32(a)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return result, nil
 }
 
 const NUM_CHECKSUM_BYTES = 4

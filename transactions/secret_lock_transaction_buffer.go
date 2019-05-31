@@ -115,7 +115,7 @@ func (rcv *SecretLockTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *SecretLockTransactionBuffer) Fee(j int) uint32 {
+func (rcv *SecretLockTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -124,7 +124,7 @@ func (rcv *SecretLockTransactionBuffer) Fee(j int) uint32 {
 	return 0
 }
 
-func (rcv *SecretLockTransactionBuffer) FeeLength() int {
+func (rcv *SecretLockTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -286,10 +286,10 @@ func SecretLockTransactionBufferAddVersion(builder *flatbuffers.Builder, version
 func SecretLockTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func SecretLockTransactionBufferAddFee(builder *flatbuffers.Builder, fee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(fee), 0)
+func SecretLockTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
 }
-func SecretLockTransactionBufferStartFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func SecretLockTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func SecretLockTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {

@@ -5,8 +5,12 @@
 package sdk
 
 import (
+	"encoding/base32"
+	"encoding/hex"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/big"
+	"strings"
 	"testing"
 )
 
@@ -60,4 +64,20 @@ func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
 	id, err := generateMosaicId(0, account.PublicAccount.PublicKey)
 	assert.Nil(t, err)
 	assert.Equal(t, big.NewInt(992621222383397347).Int64(), id.Int64())
+}
+
+// @Test
+func TestNewAddressFromNamespace(t *testing.T) {
+	namespaceId := bigIntToNamespaceId(big.NewInt(0).SetUint64(0x85bbea6cc462b244))
+	address, err := NewAddressFromNamespace(namespaceId)
+	assert.Nil(t, err)
+
+	fmt.Println(address)
+
+	pH, err := base32.StdEncoding.DecodeString(address.Address)
+	assert.Nil(t, err)
+	parsed := strings.ToUpper(hex.EncodeToString(pH))
+
+	assert.Equal(t, address.Type, AliasAddress)
+	assert.Equal(t, "9144B262C46CEABB8500000000000000000000000000000000", parsed)
 }
