@@ -147,7 +147,7 @@ func (c *Client) doNewRequest(ctx context.Context, method string, path string, b
 				}
 
 				req.URL.Host = url.Host
-				resp, err = c.Do(ctx, req, v)
+				resp, err = c.do(ctx, req, v)
 				if err != nil {
 					continue
 				}
