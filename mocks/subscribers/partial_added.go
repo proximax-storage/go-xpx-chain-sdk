@@ -36,6 +36,22 @@ func (_m *PartialAdded) AddHandlers(address *sdk.Address, handlers ...subscriber
 	return r0
 }
 
+// GetAddresses provides a mock function with given fields:
+func (_m *PartialAdded) GetAddresses() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // GetHandlers provides a mock function with given fields: address
 func (_m *PartialAdded) GetHandlers(address *sdk.Address) map[*subscribers.PartialAddedHandler]struct{} {
 	ret := _m.Called(address)

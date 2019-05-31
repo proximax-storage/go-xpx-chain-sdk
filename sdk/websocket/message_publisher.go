@@ -15,6 +15,7 @@ func newMessagePublisher(conn *websocket.Conn) MessagePublisher {
 type MessagePublisher interface {
 	PublishSubscribeMessage(uid string, path Path) error
 	PublishUnsubscribeMessage(uid string, path Path) error
+	SetConn(conn *websocket.Conn)
 }
 
 type catapultWebsocketMessagePublisher struct {
@@ -52,6 +53,10 @@ func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string
 	}
 
 	return nil
+}
+
+func (p *catapultWebsocketMessagePublisher) SetConn(conn *websocket.Conn) {
+	p.conn = conn
 }
 
 type subscribeDTO struct {

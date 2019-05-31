@@ -12,13 +12,16 @@ import (
 )
 
 const (
-	baseUrl     = "http://localhost:3000"
 	networkType = sdk.MijinTest
+)
+
+var (
+	baseUrls = []string{"http://localhost:3000"}
 )
 
 // Simple Blockchain API request
 func main() {
-	conf, err := sdk.NewConfig(baseUrl, networkType)
+	conf, err := sdk.NewConfig(baseUrls, networkType, sdk.WebsocketReconnectionDefaultTimeout)
 	if err != nil {
 		panic(err)
 	}

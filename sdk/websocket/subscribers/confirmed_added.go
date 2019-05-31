@@ -21,6 +21,7 @@ type ConfirmedAdded interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*ConfirmedAddedHandler]struct{}
+	GetAddresses() []string
 }
 
 type confirmedAddedImpl struct {
@@ -90,4 +91,13 @@ func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) map[*ConfirmedAdd
 	}
 
 	return nil
+}
+
+func (e *confirmedAddedImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

@@ -36,6 +36,22 @@ func (_m *UnconfirmedAdded) AddHandlers(address *sdk.Address, handlers ...subscr
 	return r0
 }
 
+// GetAddresses provides a mock function with given fields:
+func (_m *UnconfirmedAdded) GetAddresses() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // GetHandlers provides a mock function with given fields: address
 func (_m *UnconfirmedAdded) GetHandlers(address *sdk.Address) map[*subscribers.UnconfirmedAddedHandler]struct{} {
 	ret := _m.Called(address)

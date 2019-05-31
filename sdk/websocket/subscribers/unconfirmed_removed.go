@@ -21,6 +21,7 @@ type UnconfirmedRemoved interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*UnconfirmedRemovedHandler]struct{}
+	GetAddresses() []string
 }
 
 type unconfirmedRemovedImpl struct {
@@ -90,4 +91,13 @@ func (e *unconfirmedRemovedImpl) GetHandlers(address *sdk.Address) map[*Unconfir
 	}
 
 	return nil
+}
+
+func (e *unconfirmedRemovedImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

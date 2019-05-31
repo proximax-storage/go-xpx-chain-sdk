@@ -22,6 +22,7 @@ type PartialRemoved interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*PartialRemovedHandler]struct{}
+	GetAddresses() []string
 }
 
 type partialRemovedImpl struct {
@@ -91,4 +92,13 @@ func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) map[*PartialRemov
 	}
 
 	return nil
+}
+
+func (e *partialRemovedImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

@@ -21,7 +21,7 @@ import (
 
 const timeout = 2 * time.Minute
 
-var cfg, _ = sdk.NewConfig(testUrl, networkType)
+var cfg, _ = sdk.NewConfig([]string{testUrl}, networkType, sdk.WebsocketReconnectionDefaultTimeout)
 var ctx = context.Background()
 
 var client = sdk.NewClient(nil, cfg)

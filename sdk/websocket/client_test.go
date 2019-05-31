@@ -5,14 +5,17 @@
 package websocket
 
 import (
-	mocks "github.com/proximax-storage/go-xpx-catapult-sdk/mocks/subscribers"
-	"testing"
-
+	"context"
+	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	mocks2 "github.com/proximax-storage/go-xpx-catapult-sdk/mocks"
+	mocks "github.com/proximax-storage/go-xpx-catapult-sdk/mocks/subscribers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
 )
 
 func TestCatapultWebsocketClientImpl_AddBlockHandlers(t *testing.T) {
@@ -960,6 +963,262 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				messagePublisher:       tt.fields.messagePublisher,
 			}
 			err := c.AddCosignatureHandlers(tt.args.address, tt.args.handlers...)
+			assert.Equal(t, err != nil, tt.wantErr)
+		})
+	}
+}
+
+func TestCatapultWebsocketClientImpl_reconnect(t *testing.T) {
+	type fields struct {
+		config                        *sdk.Config
+		conn                          *websocket.Conn
+		ctx                           context.Context
+		cancelFunc                    context.CancelFunc
+		UID                           string
+		blockSubscriber               subscribers.Block
+		confirmedAddedSubscribers     subscribers.ConfirmedAdded
+		unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
+		unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
+		partialAddedSubscribers       subscribers.PartialAdded
+		partialRemovedSubscribers     subscribers.PartialRemoved
+		statusSubscribers             subscribers.Status
+		cosignatureSubscribers        subscribers.Cosignature
+		topicHandlers                 TopicHandlersStorage
+		messageRouter                 Router
+		messagePublisher              MessagePublisher
+		connectFn                     func(cfg *sdk.Config) (*websocket.Conn, string, error)
+		alreadyListening              bool
+	}
+
+	errorConnectFn := func(cfg *sdk.Config) (*websocket.Conn, string, error) {
+		return nil, "", errors.New("test error")
+	}
+
+	successConnectFn := func(cfg *sdk.Config) (*websocket.Conn, string, error) {
+		return nil, "test-uid", nil
+	}
+
+	mockRouter := new(mocks2.Router)
+	mockRouter.On("SetUid", mock.Anything).Return(nil)
+
+	publisherError := errors.New("test publisher error")
+	mockMessagePublisher := new(MockMessagePublisher)
+	mockMessagePublisher.
+		On("SetConn", mock.Anything).Return().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s", pathBlock))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s", pathBlock))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, "test confirmed added address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, "test confirmed added address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathCosignature, "test cosignature address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathCosignature, "test cosignature address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathPartialAdded, "test partial added address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathPartialAdded, "test partial added address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, "test partial removed address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, "test partial removed address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathStatus, "test status address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathStatus, "test status address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, "test unconfirmed added address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, "test unconfirmed added address"))).Return(nil).
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, "test unconfirmed removed address"))).Return(publisherError).Once().
+		On("PublishSubscribeMessage", mock.Anything, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, "test unconfirmed removed address"))).Return(nil)
+
+	mockBlockSubscriber := new(mocks.Block)
+	mockBlockSubscriber.On("HasHandlers").Return(true)
+
+	mockConfirmedAddedSubscriber := new(mocks.ConfirmedAdded)
+	mockConfirmedAddedSubscriber.On("GetAddresses").Return([]string{"test confirmed added address"})
+
+	mockCosignatureSubscriber := new(mocks.Cosignature)
+	mockCosignatureSubscriber.On("GetAddresses").Return([]string{"test cosignature address"})
+
+	mockPartialAddedSubscriber := new(mocks.PartialAdded)
+	mockPartialAddedSubscriber.On("GetAddresses").Return([]string{"test partial added address"})
+
+	mockPartialRemovedSubscriber := new(mocks.PartialRemoved)
+	mockPartialRemovedSubscriber.On("GetAddresses").Return([]string{"test partial removed address"})
+
+	mockStatusSubscriber := new(mocks.Status)
+	mockStatusSubscriber.On("GetAddresses").Return([]string{"test status address"})
+
+	mockUnconfirmedAddedSubscriber := new(mocks.UnconfirmedAdded)
+	mockUnconfirmedAddedSubscriber.On("GetAddresses").Return([]string{"test unconfirmed added address"})
+
+	mockUnconfirmedRemovedSubscriber := new(mocks.UnconfirmedRemoved)
+	mockUnconfirmedRemovedSubscriber.On("GetAddresses").Return([]string{"test unconfirmed removed address"})
+
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "connection error",
+			fields: fields{
+				config:    &sdk.Config{},
+				connectFn: errorConnectFn,
+			},
+			wantErr: true,
+		},
+		{
+			name: "block message publisher error",
+			fields: fields{
+				config:           &sdk.Config{},
+				connectFn:        successConnectFn,
+				blockSubscriber:  mockBlockSubscriber,
+				messagePublisher: mockMessagePublisher,
+				messageRouter:    mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "confirmed added message publisher error",
+			fields: fields{
+				config:                    &sdk.Config{},
+				connectFn:                 successConnectFn,
+				blockSubscriber:           mockBlockSubscriber,
+				confirmedAddedSubscribers: mockConfirmedAddedSubscriber,
+				messagePublisher:          mockMessagePublisher,
+				messageRouter:             mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "confirmed added message publisher error",
+			fields: fields{
+				config:                    &sdk.Config{},
+				connectFn:                 successConnectFn,
+				blockSubscriber:           mockBlockSubscriber,
+				confirmedAddedSubscribers: mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:    mockCosignatureSubscriber,
+				messagePublisher:          mockMessagePublisher,
+				messageRouter:             mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "partial added message publisher error",
+			fields: fields{
+				config:                    &sdk.Config{},
+				connectFn:                 successConnectFn,
+				blockSubscriber:           mockBlockSubscriber,
+				confirmedAddedSubscribers: mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:    mockCosignatureSubscriber,
+				partialAddedSubscribers:   mockPartialAddedSubscriber,
+				messagePublisher:          mockMessagePublisher,
+				messageRouter:             mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "partial removed message publisher error",
+			fields: fields{
+				config:                    &sdk.Config{},
+				connectFn:                 successConnectFn,
+				blockSubscriber:           mockBlockSubscriber,
+				confirmedAddedSubscribers: mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:    mockCosignatureSubscriber,
+				partialAddedSubscribers:   mockPartialAddedSubscriber,
+				partialRemovedSubscribers: mockPartialRemovedSubscriber,
+				messagePublisher:          mockMessagePublisher,
+				messageRouter:             mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "status message publisher error",
+			fields: fields{
+				config:                      &sdk.Config{},
+				connectFn:                   successConnectFn,
+				blockSubscriber:             mockBlockSubscriber,
+				confirmedAddedSubscribers:   mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:      mockCosignatureSubscriber,
+				partialAddedSubscribers:     mockPartialAddedSubscriber,
+				partialRemovedSubscribers:   mockPartialRemovedSubscriber,
+				statusSubscribers:           mockStatusSubscriber,
+				unconfirmedAddedSubscribers: mockUnconfirmedAddedSubscriber,
+				messagePublisher:            mockMessagePublisher,
+				messageRouter:               mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "unconfirmed added message publisher error",
+			fields: fields{
+				config:                      &sdk.Config{},
+				connectFn:                   successConnectFn,
+				blockSubscriber:             mockBlockSubscriber,
+				confirmedAddedSubscribers:   mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:      mockCosignatureSubscriber,
+				partialAddedSubscribers:     mockPartialAddedSubscriber,
+				partialRemovedSubscribers:   mockPartialRemovedSubscriber,
+				statusSubscribers:           mockStatusSubscriber,
+				unconfirmedAddedSubscribers: mockUnconfirmedAddedSubscriber,
+				messagePublisher:            mockMessagePublisher,
+				messageRouter:               mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "unconfirmed removed message publisher error",
+			fields: fields{
+				config:                        &sdk.Config{},
+				connectFn:                     successConnectFn,
+				blockSubscriber:               mockBlockSubscriber,
+				confirmedAddedSubscribers:     mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:        mockCosignatureSubscriber,
+				partialAddedSubscribers:       mockPartialAddedSubscriber,
+				partialRemovedSubscribers:     mockPartialRemovedSubscriber,
+				statusSubscribers:             mockStatusSubscriber,
+				unconfirmedAddedSubscribers:   mockUnconfirmedAddedSubscriber,
+				unconfirmedRemovedSubscribers: mockUnconfirmedRemovedSubscriber,
+				messagePublisher:              mockMessagePublisher,
+				messageRouter:                 mockRouter,
+			},
+			wantErr: true,
+		},
+		{
+			name: "success",
+			fields: fields{
+				config:                        &sdk.Config{},
+				connectFn:                     successConnectFn,
+				blockSubscriber:               mockBlockSubscriber,
+				confirmedAddedSubscribers:     mockConfirmedAddedSubscriber,
+				cosignatureSubscribers:        mockCosignatureSubscriber,
+				partialAddedSubscribers:       mockPartialAddedSubscriber,
+				partialRemovedSubscribers:     mockPartialRemovedSubscriber,
+				statusSubscribers:             mockStatusSubscriber,
+				unconfirmedAddedSubscribers:   mockUnconfirmedAddedSubscriber,
+				unconfirmedRemovedSubscribers: mockUnconfirmedRemovedSubscriber,
+				messagePublisher:              mockMessagePublisher,
+				messageRouter:                 mockRouter,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &CatapultWebsocketClientImpl{
+				config:                        tt.fields.config,
+				conn:                          tt.fields.conn,
+				ctx:                           tt.fields.ctx,
+				cancelFunc:                    tt.fields.cancelFunc,
+				UID:                           tt.fields.UID,
+				blockSubscriber:               tt.fields.blockSubscriber,
+				confirmedAddedSubscribers:     tt.fields.confirmedAddedSubscribers,
+				unconfirmedAddedSubscribers:   tt.fields.unconfirmedAddedSubscribers,
+				unconfirmedRemovedSubscribers: tt.fields.unconfirmedRemovedSubscribers,
+				partialAddedSubscribers:       tt.fields.partialAddedSubscribers,
+				partialRemovedSubscribers:     tt.fields.partialRemovedSubscribers,
+				statusSubscribers:             tt.fields.statusSubscribers,
+				cosignatureSubscribers:        tt.fields.cosignatureSubscribers,
+				topicHandlers:                 tt.fields.topicHandlers,
+				messageRouter:                 tt.fields.messageRouter,
+				messagePublisher:              tt.fields.messagePublisher,
+				alreadyListening:              tt.fields.alreadyListening,
+				connectFn:                     tt.fields.connectFn,
+			}
+
+			err := c.reconnect()
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
