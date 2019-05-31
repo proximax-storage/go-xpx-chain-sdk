@@ -20,6 +20,7 @@ const (
 	Private         NetworkType = 200
 	PrivateTest     NetworkType = 176
 	NotSupportedNet NetworkType = 0
+	AliasAddress    NetworkType = 145
 )
 
 func NetworkTypeFromString(networkType string) NetworkType {
@@ -45,7 +46,6 @@ func (nt NetworkType) String() string {
 	return fmt.Sprintf("%d", nt)
 }
 
-// Network error
 var networkTypeError = errors.New("wrong raw NetworkType value")
 
 func ExtractNetworkType(version uint64) NetworkType {

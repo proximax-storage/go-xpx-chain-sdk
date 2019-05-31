@@ -15,7 +15,10 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"time"
 )
+
+const WebsocketReconnectionDefaultTimeout = time.Second * 5
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
@@ -26,8 +29,10 @@ type HttpError struct {
 
 // Provides service configuration
 type Config struct {
-	reputationConfig *reputationConfig
-	BaseURL          *url.URL
+	reputationConfig      *reputationConfig
+	BaseURLs              []*url.URL
+	UsedBaseUrl           *url.URL
+	WsReconnectionTimeout time.Duration
 	NetworkType
 }
 
@@ -49,19 +54,37 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// Config constructor
-func NewConfig(baseUrl string, networkType NetworkType) (*Config, error) {
-	return NewConfigWithReputation(baseUrl, networkType, &defaultRepConfig)
-}
-
-// Config constructor
-func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error) {
-	u, err := url.Parse(baseUrl)
-	if err != nil {
-		return nil, err
+// returns config for HTTP Client from passed node url and network type
+func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration) (*Config, error) {
+	if wsReconnectionTimeout == 0 {
+		wsReconnectionTimeout = WebsocketReconnectionDefaultTimeout
 	}
 
-	c := &Config{BaseURL: u, NetworkType: networkType, reputationConfig: repConf}
+	return NewConfigWithReputation(baseUrls, networkType, &defaultRepConfig, wsReconnectionTimeout)
+}
+
+func NewConfigWithReputation(baseUrls []string, networkType NetworkType, repConf *reputationConfig, wsReconnectionTimeout time.Duration) (*Config, error) {
+	if len(baseUrls) == 0 {
+		return nil, errors.New("empty base urls")
+	}
+	urls := make([]*url.URL, 0, len(baseUrls))
+
+	for _, singleUrlStr := range baseUrls {
+		u, err := url.Parse(singleUrlStr)
+		if err != nil {
+			return nil, err
+		}
+
+		urls = append(urls, u)
+	}
+
+	c := &Config{
+		BaseURLs:              urls,
+		UsedBaseUrl:           urls[0],
+		WsReconnectionTimeout: wsReconnectionTimeout,
+		NetworkType:           networkType,
+		reputationConfig:      repConf,
+	}
 
 	return c, nil
 }
@@ -86,8 +109,8 @@ type service struct {
 	client *Client
 }
 
-// NewClient returns a new Catapult API client.
-// If httpClient is nil then it will create http.DefaultClient
+// returns catapult http.Client from passed existing client and configuration
+// if passed client is nil, http.DefaultClient will be used
 func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -99,7 +122,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
 	c.Network = (*NetworkService)(&c.common)
-	c.Transaction = (*TransactionService)(&c.common)
+	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
@@ -107,23 +130,43 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
-// DoNewRequest creates new request, Do it & return result in V
-func (s *Client) DoNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
-	req, err := s.NewRequest(method, path, body)
+// doNewRequest creates new request, Do it & return result in V
+func (c *Client) doNewRequest(ctx context.Context, method string, path string, body interface{}, v interface{}) (*http.Response, error) {
+	req, err := c.newRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.Do(ctx, req, v)
+	resp, err := c.do(ctx, req, v)
 	if err != nil {
-		return nil, err
+		switch err.(type) {
+		case *url.Error:
+			for _, url := range c.config.BaseURLs {
+				if c.config.UsedBaseUrl == url {
+					continue
+				}
+
+				req.URL.Host = url.Host
+				resp, err = c.do(ctx, req, v)
+				if err != nil {
+					continue
+				}
+
+				c.config.UsedBaseUrl = url
+				return resp, nil
+			}
+
+			return nil, err
+		default:
+			return nil, err
+		}
 	}
 
 	return resp, nil
 }
 
-// Do sends an API Request and returns a parsed response
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+// do sends an API Request and returns a parsed response
+func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
 
 	// set the Context for this request
 	req.WithContext(ctx)
@@ -168,9 +211,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	return resp, err
 }
 
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-
-	u, err := c.config.BaseURL.Parse(urlStr)
+func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+	u, err := c.config.UsedBaseUrl.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}

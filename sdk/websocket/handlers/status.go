@@ -7,25 +7,22 @@ import (
 	"sync"
 )
 
-func NewStatusHandler(messageMapper sdk.StatusMapper, handlers subscribers.Status, errCh chan<- error) *statusHandler {
+func NewStatusHandler(messageMapper sdk.StatusMapper, handlers subscribers.Status) *statusHandler {
 	return &statusHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 type statusHandler struct {
 	messageMapper sdk.StatusMapper
 	handlers      subscribers.Status
-	errCh         chan<- error
 }
 
 func (h *statusHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapStatus(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapper error"))
 	}
 
 	handlers := h.handlers.GetHandlers(address)
@@ -48,8 +45,7 @@ func (h *statusHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err = h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 
 			return

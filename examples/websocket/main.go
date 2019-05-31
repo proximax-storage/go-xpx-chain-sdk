@@ -11,15 +11,17 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"math/big"
 	"net/http"
-	"sync"
 	"time"
 )
 
 const (
-	wsBaseUrl   = "ws://127.0.0.1:3000/ws"
-	baseUrl     = "http://127.0.0.1:3000"
 	networkType = sdk.MijinTest
 	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
+)
+
+var (
+	//baseUrls = []string{"http://192.168.88.15:3000"}
+	baseUrls = []string{"http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002"}
 )
 
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
@@ -31,16 +33,20 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
-	wsc, err := websocket.NewClient(wsBaseUrl)
+	cfg, err := sdk.NewConfig(baseUrls, networkType, sdk.WebsocketReconnectionDefaultTimeout)
 	if err != nil {
 		panic(err)
 	}
 
-	var wg sync.WaitGroup
+	ctx := context.Background()
+
+	wsc, err := websocket.NewClient(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	//Starting listening messages from websocket
-	wg.Add(1)
-	go wsc.Listen(&wg)
+	go wsc.Listen()
 
 	// Register handlers functions for needed topics
 
@@ -76,25 +82,30 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(time.Second * 5)
+	//Running the goroutine which will close websocket connection and listening after 2 minutes.
+	go func() {
+		timer := time.NewTimer(time.Minute * 2)
+
+		for range timer.C {
+			if err := wsc.Close(); err != nil {
+				panic(err)
+			}
+			return
+		}
+	}()
 
 	//Publish test transactions
-	doTransferTransaction(address)
-	doBondedAggregateTransaction(address)
+	doTransferTransaction(address, cfg)
+	time.Sleep(time.Second * 30)
+	doBondedAggregateTransaction(address, cfg)
 
-	wg.Wait()
+	<-time.NewTimer(time.Minute * 5).C
 }
 
 // publish test transfer transaction
-func doTransferTransaction(address *sdk.Address) {
+func doTransferTransaction(address *sdk.Address, conf *sdk.Config) {
 
 	fmt.Println("start publishing transfer transaction")
-
-	conf, err := sdk.NewConfig(baseUrl, networkType)
-	if err != nil {
-		panic(err)
-	}
-
 	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 	// Use the default http client
@@ -126,15 +137,9 @@ func doTransferTransaction(address *sdk.Address) {
 }
 
 // publish test aggregated transaction
-func doBondedAggregateTransaction(address *sdk.Address) {
+func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
-
-	conf, err := sdk.NewConfig(baseUrl, networkType)
-	if err != nil {
-		panic(err)
-	}
-
 	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 	// Use the default http client
@@ -194,8 +199,6 @@ func doBondedAggregateTransaction(address *sdk.Address) {
 	}
 
 	_, err = client.Transaction.Announce(context.Background(), signedLockFound)
-
-	time.Sleep(time.Second * 30)
 
 	resp, err := client.Transaction.AnnounceAggregateBonded(context.Background(), signedBondedTx)
 	if err != nil {

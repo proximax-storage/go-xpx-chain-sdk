@@ -18,8 +18,12 @@ type blockInfoDTO struct {
 		Height                uint64DTO `json:"height"`
 		Timestamp             uint64DTO `json:"timestamp"`
 		Difficulty            uint64DTO `json:"difficulty"`
+		FeeMultiplier         uint32    `json:"feeMultiplier"`
 		PreviousBlockHash     string    `json:"previousBlockHash"`
 		BlockTransactionsHash string    `json:"blockTransactionsHash"`
+		BlockReceiptsHash     string    `json:"blockReceiptsHash"`
+		StateHash             string    `json:"stateHash"`
+		BeneficiaryPublicKey  string    `json:"beneficiaryPublicKey"`
 	} `json:"block"`
 }
 
@@ -36,6 +40,15 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 		return nil, err
 	}
 
+	var bpa *PublicAccount = nil
+
+	if dto.Block.BeneficiaryPublicKey != EmptyPublicKey {
+		bpa, err = NewAccountFromPublicKey(dto.Block.BeneficiaryPublicKey, nt)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &BlockInfo{
 		NetworkType:           nt,
 		Hash:                  dto.BlockMeta.Hash,
@@ -49,8 +62,12 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 		Height:                dto.Block.Height.toBigInt(),
 		Timestamp:             dto.Block.Timestamp.toBigInt(),
 		Difficulty:            dto.Block.Difficulty.toBigInt(),
+		FeeMultiplier:         dto.Block.FeeMultiplier,
 		PreviousBlockHash:     dto.Block.PreviousBlockHash,
 		BlockTransactionsHash: dto.Block.BlockTransactionsHash,
+		BlockReceiptsHash:     dto.Block.BlockReceiptsHash,
+		StateHash:             dto.Block.StateHash,
+		Beneficiary:           bpa,
 	}, nil
 }
 

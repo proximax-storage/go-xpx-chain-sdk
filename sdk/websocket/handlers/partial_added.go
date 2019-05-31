@@ -7,25 +7,22 @@ import (
 	"sync"
 )
 
-func NewPartialAddedHandler(messageMapper sdk.PartialAddedMapper, handlers subscribers.PartialAdded, errCh chan<- error) *partialAddedHandler {
+func NewPartialAddedHandler(messageMapper sdk.PartialAddedMapper, handlers subscribers.PartialAdded) *partialAddedHandler {
 	return &partialAddedHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 type partialAddedHandler struct {
 	messageMapper sdk.PartialAddedMapper
 	handlers      subscribers.PartialAdded
-	errCh         chan<- error
 }
 
 func (h *partialAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapPartialAdded(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapper error"))
 	}
 
 	handlers := h.handlers.GetHandlers(address)
@@ -48,8 +45,7 @@ func (h *partialAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err = h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 
 			return

@@ -15,9 +15,7 @@ import (
 // NamespaceService provides a set of methods for obtaining information about the namespace
 type NamespaceService service
 
-// GetNamespace
-// @/namespace/
-func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
+func (ref *NamespaceService) GetNamespaceInfo(ctx context.Context, nsId *NamespaceId) (*NamespaceInfo, error) {
 	if nsId == nil {
 		return nil, ErrNilNamespaceId
 	}
@@ -26,7 +24,7 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 
 	url := net.NewUrl(fmt.Sprintf(namespaceRoute, nsId.toHexString()))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, nsInfoDTO)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, nsInfoDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +45,9 @@ func (ref *NamespaceService) GetNamespace(ctx context.Context, nsId *NamespaceId
 	return nsInfo, nil
 }
 
-// GetNamespacesFromAccount get required params addresses, other skipped if value < 0
-// @/account/%s/namespaces
-func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
+// returns NamespaceInfo's corresponding to passed Address and NamespaceId with maximum limit
+// TODO: fix pagination
+func (ref *NamespaceService) GetNamespaceInfosFromAccount(ctx context.Context, address *Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress
@@ -67,7 +65,7 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 
 	dtos := namespaceInfoDTOs(make([]*namespaceInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +86,9 @@ func (ref *NamespaceService) GetNamespacesFromAccount(ctx context.Context, addre
 	return nsInfos, nil
 }
 
-// GetNamespacesFromAccounts get required params addresses, other skipped if value is empty
-// @/account/namespaces
-func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
+// returns NamespaceInfo's corresponding to passed Address's and NamespaceId with maximum limit
+// TODO: fix pagination
+func (ref *NamespaceService) GetNamespaceInfosFromAccounts(ctx context.Context, addrs []*Address, nsId *NamespaceId,
 	pageSize int) ([]*NamespaceInfo, error) {
 	if len(addrs) == 0 {
 		return nil, ErrEmptyAddressesIds
@@ -108,7 +106,7 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 
 	dtos := namespaceInfoDTOs(make([]*namespaceInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, url.Encode(), addresses(addrs), &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, url.Encode(), &addresses{addrs}, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +127,6 @@ func (ref *NamespaceService) GetNamespacesFromAccounts(ctx context.Context, addr
 	return nsInfos, nil
 }
 
-// GetNamespaceNames
-// @/namespace/names
 func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*NamespaceId) ([]*NamespaceName, error) {
 	if len(nsIds) == 0 {
 		return nil, ErrEmptyNamespaceIds
@@ -138,7 +134,7 @@ func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*Nam
 
 	dtos := namespaceNameDTOs(make([]*namespaceNameDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &NamespaceIds{nsIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &NamespaceIds{nsIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +146,38 @@ func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*Nam
 	return dtos.toStruct()
 }
 
+// GetLinkedMosaicId
+// @/namespace/%s
+func (ref *NamespaceService) GetLinkedMosaicId(ctx context.Context, namespaceId *NamespaceId) (*MosaicId, error) {
+	if namespaceId == nil {
+		return nil, ErrNilAddress
+	}
+
+	info, err := ref.GetNamespaceInfo(ctx, namespaceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return info.Alias.MosaicId(), nil
+}
+
+// GetLinkedAddress
+// @/namespace/%s
+func (ref *NamespaceService) GetLinkedAddress(ctx context.Context, namespaceId *NamespaceId) (*Address, error) {
+	if namespaceId == nil {
+		return nil, ErrNilAddress
+	}
+
+	info, err := ref.GetNamespaceInfo(ctx, namespaceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return info.Alias.Address(), nil
+}
+
 func (ref *NamespaceService) buildNamespaceHierarchy(ctx context.Context, nsInfo *NamespaceInfo) error {
 	if nsInfo == nil || nsInfo.Parent == nil {
 		return nil
@@ -159,7 +187,7 @@ func (ref *NamespaceService) buildNamespaceHierarchy(ctx context.Context, nsInfo
 		return nil
 	}
 
-	parentNsInfo, err := ref.GetNamespace(ctx, nsInfo.Parent.NamespaceId)
+	parentNsInfo, err := ref.GetNamespaceInfo(ctx, nsInfo.Parent.NamespaceId)
 	if err != nil {
 		return err
 	}

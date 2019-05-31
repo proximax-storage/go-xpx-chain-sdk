@@ -5,15 +5,21 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"io"
+	"net"
+	"net/url"
+	"time"
+
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
-	"io"
-	"sync"
 )
+
+const pathWS = "ws"
 
 type Path string
 
@@ -29,29 +35,27 @@ const (
 )
 
 var (
-	unsupportedMessageTypeError = errors.New("unsupported message type")
+	ErrUnsupportedMessageType = errors.New("unsupported message type")
 )
 
-func NewClient(endpoint string) (CatapultClient, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
+func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
+	ctx, cancelFunc := context.WithCancel(ctx)
 
-	var resp *wsConnectionResponse
-	err = conn.ReadJSON(&resp)
+	conn, uid, err := connect(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	topicHandlers := make(topicHandlers)
-	errorsChan := make(chan error, 1000)
 	messagePublisher := newMessagePublisher(conn)
-	messageRouter := NewRouter(resp.Uid, messagePublisher, topicHandlers, errorsChan)
+	messageRouter := NewRouter(uid, messagePublisher, topicHandlers)
 
 	return &CatapultWebsocketClientImpl{
-		conn: conn,
-		UID:  resp.Uid,
+		config:     cfg,
+		conn:       conn,
+		ctx:        ctx,
+		cancelFunc: cancelFunc,
+		UID:        uid,
 
 		blockSubscriber:               subscribers.NewBlock(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
@@ -65,13 +69,13 @@ func NewClient(endpoint string) (CatapultClient, error) {
 		topicHandlers:    topicHandlers,
 		messageRouter:    messageRouter,
 		messagePublisher: messagePublisher,
-		errorsChan:       errorsChan,
 	}, nil
 }
 
 type Client interface {
-	Listen(wg *sync.WaitGroup)
-	GetErrorsChan() chan error
+	io.Closer
+
+	Listen()
 }
 
 type CatapultClient interface {
@@ -88,8 +92,11 @@ type CatapultClient interface {
 }
 
 type CatapultWebsocketClientImpl struct {
-	conn *websocket.Conn
-	UID  string
+	config     *sdk.Config
+	conn       *websocket.Conn
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	UID        string
 
 	blockSubscriber               subscribers.Block
 	confirmedAddedSubscribers     subscribers.ConfirmedAdded
@@ -104,26 +111,62 @@ type CatapultWebsocketClientImpl struct {
 	messageRouter    Router
 	messagePublisher MessagePublisher
 
-	errorsChan chan error
+	connectFn        func(cfg *sdk.Config) (*websocket.Conn, string, error)
+	alreadyListening bool
 }
 
-func (c *CatapultWebsocketClientImpl) Listen(wg *sync.WaitGroup) {
+func (c *CatapultWebsocketClientImpl) Listen() {
+	if c.alreadyListening {
+		return
+	}
+
+	c.alreadyListening = true
+
+	messagesChan := make(chan []byte)
+
+	go func() {
+		defer c.cancelFunc()
+
+	ReadMessageLoop:
+		for {
+			_, resp, e := c.conn.ReadMessage()
+			if e != nil {
+				if _, ok := e.(*net.OpError); ok {
+					//Stop ReadMessage goroutine if user called Close function for websocket client
+					return
+				}
+
+				if _, ok := e.(*websocket.CloseError); ok {
+					// Start websocket reconnect processing if connection was closed
+					for range time.NewTicker(c.config.WsReconnectionTimeout).C {
+						if err := c.reconnect(); err != nil {
+							continue
+						}
+
+						continue ReadMessageLoop
+					}
+				}
+
+				return
+			}
+
+			messagesChan <- resp
+		}
+	}()
+
 	for {
-		_, resp, err := c.conn.ReadMessage()
-
-		if err == io.EOF {
-			c.errorsChan <- errors.Wrap(err, "websocket disconnect ")
-			wg.Done()
+		select {
+		case <-c.ctx.Done():
+			if c.conn != nil {
+				if err := c.conn.Close(); err != nil {
+					panic(err)
+				}
+				c.conn = nil
+			}
 			return
+		case msg := <-messagesChan:
+			go c.messageRouter.RouteMessage(msg)
 		}
-
-		if err != nil {
-			c.errorsChan <- errors.Wrap(err, "receiving message from websocket")
-			wg.Done()
-			return
-		}
-
-		go c.messageRouter.RouteMessage(resp)
 	}
 }
 
@@ -134,7 +177,7 @@ func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.B
 
 	if !c.topicHandlers.HasHandler(pathBlock) {
 		c.topicHandlers.SetTopicHandler(pathBlock, &TopicHandler{
-			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber, c.errorsChan),
+			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber),
 			Topic:   topicFormatFn(formatBlockTopic),
 		})
 	}
@@ -159,7 +202,7 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 
 	if !c.topicHandlers.HasHandler(pathConfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathConfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -185,7 +228,7 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.A
 
 	if !c.topicHandlers.HasHandler(pathUnconfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathUnconfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -211,7 +254,7 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk
 
 	if !c.topicHandlers.HasHandler(pathUnconfirmedRemoved) {
 		c.topicHandlers.SetTopicHandler(pathUnconfirmedRemoved, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -237,7 +280,7 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 
 	if !c.topicHandlers.HasHandler(pathPartialAdded) {
 		c.topicHandlers.SetTopicHandler(pathPartialAdded, &TopicHandler{
-			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -263,7 +306,7 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Add
 
 	if !c.topicHandlers.HasHandler(pathPartialRemoved) {
 		c.topicHandlers.SetTopicHandler(pathPartialRemoved, &TopicHandler{
-			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers, c.errorsChan),
+			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -289,7 +332,7 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, ha
 
 	if !c.topicHandlers.HasHandler(pathStatus) {
 		c.topicHandlers.SetTopicHandler(pathStatus, &TopicHandler{
-			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers, c.errorsChan),
+			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -315,7 +358,7 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 
 	if !c.topicHandlers.HasHandler(pathCosignature) {
 		c.topicHandlers.SetTopicHandler(pathCosignature, &TopicHandler{
-			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers, c.errorsChan),
+			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -333,6 +376,134 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) GetErrorsChan() chan error {
-	return c.errorsChan
+func (c *CatapultWebsocketClientImpl) reconnect() error {
+
+	conn, uid, err := c.connectFn(c.config)
+	if err != nil {
+		return err
+	}
+
+	c.conn = conn
+	c.UID = uid
+
+	c.messagePublisher.SetConn(conn)
+	c.messageRouter.SetUid(uid)
+
+	if c.blockSubscriber.HasHandlers() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s", pathBlock))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.confirmedAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.cosignatureSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.partialAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.partialRemovedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.statusSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.unconfirmedAddedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.unconfirmedRemovedSubscribers.GetAddresses() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, value))); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) Close() error {
+	if c.conn != nil {
+		if err := c.conn.Close(); err != nil {
+			return err
+		}
+
+		c.conn = nil
+	}
+
+	c.cancelFunc()
+
+	c.alreadyListening = false
+
+	c.blockSubscriber = nil
+	c.confirmedAddedSubscribers = nil
+	c.unconfirmedAddedSubscribers = nil
+	c.unconfirmedRemovedSubscribers = nil
+	c.partialAddedSubscribers = nil
+	c.partialRemovedSubscribers = nil
+	c.statusSubscribers = nil
+	c.cosignatureSubscribers = nil
+
+	c.topicHandlers = nil
+
+	return nil
+}
+
+func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
+	var conn *websocket.Conn
+	var err error
+
+	conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(cfg.UsedBaseUrl).String(), nil)
+	if err != nil {
+		for _, u := range cfg.BaseURLs {
+
+			if u == cfg.UsedBaseUrl {
+				continue
+			}
+
+			conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(u).String(), nil)
+			if err != nil {
+				continue
+			}
+
+			cfg.UsedBaseUrl = u
+			break
+		}
+	}
+
+	if conn == nil {
+		return nil, "", err
+	}
+
+	resp := new(wsConnectionResponse)
+	if err = conn.ReadJSON(resp); err != nil {
+		return nil, "", err
+	}
+
+	return conn, resp.Uid, nil
+}
+
+func convertToWsUrl(url *url.URL) *url.URL {
+	copyUrl := *url
+	copyUrl.Scheme = "ws" // always ws
+	copyUrl.Path = pathWS
+	return &copyUrl
 }

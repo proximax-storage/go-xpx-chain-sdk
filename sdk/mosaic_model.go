@@ -11,17 +11,21 @@ import (
 	"math/big"
 )
 
-// MosaicId
 type MosaicId big.Int
 
 func (m *MosaicId) String() string {
-	return (*big.Int)(m).String()
+	return m.toHexString()
+}
+
+func (m *MosaicId) toHexString() string {
+	return bigIntegerToHex(mosaicIdToBigInt(m))
 }
 
 func (m *MosaicId) Equals(id *MosaicId) bool {
 	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
 }
 
+// returns MosaicId for passed nonce and public key of mosaic owner
 func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
@@ -32,6 +36,7 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 	return bigIntToMosaicId(id), err
 }
 
+// returns MosaicId from big int id
 func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	if id == nil {
 		return nil, ErrNilMosaicId
@@ -40,16 +45,27 @@ func NewMosaicId(id *big.Int) (*MosaicId, error) {
 	return bigIntToMosaicId(id), nil
 }
 
-func (m *MosaicId) toHexString() string {
-	return BigIntegerToHex(mosaicIdToBigInt(m))
+// returns MosaicId's from their big.Int's representation
+func bigIntsToMosaicIds(mosaicIds ...*big.Int) ([]*MosaicId, error) {
+	result := make([]*MosaicId, len(mosaicIds))
+	for i, m := range mosaicIds {
+		var err error = nil
+		result[i], err = NewMosaicId(m)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return result, nil
 }
 
-// MosaicId
 type Mosaic struct {
 	MosaicId *MosaicId
 	Amount   *big.Int
 }
 
+// returns a Mosaic for passed MosaicId and amount
 func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error) {
 	if mosaicId == nil {
 		return nil, ErrNilMosaicId
@@ -77,7 +93,6 @@ func (m *Mosaic) String() string {
 	)
 }
 
-// MosaicInfo info structure contains its properties, the owner and the namespace to which it belongs to.
 type MosaicInfo struct {
 	MosaicId   *MosaicId
 	Supply     *big.Int
@@ -99,7 +114,12 @@ func (m *MosaicInfo) String() string {
 	)
 }
 
-// MosaicProperties  structure describes mosaic properties.
+// structure which includes several properties for defining mosaic
+// `SupplyMutable` - is supply of defined mosaic can be changed in future
+// `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
+// `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
+// `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
+// `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
@@ -108,6 +128,7 @@ type MosaicProperties struct {
 	Duration      *big.Int
 }
 
+// returns MosaicProperties from actual values
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
@@ -131,9 +152,19 @@ func (mp *MosaicProperties) String() string {
 	)
 }
 
-// MosaicSupplyType mosaic supply type :
-// Decrease the supply - DECREASE.
-// Increase the supply - INCREASE.
+type MosaicName struct {
+	MosaicId *MosaicId
+	Names    []string
+}
+
+func (m *MosaicName) String() string {
+	return str.StructToString(
+		"MosaicName",
+		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
+		str.NewField("Names", str.StringPattern, m.Names),
+	)
+}
+
 type MosaicSupplyType uint8
 
 const (
@@ -145,20 +176,22 @@ func (tx MosaicSupplyType) String() string {
 	return fmt.Sprintf("%d", tx)
 }
 
-// Create xem with using xem as unit
+// returns XEM mosaic with passed amount
 func Xem(amount int64) *Mosaic {
 	return &Mosaic{XemMosaicId, big.NewInt(amount)}
 }
 
-// Create xpx with using xpx as unit
+// returns XPX mosaic with passed amount
 func Xpx(amount int64) *Mosaic {
 	return &Mosaic{XpxMosaicId, big.NewInt(amount)}
 }
 
+// returns XEM with actual passed amount
 func XemRelative(amount int64) *Mosaic {
 	return Xem(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
 }
 
+// returns XPX with actual passed amount
 func XpxRelative(amount int64) *Mosaic {
 	return Xpx(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
 }

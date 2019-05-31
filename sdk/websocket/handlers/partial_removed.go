@@ -7,25 +7,22 @@ import (
 	"sync"
 )
 
-func NewPartialRemovedHandler(messageMapper sdk.PartialRemovedMapper, handlers subscribers.PartialRemoved, errCh chan<- error) *partialRemovedHandler {
+func NewPartialRemovedHandler(messageMapper sdk.PartialRemovedMapper, handlers subscribers.PartialRemoved) *partialRemovedHandler {
 	return &partialRemovedHandler{
 		messageMapper: messageMapper,
 		handlers:      handlers,
-		errCh:         errCh,
 	}
 }
 
 type partialRemovedHandler struct {
 	messageMapper sdk.PartialRemovedMapper
 	handlers      subscribers.PartialRemoved
-	errCh         chan<- error
 }
 
 func (h *partialRemovedHandler) Handle(address *sdk.Address, resp []byte) bool {
 	res, err := h.messageMapper.MapPartialRemoved(resp)
 	if err != nil {
-		h.errCh <- errors.Wrap(err, "message mapper error")
-		return true
+		panic(errors.Wrap(err, "message mapper error"))
 	}
 
 	handlers := h.handlers.GetHandlers(address)
@@ -48,8 +45,7 @@ func (h *partialRemovedHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 			_, err = h.handlers.RemoveHandlers(address, f)
 			if err != nil {
-				h.errCh <- errors.Wrap(err, "removing handler from storage")
-				return
+				panic(errors.Wrap(err, "removing handler from storage"))
 			}
 
 			return

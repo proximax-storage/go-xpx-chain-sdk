@@ -15,7 +15,7 @@ import (
 
 type BlockchainService service
 
-// Get Block Height
+// returns BlockInfo for passed block's height
 func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.Int) (*BlockInfo, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -25,7 +25,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 
 	dto := &blockInfoDTO{}
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, u, nil, &dto)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, u, nil, &dto)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.In
 	return dto.toStruct()
 }
 
-// Get Transactions from a block information
+// returns Transaction's inside of block at passed height
 func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *big.Int) ([]Transaction, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -47,7 +47,7 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *bi
 
 	var data bytes.Buffer
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &data)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,8 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *bi
 	return MapTransactions(&data)
 }
 
-// GetBlocksByHeightWithLimit Returns blocks information for a given block height and limit
+// returns BlockInfo's for range block height - (block height + limit)
+// Example: GetBlocksByHeightWithLimit(ctx, 1, 25) => [BlockInfo25, BlockInfo24, ..., BlockInfo1]
 func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error) {
 	if height == nil || height.Int64() == 0 {
 		return nil, ErrNilOrZeroHeight
@@ -73,7 +74,7 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 
 	dtos := blockInfoDTOs(make([]*blockInfoDTO, 0))
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +86,12 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 	return dtos.toStruct()
 }
 
-// Get the Chain Height
 func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, error) {
 	bh := &struct {
 		Height uint64DTO `json:"height"`
 	}{}
 
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockHeightRoute, nil, &bh)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockHeightRoute, nil, &bh)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +103,9 @@ func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, 
 	return bh.Height.toBigInt(), nil
 }
 
-// Get the Chain Score
 func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, error) {
 	cs := &chainScoreDTO{}
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockScoreRoute, nil, &cs)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockScoreRoute, nil, &cs)
 	if err != nil {
 		return nil, err
 	}
@@ -118,10 +117,9 @@ func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, e
 	return cs.toStruct(), nil
 }
 
-// Get the Storage Information
 func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*BlockchainStorageInfo, error) {
 	bstorage := &BlockchainStorageInfo{}
-	resp, err := b.client.DoNewRequest(ctx, http.MethodGet, blockStorageRoute, nil, &bstorage)
+	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockStorageRoute, nil, &bstorage)
 	if err != nil {
 		return nil, err
 	}

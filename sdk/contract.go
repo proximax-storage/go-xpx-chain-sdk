@@ -23,7 +23,7 @@ func (ref *ContractService) GetContractsInfo(ctx context.Context, contractPubKey
 
 	dtos := contractInfoDTOs(make([]*contractInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodPost, contractsInfoRoute, pubKeys, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, contractsInfoRoute, pubKeys, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within POST request %s", contractsInfoRoute)
 	}
@@ -49,7 +49,7 @@ func (ref *ContractService) GetContractsByAddress(ctx context.Context, address s
 
 	dtos := contractInfoDTOs(make([]*contractInfoDTO, 0))
 
-	resp, err := ref.client.DoNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
 	if err != nil {
 		return nil, errors.Wrapf(err, "within GET request %s", url.Encode())
 	}

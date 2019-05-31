@@ -21,6 +21,7 @@ type Status interface {
 	RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) (bool, error)
 	HasHandlers(address *sdk.Address) bool
 	GetHandlers(address *sdk.Address) map[*StatusHandler]struct{}
+	GetAddresses() []string
 }
 
 type statusImpl struct {
@@ -90,4 +91,13 @@ func (e *statusImpl) GetHandlers(address *sdk.Address) map[*StatusHandler]struct
 	}
 
 	return nil
+}
+
+func (e *statusImpl) GetAddresses() []string {
+	addresses := make([]string, 0, len(e.subscribers))
+	for addr := range e.subscribers {
+		addresses = append(addresses, addr)
+	}
+
+	return addresses
 }

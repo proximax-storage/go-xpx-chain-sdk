@@ -24,6 +24,7 @@ const (
 			0,
 			0
 		],
+    	"subCacheMerkleRoots": [],
 		"numTransactions": 25
 	},
 	"block": {
@@ -43,8 +44,12 @@ const (
 			276447232,
 			23283
 		],
+    	"feeMultiplier": 0,
 		"previousBlockHash": "0000000000000000000000000000000000000000000000000000000000000000",
-		"blockTransactionsHash": "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19"
+		"blockTransactionsHash": "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19",
+    	"blockReceiptsHash": "C1CCDD2786E301BD384A3E3717FF2383BBFB013FC86E885F0889CD18A3508001",
+    	"stateHash": "E563E955B14B1C8A58FBD4B2D8B28F42EF3C2200D6BC8260A693ABCBD43C5BB7",
+    	"beneficiaryPublicKey": "0000000000000000000000000000000000000000000000000000000000000000"
 	}
 }`
 	// Mock response for TestBlockchainService_GetBlockTransactions
@@ -65,7 +70,7 @@ const (
 			"signer": "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 			"version": 36866,
 			"type": 16718,
-			"fee": [
+			"maxFee": [
 				0,
 				0
 			],
@@ -116,8 +121,12 @@ func init() {
 		Height:                uint64DTO{1, 0}.toBigInt(),
 		Timestamp:             uint64DTO{0, 0}.toBigInt(),
 		Difficulty:            uint64DTO{276447232, 23283}.toBigInt(),
+		FeeMultiplier:         0,
 		PreviousBlockHash:     "0000000000000000000000000000000000000000000000000000000000000000",
 		BlockTransactionsHash: "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19",
+		BlockReceiptsHash:     "C1CCDD2786E301BD384A3E3717FF2383BBFB013FC86E885F0889CD18A3508001",
+		StateHash:             "E563E955B14B1C8A58FBD4B2D8B28F42EF3C2200D6BC8260A693ABCBD43C5BB7",
+		Beneficiary:           nil,
 	}
 
 	wantBlockTransactions = append(wantBlockTransactions, &RegisterNamespaceTransaction{
@@ -127,7 +136,7 @@ func init() {
 			NetworkType: MijinTest,
 			Signature:   "AE1558A33F4F595AD5DCEAE4EC11606E815A781E75E3EEC7E9F8BB46BDAF16670C8C36C6815F74FD83487178DDAB8FCE4B4B633875A1549D4FB068ABC5B22A0C",
 			Signer:      nil,
-			Fee:         uint64DTO{0, 0}.toBigInt(),
+			MaxFee:      uint64DTO{0, 0}.toBigInt(),
 			Deadline:    &Deadline{time.Unix(uint64DTO{1, 0}.toBigInt().Int64(), int64(time.Millisecond))},
 			TransactionInfo: &TransactionInfo{
 				Height:              uint64DTO{1, 0}.toBigInt(),

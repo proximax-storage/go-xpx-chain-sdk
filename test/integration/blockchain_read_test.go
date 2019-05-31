@@ -12,10 +12,14 @@ import (
 )
 
 const iter = 1000
-const testUrl = "http://bctestnet2.xpxsirius.io:3000"
+const testUrl = "http://bcstage1.xpxsirius.io:3000"
+const networkType = sdk.PublicTest
+const privateKey = "D54AC0CB0FF50FB44233782B3A6B5FDE2F1C83B9AE2F1352119F93713F3AB923"
+
+var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig(testUrl, sdk.MijinTest)
+	cfg, _ := sdk.NewConfig([]string{testUrl}, networkType, sdk.WebsocketReconnectionDefaultTimeout)
 	ctx := context.TODO()
 
 	serv := sdk.NewClient(nil, cfg)
@@ -52,9 +56,9 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
+				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -66,9 +70,9 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaic(ctx, tran.MosaicId)
+				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%+v", mscInfo)
@@ -83,9 +87,9 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				for _, val := range tran.Mosaics {
 					mosaicIDs = append(mosaicIDs, val.MosaicId)
 				}
-				mscInfoArr, err := serv.Mosaic.GetMosaics(ctx, mosaicIDs)
+				mscInfoArr, err := serv.Mosaic.GetMosaicInfos(ctx, mosaicIDs)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				for _, mscInfo := range mscInfoArr {
@@ -93,9 +97,9 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
-				nsInfo, err := serv.Namespace.GetNamespace(ctx, tran.NamespaceId)
+				nsInfo, err := serv.Namespace.GetNamespaceInfo(ctx, tran.NamespaceId)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 
 				t.Logf("%#v", nsInfo)
