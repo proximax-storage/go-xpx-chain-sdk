@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"encoding/binary"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
+	"github.com/proximax-storage/go-xpx-utils"
 	"golang.org/x/crypto/sha3"
 	"math/big"
 )

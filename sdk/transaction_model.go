@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"github.com/google/flatbuffers/go"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
+	"github.com/proximax-storage/go-xpx-utils"
 	"github.com/proximax-storage/xpx-crypto-go"
 	"math/big"
 	"strings"
