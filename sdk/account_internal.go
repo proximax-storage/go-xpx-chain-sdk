@@ -4,7 +4,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"errors"
-	"github.com/proximax-storage/nem2-crypto-go"
+	"github.com/proximax-storage/xpx-crypto-go"
 )
 
 var addressNet = map[uint8]NetworkType{

@@ -6,7 +6,7 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
+	"github.com/proximax-storage/go-xpx-utils"
 	"github.com/proximax-storage/go-xpx-utils/str"
 	"math/big"
 )
