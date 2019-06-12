@@ -16,7 +16,7 @@ type MosaicId struct {
 }
 
 func NewMosaicId(id uint64) (*MosaicId, error) {
-	if id&NamespaceBit != 0 {
+	if hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitMosaicId
 	}
 	return NewMosaicIdNoCheck(id), nil
@@ -57,30 +57,35 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	MosaicId *MosaicId
-	Amount   *Amount
+	BlockchainId BlockchainId
+	Amount       *Amount
 }
 
 // returns a Mosaic for passed MosaicId and amount
-func NewMosaic(mosaicId *MosaicId, amount *Amount) (*Mosaic, error) {
-	if mosaicId == nil {
-		return nil, ErrNilMosaicId
+func NewMosaic(blockchainId BlockchainId, amount *Amount) (*Mosaic, error) {
+	if blockchainId == nil {
+		return nil, ErrNilBlockchainId
 	}
 
 	if amount == nil {
-		return nil, ErrNilMosaicAmount
+		return nil, ErrNilAmount
 	}
 
+	return NewMosaicNoCheck(blockchainId, amount), nil
+}
+
+// returns a Mosaic for passed MosaicId and amount without validation of parameters
+func NewMosaicNoCheck(blockchainId BlockchainId, amount *Amount) *Mosaic {
 	return &Mosaic{
-		MosaicId: mosaicId,
-		Amount:   amount,
-	}, nil
+		BlockchainId: blockchainId,
+		Amount:       amount,
+	}
 }
 
 func (m *Mosaic) String() string {
 	return str.StructToString(
 		"MosaicId",
-		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
+		str.NewField("BlockchainId", str.StringPattern, m.BlockchainId),
 		str.NewField("Amount", str.StringPattern, m.Amount),
 	)
 }
@@ -174,12 +179,12 @@ func (tx MosaicSupplyType) String() string {
 
 // returns XEM mosaic with passed amount
 func Xem(amount uint64) *Mosaic {
-	return &Mosaic{XemMosaicId, NewAmount(amount)}
+	return NewMosaicNoCheck(XemMosaicId, NewAmount(amount))
 }
 
 // returns XPX mosaic with passed amount
 func Xpx(amount uint64) *Mosaic {
-	return &Mosaic{XpxMosaicId, NewAmount(amount)}
+	return NewMosaicNoCheck(XpxMosaicId, NewAmount(amount))
 }
 
 // returns XEM with actual passed amount

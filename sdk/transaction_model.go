@@ -358,17 +358,17 @@ func (dto *accountPropertiesAddressTransactionDTO) toStruct() (Transaction, erro
 
 type AccountPropertiesMosaicModification struct {
 	ModificationType PropertyModificationType
-	MosaicId         *MosaicId
+	BlockchainId     BlockchainId
 }
 
 func (mod *AccountPropertiesMosaicModification) String() string {
 	return fmt.Sprintf(
 		`
 			"ModificationType": %d,
-			"MosaicId": %s,
+			"BlockchainId": %s,
 		`,
 		mod.ModificationType,
-		mod.MosaicId.toHexString(),
+		mod.BlockchainId,
 	)
 }
 
@@ -427,7 +427,7 @@ func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
 	for i, m := range tx.Modifications {
 		mosaicB := make([]byte, MosaicSize)
-		binary.LittleEndian.PutUint64(mosaicB, m.MosaicId.Id())
+		binary.LittleEndian.PutUint64(mosaicB, m.BlockchainId.Id())
 		mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
 		transactions.PropertyModificationBufferStart(builder)
@@ -461,18 +461,18 @@ func (tx *AccountPropertiesMosaicTransaction) Size() int {
 
 type accountPropertiesMosaicModificationDTO struct {
 	ModificationType PropertyModificationType `json:"type"`
-	MosaicId         mosaicIdDTO              `json:"value"`
+	BlockchainId     blockchainIdDTO          `json:"value"`
 }
 
 func (dto *accountPropertiesMosaicModificationDTO) toStruct() (*AccountPropertiesMosaicModification, error) {
-	mosaicId, err := dto.MosaicId.toStruct()
+	blockchainId, err := dto.BlockchainId.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
 	return &AccountPropertiesMosaicModification{
 		dto.ModificationType,
-		mosaicId,
+		blockchainId,
 	}, nil
 }
 
@@ -1578,14 +1578,14 @@ func (dto *mosaicDefinitionTransactionDTO) toStruct() (Transaction, error) {
 type MosaicSupplyChangeTransaction struct {
 	AbstractTransaction
 	MosaicSupplyType
-	*MosaicId
+	BlockchainId
 	Delta *Duration
 }
 
-// returns MosaicSupplyChangeTransaction from passed MosaicId, MosaicSupplyTypeand supply delta
-func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, supplyType MosaicSupplyType, delta *Duration, networkType NetworkType) (*MosaicSupplyChangeTransaction, error) {
-	if mosaicId == nil || mosaicId.Id() == 0 {
-		return nil, ErrNilMosaicId
+// returns MosaicSupplyChangeTransaction from passed BlockchainId, MosaicSupplyTypeand supply delta
+func NewMosaicSupplyChangeTransaction(deadline *Deadline, blockchainId BlockchainId, supplyType MosaicSupplyType, delta *Duration, networkType NetworkType) (*MosaicSupplyChangeTransaction, error) {
+	if blockchainId == nil || blockchainId.Id() == 0 {
+		return nil, ErrNilBlockchainId
 	}
 
 	if !(supplyType == Increase || supplyType == Decrease) {
@@ -1603,7 +1603,7 @@ func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, su
 			NetworkType: networkType,
 			MaxFee:      NewAmount(0),
 		},
-		MosaicId:         mosaicId,
+		BlockchainId:     blockchainId,
 		MosaicSupplyType: supplyType,
 		Delta:            delta,
 	}, nil
@@ -1618,12 +1618,12 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"MosaicSupplyType": %s,
-			"MosaicId": %s,
+			"BlockchainId": %s,
 			"Delta": %d
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicSupplyType,
-		tx.MosaicId,
+		tx.BlockchainId,
 		tx.Delta,
 	)
 }
@@ -1631,7 +1631,7 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.ToArray())
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.BlockchainId.ToArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Delta.ToArray())
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -1659,8 +1659,8 @@ type mosaicSupplyChangeTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		MosaicSupplyType `json:"direction"`
-		MosaicId         *mosaicIdDTO `json:"mosaicId"`
-		Delta            *durationDTO `json:"delta"`
+		BlockchainId     *blockchainIdDTO `json:"mosaicId"`
+		Delta            *durationDTO     `json:"delta"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1671,7 +1671,7 @@ func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	blockchainId, err := dto.Tx.BlockchainId.toStruct()
 	if err != nil {
 		return nil, err
 	}
@@ -1679,7 +1679,7 @@ func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (Transaction, error) {
 	return &MosaicSupplyChangeTransaction{
 		*atx,
 		dto.Tx.MosaicSupplyType,
-		mosaicId,
+		blockchainId,
 		dto.Tx.Delta.toStruct(),
 	}, nil
 }
@@ -1773,7 +1773,7 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 	ml := len(tx.Mosaics)
 	mb := make([]flatbuffers.UOffsetT, ml)
 	for i, mos := range tx.Mosaics {
-		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.MosaicId.ToArray())
+		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.BlockchainId.ToArray())
 		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.ToArray())
 		transactions.MosaicBufferStart(builder)
 		transactions.MosaicBufferAddId(builder, id)
@@ -2095,7 +2095,7 @@ func (tx *ModifyContractTransaction) Size() int {
 type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DurationDelta *durationDTO                          `json:"duration"`
+		DurationDelta durationDTO                           `json:"durationDelta"`
 		Hash          string                                `json:"hash"`
 		Customers     []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors     []*multisigCosignatoryModificationDTO `json:"executors"`
@@ -2361,7 +2361,7 @@ func (tx *LockFundsTransaction) String() string {
 func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.MosaicId.ToArray())
+	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.ToArray())
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.ToArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.ToArray())
 
@@ -2484,7 +2484,7 @@ func (tx *SecretLockTransaction) String() string {
 func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.MosaicId.ToArray())
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.ToArray())
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.ToArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.ToArray())
 
@@ -2523,12 +2523,12 @@ func (tx *SecretLockTransaction) Size() int {
 type secretLockTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		MosaicId  *mosaicIdDTO `json:"mosaicId"`
-		Amount    *amountDTO   `json:"amount"`
-		HashType  HashType     `json:"hashAlgorithm"`
-		Duration  durationDTO  `json:"duration"`
-		Secret    string       `json:"secret"`
-		Recipient string       `json:"recipient"`
+		BlockchainId *blockchainIdDTO `json:"mosaicId"`
+		Amount       *amountDTO       `json:"amount"`
+		HashType     HashType         `json:"hashAlgorithm"`
+		Duration     durationDTO      `json:"duration"`
+		Secret       string           `json:"secret"`
+		Recipient    string           `json:"recipient"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -2544,12 +2544,12 @@ func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	blockchainId, err := dto.Tx.BlockchainId.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
-	mosaic, err := NewMosaic(mosaicId, dto.Tx.Amount.toStruct())
+	mosaic, err := NewMosaic(blockchainId, dto.Tx.Amount.toStruct())
 	if err != nil {
 		return nil, err
 	}

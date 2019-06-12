@@ -60,39 +60,44 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				t.Logf("%+v", mscInfo)
+				t.Logf("%s", mscInfo)
 			case sdk.MosaicSupplyChange:
 				tran := val.(*sdk.MosaicSupplyChangeTransaction)
 
-				if tran.MosaicId == nil {
+				if tran.BlockchainId == nil {
 					t.Logf("empty MosaicId")
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
+				mscInfo, err := serv.Resolve.GetMosaicInfoByBlockchainId(ctx, tran.BlockchainId)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				t.Logf("%+v", mscInfo)
+				t.Logf("%s", mscInfo)
 			case sdk.Transfer:
 				tran := val.(*sdk.TransferTransaction)
+
 				if tran.Mosaics == nil {
 					t.Logf("empty Mosaics")
 					t.Log(tran)
 					continue
 				}
-				mosaicIDs := make([]*sdk.MosaicId, len(tran.Mosaics))
-				for _, val := range tran.Mosaics {
-					mosaicIDs = append(mosaicIDs, val.MosaicId)
-				}
-				mscInfoArr, err := serv.Mosaic.GetMosaicInfos(ctx, mosaicIDs)
-				if err != nil {
-					t.Fatal(err)
+
+				BlockchainIDs := make([]sdk.BlockchainId, len(tran.Mosaics))
+				for i, val := range tran.Mosaics {
+					BlockchainIDs[i] = val.BlockchainId
 				}
 
-				for _, mscInfo := range mscInfoArr {
-					t.Logf("%+v", mscInfo)
+				if len(BlockchainIDs) > 0 {
+					mscInfoArr, err := serv.Resolve.GetMosaicInfosByBlockchainIds(ctx, BlockchainIDs...)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					for _, mscInfo := range mscInfoArr {
+						t.Logf("%s", mscInfo)
+					}
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
@@ -101,7 +106,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				t.Logf("%#v", nsInfo)
+				t.Logf("%s", nsInfo)
 			default:
 				t.Log(val)
 			}

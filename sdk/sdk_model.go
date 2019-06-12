@@ -19,6 +19,7 @@ type BlockchainIdType uint8
 
 type BlockchainId interface {
 	BlockchainInt64
+	fmt.Stringer
 	Type() BlockchainIdType
 	Id() uint64
 }

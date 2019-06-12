@@ -36,7 +36,7 @@ var transaction = &TransferTransaction{
 		},
 	},
 	Mosaics: []*Mosaic{
-		{NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()), amountDTO{10000000, 0}.toStruct()},
+		NewMosaicNoCheck(NewNamespaceIdNoCheck(uint64DTO{3646934825, 3576016193}.toUint64()), amountDTO{10000000, 0}.toStruct()),
 	},
 	Recipient: &Address{MijinTest, "SBJUINHAC3FKCMVLL2WHBQFPPXYEHOMQY6E2SPVR"},
 	Message:   NewPlainMessage(""),
@@ -74,8 +74,8 @@ const transactionJson = `
       "mosaics":[
          {
             "id":[
-               298950589,
-               1817567325
+               3646934825,
+               3576016193
             ],
             "amount":[
                10000000,
@@ -611,10 +611,7 @@ func TestTransferTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
 		[]*Mosaic{
-			{
-				MosaicId: NewMosaicIdNoCheck(95442763262823),
-				Amount:   NewAmount(100),
-			},
+			NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), NewAmount(100)),
 		},
 		NewPlainMessage(""),
 		MijinTest,
@@ -634,7 +631,7 @@ func TestTransferTransactionToAggregate(t *testing.T) {
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{{NewMosaicIdNoCheck(95442763262823), NewAmount(100)}},
+		[]*Mosaic{NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), NewAmount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -657,7 +654,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{{NewMosaicIdNoCheck(95442763262823), NewAmount(100)}},
+		[]*Mosaic{NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), NewAmount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)

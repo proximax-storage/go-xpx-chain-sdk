@@ -22,7 +22,7 @@ var (
 			"F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
 		},
 		Mosaics: []*Mosaic{
-			{MosaicId: NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()), Amount: amountDTO{3863990592, 95248}.toStruct()},
+			NewMosaicNoCheck(NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()), amountDTO{3863990592, 95248}.toStruct()),
 		},
 		Reputation: 0.9,
 	}

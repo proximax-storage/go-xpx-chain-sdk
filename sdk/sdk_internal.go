@@ -40,6 +40,18 @@ func (dto amountDTO) toStruct() *Amount {
 	return NewAmount(uint64DTO(dto).toUint64())
 }
 
+type blockchainIdDTO uint64DTO
+
+func (dto blockchainIdDTO) toStruct() (BlockchainId, error) {
+	id := uint64DTO(dto).toUint64()
+
+	if hasBits(id, NamespaceBit) {
+		return (*namespaceIdDTO)(&dto).toStruct()
+	} else {
+		return (*mosaicIdDTO)(&dto).toStruct()
+	}
+}
+
 type heightDTO uint64DTO
 
 func (dto heightDTO) toStruct() *Height {

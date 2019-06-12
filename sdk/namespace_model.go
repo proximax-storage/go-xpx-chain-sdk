@@ -22,7 +22,7 @@ type NamespaceId struct {
 }
 
 func NewNamespaceId(id uint64) (*NamespaceId, error) {
-	if id != 0 && id&NamespaceBit == 0 {
+	if id != 0 && !hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitNamespaceId
 	}
 

@@ -79,7 +79,6 @@ type namespaceAliasDTO struct {
 
 // namespaceDTO temporary struct for reading responce & fill NamespaceInfo
 type namespaceDTO struct {
-	NamespaceId  namespaceIdDTO
 	Type         int
 	Depth        int
 	Level0       *namespaceIdDTO
@@ -101,11 +100,6 @@ type namespaceInfoDTO struct {
 
 //toStruct create & return new NamespaceInfo from namespaceInfoDTO
 func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
-	nsId, err := ref.Namespace.NamespaceId.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
 	pubAcc, err := NewAccountFromPublicKey(ref.Namespace.Owner, NetworkType(ref.Namespace.Type))
 	if err != nil {
 		return nil, err
@@ -121,13 +115,17 @@ func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
 		return nil, err
 	}
 
+	if len(levels) == 0 {
+		return nil, ErrNilNamespaceId
+	}
+
 	alias, err := NewNamespaceAlias(ref.Namespace.Alias)
 	if err != nil {
 		return nil, err
 	}
 
 	ns := &NamespaceInfo{
-		NamespaceId: nsId,
+		NamespaceId: levels[len(levels)-1],
 		Active:      ref.Meta.Active,
 		TypeSpace:   NamespaceType(ref.Namespace.Type),
 		Depth:       ref.Namespace.Depth,
