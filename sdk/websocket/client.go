@@ -161,7 +161,7 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 				if err := c.conn.Close(); err != nil {
 					panic(err)
 				}
-				c.conn = nil
+				//c.conn = nil
 			}
 			return
 		case msg := <-messagesChan:
