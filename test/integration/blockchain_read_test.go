@@ -7,7 +7,6 @@ package integration
 import (
 	"context"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"math/big"
 	"testing"
 )
 
@@ -30,7 +29,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 
 	for i := uint64(1); i < h.Uint64() && i <= iter; i++ {
 
-		h := big.NewInt(int64(i))
+		h := sdk.NewHeight(i)
 		trans, err := serv.Blockchain.GetBlockTransactions(ctx, h)
 		if err != nil {
 			t.Fatal(err)

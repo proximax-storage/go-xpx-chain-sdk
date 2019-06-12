@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/xpx-crypto-go"
-	"math/big"
 	"strings"
 )
 
@@ -99,9 +98,9 @@ func (a *AccountProperties) String() string {
 
 type AccountInfo struct {
 	Address         *Address
-	AddressHeight   *big.Int
+	AddressHeight   *Height
 	PublicKey       string
-	PublicKeyHeight *big.Int
+	PublicKeyHeight *Height
 	AccountType     AccountType
 	LinkedAccount   *PublicAccount
 	Mosaics         []*Mosaic

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
-	"math/big"
 	"net/http"
 	"time"
 )
@@ -188,7 +187,7 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 		panic(err)
 	}
 
-	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), big.NewInt(240), signedBondedTx, networkType)
+	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), sdk.NewDuration(240), signedBondedTx, networkType)
 	if err != nil {
 		panic(err)
 	}

@@ -13,16 +13,16 @@ import (
 var (
 	account = &AccountInfo{
 		Address:         &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
-		AddressHeight:   uint64DTO{1, 0}.toBigInt(),
+		AddressHeight:   heightDTO{1, 0}.toStruct(),
 		PublicKey:       "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
-		PublicKeyHeight: uint64DTO{0, 0}.toBigInt(),
+		PublicKeyHeight: heightDTO{0, 0}.toStruct(),
 		AccountType:     MainAccount,
 		LinkedAccount: &PublicAccount{
 			&Address{Type: MijinTest, Address: "SDYVPENRSMSGU24XSSCQPHKKWYUNKYFDLAVTUMMS"},
 			"F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
 		},
 		Mosaics: []*Mosaic{
-			{MosaicId: bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt()), Amount: uint64DTO{3863990592, 95248}.toBigInt()},
+			{MosaicId: NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()), Amount: amountDTO{3863990592, 95248}.toStruct()},
 		},
 		Reputation: 0.9,
 	}
@@ -30,10 +30,10 @@ var (
 	accountProperties = &AccountProperties{
 		Address:            &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
 		AllowedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
-		AllowedMosaicId:    []*MosaicId{bigIntToMosaicId(uint64DTO{1486560344, 659392627}.toBigInt())},
+		AllowedMosaicId:    []*MosaicId{NewMosaicIdNoCheck(uint64DTO{1486560344, 659392627}.toUint64())},
 		AllowedEntityTypes: []TransactionType{LinkAccount},
 		BlockedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
-		BlockedMosaicId:    []*MosaicId{bigIntToMosaicId(uint64DTO{1486560344, 659392627}.toBigInt())},
+		BlockedMosaicId:    []*MosaicId{NewMosaicIdNoCheck(uint64DTO{1486560344, 659392627}.toUint64())},
 		BlockedEntityTypes: []TransactionType{LinkAccount},
 	}
 
@@ -61,8 +61,8 @@ const (
       "mosaics":[  
          {  
             "id":[  
-               3646934825,
-               3576016193
+               298950589,
+               1817567325
             ],
             "amount":[  
                3863990592,

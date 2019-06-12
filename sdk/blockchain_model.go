@@ -6,22 +6,21 @@ package sdk
 
 import (
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"math/big"
 )
 
 type BlockInfo struct {
 	NetworkType
 	Hash                  string
 	GenerationHash        string
-	TotalFee              *big.Int
+	TotalFee              *Amount
 	NumTransactions       uint64
 	Signature             string
 	Signer                *PublicAccount
 	Version               uint8
 	Type                  uint64
-	Height                *big.Int
-	Timestamp             *big.Int
-	Difficulty            *big.Int
+	Height                *Height
+	Timestamp             *Timestamp
+	Difficulty            *Difficulty
 	FeeMultiplier         uint32
 	PreviousBlockHash     string
 	BlockTransactionsHash string

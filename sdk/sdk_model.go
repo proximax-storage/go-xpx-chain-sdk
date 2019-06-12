@@ -7,55 +7,20 @@ package sdk
 import (
 	"encoding/binary"
 	"fmt"
-	"math/big"
-	"strings"
+	"time"
 )
 
-type uint64DTO [2]uint32
-
-func (dto uint64DTO) toBigInt() *big.Int {
-	if dto[0] == 0 && dto[1] == 0 {
-		return &big.Int{}
-	}
-	var int big.Int
-	b := make([]byte, len(dto)*4)
-	binary.BigEndian.PutUint32(b[:len(dto)*2], dto[1])
-	binary.BigEndian.PutUint32(b[len(dto)*2:], dto[0])
-	int.SetBytes(b)
-	return &int
+type BlockchainInt64 interface {
+	ToArray() [2]uint32
+	Bytes() []byte
 }
 
-type uint64DTOs []*uint64DTO
+type BlockchainIdType uint8
 
-func (dto uint64DTOs) toBigInts() []*big.Int {
-	result := make([]*big.Int, len(dto))
-
-	for i, b := range dto {
-		result[i] = b.toBigInt()
-	}
-
-	return result
-}
-
-func intToHex(u uint32) string {
-	return fmt.Sprintf("%08x", u)
-}
-
-// analog JAVA Uint64.bigIntegerToHex
-func bigIntegerToHex(id *big.Int) string {
-	u := fromBigInt(id)
-	return strings.ToUpper(intToHex(u[1]) + intToHex(u[0]))
-}
-
-func fromBigInt(int *big.Int) []uint32 {
-	if int == nil {
-		return []uint32{0, 0}
-	}
-
-	var u64 = uint64(int.Int64())
-	l := uint32(u64 & 0xFFFFFFFF)
-	r := uint32(u64 >> 32)
-	return []uint32{l, r}
+type BlockchainId interface {
+	BlockchainInt64
+	Type() BlockchainIdType
+	Id() uint64
 }
 
 type TransactionOrder string
@@ -69,4 +34,116 @@ type AccountTransactionsOption struct {
 	PageSize int              `url:"pageSize,omitempty"`
 	Id       string           `url:"id,omitempty"`
 	Ordering TransactionOrder `url:"ordering,omitempty"`
+}
+
+type BaseInt64 uint64
+
+func (m BaseInt64) String() string {
+	return fmt.Sprintf("%d", m.Int64())
+}
+
+func (m BaseInt64) Int64() int64 {
+	return int64(m)
+}
+
+func (m BaseInt64) Uint64() uint64 {
+	return uint64(m)
+}
+
+func (m BaseInt64) ToArray() [2]uint32 {
+	return uint64ToArray(m.Uint64())
+}
+
+func (m BaseInt64) Bytes() []byte {
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, m.Uint64())
+	return bytes
+}
+
+type Amount struct {
+	BaseInt64
+}
+
+func NewAmount(id uint64) *Amount {
+	amount := Amount{BaseInt64(id)}
+	return &amount
+}
+
+type Height struct {
+	BaseInt64
+}
+
+func NewHeight(id uint64) *Height {
+	height := Height{BaseInt64(id)}
+	return &height
+}
+
+type Duration struct {
+	BaseInt64
+}
+
+func NewDuration(id uint64) *Duration {
+	duration := Duration{BaseInt64(id)}
+	return &duration
+}
+
+type Difficulty struct {
+	BaseInt64
+}
+
+func NewDifficulty(id uint64) *Difficulty {
+	difficulty := Difficulty{BaseInt64(id)}
+	return &difficulty
+}
+
+type ChainScore [2]uint64
+
+func (m *ChainScore) String() string {
+	return fmt.Sprintf("[ %d, %d ]", m[0], m[1])
+}
+
+func NewChainScore(scoreLow uint64, scoreHigh uint64) *ChainScore {
+	chainScore := ChainScore([2]uint64{scoreLow, scoreHigh})
+	return &chainScore
+}
+
+const TimestampNemesisBlockMilliseconds int64 = 1459468800 * 1000
+
+type BlockchainTimestamp struct {
+	BaseInt64
+}
+
+func NewBlockchainTimestamp(milliseconds int64) *BlockchainTimestamp {
+	timestamp := BlockchainTimestamp{BaseInt64(milliseconds)}
+	return &timestamp
+}
+
+func (t *BlockchainTimestamp) ToTimestamp() *Timestamp {
+	return NewTimestamp(int64(t.BaseInt64) + TimestampNemesisBlockMilliseconds)
+}
+
+type Timestamp struct {
+	time.Time
+}
+
+func NewTimestamp(milliseconds int64) *Timestamp {
+	return &Timestamp{time.Unix(0, milliseconds*int64(time.Millisecond))}
+}
+
+func (t *Timestamp) ToBlockchainTimestamp() *BlockchainTimestamp {
+	return NewBlockchainTimestamp((t.Time.UnixNano()/int64(time.Millisecond) - TimestampNemesisBlockMilliseconds))
+}
+
+type Deadline struct {
+	Timestamp
+}
+
+// Create deadline based on current time of system.
+func NewDeadline(delta time.Duration) *Deadline {
+	return &Deadline{Timestamp{time.Now().Add(delta)}}
+}
+
+// Create deadline from blockchain timestamp.
+func NewDeadlineFromBlockchainTimestamp(timestamp *BlockchainTimestamp) *Deadline {
+	return &Deadline{*timestamp.ToTimestamp()}
 }

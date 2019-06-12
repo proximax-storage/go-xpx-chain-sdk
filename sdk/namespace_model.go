@@ -10,19 +10,48 @@ import (
 	"fmt"
 	"github.com/json-iterator/go"
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"math/big"
 	"strings"
 	"unsafe"
 )
 
-type NamespaceId big.Int
+const NamespaceBlockchainIdType BlockchainIdType = 0
+const NamespaceBit uint64 = 1 << 63
 
-func NewNamespaceId(id *big.Int) (*NamespaceId, error) {
-	if id == nil {
-		return nil, ErrNilNamespaceId
+type NamespaceId struct {
+	BaseInt64
+}
+
+func NewNamespaceId(id uint64) (*NamespaceId, error) {
+	if id != 0 && id&NamespaceBit == 0 {
+		return nil, ErrWrongBitNamespaceId
 	}
 
-	return bigIntToNamespaceId(id), nil
+	return NewNamespaceIdNoCheck(id), nil
+}
+
+func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
+	namespaceId := NamespaceId{BaseInt64(id)}
+	return &namespaceId
+}
+
+func (m *NamespaceId) Type() BlockchainIdType {
+	return NamespaceBlockchainIdType
+}
+
+func (m *NamespaceId) Id() uint64 {
+	return uint64(m.BaseInt64)
+}
+
+func (m *NamespaceId) String() string {
+	return m.toHexString()
+}
+
+func (m *NamespaceId) toHexString() string {
+	return uint64ToHex(m.Id())
+}
+
+func (m *NamespaceId) Equals(id *NamespaceId) bool {
+	return *m == *id
 }
 
 // returns namespace id from passed namespace name
@@ -40,16 +69,8 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 			return nil, ErrInvalidNamespaceName
 		}
 
-		return bigIntToNamespaceId(list[l-1]), nil
+		return list[l-1], nil
 	}
-}
-
-func (m *NamespaceId) String() string {
-	return m.toHexString()
-}
-
-func (n *NamespaceId) toHexString() string {
-	return bigIntegerToHex(namespaceIdToBigInt(n))
 }
 
 type NamespaceIds struct {
@@ -128,7 +149,7 @@ func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
 
 		alias.address = a
 	case MosaicAliasType:
-		mosaicId, err := NewMosaicId(dto.MosaicId.toBigInt())
+		mosaicId, err := dto.MosaicId.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -176,8 +197,8 @@ type NamespaceInfo struct {
 	Alias       *NamespaceAlias
 	Parent      *NamespaceInfo
 	Owner       *PublicAccount
-	StartHeight *big.Int
-	EndHeight   *big.Int
+	StartHeight *Height
+	EndHeight   *Height
 }
 
 func (ref *NamespaceInfo) String() string {
@@ -215,7 +236,7 @@ func (n *NamespaceName) String() string {
 // to create root namespace pass namespace name in format like 'rootname'
 // to create child namespace pass namespace name in format like 'rootname.childname'
 // to create grand child namespace pass namespace name in format like 'rootname.childname.grandchildname'
-func GenerateNamespacePath(name string) ([]*big.Int, error) {
+func GenerateNamespacePath(name string) ([]*NamespaceId, error) {
 	parts := strings.Split(name, ".")
 
 	if len(parts) == 0 {
@@ -227,8 +248,8 @@ func GenerateNamespacePath(name string) ([]*big.Int, error) {
 	}
 
 	var (
-		namespaceId = big.NewInt(0)
-		path        = make([]*big.Int, 0)
+		namespaceId = NewNamespaceIdNoCheck(0)
+		path        = make([]*NamespaceId, 0)
 		err         error
 	)
 
@@ -237,7 +258,7 @@ func GenerateNamespacePath(name string) ([]*big.Int, error) {
 			return nil, ErrInvalidNamespaceName
 		}
 
-		if namespaceId, err = generateNamespaceId(part, (*big.Int)(namespaceId)); err != nil {
+		if namespaceId, err = generateNamespaceId(part, namespaceId); err != nil {
 			return nil, err
 		} else {
 			path = append(path, namespaceId)
@@ -251,9 +272,8 @@ func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	// 0x91 | namespaceId on 8 bytes | 16 bytes 0-pad = 25 bytes
 	a := fmt.Sprintf("%X", int(AliasAddress))
 
-	n := namespaceIdToBigInt(namespaceId).Uint64()
 	namespaceB := make([]byte, 8)
-	binary.LittleEndian.PutUint64(namespaceB, n)
+	binary.LittleEndian.PutUint64(namespaceB, namespaceId.Id())
 
 	a += hex.EncodeToString(namespaceB)
 	a += strings.Repeat("00", 16)

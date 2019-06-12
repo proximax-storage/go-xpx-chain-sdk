@@ -41,6 +41,7 @@ var (
 var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
 	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
+	ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
 	ErrNilMosaicAmount       = errors.New("amount must be not nil")
 	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
 	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
@@ -50,6 +51,7 @@ var (
 var (
 	ErrNamespaceTooManyPart = errors.New("too many parts")
 	ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
+	ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
 	ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
 	ErrInvalidNamespaceName = errors.New("namespace name is invalid")
 )

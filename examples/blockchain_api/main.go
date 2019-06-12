@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"math/big"
 )
 
 const (
@@ -46,7 +45,7 @@ func main() {
 	fmt.Printf("%s\n\n", chainScore)
 
 	// Get the Block by height
-	blockHeight, err := client.Blockchain.GetBlockByHeight(context.Background(), big.NewInt(9999))
+	blockHeight, err := client.Blockchain.GetBlockByHeight(context.Background(), sdk.NewHeight(9999))
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +53,7 @@ func main() {
 	fmt.Printf("%v\n\n", blockHeight)
 
 	// Get the Block Transactions
-	transactions, err := client.Blockchain.GetBlockTransactions(context.Background(), big.NewInt(1))
+	transactions, err := client.Blockchain.GetBlockTransactions(context.Background(), sdk.NewHeight(1))
 	if err != nil {
 		panic(err)
 	}

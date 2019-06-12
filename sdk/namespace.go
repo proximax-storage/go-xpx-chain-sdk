@@ -183,7 +183,7 @@ func (ref *NamespaceService) buildNamespaceHierarchy(ctx context.Context, nsInfo
 		return nil
 	}
 
-	if nsInfo.Parent.NamespaceId == nil || namespaceIdToBigInt(nsInfo.Parent.NamespaceId).Int64() == 0 {
+	if nsInfo.Parent.NamespaceId == nil || nsInfo.Parent.NamespaceId.Id() == 0 {
 		return nil
 	}
 

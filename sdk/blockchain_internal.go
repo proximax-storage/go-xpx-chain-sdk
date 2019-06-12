@@ -1,29 +1,27 @@
 package sdk
 
-import "math/big"
-
 type blockInfoDTO struct {
 	BlockMeta struct {
 		Hash            string    `json:"hash"`
 		GenerationHash  string    `json:"generationHash"`
-		TotalFee        uint64DTO `json:"totalFee"`
+		TotalFee        amountDTO `json:"totalFee"`
 		NumTransactions uint64    `json:"numTransactions"`
 		// MerkleTree      uint64DTO `json:"merkleTree"` is needed?
 	} `json:"meta"`
 	Block struct {
-		Signature             string    `json:"signature"`
-		Signer                string    `json:"signer"`
-		Version               uint64    `json:"version"`
-		Type                  uint64    `json:"type"`
-		Height                uint64DTO `json:"height"`
-		Timestamp             uint64DTO `json:"timestamp"`
-		Difficulty            uint64DTO `json:"difficulty"`
-		FeeMultiplier         uint32    `json:"feeMultiplier"`
-		PreviousBlockHash     string    `json:"previousBlockHash"`
-		BlockTransactionsHash string    `json:"blockTransactionsHash"`
-		BlockReceiptsHash     string    `json:"blockReceiptsHash"`
-		StateHash             string    `json:"stateHash"`
-		BeneficiaryPublicKey  string    `json:"beneficiaryPublicKey"`
+		Signature             string                 `json:"signature"`
+		Signer                string                 `json:"signer"`
+		Version               uint64                 `json:"version"`
+		Type                  uint64                 `json:"type"`
+		Height                heightDTO              `json:"height"`
+		Timestamp             blockchainTimestampDTO `json:"timestamp"`
+		Difficulty            difficultyDTO          `json:"difficulty"`
+		FeeMultiplier         uint32                 `json:"feeMultiplier"`
+		PreviousBlockHash     string                 `json:"previousBlockHash"`
+		BlockTransactionsHash string                 `json:"blockTransactionsHash"`
+		BlockReceiptsHash     string                 `json:"blockReceiptsHash"`
+		StateHash             string                 `json:"stateHash"`
+		BeneficiaryPublicKey  string                 `json:"beneficiaryPublicKey"`
 	} `json:"block"`
 }
 
@@ -53,15 +51,15 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 		NetworkType:           nt,
 		Hash:                  dto.BlockMeta.Hash,
 		GenerationHash:        dto.BlockMeta.GenerationHash,
-		TotalFee:              dto.BlockMeta.TotalFee.toBigInt(),
+		TotalFee:              dto.BlockMeta.TotalFee.toStruct(),
 		NumTransactions:       dto.BlockMeta.NumTransactions,
 		Signature:             dto.Block.Signature,
 		Signer:                pa,
 		Version:               v,
 		Type:                  dto.Block.Type,
-		Height:                dto.Block.Height.toBigInt(),
-		Timestamp:             dto.Block.Timestamp.toBigInt(),
-		Difficulty:            dto.Block.Difficulty.toBigInt(),
+		Height:                dto.Block.Height.toStruct(),
+		Timestamp:             dto.Block.Timestamp.toStruct().ToTimestamp(),
+		Difficulty:            dto.Block.Difficulty.toStruct(),
 		FeeMultiplier:         dto.Block.FeeMultiplier,
 		PreviousBlockHash:     dto.Block.PreviousBlockHash,
 		BlockTransactionsHash: dto.Block.BlockTransactionsHash,
@@ -77,8 +75,8 @@ type chainScoreDTO struct {
 	ScoreLow  uint64DTO `json:"scoreLow"`
 }
 
-func (dto *chainScoreDTO) toStruct() *big.Int {
-	return uint64DTO{uint32(dto.ScoreLow.toBigInt().Uint64()), uint32(dto.ScoreHigh.toBigInt().Uint64())}.toBigInt()
+func (dto *chainScoreDTO) toStruct() *ChainScore {
+	return NewChainScore(dto.ScoreLow.toUint64(), dto.ScoreHigh.toUint64())
 }
 
 type blockInfoDTOs []*blockInfoDTO

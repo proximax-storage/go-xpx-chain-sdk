@@ -78,14 +78,14 @@ type addressMetadataInfoDTO struct {
 type mosaicMetadataInfoDTO struct {
 	Metadata struct {
 		metadataInfoDTO
-		MosaicId uint64DTO `json:"metadataId"`
+		MosaicId mosaicIdDTO `json:"metadataId"`
 	}
 }
 
 type namespaceMetadataInfoDTO struct {
 	Metadata struct {
 		metadataInfoDTO
-		NamespaceId uint64DTO `json:"metadataId"`
+		NamespaceId namespaceIdDTO `json:"metadataId"`
 	}
 }
 
@@ -135,7 +135,7 @@ func (ref *mosaicMetadataInfoDTO) toStruct(networkType NetworkType) (*MosaicMeta
 		return nil, err
 	}
 
-	mosaicId, err := NewMosaicId(metadata.MosaicId.toBigInt())
+	mosaicId, err := metadata.MosaicId.toStruct()
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (ref *namespaceMetadataInfoDTO) toStruct(networkType NetworkType) (*Namespa
 		return nil, err
 	}
 
-	namespaceId, err := NewNamespaceId(metadata.NamespaceId.toBigInt())
+	namespaceId, err := metadata.NamespaceId.toStruct()
 	if err != nil {
 		return nil, err
 	}

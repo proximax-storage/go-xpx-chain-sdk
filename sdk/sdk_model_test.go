@@ -6,56 +6,31 @@ package sdk
 
 import (
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
+	"time"
 )
 
-func TestUint64DTO_big(t *testing.T) {
-	bInt, ok := (&big.Int{}).SetString("9543417332823", 10)
-	assert.True(t, ok)
-	bIntArr := fromBigInt(bInt)
-	want := []uint32{1111, 2222}
-	assert.Equal(t, want, bIntArr)
+func TestBaseInt64_ToArray(t *testing.T) {
+	base := BaseInt64(9543417332823)
+	want := [2]uint32{1111, 2222}
+	assert.Equal(t, want, base.ToArray())
 
-	bInt, ok = (&big.Int{}).SetString("429492434645049", 10)
-	assert.True(t, ok)
-	bIntArr = fromBigInt(bInt)
-	want = []uint32{12345, 99999}
-	assert.Equal(t, want, bIntArr)
+	base = BaseInt64(429492434645049)
+	want = [2]uint32{12345, 99999}
+	assert.Equal(t, want, base.ToArray())
 }
-func TestUint64DTO_GetBigInteger(t *testing.T) {
-	bInt := uint64DTO{0, 0}.toBigInt()
-	if bInt.Uint64() != 0 {
-		t.Error("wrong result convert nulled DTO")
-	}
-	bInt = uint64DTO{1, 0}.toBigInt()
-	if bInt.Uint64() != 1 {
-		t.Error("wrong result convert DTO {1, 0}")
-	}
-	bInt = uint64DTO{100, 0}.toBigInt()
-	if bInt.Uint64() != 100 {
-		t.Error("wrong result convert DTO {100, 0}")
-	}
-	bInt = uint64DTO{1000, 0}.toBigInt()
-	if bInt.Uint64() != 1000 {
-		t.Error("wrong result convert DTO {1000, 0}")
-	}
-	bInt = uint64DTO{10000, 0}.toBigInt()
-	if bInt.Uint64() != 10000 {
-		t.Error("wrong result convert DTO {10000, 0}")
-	}
 
-	//todo: check algoritm set BigInteger from string - test don't work
-	bInt = uint64DTO{1094650402, 17}.toBigInt()
-	bIntArr := fromBigInt(bInt)
-	want := []uint32{1094650402, 17}
-	if bIntArr[0] != want[0] || bIntArr[1] != want[1] {
-		t.Errorf("wrong result convert DTO {12345, 99999} = %v, expected - %v", bIntArr, want)
-	}
-	bInt = uint64DTO{1111, 2222}.toBigInt()
-	bIntArr = fromBigInt(bInt)
-	want = []uint32{1111, 2222}
-	if bIntArr[0] != want[0] || bIntArr[1] != want[1] {
-		t.Errorf("wrong result convert DTO {1111, 2222} = %v, expected - %v", bInt, want)
-	}
+func TestBaseInt64_Bytes(t *testing.T) {
+	base := BaseInt64(9543417332823)
+	assert.Equal(t, []byte{0x57, 0x4, 0x0, 0x0, 0xae, 0x8, 0x0, 0x0}, base.Bytes())
+}
+
+func TestBlockchainTimestampConversion(t *testing.T) {
+	deadline := NewDeadline(time.Hour)
+	assert.Equal(t, deadline.Second(), deadline.ToBlockchainTimestamp().ToTimestamp().Second())
+}
+
+func TestNewDeadlineFromBlockchainTimestamp(t *testing.T) {
+	deadline := NewDeadlineFromBlockchainTimestamp(NewBlockchainTimestamp(0))
+	assert.Equal(t, time.Unix(0, TimestampNemesisBlockMilliseconds*int64(time.Millisecond)).String(), deadline.String())
 }
