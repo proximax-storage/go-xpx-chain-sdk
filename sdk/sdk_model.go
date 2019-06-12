@@ -83,7 +83,7 @@ type Duration struct {
 	BaseInt64
 }
 
-func NewDuration(id uint64) *Duration {
+func NewDuration(id int64) *Duration {
 	duration := Duration{BaseInt64(id)}
 	return &duration
 }

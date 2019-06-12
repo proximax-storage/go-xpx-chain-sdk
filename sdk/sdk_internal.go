@@ -19,6 +19,10 @@ func (dto uint64DTO) toUint64() uint64 {
 	return binary.BigEndian.Uint64(b)
 }
 
+func (dto uint64DTO) toInt64() int64 {
+	return int64(dto.toUint64())
+}
+
 func uint32ToHex(u uint32) string {
 	return fmt.Sprintf("%08x", u)
 }
@@ -61,7 +65,7 @@ func (dto heightDTO) toStruct() *Height {
 type durationDTO uint64DTO
 
 func (dto durationDTO) toStruct() *Duration {
-	return NewDuration(uint64DTO(dto).toUint64())
+	return NewDuration(uint64DTO(dto).toInt64())
 }
 
 type difficultyDTO uint64DTO

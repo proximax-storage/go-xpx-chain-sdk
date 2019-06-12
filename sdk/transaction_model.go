@@ -2822,7 +2822,7 @@ func (dto mosaicDefinitonTransactionPropertiesDTO) toStruct() *MosaicProperties 
 	flags := dto[0].Value.toUint64()
 	duration := NewDuration(0)
 	if len(dto) == 3 {
-		duration = NewDuration(dto[2].Value.toUint64())
+		duration = NewDuration(dto[2].Value.toInt64())
 	}
 	return NewMosaicProperties(
 		hasBits(flags, Supply_Mutable),
