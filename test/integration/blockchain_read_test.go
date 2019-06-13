@@ -63,12 +63,12 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 			case sdk.MosaicSupplyChange:
 				tran := val.(*sdk.MosaicSupplyChangeTransaction)
 
-				if tran.BlockchainId == nil {
+				if tran.AssetId == nil {
 					t.Logf("empty MosaicId")
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Resolve.GetMosaicInfoByBlockchainId(ctx, tran.BlockchainId)
+				mscInfo, err := serv.Resolve.GetMosaicInfoByAssetId(ctx, tran.AssetId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -83,13 +83,13 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					continue
 				}
 
-				BlockchainIDs := make([]sdk.BlockchainId, len(tran.Mosaics))
+				assetIds := make([]sdk.AssetId, len(tran.Mosaics))
 				for i, val := range tran.Mosaics {
-					BlockchainIDs[i] = val.BlockchainId
+					assetIds[i] = val.AssetId
 				}
 
-				if len(BlockchainIDs) > 0 {
-					mscInfoArr, err := serv.Resolve.GetMosaicInfosByBlockchainIds(ctx, BlockchainIDs...)
+				if len(assetIds) > 0 {
+					mscInfoArr, err := serv.Resolve.GetMosaicInfosByAssetIds(ctx, assetIds...)
 					if err != nil {
 						t.Fatal(err)
 					}

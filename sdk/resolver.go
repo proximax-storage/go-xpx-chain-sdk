@@ -16,15 +16,14 @@ type ResolverService struct {
 	MosaicService    *MosaicService
 }
 
-// returns MosaicInfo from blockchain identifier
-func (ref *ResolverService) GetMosaicInfoByBlockchainId(ctx context.Context, blockchainId BlockchainId) (*MosaicInfo, error) {
-	if blockchainId == nil {
-		return nil, ErrNilBlockchainId
+func (ref *ResolverService) GetMosaicInfoByAssetId(ctx context.Context, assetId AssetId) (*MosaicInfo, error) {
+	if assetId == nil {
+		return nil, ErrNilAssetId
 	}
 
-	switch blockchainId.Type() {
-	case NamespaceBlockchainIdType:
-		namespaceId := blockchainId.(*NamespaceId)
+	switch assetId.Type() {
+	case NamespaceAssetIdType:
+		namespaceId := assetId.(*NamespaceId)
 		namespaceInfo, err := ref.NamespaceService.GetNamespaceInfo(ctx, namespaceId)
 
 		if err != nil {
@@ -36,37 +35,36 @@ func (ref *ResolverService) GetMosaicInfoByBlockchainId(ctx context.Context, blo
 		}
 
 		return ref.MosaicService.GetMosaicInfo(ctx, namespaceInfo.Alias.MosaicId())
-	case MosaicBlockchainIdType:
-		mosaicId := blockchainId.(*MosaicId)
+	case MosaicAssetIdType:
+		mosaicId := assetId.(*MosaicId)
 		return ref.MosaicService.GetMosaicInfo(ctx, mosaicId)
 	}
 
 	return nil, ErrUnknownBlockchainType
 }
 
-// returns an array of MosaicInfo from blockchain identifiers
-func (ref *ResolverService) GetMosaicInfosByBlockchainIds(ctx context.Context, blockchainIds ...BlockchainId) ([]*MosaicInfo, error) {
-	if len(blockchainIds) == 0 {
-		return nil, ErrEmptyBlockchainIds
+func (ref *ResolverService) GetMosaicInfosByAssetIds(ctx context.Context, assetIds ...AssetId) ([]*MosaicInfo, error) {
+	if len(assetIds) == 0 {
+		return nil, ErrEmptyAssetIds
 	}
 
 	var err error = nil
 
-	mosaicInfos := make([]*MosaicInfo, len(blockchainIds))
+	mosaicInfos := make([]*MosaicInfo, len(assetIds))
 	namespaceIds := make([]*NamespaceId, 0)
 	mosaicIds := make([]*MosaicId, 0)
 
-	for _, blockchainId := range blockchainIds {
-		if blockchainId == nil {
-			return nil, ErrNilBlockchainId
+	for _, assetId := range assetIds {
+		if assetId == nil {
+			return nil, ErrNilAssetId
 		}
 
-		switch blockchainId.Type() {
-		case NamespaceBlockchainIdType:
-			namespaceId := blockchainId.(*NamespaceId)
+		switch assetId.Type() {
+		case NamespaceAssetIdType:
+			namespaceId := assetId.(*NamespaceId)
 			namespaceIds = append(namespaceIds, namespaceId)
-		case MosaicBlockchainIdType:
-			mosaicId := blockchainId.(*MosaicId)
+		case MosaicAssetIdType:
+			mosaicId := assetId.(*MosaicId)
 			mosaicIds = append(mosaicIds, mosaicId)
 		}
 	}
@@ -80,7 +78,7 @@ func (ref *ResolverService) GetMosaicInfosByBlockchainIds(ctx context.Context, b
 	}
 
 	for _, namespaceId := range namespaceIds {
-		mosaicInfo, err := ref.GetMosaicInfoByBlockchainId(ctx, namespaceId)
+		mosaicInfo, err := ref.GetMosaicInfoByAssetId(ctx, namespaceId)
 
 		if err != nil {
 			return nil, err

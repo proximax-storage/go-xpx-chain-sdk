@@ -36,8 +36,8 @@ func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
 	return &namespaceId
 }
 
-func (m *NamespaceId) Type() BlockchainIdType {
-	return NamespaceBlockchainIdType
+func (m *NamespaceId) Type() AssetIdType {
+	return NamespaceAssetIdType
 }
 
 func (m *NamespaceId) Id() uint64 {
@@ -52,7 +52,7 @@ func (m *NamespaceId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *NamespaceId) Equals(id BlockchainId) bool {
+func (m *NamespaceId) Equals(id AssetId) bool {
 	return m.Id() == id.Id()
 }
 
@@ -79,7 +79,6 @@ type NamespaceIds struct {
 	List []*NamespaceId
 }
 
-// TODO is it should be exported?
 func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	buf = []byte(`{"namespaceIds": [`)
 
@@ -96,12 +95,10 @@ func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-// TODO is it should be exported?
 func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool {
 	return len((*NamespaceIds)(ptr).List) == 0
 }
 
-// TODO is it should be exported?
 func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	if (*NamespaceIds)(ptr) == nil {
 		ptr = (unsafe.Pointer)(&NamespaceIds{})
@@ -124,7 +121,6 @@ func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	}
 }
 
-// TODO is it should be exported?
 func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 	buf, err := (*NamespaceIds)(ptr).MarshalJSON()
 	if err == nil {
@@ -139,31 +135,6 @@ type NamespaceAlias struct {
 	mosaicId *MosaicId
 	address  *Address
 	Type     AliasType
-}
-
-// TODO is it should be exported with not exported type as argument?
-func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
-	alias := NamespaceAlias{}
-
-	alias.Type = dto.Type
-
-	switch alias.Type {
-	case AddressAliasType:
-		a, err := NewAddressFromBase32(dto.Address)
-		if err != nil {
-			return nil, err
-		}
-
-		alias.address = a
-	case MosaicAliasType:
-		mosaicId, err := dto.MosaicId.toStruct()
-		if err != nil {
-			return nil, err
-		}
-		alias.mosaicId = mosaicId
-	}
-
-	return &alias, nil
 }
 
 func (ref *NamespaceAlias) Address() *Address {

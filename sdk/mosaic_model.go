@@ -27,8 +27,8 @@ func NewMosaicIdNoCheck(id uint64) *MosaicId {
 	return &mosaicId
 }
 
-func (m *MosaicId) Type() BlockchainIdType {
-	return MosaicBlockchainIdType
+func (m *MosaicId) Type() AssetIdType {
+	return MosaicAssetIdType
 }
 
 func (m *MosaicId) Id() uint64 {
@@ -43,7 +43,7 @@ func (m *MosaicId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *MosaicId) Equals(id BlockchainId) bool {
+func (m *MosaicId) Equals(id AssetId) bool {
 	return m.Id() == id.Id()
 }
 
@@ -57,33 +57,31 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	BlockchainId BlockchainId
-	Amount       Amount
+	AssetId AssetId
+	Amount  Amount
 }
 
 // returns a Mosaic for passed MosaicId and amount
-// TODO
-func NewMosaic(blockchainId BlockchainId, amount Amount) (*Mosaic, error) {
-	if blockchainId == nil {
-		return nil, ErrNilBlockchainId
+func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
+	if assetId == nil {
+		return nil, ErrNilAssetId
 	}
 
-	return NewMosaicNoCheck(blockchainId, amount), nil
+	return NewMosaicNoCheck(assetId, amount), nil
 }
 
 // returns a Mosaic for passed MosaicId and amount without validation of parameters
-// TODO
-func NewMosaicNoCheck(blockchainId BlockchainId, amount Amount) *Mosaic {
+func NewMosaicNoCheck(assetId AssetId, amount Amount) *Mosaic {
 	return &Mosaic{
-		BlockchainId: blockchainId,
-		Amount:       amount,
+		AssetId: assetId,
+		Amount:  amount,
 	}
 }
 
 func (m *Mosaic) String() string {
 	return str.StructToString(
 		"MosaicId",
-		str.NewField("BlockchainId", str.StringPattern, m.BlockchainId),
+		str.NewField("AssetId", str.StringPattern, m.AssetId),
 		str.NewField("Amount", str.StringPattern, m.Amount),
 	)
 }

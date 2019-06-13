@@ -57,17 +57,17 @@ func generateMosaicId(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 }
 
 type mosaicDTO struct {
-	BlockchainId blockchainIdDTO `json:"id"`
-	Amount       uint64DTO       `json:"amount"`
+	AssetId assetIdDTO `json:"id"`
+	Amount  uint64DTO  `json:"amount"`
 }
 
 func (dto *mosaicDTO) toStruct() (*Mosaic, error) {
-	blockchainId, err := dto.BlockchainId.toStruct()
+	assetId, err := dto.AssetId.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewMosaic(blockchainId, dto.Amount.toStruct())
+	return NewMosaic(assetId, dto.Amount.toStruct())
 }
 
 type mosaicPropertiesDTO []uint64DTO

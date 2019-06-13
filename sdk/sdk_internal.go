@@ -38,9 +38,9 @@ func uint64ToArray(int uint64) [2]uint32 {
 	return [2]uint32{l, r}
 }
 
-type blockchainIdDTO uint64DTO
+type assetIdDTO uint64DTO
 
-func (dto blockchainIdDTO) toStruct() (BlockchainId, error) {
+func (dto assetIdDTO) toStruct() (AssetId, error) {
 	id := uint64DTO(dto).toUint64()
 
 	if hasBits(id, NamespaceBit) {

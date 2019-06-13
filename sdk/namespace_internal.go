@@ -77,6 +77,30 @@ type namespaceAliasDTO struct {
 	Type     AliasType
 }
 
+func (dto *namespaceAliasDTO) toStruct() (*NamespaceAlias, error) {
+	alias := NamespaceAlias{}
+
+	alias.Type = dto.Type
+
+	switch alias.Type {
+	case AddressAliasType:
+		a, err := NewAddressFromBase32(dto.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		alias.address = a
+	case MosaicAliasType:
+		mosaicId, err := dto.MosaicId.toStruct()
+		if err != nil {
+			return nil, err
+		}
+		alias.mosaicId = mosaicId
+	}
+
+	return &alias, nil
+}
+
 // namespaceDTO temporary struct for reading responce & fill NamespaceInfo
 type namespaceDTO struct {
 	Type         int
@@ -119,7 +143,7 @@ func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
 		return nil, ErrNilNamespaceId
 	}
 
-	alias, err := NewNamespaceAlias(ref.Namespace.Alias)
+	alias, err := ref.Namespace.Alias.toStruct()
 	if err != nil {
 		return nil, err
 	}

@@ -15,20 +15,20 @@ type blockchainInt64 interface {
 	toLittleEndian() []byte
 }
 
-type BlockchainIdType uint8
+type AssetIdType uint8
 
-// BlockchainIdType enums
+// AssetIdType enums
 const (
-	NamespaceBlockchainIdType BlockchainIdType = iota
-	MosaicBlockchainIdType
+	NamespaceAssetIdType AssetIdType = iota
+	MosaicAssetIdType
 )
 
-type BlockchainId interface {
+type AssetId interface {
 	blockchainInt64
 	fmt.Stringer
-	Type() BlockchainIdType
+	Type() AssetIdType
 	Id() uint64
-	Equals(BlockchainId) bool
+	Equals(AssetId) bool
 }
 
 type TransactionOrder string

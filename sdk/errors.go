@@ -39,8 +39,8 @@ var (
 
 // Common errors
 var (
-	ErrNilBlockchainId       = errors.New("blockchainId must not be nil")
-	ErrEmptyBlockchainIds    = errors.New("list blockchain ids must not by empty")
+	ErrNilAssetId            = errors.New("assetId must not be nil")
+	ErrEmptyAssetIds         = errors.New("list blockchain ids must not by empty")
 	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
 )
 

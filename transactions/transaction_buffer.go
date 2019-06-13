@@ -8,7 +8,6 @@ package transactions
 
 import "github.com/google/flatbuffers/go"
 
-// TODO is it should be exported? (and all the following)
 func TransactionBufferAddSize(builder *flatbuffers.Builder, size int) {
 	builder.PrependUint32Slot(0, uint32(size), 0)
 }
