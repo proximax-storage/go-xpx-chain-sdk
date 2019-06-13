@@ -42,7 +42,6 @@ var (
 	ErrNilBlockchainId       = errors.New("blockchainId must not be nil")
 	ErrEmptyBlockchainIds    = errors.New("list blockchain ids must not by empty")
 	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
-	ErrNilAmount             = errors.New("amount must be not nil")
 )
 
 // Mosaic errors
