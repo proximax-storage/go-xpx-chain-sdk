@@ -9,10 +9,8 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
-const MosaicBlockchainIdType BlockchainIdType = 1
-
 type MosaicId struct {
-	BaseInt64
+	baseInt64
 }
 
 func NewMosaicId(id uint64) (*MosaicId, error) {
@@ -23,7 +21,7 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 }
 
 func NewMosaicIdNoCheck(id uint64) *MosaicId {
-	mosaicId := MosaicId{BaseInt64(id)}
+	mosaicId := MosaicId{baseInt64(id)}
 	return &mosaicId
 }
 
@@ -32,7 +30,7 @@ func (m *MosaicId) Type() BlockchainIdType {
 }
 
 func (m *MosaicId) Id() uint64 {
-	return uint64(m.BaseInt64)
+	return uint64(m.baseInt64)
 }
 
 func (m *MosaicId) String() string {
@@ -58,24 +56,20 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 
 type Mosaic struct {
 	BlockchainId BlockchainId
-	Amount       *Amount
+	Amount       Amount
 }
 
 // returns a Mosaic for passed MosaicId and amount
-func NewMosaic(blockchainId BlockchainId, amount *Amount) (*Mosaic, error) {
+func NewMosaic(blockchainId BlockchainId, amount Amount) (*Mosaic, error) {
 	if blockchainId == nil {
 		return nil, ErrNilBlockchainId
-	}
-
-	if amount == nil {
-		return nil, ErrNilAmount
 	}
 
 	return NewMosaicNoCheck(blockchainId, amount), nil
 }
 
 // returns a Mosaic for passed MosaicId and amount without validation of parameters
-func NewMosaicNoCheck(blockchainId BlockchainId, amount *Amount) *Mosaic {
+func NewMosaicNoCheck(blockchainId BlockchainId, amount Amount) *Mosaic {
 	return &Mosaic{
 		BlockchainId: blockchainId,
 		Amount:       amount,
@@ -92,8 +86,8 @@ func (m *Mosaic) String() string {
 
 type MosaicInfo struct {
 	MosaicId   *MosaicId
-	Supply     *Amount
-	Height     *Height
+	Supply     Amount
+	Height     Height
 	Owner      *PublicAccount
 	Revision   uint32
 	Properties *MosaicProperties
@@ -126,11 +120,11 @@ type MosaicProperties struct {
 	Transferable  bool
 	LevyMutable   bool
 	Divisibility  uint8
-	Duration      *Duration
+	Duration      Duration
 }
 
 // returns MosaicProperties from actual values
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *Duration) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
 		transferable,
@@ -179,12 +173,12 @@ func (tx MosaicSupplyType) String() string {
 
 // returns XEM mosaic with passed amount
 func Xem(amount uint64) *Mosaic {
-	return NewMosaicNoCheck(XemMosaicId, NewAmount(amount))
+	return NewMosaicNoCheck(XemMosaicId, Amount(amount))
 }
 
 // returns XPX mosaic with passed amount
 func Xpx(amount uint64) *Mosaic {
-	return NewMosaicNoCheck(XpxMosaicId, NewAmount(amount))
+	return NewMosaicNoCheck(XpxMosaicId, Amount(amount))
 }
 
 // returns XEM with actual passed amount

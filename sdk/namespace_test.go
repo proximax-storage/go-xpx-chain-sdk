@@ -105,8 +105,8 @@ var (
 			},
 			PublicKey: "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 		},
-		EndHeight:   heightDTO{4294967295, 4294967295}.toStruct(),
-		StartHeight: heightDTO{1, 0}.toStruct(),
+		EndHeight:   uint64DTO{4294967295, 4294967295}.toStruct(),
+		StartHeight: uint64DTO{1, 0}.toStruct(),
 		Parent:      nil,
 	}
 

@@ -79,8 +79,8 @@ const (
 var (
 	mosaicCorr = &MosaicInfo{
 		MosaicId: NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()),
-		Supply:   amountDTO{3403414400, 2095475}.toStruct(),
-		Height:   heightDTO{1, 0}.toStruct(),
+		Supply:   uint64DTO{3403414400, 2095475}.toStruct(),
+		Height:   uint64DTO{1, 0}.toStruct(),
 		Owner: &PublicAccount{
 			Address: &Address{
 				Type:    mosaicClient.client.config.NetworkType,
@@ -93,7 +93,7 @@ var (
 		Properties: &MosaicProperties{
 			Transferable: true,
 			Divisibility: 6,
-			Duration:     durationDTO{1, 0}.toStruct(),
+			Duration:     uint64DTO{1, 0}.toStruct(),
 		},
 	}
 

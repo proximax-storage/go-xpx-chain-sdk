@@ -14,11 +14,10 @@ import (
 	"unsafe"
 )
 
-const NamespaceBlockchainIdType BlockchainIdType = 0
 const NamespaceBit uint64 = 1 << 63
 
 type NamespaceId struct {
-	BaseInt64
+	baseInt64
 }
 
 func NewNamespaceId(id uint64) (*NamespaceId, error) {
@@ -30,7 +29,7 @@ func NewNamespaceId(id uint64) (*NamespaceId, error) {
 }
 
 func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
-	namespaceId := NamespaceId{BaseInt64(id)}
+	namespaceId := NamespaceId{baseInt64(id)}
 	return &namespaceId
 }
 
@@ -39,7 +38,7 @@ func (m *NamespaceId) Type() BlockchainIdType {
 }
 
 func (m *NamespaceId) Id() uint64 {
-	return uint64(m.BaseInt64)
+	return uint64(m.baseInt64)
 }
 
 func (m *NamespaceId) String() string {
@@ -197,8 +196,8 @@ type NamespaceInfo struct {
 	Alias       *NamespaceAlias
 	Parent      *NamespaceInfo
 	Owner       *PublicAccount
-	StartHeight *Height
-	EndHeight   *Height
+	StartHeight Height
+	EndHeight   Height
 }
 
 func (ref *NamespaceInfo) String() string {

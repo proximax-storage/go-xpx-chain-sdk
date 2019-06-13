@@ -187,7 +187,7 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 		panic(err)
 	}
 
-	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), sdk.NewDuration(240), signedBondedTx, networkType)
+	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), sdk.Duration(240), signedBondedTx, networkType)
 	if err != nil {
 		panic(err)
 	}

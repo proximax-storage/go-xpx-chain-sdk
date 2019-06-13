@@ -58,7 +58,7 @@ func generateMosaicId(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 
 type mosaicDTO struct {
 	BlockchainId blockchainIdDTO `json:"id"`
-	Amount       amountDTO       `json:"amount"`
+	Amount       uint64DTO       `json:"amount"`
 }
 
 func (dto *mosaicDTO) toStruct() (*Mosaic, error) {
@@ -81,8 +81,8 @@ type namespaceMosaicMetaDTO struct {
 
 type mosaicDefinitionDTO struct {
 	MosaicId   mosaicIdDTO
-	Supply     amountDTO
-	Height     heightDTO
+	Supply     uint64DTO
+	Height     uint64DTO
 	Owner      string
 	Revision   uint32
 	Properties mosaicPropertiesDTO
@@ -101,7 +101,7 @@ func (dto *mosaicPropertiesDTO) toStruct() *MosaicProperties {
 		hasBits(flags, Transferable),
 		hasBits(flags, LevyMutable),
 		byte((*dto)[1].toUint64()),
-		durationDTO((*dto)[2]).toStruct(),
+		(*dto)[2].toStruct(),
 	)
 }
 

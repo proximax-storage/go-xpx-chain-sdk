@@ -105,7 +105,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.XpxRelative(10),
-			sdk.NewDuration(100),
+			sdk.Duration(100),
 			stx,
 			networkType,
 		)
@@ -151,7 +151,7 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, true, 4, sdk.NewDuration(1)),
+			sdk.NewMosaicProperties(true, true, true, 4, sdk.Duration(1)),
 			networkType)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -240,7 +240,7 @@ func TestModifyContracTransaction(t *testing.T) {
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewModifyContractTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.NewDuration(2),
+			sdk.Duration(2),
 			"cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb",
 			[]*sdk.MultisigCosignatoryModification{
 				{
@@ -289,7 +289,7 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 		return sdk.NewRegisterRootNamespaceTransaction(
 			sdk.NewDeadline(time.Hour),
 			nameHex,
-			sdk.NewDuration(1),
+			sdk.Duration(1),
 			networkType,
 		)
 	}, defaultAccount)
@@ -304,16 +304,12 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	hash := sdk.Hash(hex.EncodeToString(key))
 
 	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "payload", hash}
-	//id, err := sdk.NewMosaicId(sdk.NewDuration(0x20B5A75C59C18264))
-	//assert.Nil(t, err)
-	//mosaic, err := sdk.NewMosaic(id, sdk.NewDuration(10000000))
-	//assert.Nil(t, err)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.XpxRelative(10),
-			sdk.NewDuration(100),
+			sdk.Duration(100),
 			stx,
 			networkType,
 		)
@@ -336,7 +332,7 @@ func TestSecretTransaction(t *testing.T) {
 			return sdk.NewSecretLockTransaction(
 				sdk.NewDeadline(time.Hour),
 				sdk.XpxRelative(10),
-				sdk.NewDuration(100),
+				sdk.Duration(100),
 				secret,
 				recipient,
 				networkType,
@@ -423,7 +419,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 	registerTx, err := sdk.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.NewDuration(10),
+		sdk.Duration(10),
 		networkType,
 	)
 	assert.Nil(t, err)
@@ -476,7 +472,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 	registerTx, err := sdk.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.NewDuration(10),
+		sdk.Duration(10),
 		networkType,
 	)
 	assert.Nil(t, err)
@@ -491,7 +487,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, true, 4, sdk.NewDuration(1)),
+		sdk.NewMosaicProperties(true, true, true, 4, sdk.Duration(1)),
 		networkType,
 	)
 	assert.Nil(t, err)
@@ -561,7 +557,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, true, 4, sdk.NewDuration(1)),
+		sdk.NewMosaicProperties(true, true, true, 4, sdk.Duration(1)),
 		networkType)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
@@ -626,7 +622,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 	registrNamespaceTx, err := sdk.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.NewDuration(10),
+		sdk.Duration(10),
 		networkType,
 	)
 	assert.Nil(t, err)
@@ -712,7 +708,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, true, 4, sdk.NewDuration(1)),
+			sdk.NewMosaicProperties(true, true, true, 4, sdk.Duration(1)),
 			networkType,
 		)
 	}, defaultAccount)

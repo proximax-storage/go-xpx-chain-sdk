@@ -38,21 +38,21 @@ type AbstractTransaction struct {
 	Deadline    *Deadline
 	Type        TransactionType
 	Version     TransactionVersion
-	MaxFee      *Amount
+	MaxFee      Amount
 	Signature   string
 	Signer      *PublicAccount
 }
 
 func (tx *AbstractTransaction) IsUnconfirmed() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height.Int64() == 0 && tx.TransactionInfo.Hash == tx.TransactionInfo.MerkleComponentHash
+	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.Hash == tx.TransactionInfo.MerkleComponentHash
 }
 
 func (tx *AbstractTransaction) IsConfirmed() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height.Int64() > 0
+	return tx.TransactionInfo != nil && tx.TransactionInfo.Height > 0
 }
 
 func (tx *AbstractTransaction) HasMissingSignatures() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height.Int64() == 0 && tx.TransactionInfo.Hash != tx.TransactionInfo.MerkleComponentHash
+	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.Hash != tx.TransactionInfo.MerkleComponentHash
 }
 
 func (tx *AbstractTransaction) IsUnannounced() bool {
@@ -90,8 +90,8 @@ func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v 
 	v = (uint16(tx.NetworkType) << 8) + uint16(tx.Version)
 	signatureV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignatureSize))
 	signerV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignerSize))
-	dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.Deadline.ToBlockchainTimestamp().ToArray())
-	fV = transactions.TransactionBufferCreateUint32Vector(builder, tx.MaxFee.ToArray())
+	dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.Deadline.ToBlockchainTimestamp().toArray())
+	fV = transactions.TransactionBufferCreateUint32Vector(builder, tx.MaxFee.toArray())
 	return
 }
 
@@ -107,7 +107,7 @@ func (tx *AbstractTransaction) buildVectors(builder *flatbuffers.Builder, v uint
 type abstractTransactionDTO struct {
 	Type      TransactionType         `json:"type"`
 	Version   uint64                  `json:"version"`
-	MaxFee    *amountDTO              `json:"maxFee"`
+	MaxFee    *uint64DTO              `json:"maxFee"`
 	Deadline  *blockchainTimestampDTO `json:"deadline"`
 	Signature string                  `json:"signature"`
 	Signer    string                  `json:"signer"`
@@ -128,7 +128,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 		d = NewDeadlineFromBlockchainTimestamp(dto.Deadline.toStruct())
 	}
 
-	var f *Amount
+	var f Amount
 	if dto.MaxFee != nil {
 		f = dto.MaxFee.toStruct()
 	}
@@ -146,7 +146,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 }
 
 type TransactionInfo struct {
-	Height              *Height
+	Height              Height
 	Index               uint32
 	Id                  string
 	Hash                Hash
@@ -177,22 +177,18 @@ func (ti *TransactionInfo) String() string {
 }
 
 type transactionInfoDTO struct {
-	Height              *heightDTO `json:"height"`
-	Index               uint32     `json:"index"`
-	Id                  string     `json:"id"`
-	Hash                Hash       `json:"hash"`
-	MerkleComponentHash Hash       `json:"merkleComponentHash"`
-	AggregateHash       Hash       `json:"aggregateHash,omitempty"`
-	AggregateId         string     `json:"aggregateId,omitempty"`
+	Height              uint64DTO `json:"height"`
+	Index               uint32    `json:"index"`
+	Id                  string    `json:"id"`
+	Hash                Hash      `json:"hash"`
+	MerkleComponentHash Hash      `json:"merkleComponentHash"`
+	AggregateHash       Hash      `json:"aggregateHash,omitempty"`
+	AggregateId         string    `json:"aggregateId,omitempty"`
 }
 
 func (dto *transactionInfoDTO) toStruct() *TransactionInfo {
-	height := NewHeight(0)
-	if dto.Height != nil {
-		height = dto.Height.toStruct()
-	}
 	return &TransactionInfo{
-		height,
+		dto.Height.toStruct(),
 		dto.Index,
 		dto.Id,
 		dto.Hash,
@@ -241,7 +237,6 @@ func NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType Pro
 			Deadline:    deadline,
 			Type:        AccountPropertyAddress,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		PropertyType:  propertyType,
 		Modifications: modifications,
@@ -395,7 +390,6 @@ func NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType Prop
 			Deadline:    deadline,
 			Type:        AccountPropertyMosaic,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		PropertyType:  propertyType,
 		Modifications: modifications,
@@ -546,7 +540,6 @@ func NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType 
 			Deadline:    deadline,
 			Type:        AccountPropertyEntityType,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		PropertyType:  propertyType,
 		Modifications: modifications,
@@ -671,7 +664,7 @@ func (tx *AliasTransaction) String() string {
 }
 
 func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV flatbuffers.UOffsetT, sizeOfAlias int) ([]byte, error) {
-	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.ToArray())
+	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.toArray())
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -746,7 +739,6 @@ func NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceI
 				Deadline:    deadline,
 				Type:        AddressAlias,
 				NetworkType: networkType,
-				MaxFee:      NewAmount(0),
 			},
 			NamespaceId: namespaceId,
 			ActionType:  actionType,
@@ -831,7 +823,6 @@ func NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespace
 				Deadline:    deadline,
 				Type:        MosaicAlias,
 				NetworkType: networkType,
-				MaxFee:      NewAmount(0),
 			},
 			ActionType:  actionType,
 			NamespaceId: namespaceId,
@@ -908,7 +899,6 @@ func NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount,
 			Version:     LinkAccountVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		RemoteAccount: remoteAccount,
 		LinkAction:    linkAction,
@@ -1005,7 +995,6 @@ func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction,
 			Version:     AggregateCompletedVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		InnerTransactions: innerTxs,
 	}, nil
@@ -1022,7 +1011,6 @@ func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, n
 			Version:     AggregateBondedVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		InnerTransactions: innerTxs,
 	}, nil
@@ -1231,7 +1219,6 @@ func NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, m
 				Deadline:    deadline,
 				Type:        MetadataAddress,
 				NetworkType: networkType,
-				MaxFee:      NewAmount(0),
 			},
 			MetadataType:  MetadataAddressType,
 			Modifications: modifications,
@@ -1312,7 +1299,6 @@ func NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, 
 				Deadline:    deadline,
 				Type:        MetadataMosaic,
 				NetworkType: networkType,
-				MaxFee:      NewAmount(0),
 			},
 			MetadataType:  MetadataMosaicType,
 			Modifications: modifications,
@@ -1390,7 +1376,6 @@ func NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *Name
 				Deadline:    deadline,
 				Type:        MetadataNamespace,
 				NetworkType: networkType,
-				MaxFee:      NewAmount(0),
 			},
 			MetadataType:  MetadataNamespaceType,
 			Modifications: modifications,
@@ -1479,7 +1464,6 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 			Deadline:    deadline,
 			Type:        MosaicDefinition,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		MosaicProperties: mosaicProps,
 		MosaicNonce:      nonce,
@@ -1519,8 +1503,8 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 		f += 4
 	}
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.ToArray())
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicProperties.Duration.ToArray())
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicProperties.Duration.toArray())
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1579,20 +1563,17 @@ type MosaicSupplyChangeTransaction struct {
 	AbstractTransaction
 	MosaicSupplyType
 	BlockchainId
-	Delta *Duration
+	Delta Amount
 }
 
 // returns MosaicSupplyChangeTransaction from passed BlockchainId, MosaicSupplyTypeand supply delta
-func NewMosaicSupplyChangeTransaction(deadline *Deadline, blockchainId BlockchainId, supplyType MosaicSupplyType, delta *Duration, networkType NetworkType) (*MosaicSupplyChangeTransaction, error) {
+func NewMosaicSupplyChangeTransaction(deadline *Deadline, blockchainId BlockchainId, supplyType MosaicSupplyType, delta Duration, networkType NetworkType) (*MosaicSupplyChangeTransaction, error) {
 	if blockchainId == nil || blockchainId.Id() == 0 {
 		return nil, ErrNilBlockchainId
 	}
 
 	if !(supplyType == Increase || supplyType == Decrease) {
 		return nil, errors.New("supplyType must not be nil")
-	}
-	if delta == nil {
-		return nil, errors.New("delta must not be nil")
 	}
 
 	return &MosaicSupplyChangeTransaction{
@@ -1601,7 +1582,6 @@ func NewMosaicSupplyChangeTransaction(deadline *Deadline, blockchainId Blockchai
 			Deadline:    deadline,
 			Type:        MosaicSupplyChange,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		BlockchainId:     blockchainId,
 		MosaicSupplyType: supplyType,
@@ -1631,8 +1611,8 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.BlockchainId.ToArray())
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Delta.ToArray())
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.BlockchainId.toArray())
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Delta.toArray())
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1660,7 +1640,7 @@ type mosaicSupplyChangeTransactionDTO struct {
 		abstractTransactionDTO
 		MosaicSupplyType `json:"direction"`
 		BlockchainId     *blockchainIdDTO `json:"mosaicId"`
-		Delta            *durationDTO     `json:"delta"`
+		Delta            uint64DTO        `json:"delta"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1709,7 +1689,6 @@ func NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*M
 			Deadline:    deadline,
 			Type:        Transfer,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		Recipient: recipient,
 		Mosaics:   mosaics,
@@ -1740,7 +1719,6 @@ func NewTransferTransactionWithNamespace(deadline *Deadline, recipient *Namespac
 			Deadline:    deadline,
 			Type:        Transfer,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		Recipient: address,
 		Mosaics:   mosaics,
@@ -1773,8 +1751,8 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 	ml := len(tx.Mosaics)
 	mb := make([]flatbuffers.UOffsetT, ml)
 	for i, mos := range tx.Mosaics {
-		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.BlockchainId.ToArray())
-		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.ToArray())
+		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.BlockchainId.toArray())
+		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.toArray())
 		transactions.MosaicBufferStart(builder)
 		transactions.MosaicBufferAddId(builder, id)
 		transactions.MosaicBufferAddAmount(builder, am)
@@ -1887,7 +1865,6 @@ func NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta in
 			Deadline:    deadline,
 			Type:        ModifyMultisig,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		MinRemovalDelta:  minRemovalDelta,
 		MinApprovalDelta: minApprovalDelta,
@@ -1977,7 +1954,7 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) 
 
 type ModifyContractTransaction struct {
 	AbstractTransaction
-	DurationDelta *Duration
+	DurationDelta Duration
 	Hash          string
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
@@ -1986,7 +1963,7 @@ type ModifyContractTransaction struct {
 
 // returns ModifyContractTransaction from passed duration delta in blocks, file hash, arrays of customers, replicators and verificators
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta *Duration, hash string,
+	deadline *Deadline, durationDelta Duration, hash string,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -2008,7 +1985,6 @@ func NewModifyContractTransaction(
 			Deadline:    deadline,
 			Type:        ModifyContract,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		DurationDelta: durationDelta,
 		Hash:          hash,
@@ -2051,7 +2027,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 		return nil, err
 	}
 
-	durationV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DurationDelta.ToArray())
+	durationV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DurationDelta.toArray())
 	hashV := stringToBuffer(builder, tx.Hash)
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
@@ -2095,7 +2071,7 @@ func (tx *ModifyContractTransaction) Size() int {
 type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DurationDelta durationDTO                           `json:"durationDelta"`
+		DurationDelta uint64DTO                             `json:"durationDelta"`
 		Hash          string                                `json:"hash"`
 		Customers     []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors     []*multisigCosignatoryModificationDTO `json:"executors"`
@@ -2140,12 +2116,12 @@ type RegisterNamespaceTransaction struct {
 	*NamespaceId
 	NamespaceType
 	NamspaceName string
-	Duration     *Duration
+	Duration     Duration
 	ParentId     *NamespaceId
 }
 
 // returns a RegisterNamespaceTransaction from passed namespace name and duration in blocks
-func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration *Duration, networkType NetworkType) (*RegisterNamespaceTransaction, error) {
+func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration Duration, networkType NetworkType) (*RegisterNamespaceTransaction, error) {
 	if len(namespaceName) == 0 {
 		return nil, ErrInvalidNamespaceName
 	}
@@ -2155,17 +2131,12 @@ func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName strin
 		return nil, err
 	}
 
-	if duration == nil {
-		return nil, errors.New("duration must not be nil")
-	}
-
 	return &RegisterNamespaceTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     RegisterNamespaceVersion,
 			Deadline:    deadline,
 			Type:        RegisterNamespace,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		NamspaceName:  namespaceName,
 		NamespaceId:   nsId,
@@ -2195,7 +2166,6 @@ func NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string
 			Deadline:    deadline,
 			Type:        RegisterNamespace,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		NamspaceName:  namespaceName,
 		NamespaceId:   nsId,
@@ -2226,12 +2196,12 @@ func (tx *RegisterNamespaceTransaction) String() string {
 func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.ToArray())
+	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.toArray())
 	var dV flatbuffers.UOffsetT
 	if tx.NamespaceType == Root {
-		dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.ToArray())
+		dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 	} else {
-		dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.ParentId.ToArray())
+		dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.ParentId.toArray())
 	}
 	n := builder.CreateString(tx.NamspaceName)
 
@@ -2263,8 +2233,8 @@ type registerNamespaceTransactionDTO struct {
 		abstractTransactionDTO
 		Id            namespaceIdDTO `json:"namespaceId"`
 		NamespaceType `json:"namespaceType"`
-		NamspaceName  string      `json:"name"`
-		Duration      durationDTO `json:"duration"`
+		NamspaceName  string    `json:"name"`
+		Duration      uint64DTO `json:"duration"`
 		ParentId      namespaceIdDTO
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -2276,7 +2246,7 @@ func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	d := NewDuration(0)
+	d := Duration(0)
 	n := NewNamespaceIdNoCheck(0)
 
 	if dto.Tx.NamespaceType == Root {
@@ -2306,21 +2276,20 @@ func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
 type LockFundsTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	Duration *Duration
+	Duration Duration
 	*SignedTransaction
 }
 
 // returns a LockFundsTransaction from passed Mosaic, duration in blocks and SignedTransaction
-func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration *Duration, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error) {
+func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
 	}
-	if duration == nil {
-		return nil, errors.New("duration must not be nil")
-	}
+
 	if signedTx == nil {
 		return nil, errors.New("signedTx must not be nil")
 	}
+
 	if signedTx.TransactionType != AggregateBonded {
 		return nil, errors.New("signedTx must be of type AggregateBonded")
 	}
@@ -2331,7 +2300,6 @@ func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration *Durat
 			Deadline:    deadline,
 			Type:        Lock,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		Mosaic:            mosaic,
 		Duration:          duration,
@@ -2361,9 +2329,9 @@ func (tx *LockFundsTransaction) String() string {
 func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.ToArray())
-	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.ToArray())
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.ToArray())
+	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.toArray())
+	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.toArray())
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 
 	h, err := hex.DecodeString((string)(tx.SignedTransaction.Hash))
 	if err != nil {
@@ -2396,9 +2364,9 @@ func (tx *LockFundsTransaction) Size() int {
 type lockFundsTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Mosaic   mosaicDTO   `json:"mosaic"`
-		Duration durationDTO `json:"duration"`
-		Hash     Hash        `json:"hash"`
+		Mosaic   mosaicDTO `json:"mosaic"`
+		Duration uint64DTO `json:"duration"`
+		Hash     Hash      `json:"hash"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -2425,22 +2393,21 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 type SecretLockTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	Duration  *Duration
+	Duration  Duration
 	Secret    *Secret
 	Recipient *Address
 }
 
 // returns a SecretLockTransaction from passed Mosaic, duration in blocks, Secret and mosaic recipient Address
-func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *Duration, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
+func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error) {
 	if mosaic == nil {
 		return nil, errors.New("mosaic must not be nil")
 	}
-	if duration == nil {
-		return nil, errors.New("duration must not be nil")
-	}
+
 	if secret == nil {
 		return nil, errors.New("secret must not be nil")
 	}
+
 	if recipient == nil {
 		return nil, errors.New("recipient must not be nil")
 	}
@@ -2451,7 +2418,6 @@ func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *Dura
 			Deadline:    deadline,
 			Type:        SecretLock,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		Mosaic:    mosaic,
 		Duration:  duration,
@@ -2484,9 +2450,9 @@ func (tx *SecretLockTransaction) String() string {
 func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.ToArray())
-	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.ToArray())
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.ToArray())
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.BlockchainId.toArray())
+	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.toArray())
+	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 
 	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash)
 
@@ -2524,9 +2490,9 @@ type secretLockTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		BlockchainId *blockchainIdDTO `json:"mosaicId"`
-		Amount       *amountDTO       `json:"amount"`
+		Amount       *uint64DTO       `json:"amount"`
 		HashType     HashType         `json:"hashAlgorithm"`
-		Duration     durationDTO      `json:"duration"`
+		Duration     uint64DTO        `json:"duration"`
 		Secret       string           `json:"secret"`
 		Recipient    string           `json:"recipient"`
 	} `json:"transaction"`
@@ -2586,7 +2552,6 @@ func NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Pro
 			Deadline:    deadline,
 			Type:        SecretProof,
 			NetworkType: networkType,
-			MaxFee:      NewAmount(0),
 		},
 		HashType: hashType,
 		Proof:    proof,
@@ -2820,9 +2785,9 @@ type mosaicDefinitonTransactionPropertiesDTO []struct {
 
 func (dto mosaicDefinitonTransactionPropertiesDTO) toStruct() *MosaicProperties {
 	flags := dto[0].Value.toUint64()
-	duration := NewDuration(0)
+	duration := Duration(0)
 	if len(dto) == 3 {
-		duration = NewDuration(dto[2].Value.toInt64())
+		duration = dto[2].Value.toStruct()
 	}
 	return NewMosaicProperties(
 		hasBits(flags, Supply_Mutable),
@@ -2838,7 +2803,7 @@ type TransactionStatus struct {
 	Group    string
 	Status   string
 	Hash     Hash
-	Height   *Height
+	Height   Height
 }
 
 func (ts *TransactionStatus) String() string {
@@ -2863,7 +2828,7 @@ type transactionStatusDTO struct {
 	Status   string                 `json:"status"`
 	Hash     Hash                   `json:"hash"`
 	Deadline blockchainTimestampDTO `json:"deadline"`
-	Height   heightDTO              `json:"height"`
+	Height   uint64DTO              `json:"height"`
 }
 
 func (dto *transactionStatusDTO) toStruct() (*TransactionStatus, error) {

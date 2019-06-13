@@ -105,7 +105,7 @@ func main() {
 
 	mctx, err := sdk.NewModifyContractTransaction(
 		sdk.NewDeadline(time.Hour*1),
-		sdk.NewDuration(2),
+		sdk.Duration(2),
 		hash.String(),
 		[]*sdk.MultisigCosignatoryModification{
 			{

@@ -12,15 +12,15 @@ type BlockInfo struct {
 	NetworkType
 	Hash                  string
 	GenerationHash        string
-	TotalFee              *Amount
+	TotalFee              Amount
 	NumTransactions       uint64
 	Signature             string
 	Signer                *PublicAccount
 	Version               uint8
 	Type                  uint64
-	Height                *Height
+	Height                Height
 	Timestamp             *Timestamp
-	Difficulty            *Difficulty
+	Difficulty            Difficulty
 	FeeMultiplier         uint32
 	PreviousBlockHash     string
 	BlockTransactionsHash string

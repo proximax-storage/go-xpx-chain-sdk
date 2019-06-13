@@ -10,15 +10,21 @@ import (
 	"time"
 )
 
-type BlockchainInt64 interface {
-	ToArray() [2]uint32
-	Bytes() []byte
+type blockchainInt64 interface {
+	toArray() [2]uint32
+	toLittleEndian() []byte
 }
 
 type BlockchainIdType uint8
 
+// BlockchainIdType enums
+const (
+	NamespaceBlockchainIdType BlockchainIdType = iota
+	MosaicBlockchainIdType
+)
+
 type BlockchainId interface {
-	BlockchainInt64
+	blockchainInt64
 	fmt.Stringer
 	Type() BlockchainIdType
 	Id() uint64
@@ -37,65 +43,26 @@ type AccountTransactionsOption struct {
 	Ordering TransactionOrder `url:"ordering,omitempty"`
 }
 
-type BaseInt64 uint64
+type baseInt64 int64
 
-func (m BaseInt64) String() string {
-	return fmt.Sprintf("%d", m.Int64())
+func (m baseInt64) String() string {
+	return fmt.Sprintf("%d", m)
 }
 
-func (m BaseInt64) Int64() int64 {
-	return int64(m)
+func (m baseInt64) toArray() [2]uint32 {
+	return uint64ToArray(uint64(m))
 }
 
-func (m BaseInt64) Uint64() uint64 {
-	return uint64(m)
-}
-
-func (m BaseInt64) ToArray() [2]uint32 {
-	return uint64ToArray(m.Uint64())
-}
-
-func (m BaseInt64) Bytes() []byte {
+func (m baseInt64) toLittleEndian() []byte {
 	bytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bytes, m.Uint64())
+	binary.LittleEndian.PutUint64(bytes, uint64(m))
 	return bytes
 }
 
-type Amount struct {
-	BaseInt64
-}
-
-func NewAmount(id uint64) *Amount {
-	amount := Amount{BaseInt64(id)}
-	return &amount
-}
-
-type Height struct {
-	BaseInt64
-}
-
-func NewHeight(id uint64) *Height {
-	height := Height{BaseInt64(id)}
-	return &height
-}
-
-type Duration struct {
-	BaseInt64
-}
-
-func NewDuration(id int64) *Duration {
-	duration := Duration{BaseInt64(id)}
-	return &duration
-}
-
-type Difficulty struct {
-	BaseInt64
-}
-
-func NewDifficulty(id uint64) *Difficulty {
-	difficulty := Difficulty{BaseInt64(id)}
-	return &difficulty
-}
+type Amount = baseInt64
+type Height = baseInt64
+type Duration = baseInt64
+type Difficulty = baseInt64
 
 type ChainScore [2]uint64
 
@@ -111,16 +78,16 @@ func NewChainScore(scoreLow uint64, scoreHigh uint64) *ChainScore {
 const TimestampNemesisBlockMilliseconds int64 = 1459468800 * 1000
 
 type BlockchainTimestamp struct {
-	BaseInt64
+	baseInt64
 }
 
 func NewBlockchainTimestamp(milliseconds int64) *BlockchainTimestamp {
-	timestamp := BlockchainTimestamp{BaseInt64(milliseconds)}
+	timestamp := BlockchainTimestamp{baseInt64(milliseconds)}
 	return &timestamp
 }
 
 func (t *BlockchainTimestamp) ToTimestamp() *Timestamp {
-	return NewTimestamp(int64(t.BaseInt64) + TimestampNemesisBlockMilliseconds)
+	return NewTimestamp(int64(t.baseInt64) + TimestampNemesisBlockMilliseconds)
 }
 
 type Timestamp struct {

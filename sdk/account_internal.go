@@ -152,9 +152,9 @@ func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
 type accountInfoDTO struct {
 	Account struct {
 		Address                string         `json:"address"`
-		AddressHeight          heightDTO      `json:"addressHeight"`
+		AddressHeight          uint64DTO      `json:"addressHeight"`
 		PublicKey              string         `json:"publicKey"`
-		PublicKeyHeight        heightDTO      `json:"publicKeyHeight"`
+		PublicKeyHeight        uint64DTO      `json:"publicKeyHeight"`
 		AccountType            AccountType    `json:"accountType"`
 		LinkedAccountPublicKey string         `json:"linkedAccountKey"`
 		Mosaics                []*mosaicDTO   `json:"mosaics"`

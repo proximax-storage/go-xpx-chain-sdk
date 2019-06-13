@@ -24,8 +24,8 @@ type contractInfoDTO struct {
 	Contract struct {
 		Multisig        string
 		MultisigAddress string
-		Start           heightDTO
-		Duration        durationDTO
+		Start           uint64DTO
+		Duration        uint64DTO
 		Hash            string
 		Customers       []string
 		Executors       []string

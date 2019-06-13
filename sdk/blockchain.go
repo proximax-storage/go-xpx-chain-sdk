@@ -15,8 +15,8 @@ import (
 type BlockchainService service
 
 // returns BlockInfo for passed block's height
-func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *Height) (*BlockInfo, error) {
-	if height == nil || height.Int64() == 0 {
+func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height Height) (*BlockInfo, error) {
+	if height == 0 {
 		return nil, ErrNilOrZeroHeight
 	}
 
@@ -37,8 +37,8 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *Height
 }
 
 // returns Transaction's inside of block at passed height
-func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *Height) ([]Transaction, error) {
-	if height == nil || height.Int64() == 0 {
+func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height Height) ([]Transaction, error) {
+	if height == 0 {
 		return nil, ErrNilOrZeroHeight
 	}
 
@@ -60,12 +60,12 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *He
 
 // returns BlockInfo's for range block height - (block height + limit)
 // Example: GetBlocksByHeightWithLimit(ctx, 1, 25) => [BlockInfo25, BlockInfo24, ..., BlockInfo1]
-func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height *Height, limit *Amount) ([]*BlockInfo, error) {
-	if height == nil || height.Int64() == 0 {
+func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height Height, limit Amount) ([]*BlockInfo, error) {
+	if height == 0 {
 		return nil, ErrNilOrZeroHeight
 	}
 
-	if limit == nil || limit.Int64() == 0 {
+	if limit == 0 {
 		return nil, ErrNilOrZeroLimit
 	}
 
@@ -85,18 +85,18 @@ func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, heig
 	return dtos.toStruct()
 }
 
-func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*Height, error) {
+func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (Height, error) {
 	bh := &struct {
-		Height heightDTO `json:"height"`
+		Height uint64DTO `json:"height"`
 	}{}
 
 	resp, err := b.client.doNewRequest(ctx, http.MethodGet, blockHeightRoute, nil, &bh)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	if err = handleResponseStatusCode(resp, nil); err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	return bh.Height.toStruct(), nil

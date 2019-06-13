@@ -98,9 +98,9 @@ func (a *AccountProperties) String() string {
 
 type AccountInfo struct {
 	Address         *Address
-	AddressHeight   *Height
+	AddressHeight   Height
 	PublicKey       string
-	PublicKeyHeight *Height
+	PublicKeyHeight Height
 	AccountType     AccountType
 	LinkedAccount   *PublicAccount
 	Mosaics         []*Mosaic

@@ -19,8 +19,8 @@ func (dto uint64DTO) toUint64() uint64 {
 	return binary.BigEndian.Uint64(b)
 }
 
-func (dto uint64DTO) toInt64() int64 {
-	return int64(dto.toUint64())
+func (dto uint64DTO) toStruct() baseInt64 {
+	return baseInt64(dto.toUint64())
 }
 
 func uint32ToHex(u uint32) string {
@@ -33,15 +33,9 @@ func uint64ToHex(id uint64) string {
 }
 
 func uint64ToArray(int uint64) [2]uint32 {
-	l := uint32(int & 0xFFFFFFFF)
-	r := uint32(int>>32) & 0xFFFFFFFF
+	l := uint32(int)
+	r := uint32(int >> 32)
 	return [2]uint32{l, r}
-}
-
-type amountDTO uint64DTO
-
-func (dto amountDTO) toStruct() *Amount {
-	return NewAmount(uint64DTO(dto).toUint64())
 }
 
 type blockchainIdDTO uint64DTO
@@ -54,24 +48,6 @@ func (dto blockchainIdDTO) toStruct() (BlockchainId, error) {
 	} else {
 		return (*mosaicIdDTO)(&dto).toStruct()
 	}
-}
-
-type heightDTO uint64DTO
-
-func (dto heightDTO) toStruct() *Height {
-	return NewHeight(uint64DTO(dto).toUint64())
-}
-
-type durationDTO uint64DTO
-
-func (dto durationDTO) toStruct() *Duration {
-	return NewDuration(uint64DTO(dto).toInt64())
-}
-
-type difficultyDTO uint64DTO
-
-func (dto difficultyDTO) toStruct() *Difficulty {
-	return NewDifficulty(uint64DTO(dto).toUint64())
 }
 
 type blockchainTimestampDTO uint64DTO

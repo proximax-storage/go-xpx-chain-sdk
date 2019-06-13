@@ -27,9 +27,8 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i := uint64(1); i < h.Uint64() && i <= iter; i++ {
-
-		h := sdk.NewHeight(i)
+	for i := sdk.Height(1); i < h && i <= iter; i++ {
+		h := i
 		trans, err := serv.Blockchain.GetBlockTransactions(ctx, h)
 		if err != nil {
 			t.Fatal(err)

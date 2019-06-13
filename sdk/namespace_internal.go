@@ -88,8 +88,8 @@ type namespaceDTO struct {
 	ParentId     namespaceIdDTO
 	Owner        string
 	OwnerAddress string
-	StartHeight  heightDTO
-	EndHeight    heightDTO
+	StartHeight  uint64DTO
+	EndHeight    uint64DTO
 }
 
 // namespaceInfoDTO temporary struct for reading response & fill NamespaceInfo
@@ -194,7 +194,7 @@ func (n *namespaceInfoDTOs) toStruct() ([]*NamespaceInfo, error) {
 }
 
 func generateNamespaceId(name string, parentId *NamespaceId) (*NamespaceId, error) {
-	b := parentId.Bytes()
+	b := parentId.toLittleEndian()
 
 	result := sha3.New256()
 

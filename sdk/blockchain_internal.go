@@ -4,7 +4,7 @@ type blockInfoDTO struct {
 	BlockMeta struct {
 		Hash            string    `json:"hash"`
 		GenerationHash  string    `json:"generationHash"`
-		TotalFee        amountDTO `json:"totalFee"`
+		TotalFee        uint64DTO `json:"totalFee"`
 		NumTransactions uint64    `json:"numTransactions"`
 		// MerkleTree      uint64DTO `json:"merkleTree"` is needed?
 	} `json:"meta"`
@@ -13,9 +13,9 @@ type blockInfoDTO struct {
 		Signer                string                 `json:"signer"`
 		Version               uint64                 `json:"version"`
 		Type                  uint64                 `json:"type"`
-		Height                heightDTO              `json:"height"`
+		Height                uint64DTO              `json:"height"`
 		Timestamp             blockchainTimestampDTO `json:"timestamp"`
-		Difficulty            difficultyDTO          `json:"difficulty"`
+		Difficulty            uint64DTO              `json:"difficulty"`
 		FeeMultiplier         uint32                 `json:"feeMultiplier"`
 		PreviousBlockHash     string                 `json:"previousBlockHash"`
 		BlockTransactionsHash string                 `json:"blockTransactionsHash"`
