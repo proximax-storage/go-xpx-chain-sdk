@@ -13,6 +13,7 @@ type MosaicId struct {
 	baseInt64
 }
 
+// returns MosaicId for passed mosaic identifier
 func NewMosaicId(id uint64) (*MosaicId, error) {
 	if hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitMosaicId
@@ -20,6 +21,7 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 	return NewMosaicIdNoCheck(id), nil
 }
 
+// TODO
 func NewMosaicIdNoCheck(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
 	return &mosaicId
@@ -60,6 +62,7 @@ type Mosaic struct {
 }
 
 // returns a Mosaic for passed MosaicId and amount
+// TODO
 func NewMosaic(blockchainId BlockchainId, amount Amount) (*Mosaic, error) {
 	if blockchainId == nil {
 		return nil, ErrNilBlockchainId
@@ -69,6 +72,7 @@ func NewMosaic(blockchainId BlockchainId, amount Amount) (*Mosaic, error) {
 }
 
 // returns a Mosaic for passed MosaicId and amount without validation of parameters
+// TODO
 func NewMosaicNoCheck(blockchainId BlockchainId, amount Amount) *Mosaic {
 	return &Mosaic{
 		BlockchainId: blockchainId,

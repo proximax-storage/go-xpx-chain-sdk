@@ -20,6 +20,7 @@ type NamespaceId struct {
 	baseInt64
 }
 
+// returns new NamespaceId from passed namespace identifier
 func NewNamespaceId(id uint64) (*NamespaceId, error) {
 	if id != 0 && !hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitNamespaceId
@@ -28,6 +29,8 @@ func NewNamespaceId(id uint64) (*NamespaceId, error) {
 	return NewNamespaceIdNoCheck(id), nil
 }
 
+// returns new NamespaceId from passed namespace identifier
+// TODO
 func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
 	namespaceId := NamespaceId{baseInt64(id)}
 	return &namespaceId
@@ -76,6 +79,7 @@ type NamespaceIds struct {
 	List []*NamespaceId
 }
 
+// TODO is it should be exported?
 func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	buf = []byte(`{"namespaceIds": [`)
 
@@ -92,10 +96,12 @@ func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
+// TODO is it should be exported?
 func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool {
 	return len((*NamespaceIds)(ptr).List) == 0
 }
 
+// TODO is it should be exported?
 func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	if (*NamespaceIds)(ptr) == nil {
 		ptr = (unsafe.Pointer)(&NamespaceIds{})
@@ -118,6 +124,7 @@ func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	}
 }
 
+// TODO is it should be exported?
 func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 	buf, err := (*NamespaceIds)(ptr).MarshalJSON()
 	if err == nil {
@@ -134,6 +141,7 @@ type NamespaceAlias struct {
 	Type     AliasType
 }
 
+// TODO is it should be exported with not exported type as argument?
 func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error) {
 	alias := NamespaceAlias{}
 
@@ -267,6 +275,7 @@ func GenerateNamespacePath(name string) ([]*NamespaceId, error) {
 	return path, nil
 }
 
+// returns new Address from namespace identifier
 func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	// 0x91 | namespaceId on 8 bytes | 16 bytes 0-pad = 25 bytes
 	a := fmt.Sprintf("%X", int(AliasAddress))

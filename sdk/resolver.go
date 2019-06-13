@@ -16,6 +16,7 @@ type ResolverService struct {
 	MosaicService    *MosaicService
 }
 
+// returns MosaicInfo from blockchain identifier
 func (ref *ResolverService) GetMosaicInfoByBlockchainId(ctx context.Context, blockchainId BlockchainId) (*MosaicInfo, error) {
 	if blockchainId == nil {
 		return nil, ErrNilBlockchainId
@@ -43,6 +44,7 @@ func (ref *ResolverService) GetMosaicInfoByBlockchainId(ctx context.Context, blo
 	return nil, ErrUnknownBlockchainType
 }
 
+// returns an array of MosaicInfo from blockchain identifiers
 func (ref *ResolverService) GetMosaicInfosByBlockchainIds(ctx context.Context, blockchainIds ...BlockchainId) ([]*MosaicInfo, error) {
 	if len(blockchainIds) == 0 {
 		return nil, ErrEmptyBlockchainIds

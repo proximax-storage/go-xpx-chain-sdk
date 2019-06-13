@@ -71,6 +71,7 @@ func (m *ChainScore) String() string {
 	return fmt.Sprintf("[ %d, %d ]", m[0], m[1])
 }
 
+// returns new ChainScore from passed low and high score
 func NewChainScore(scoreLow uint64, scoreHigh uint64) *ChainScore {
 	chainScore := ChainScore([2]uint64{scoreLow, scoreHigh})
 	return &chainScore
@@ -82,6 +83,7 @@ type BlockchainTimestamp struct {
 	baseInt64
 }
 
+// returns new BlockchainTimestamp from passed milliseconds value
 func NewBlockchainTimestamp(milliseconds int64) *BlockchainTimestamp {
 	timestamp := BlockchainTimestamp{baseInt64(milliseconds)}
 	return &timestamp
@@ -95,6 +97,7 @@ type Timestamp struct {
 	time.Time
 }
 
+// returns new Timestamp from passed milliseconds value
 func NewTimestamp(milliseconds int64) *Timestamp {
 	return &Timestamp{time.Unix(0, milliseconds*int64(time.Millisecond))}
 }
@@ -107,12 +110,12 @@ type Deadline struct {
 	Timestamp
 }
 
-// Create deadline based on current time of system.
+// returns new Deadline from passed duration
 func NewDeadline(delta time.Duration) *Deadline {
 	return &Deadline{Timestamp{time.Now().Add(delta)}}
 }
 
-// Create deadline from blockchain timestamp.
+// returns new Deadline from passed BlockchainTimestamp
 func NewDeadlineFromBlockchainTimestamp(timestamp *BlockchainTimestamp) *Deadline {
 	return &Deadline{*timestamp.ToTimestamp()}
 }
