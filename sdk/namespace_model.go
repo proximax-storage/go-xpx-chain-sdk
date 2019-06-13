@@ -49,8 +49,8 @@ func (m *NamespaceId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *NamespaceId) Equals(id *NamespaceId) bool {
-	return *m == *id
+func (m *NamespaceId) Equals(id BlockchainId) bool {
+	return m.Id() == id.Id()
 }
 
 // returns namespace id from passed namespace name

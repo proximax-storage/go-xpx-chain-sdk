@@ -41,8 +41,8 @@ func (m *MosaicId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *MosaicId) Equals(id *MosaicId) bool {
-	return *m == *id
+func (m *MosaicId) Equals(id BlockchainId) bool {
+	return m.Id() == id.Id()
 }
 
 // returns MosaicId for passed nonce and public key of mosaic owner

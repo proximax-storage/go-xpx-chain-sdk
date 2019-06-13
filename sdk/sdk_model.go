@@ -28,6 +28,7 @@ type BlockchainId interface {
 	fmt.Stringer
 	Type() BlockchainIdType
 	Id() uint64
+	Equals(BlockchainId) bool
 }
 
 type TransactionOrder string
