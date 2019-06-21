@@ -10,16 +10,12 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 )
 
 func init() {
 	jsoniter.RegisterTypeEncoder("*NamespaceIds", testNamespaceIDs)
 	jsoniter.RegisterTypeDecoder("*NamespaceIds", ad)
-
-	i, _ := (&big.Int{}).SetString("9562080086528621131", 10)
-	testNamespaceId = bigIntToNamespaceId(i)
 
 	namespaceCorr.Levels = []*NamespaceId{testNamespaceId}
 	namespaceNameCorr.NamespaceId = testNamespaceId
@@ -44,13 +40,13 @@ var (
 	}
 	testAddress = Address{Address: "SCASIIAPS6BSFEC66V6MU5ZGEVWM53BES5GYBGLE"}
 
-	testNamespaceId  *NamespaceId
-	testNamespaceIDs = &NamespaceIds{
+	testNamespaceId  = NewNamespaceIdNoCheck(9562080086528621131)
+	testNamespaceIDs = &namespaceIds{
 		List: []*NamespaceId{
 			testNamespaceId,
 		},
 	}
-	ad   = &NamespaceIds{}
+	ad   = &namespaceIds{}
 	meta = `"meta": {
 			"active": true,
 			"index": 0,
@@ -90,12 +86,12 @@ var (
 			}`
 
 	namespaceCorr = &NamespaceInfo{
-		NamespaceId: bigIntToNamespaceId(uint64DTO{929036875, 2226345261}.toBigInt()),
+		NamespaceId: NewNamespaceIdNoCheck(uint64DTO{929036875, 2226345261}.toUint64()),
 		Active:      true,
 		Depth:       1,
 		TypeSpace:   Root,
 		Alias: &NamespaceAlias{
-			bigIntToMosaicId(uint64DTO{1382215848, 1583663204}.toBigInt()),
+			NewMosaicIdNoCheck(uint64DTO{1382215848, 1583663204}.toUint64()),
 			&Address{
 				MijinTest,
 				"SCJW742TNBMMX2UO4DVKXGP6T3CO6XXR6ZRWMVU2",
@@ -109,15 +105,15 @@ var (
 			},
 			PublicKey: "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 		},
-		EndHeight:   uint64DTO{4294967295, 4294967295}.toBigInt(),
-		StartHeight: big.NewInt(1),
+		EndHeight:   uint64DTO{4294967295, 4294967295}.toStruct(),
+		StartHeight: uint64DTO{1, 0}.toStruct(),
 		Parent:      nil,
 	}
 
 	namespaceNameCorr = &NamespaceName{
-		NamespaceId: bigIntToNamespaceId(big.NewInt(0)),
+		NamespaceId: NewNamespaceIdNoCheck(0),
 		Name:        "nem",
-		ParentId:    bigIntToNamespaceId(big.NewInt(0)),
+		ParentId:    NewNamespaceIdNoCheck(0),
 	}
 
 	tplInfoArr = "[" + tplInfo + "]"

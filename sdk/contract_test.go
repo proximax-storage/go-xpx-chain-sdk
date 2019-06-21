@@ -47,8 +47,8 @@ var (
 	testContractInfo = &ContractInfo{
 		Multisig:        "EB8923957301F796C884977234D20B0388A3AD6F865F1ACC7D3A94AFF597D59D",
 		MultisigAddress: NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA34", PublicTest),
-		Start:           uint64DTO{36, 0}.toBigInt(),
-		Duration:        uint64DTO{11, 0}.toBigInt(),
+		Start:           uint64DTO{36, 0}.toStruct(),
+		Duration:        uint64DTO{11, 0}.toStruct(),
 		Content:         "D8E06B597BEE34263E9C970A50B5341783EFF67EF00637644C114447BE1905DA",
 		Customers:       []string{"A93FEB7F051F4258C73FE0BD009F50F1E71DBA8A88B6E248ECDF560D9A9AB7C3"},
 		Executors: []string{

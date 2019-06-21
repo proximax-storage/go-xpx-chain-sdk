@@ -100,6 +100,7 @@ type Client struct {
 	Namespace   *NamespaceService
 	Network     *NetworkService
 	Transaction *TransactionService
+	Resolve     *ResolverService
 	Account     *AccountService
 	Contract    *ContractService
 	Metadata    *MetadataService
@@ -122,6 +123,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
 	c.Network = (*NetworkService)(&c.common)
+	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)

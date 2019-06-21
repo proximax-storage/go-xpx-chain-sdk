@@ -6,23 +6,45 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils"
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"math/big"
 )
 
-type MosaicId big.Int
+type MosaicId struct {
+	baseInt64
+}
+
+// returns MosaicId for passed mosaic identifier
+func NewMosaicId(id uint64) (*MosaicId, error) {
+	if hasBits(id, NamespaceBit) {
+		return nil, ErrWrongBitMosaicId
+	}
+	return NewMosaicIdNoCheck(id), nil
+}
+
+// TODO
+func NewMosaicIdNoCheck(id uint64) *MosaicId {
+	mosaicId := MosaicId{baseInt64(id)}
+	return &mosaicId
+}
+
+func (m *MosaicId) Type() AssetIdType {
+	return MosaicAssetIdType
+}
+
+func (m *MosaicId) Id() uint64 {
+	return uint64(m.baseInt64)
+}
 
 func (m *MosaicId) String() string {
 	return m.toHexString()
 }
 
 func (m *MosaicId) toHexString() string {
-	return bigIntegerToHex(mosaicIdToBigInt(m))
+	return uint64ToHex(m.Id())
 }
 
-func (m *MosaicId) Equals(id *MosaicId) bool {
-	return (*big.Int)(m).Uint64() == (*big.Int)(id).Uint64()
+func (m *MosaicId) Equals(id AssetId) bool {
+	return m.Id() == id.Id()
 }
 
 // returns MosaicId for passed nonce and public key of mosaic owner
@@ -31,72 +53,43 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 		return nil, ErrInvalidOwnerPublicKey
 	}
 
-	id, err := generateMosaicId(nonce, ownerPublicKey)
-
-	return bigIntToMosaicId(id), err
-}
-
-// returns MosaicId from big int id
-func NewMosaicId(id *big.Int) (*MosaicId, error) {
-	if id == nil {
-		return nil, ErrNilMosaicId
-	}
-
-	return bigIntToMosaicId(id), nil
-}
-
-// returns MosaicId's from their big.Int's representation
-func bigIntsToMosaicIds(mosaicIds ...*big.Int) ([]*MosaicId, error) {
-	result := make([]*MosaicId, len(mosaicIds))
-	for i, m := range mosaicIds {
-		var err error = nil
-		result[i], err = NewMosaicId(m)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	return result, nil
+	return generateMosaicId(nonce, ownerPublicKey)
 }
 
 type Mosaic struct {
-	MosaicId *MosaicId
-	Amount   *big.Int
+	AssetId AssetId
+	Amount  Amount
 }
 
-// returns a Mosaic for passed MosaicId and amount
-func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error) {
-	if mosaicId == nil {
-		return nil, ErrNilMosaicId
+// returns a Mosaic for passed AssetId and amount
+func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
+	if assetId == nil {
+		return nil, ErrNilAssetId
 	}
 
-	if amount == nil {
-		return nil, ErrNilMosaicAmount
-	}
+	return NewMosaicNoCheck(assetId, amount), nil
+}
 
-	if utils.EqualsBigInts(amount, big.NewInt(0)) {
-		return nil, ErrNilMosaicAmount
-	}
-
+// returns a Mosaic for passed AssetId and amount without validation of parameters
+func NewMosaicNoCheck(assetId AssetId, amount Amount) *Mosaic {
 	return &Mosaic{
-		MosaicId: mosaicId,
-		Amount:   amount,
-	}, nil
+		AssetId: assetId,
+		Amount:  amount,
+	}
 }
 
 func (m *Mosaic) String() string {
 	return str.StructToString(
 		"MosaicId",
-		str.NewField("MosaicId", str.StringPattern, m.MosaicId),
-		str.NewField("Amount", str.IntPattern, m.Amount),
+		str.NewField("AssetId", str.StringPattern, m.AssetId),
+		str.NewField("Amount", str.StringPattern, m.Amount),
 	)
 }
 
 type MosaicInfo struct {
 	MosaicId   *MosaicId
-	Supply     *big.Int
-	Height     *big.Int
+	Supply     Amount
+	Height     Height
 	Owner      *PublicAccount
 	Revision   uint32
 	Properties *MosaicProperties
@@ -114,6 +107,10 @@ func (m *MosaicInfo) String() string {
 	)
 }
 
+const Supply_Mutable = 0x01
+const Transferable = 0x02
+const LevyMutable = 0x04
+
 // structure which includes several properties for defining mosaic
 // `SupplyMutable` - is supply of defined mosaic can be changed in future
 // `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
@@ -125,11 +122,11 @@ type MosaicProperties struct {
 	Transferable  bool
 	LevyMutable   bool
 	Divisibility  uint8
-	Duration      *big.Int
+	Duration      Duration
 }
 
 // returns MosaicProperties from actual values
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
 		transferable,
@@ -177,21 +174,21 @@ func (tx MosaicSupplyType) String() string {
 }
 
 // returns XEM mosaic with passed amount
-func Xem(amount int64) *Mosaic {
-	return &Mosaic{XemMosaicId, big.NewInt(amount)}
+func Xem(amount uint64) *Mosaic {
+	return NewMosaicNoCheck(XemMosaicId, Amount(amount))
 }
 
 // returns XPX mosaic with passed amount
-func Xpx(amount int64) *Mosaic {
-	return &Mosaic{XpxMosaicId, big.NewInt(amount)}
+func Xpx(amount uint64) *Mosaic {
+	return NewMosaicNoCheck(XpxMosaicId, Amount(amount))
 }
 
 // returns XEM with actual passed amount
-func XemRelative(amount int64) *Mosaic {
-	return Xem(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
+func XemRelative(amount uint64) *Mosaic {
+	return Xem(1000000 * amount)
 }
 
 // returns XPX with actual passed amount
-func XpxRelative(amount int64) *Mosaic {
-	return Xpx(big.NewInt(0).Mul(big.NewInt(1000000), big.NewInt(amount)).Int64())
+func XpxRelative(amount uint64) *Mosaic {
+	return Xpx(1000000 * amount)
 }

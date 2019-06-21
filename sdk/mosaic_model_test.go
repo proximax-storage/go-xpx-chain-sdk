@@ -6,7 +6,6 @@ package sdk
 
 import (
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 )
 
@@ -41,19 +40,19 @@ var mosaicTestVector = []MosaicIdGenerator{
 }
 
 func TestNewMosaicId(t *testing.T) {
-	assert.Equal(t, big.NewInt(992621222383397347).Int64(), mosaicIdToBigInt(XpxMosaicId).Int64())
+	assert.Equal(t, uint64(992621222383397347), XpxMosaicId.Id())
 }
 
 func TestNewMosaicIdFromIdViaConstructor(t *testing.T) {
-	mosaicId := bigIntToMosaicId(big.NewInt(-8884663987180930485))
+	mosaicId := NewMosaicIdNoCheck(992621222383397347)
 
-	assert.Equal(t, big.NewInt(-8884663987180930485).Int64(), mosaicIdToBigInt(mosaicId).Int64())
+	assert.Equal(t, uint64(992621222383397347), mosaicId.Id())
 }
 
 //
 func TestNewMosaic_ShouldCompareMosaicIdsForEquality(t *testing.T) {
-	mosaicId := bigIntToMosaicId(big.NewInt(-8884663987180930485))
-	mosaicId2 := bigIntToMosaicId(big.NewInt(-8884663987180930485))
+	mosaicId := NewMosaicIdNoCheck(992621222383397347)
+	mosaicId2 := NewMosaicIdNoCheck(992621222383397347)
 
 	assert.Equal(t, mosaicId.String(), mosaicId2.String())
 }

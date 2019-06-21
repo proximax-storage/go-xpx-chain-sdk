@@ -9,7 +9,6 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 	"time"
 )
@@ -95,8 +94,8 @@ const (
 
 var (
 	blockClient = mockServer.getPublicTestClientUnsafe().Blockchain
-	testHeight  = big.NewInt(1)
-	testLimit   = big.NewInt(100)
+	testHeight  = Height(1)
+	testLimit   = Amount(100)
 )
 
 // Expected value for TestBlockchainService_GetBlockHeight
@@ -112,15 +111,15 @@ func init() {
 		NetworkType:           MijinTest,
 		Hash:                  "83FB2550BDB72B6F507BDBDE90C265D4A324DF9F1EFEFD9F7BD0FDF6391C30D8",
 		GenerationHash:        "8EC49BBADB3B2FD90810DB9BDACF1FDE999295C594B5FD4B584A0A72F5AAFA59",
-		TotalFee:              uint64DTO{0, 0}.toBigInt(),
+		TotalFee:              uint64DTO{0, 0}.toStruct(),
 		NumTransactions:       25,
 		Signature:             "0BEAE2B3DCDEC268B43797C7A855EC03FDEE0B4687EC14F250D0EA3588ADDD0B42EBB77E14157EAB168B41457CA28395C1EBAB354B0A20CCB5FC73CFA65A3107",
 		Signer:                pubAcc,
 		Version:               3,
 		Type:                  32835,
-		Height:                uint64DTO{1, 0}.toBigInt(),
-		Timestamp:             uint64DTO{0, 0}.toBigInt(),
-		Difficulty:            uint64DTO{276447232, 23283}.toBigInt(),
+		Height:                uint64DTO{1, 0}.toStruct(),
+		Timestamp:             blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+		Difficulty:            uint64DTO{276447232, 23283}.toStruct(),
 		FeeMultiplier:         0,
 		PreviousBlockHash:     "0000000000000000000000000000000000000000000000000000000000000000",
 		BlockTransactionsHash: "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19",
@@ -136,10 +135,10 @@ func init() {
 			NetworkType: MijinTest,
 			Signature:   "AE1558A33F4F595AD5DCEAE4EC11606E815A781E75E3EEC7E9F8BB46BDAF16670C8C36C6815F74FD83487178DDAB8FCE4B4B633875A1549D4FB068ABC5B22A0C",
 			Signer:      nil,
-			MaxFee:      uint64DTO{0, 0}.toBigInt(),
-			Deadline:    &Deadline{time.Unix(uint64DTO{1, 0}.toBigInt().Int64(), int64(time.Millisecond))},
+			MaxFee:      uint64DTO{0, 0}.toStruct(),
+			Deadline:    &Deadline{Timestamp{time.Unix(int64(uint64DTO{1, 0}.toUint64()), int64(time.Millisecond))}},
 			TransactionInfo: &TransactionInfo{
-				Height:              uint64DTO{1, 0}.toBigInt(),
+				Height:              uint64DTO{1, 0}.toStruct(),
 				Hash:                "D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366",
 				MerkleComponentHash: "D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366",
 				Index:               0,
@@ -147,7 +146,7 @@ func init() {
 			},
 		},
 		NamspaceName: "nem",
-		Duration:     uint64DTO{0, 0}.toBigInt(),
+		Duration:     uint64DTO{0, 0}.toStruct(),
 	})
 }
 
@@ -165,7 +164,7 @@ func TestBlockchainService_GetBlocksByHeightWithLimit(t *testing.T) {
 }
 
 func TestBlockchainService_GetBlockchainHeight(t *testing.T) {
-	want := uint64DTO{11235, 0}.toBigInt()
+	want := uint64DTO{11235, 0}.toStruct()
 
 	mockServer.AddRouter(&mock.Router{
 		Path:     blockHeightRoute,

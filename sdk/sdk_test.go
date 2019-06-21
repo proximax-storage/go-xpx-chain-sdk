@@ -8,7 +8,6 @@ import (
 	"context"
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 	"time"
 )
@@ -43,18 +42,15 @@ func Uint64(v uint64) *uint64 { return &v }
 func String(v string) *string { return &v }
 
 func TestBigIntegerToHex_bigIntegerNEMAndXEMToHex(t *testing.T) {
-	testBigInt(t, "15358872602548358953", "D525AD41D95FCF29")
-	testBigInt(t, "9562080086528621131", "84B3552D375FFA4B")
-	testBigInt(t, "153588726025483589", "0221A821F040F545")
-	testBigInt(t, "-7680974160236284465", "9567B2B2622975CF")
-	testBigInt(t, "23160236284465", "0000151069A81A31")
+	testHexConversion(t, 15358872602548358953, "D525AD41D95FCF29")
+	testHexConversion(t, 9562080086528621131, "84B3552D375FFA4B")
+	testHexConversion(t, 153588726025483589, "0221A821F040F545")
+	testHexConversion(t, 0x9567B2B2622975CF, "9567B2B2622975CF")
+	testHexConversion(t, 23160236284465, "0000151069A81A31")
 }
 
-func testBigInt(t *testing.T, str, hexStr string) {
-	i, ok := (&big.Int{}).SetString(str, 10)
-	assert.True(t, ok)
-	result := bigIntegerToHex(i)
-	assert.Equal(t, hexStr, result)
+func testHexConversion(t *testing.T, id uint64, hexStr string) {
+	assert.Equal(t, hexStr, NewNamespaceIdNoCheck(id).toHexString())
 }
 
 type sdkMock struct {

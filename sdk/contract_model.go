@@ -1,12 +1,10 @@
 package sdk
 
-import "math/big"
-
 type ContractInfo struct {
 	Multisig        string
 	MultisigAddress *Address
-	Start           *big.Int
-	Duration        *big.Int
+	Start           Height
+	Duration        Duration
 	Content         string
 	Customers       []string
 	Executors       []string

@@ -37,11 +37,18 @@ var (
 	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
 )
 
+// Common errors
+var (
+	ErrNilAssetId            = errors.New("assetId must not be nil")
+	ErrEmptyAssetIds         = errors.New("list blockchain ids must not by empty")
+	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
+)
+
 // Mosaic errors
 var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
 	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
-	ErrNilMosaicAmount       = errors.New("amount must be not nil")
+	ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
 	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
 	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
 )
@@ -50,6 +57,7 @@ var (
 var (
 	ErrNamespaceTooManyPart = errors.New("too many parts")
 	ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
+	ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
 	ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
 	ErrInvalidNamespaceName = errors.New("namespace name is invalid")
 )

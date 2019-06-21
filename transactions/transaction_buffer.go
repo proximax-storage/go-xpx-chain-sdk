@@ -32,7 +32,7 @@ func TransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuf
 func TransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
-func TransactionBufferCreateUint32Vector(builder *flatbuffers.Builder, data []uint32) flatbuffers.UOffsetT {
+func TransactionBufferCreateUint32Vector(builder *flatbuffers.Builder, data [2]uint32) flatbuffers.UOffsetT {
 	builder.StartVector(4, len(data), 4)
 	for i := len(data) - 1; i >= 0; i-- {
 		builder.PrependUint32(data[i])

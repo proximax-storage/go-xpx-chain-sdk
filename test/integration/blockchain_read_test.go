@@ -7,7 +7,6 @@ package integration
 import (
 	"context"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"math/big"
 	"testing"
 )
 
@@ -28,9 +27,8 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i := uint64(1); i < h.Uint64() && i <= iter; i++ {
-
-		h := big.NewInt(int64(i))
+	for i := sdk.Height(1); i < h && i <= iter; i++ {
+		h := i
 		trans, err := serv.Blockchain.GetBlockTransactions(ctx, h)
 		if err != nil {
 			t.Fatal(err)
@@ -61,39 +59,44 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				t.Logf("%+v", mscInfo)
+				t.Logf("%s", mscInfo)
 			case sdk.MosaicSupplyChange:
 				tran := val.(*sdk.MosaicSupplyChangeTransaction)
 
-				if tran.MosaicId == nil {
+				if tran.AssetId == nil {
 					t.Logf("empty MosaicId")
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
+				mscInfo, err := serv.Resolve.GetMosaicInfoByAssetId(ctx, tran.AssetId)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				t.Logf("%+v", mscInfo)
+				t.Logf("%s", mscInfo)
 			case sdk.Transfer:
 				tran := val.(*sdk.TransferTransaction)
+
 				if tran.Mosaics == nil {
 					t.Logf("empty Mosaics")
 					t.Log(tran)
 					continue
 				}
-				mosaicIDs := make([]*sdk.MosaicId, len(tran.Mosaics))
-				for _, val := range tran.Mosaics {
-					mosaicIDs = append(mosaicIDs, val.MosaicId)
-				}
-				mscInfoArr, err := serv.Mosaic.GetMosaicInfos(ctx, mosaicIDs)
-				if err != nil {
-					t.Fatal(err)
+
+				assetIds := make([]sdk.AssetId, len(tran.Mosaics))
+				for i, val := range tran.Mosaics {
+					assetIds[i] = val.AssetId
 				}
 
-				for _, mscInfo := range mscInfoArr {
-					t.Logf("%+v", mscInfo)
+				if len(assetIds) > 0 {
+					mscInfoArr, err := serv.Resolve.GetMosaicInfosByAssetIds(ctx, assetIds...)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					for _, mscInfo := range mscInfoArr {
+						t.Logf("%s", mscInfo)
+					}
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
@@ -102,7 +105,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				t.Logf("%#v", nsInfo)
+				t.Logf("%s", nsInfo)
 			default:
 				t.Log(val)
 			}

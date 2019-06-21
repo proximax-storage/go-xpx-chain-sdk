@@ -9,7 +9,6 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 )
 
@@ -18,14 +17,14 @@ var (
 )
 
 const (
-	testMosaicPathID = "D525AD41D95FCF29"
+	testMosaicPathID = "6C55E05D11D19FBD"
 
 	testMosaicInfoJson = `
 {
   "mosaic": {
     "mosaicId": [
-      3646934825,
-      3576016193
+		298950589,
+		1817567325
     ],
     "supply": [
       3403414400,
@@ -47,7 +46,7 @@ const (
         0
       ],
       [
-        0,
+        1,
         0
       ]
     ],
@@ -79,9 +78,9 @@ const (
 
 var (
 	mosaicCorr = &MosaicInfo{
-		MosaicId: bigIntToMosaicId(uint64DTO{3646934825, 3576016193}.toBigInt()),
-		Supply:   uint64DTO{3403414400, 2095475}.toBigInt(),
-		Height:   big.NewInt(1),
+		MosaicId: NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()),
+		Supply:   uint64DTO{3403414400, 2095475}.toStruct(),
+		Height:   uint64DTO{1, 0}.toStruct(),
 		Owner: &PublicAccount{
 			Address: &Address{
 				Type:    mosaicClient.client.config.NetworkType,
@@ -94,17 +93,17 @@ var (
 		Properties: &MosaicProperties{
 			Transferable: true,
 			Divisibility: 6,
-			Duration:     big.NewInt(0),
+			Duration:     uint64DTO{1, 0}.toStruct(),
 		},
 	}
 
 	mosaicNames = []*MosaicName{
 		{
-			bigIntToMosaicId(big.NewInt(0x26514E2A1EF33824)),
+			NewMosaicIdNoCheck(0x26514E2A1EF33824),
 			[]string{"cat.storage"},
 		},
 		{
-			bigIntToMosaicId(big.NewInt(0x0DC67FBE1CAD29E3)),
+			NewMosaicIdNoCheck(0x0DC67FBE1CAD29E3),
 			[]string{"cat.currency"},
 		},
 	}
