@@ -67,7 +67,31 @@ const EmptyPublicKey = "00000000000000000000000000000000000000000000000000000000
 ```
 
 ```go
+const LevyMutable = 0x04
+```
+
+```go
 const NUM_CHECKSUM_BYTES = 4
+```
+
+```go
+const NamespaceBit uint64 = 1 << 63
+```
+
+```go
+const Supply_Mutable = 0x01
+```
+
+```go
+const TimestampNemesisBlockMilliseconds int64 = 1459468800 * 1000
+```
+
+```go
+const Transferable = 0x02
+```
+
+```go
+const WebsocketReconnectionDefaultTimeout = time.Second * 5
 ```
 
 ```go
@@ -95,9 +119,18 @@ Metadata errors
 
 ```go
 var (
+	ErrNilAssetId            = errors.New("assetId must not be nil")
+	ErrEmptyAssetIds         = errors.New("list blockchain ids must not by empty")
+	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
+)
+```
+Common errors
+
+```go
+var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
 	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
-	ErrNilMosaicAmount       = errors.New("amount must be not nil")
+	ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
 	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
 	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
 )
@@ -108,6 +141,7 @@ Mosaic errors
 var (
 	ErrNamespaceTooManyPart = errors.New("too many parts")
 	ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
+	ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
 	ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
 	ErrInvalidNamespaceName = errors.New("namespace name is invalid")
 )
@@ -141,16 +175,12 @@ var (
 reputations error
 
 ```go
-var TimestampNemesisBlock = time.Unix(1459468800, 0)
-```
-
-```go
-var XemMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+var XemMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 ```
 mosaic id for XEM mosaic
 
 ```go
-var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+var XpxMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 ```
 mosaic id for XPX mosaic
 
@@ -165,17 +195,6 @@ func ExtractVersion(version uint64) uint8
 ```go
 func GenerateChecksum(b []byte) ([]byte, error)
 ```
-
-#### func  GenerateNamespacePath
-
-```go
-func GenerateNamespacePath(name string) ([]*big.Int, error)
-```
-returns an array of big ints representation if namespace ids from passed
-namespace path to create root namespace pass namespace name in format like
-'rootname' to create child namespace pass namespace name in format like
-'rootname.childname' to create grand child namespace pass namespace name in
-format like 'rootname.childname.grandchildname'
 
 #### func  NewReputationConfig
 
@@ -192,7 +211,7 @@ type AbstractTransaction struct {
 	Deadline    *Deadline
 	Type        TransactionType
 	Version     TransactionVersion
-	MaxFee      *big.Int
+	MaxFee      Amount
 	Signature   string
 	Signer      *PublicAccount
 }
@@ -296,9 +315,9 @@ Account's returns announced Aggregate SignedTransaction
 ```go
 type AccountInfo struct {
 	Address         *Address
-	AddressHeight   *big.Int
+	AddressHeight   Height
 	PublicKey       string
-	PublicKeyHeight *big.Int
+	PublicKeyHeight Height
 	AccountType     AccountType
 	LinkedAccount   *PublicAccount
 	Mosaics         []*Mosaic
@@ -498,7 +517,7 @@ func (tx *AccountPropertiesEntityTypeTransaction) String() string
 ```go
 type AccountPropertiesMosaicModification struct {
 	ModificationType PropertyModificationType
-	MosaicId         *MosaicId
+	AssetId          AssetId
 }
 ```
 
@@ -691,6 +710,7 @@ func NewAddressFromBase32(encoded string) (*Address, error)
 ```go
 func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error)
 ```
+returns new Address from namespace identifier
 
 #### func  NewAddressFromPublicKey
 
@@ -879,6 +899,41 @@ const (
 ```
 AliasType enums
 
+#### type Amount
+
+```go
+type Amount = baseInt64
+```
+
+
+#### type AssetId
+
+```go
+type AssetId interface {
+	fmt.Stringer
+	Type() AssetIdType
+	Id() uint64
+	Equals(AssetId) bool
+	// contains filtered or unexported methods
+}
+```
+
+
+#### type AssetIdType
+
+```go
+type AssetIdType uint8
+```
+
+
+```go
+const (
+	NamespaceAssetIdType AssetIdType = iota
+	MosaicAssetIdType
+)
+```
+AssetIdType enums
+
 #### type BlockInfo
 
 ```go
@@ -886,15 +941,15 @@ type BlockInfo struct {
 	NetworkType
 	Hash                  string
 	GenerationHash        string
-	TotalFee              *big.Int
+	TotalFee              Amount
 	NumTransactions       uint64
 	Signature             string
 	Signer                *PublicAccount
 	Version               uint8
 	Type                  uint64
-	Height                *big.Int
-	Timestamp             *big.Int
-	Difficulty            *big.Int
+	Height                Height
+	Timestamp             *Timestamp
+	Difficulty            Difficulty
 	FeeMultiplier         uint32
 	PreviousBlockHash     string
 	BlockTransactionsHash string
@@ -949,27 +1004,27 @@ type BlockchainService service
 #### func (*BlockchainService) GetBlockByHeight
 
 ```go
-func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height *big.Int) (*BlockInfo, error)
+func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height Height) (*BlockInfo, error)
 ```
 returns BlockInfo for passed block's height
 
 #### func (*BlockchainService) GetBlockTransactions
 
 ```go
-func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height *big.Int) ([]Transaction, error)
+func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height Height) ([]Transaction, error)
 ```
 returns Transaction's inside of block at passed height
 
 #### func (*BlockchainService) GetBlockchainHeight
 
 ```go
-func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (*big.Int, error)
+func (b *BlockchainService) GetBlockchainHeight(ctx context.Context) (Height, error)
 ```
 
 #### func (*BlockchainService) GetBlockchainScore
 
 ```go
-func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*big.Int, error)
+func (b *BlockchainService) GetBlockchainScore(ctx context.Context) (*ChainScore, error)
 ```
 
 #### func (*BlockchainService) GetBlockchainStorage
@@ -981,7 +1036,7 @@ func (b *BlockchainService) GetBlockchainStorage(ctx context.Context) (*Blockcha
 #### func (*BlockchainService) GetBlocksByHeightWithLimit
 
 ```go
-func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height, limit *big.Int) ([]*BlockInfo, error)
+func (b *BlockchainService) GetBlocksByHeightWithLimit(ctx context.Context, height Height, limit Amount) ([]*BlockInfo, error)
 ```
 returns BlockInfo's for range block height - (block height + limit) Example:
 GetBlocksByHeightWithLimit(ctx, 1, 25) => [BlockInfo25, BlockInfo24, ...,
@@ -1004,6 +1059,53 @@ type BlockchainStorageInfo struct {
 func (b *BlockchainStorageInfo) String() string
 ```
 
+#### type BlockchainTimestamp
+
+```go
+type BlockchainTimestamp struct {
+}
+```
+
+
+#### func  NewBlockchainTimestamp
+
+```go
+func NewBlockchainTimestamp(milliseconds int64) *BlockchainTimestamp
+```
+returns new BlockchainTimestamp from passed milliseconds value
+
+#### func (BlockchainTimestamp) String
+
+```go
+func (m BlockchainTimestamp) String() string
+```
+
+#### func (*BlockchainTimestamp) ToTimestamp
+
+```go
+func (t *BlockchainTimestamp) ToTimestamp() *Timestamp
+```
+
+#### type ChainScore
+
+```go
+type ChainScore [2]uint64
+```
+
+
+#### func  NewChainScore
+
+```go
+func NewChainScore(scoreLow uint64, scoreHigh uint64) *ChainScore
+```
+returns new ChainScore from passed low and high score
+
+#### func (*ChainScore) String
+
+```go
+func (m *ChainScore) String() string
+```
+
 #### type Client
 
 ```go
@@ -1015,6 +1117,7 @@ type Client struct {
 	Namespace   *NamespaceService
 	Network     *NetworkService
 	Transaction *TransactionService
+	Resolve     *ResolverService
 	Account     *AccountService
 	Contract    *ContractService
 	Metadata    *MetadataService
@@ -1035,7 +1138,9 @@ passed client is nil, http.DefaultClient will be used
 
 ```go
 type Config struct {
-	BaseURL *url.URL
+	BaseURLs              []*url.URL
+	UsedBaseUrl           *url.URL
+	WsReconnectionTimeout time.Duration
 	NetworkType
 }
 ```
@@ -1045,14 +1150,14 @@ Provides service configuration
 #### func  NewConfig
 
 ```go
-func NewConfig(baseUrl string, networkType NetworkType) (*Config, error)
+func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration) (*Config, error)
 ```
-returns config for HTTP Client from passed node url and NetworkType
+returns config for HTTP Client from passed node url and network type
 
 #### func  NewConfigWithReputation
 
 ```go
-func NewConfigWithReputation(baseUrl string, networkType NetworkType, repConf *reputationConfig) (*Config, error)
+func NewConfigWithReputation(baseUrls []string, networkType NetworkType, repConf *reputationConfig, wsReconnectionTimeout time.Duration) (*Config, error)
 ```
 
 #### type ConfirmedAddedMapper
@@ -1076,8 +1181,8 @@ func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc) ConfirmedAdd
 type ContractInfo struct {
 	Multisig        string
 	MultisigAddress *Address
-	Start           *big.Int
-	Duration        *big.Int
+	Start           Height
+	Duration        Duration
 	Content         string
 	Customers       []string
 	Executors       []string
@@ -1172,7 +1277,7 @@ func (tx *CosignatureTransaction) String() string
 
 ```go
 type Deadline struct {
-	time.Time
+	Timestamp
 }
 ```
 
@@ -1180,24 +1285,30 @@ type Deadline struct {
 #### func  NewDeadline
 
 ```go
-func NewDeadline(d time.Duration) *Deadline
+func NewDeadline(delta time.Duration) *Deadline
 ```
+returns new Deadline from passed duration
 
 #### func  NewDeadlineFromBlockchainTimestamp
 
 ```go
-func NewDeadlineFromBlockchainTimestamp(seconds int64) *Deadline
+func NewDeadlineFromBlockchainTimestamp(timestamp *BlockchainTimestamp) *Deadline
 ```
-Create deadline from blockchain timestamp. The blockchain has self
-timestamp(Unix timestamp - constant). So, to return this time to Unix, we add
-this constant. TODO: Add a new class BlockchainTimestamp. Re-work Deadline class
-and conversion logic
+returns new Deadline from passed BlockchainTimestamp
 
-#### func (*Deadline) GetInstant
+#### type Difficulty
 
 ```go
-func (d *Deadline) GetInstant() int64
+type Difficulty = baseInt64
 ```
+
+
+#### type Duration
+
+```go
+type Duration = baseInt64
+```
+
 
 #### type Hash
 
@@ -1238,6 +1349,13 @@ const (
 func (ht HashType) String() string
 ```
 
+#### type Height
+
+```go
+type Height = baseInt64
+```
+
+
 #### type HttpError
 
 ```go
@@ -1253,7 +1371,7 @@ type HttpError struct {
 type LockFundsTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	Duration *big.Int
+	Duration Duration
 	*SignedTransaction
 }
 ```
@@ -1262,7 +1380,7 @@ type LockFundsTransaction struct {
 #### func  NewLockFundsTransaction
 
 ```go
-func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error)
+func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, signedTx *SignedTransaction, networkType NetworkType) (*LockFundsTransaction, error)
 ```
 returns a LockFundsTransaction from passed Mosaic, duration in blocks and
 SignedTransaction
@@ -1433,7 +1551,7 @@ func (t MetadataType) String() string
 ```go
 type ModifyContractTransaction struct {
 	AbstractTransaction
-	DurationDelta int64
+	DurationDelta Duration
 	Hash          string
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
@@ -1446,7 +1564,7 @@ type ModifyContractTransaction struct {
 
 ```go
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta int64, hash string,
+	deadline *Deadline, durationDelta Duration, hash string,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -1634,8 +1752,8 @@ func (tx *ModifyMultisigAccountTransaction) String() string
 
 ```go
 type Mosaic struct {
-	MosaicId *MosaicId
-	Amount   *big.Int
+	AssetId AssetId
+	Amount  Amount
 }
 ```
 
@@ -1643,35 +1761,42 @@ type Mosaic struct {
 #### func  NewMosaic
 
 ```go
-func NewMosaic(mosaicId *MosaicId, amount *big.Int) (*Mosaic, error)
+func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error)
 ```
-returns a Mosaic for passed MosaicId and amount
+returns a Mosaic for passed AssetId and amount
+
+#### func  NewMosaicNoCheck
+
+```go
+func NewMosaicNoCheck(assetId AssetId, amount Amount) *Mosaic
+```
+returns a Mosaic for passed AssetId and amount without validation of parameters
 
 #### func  Xem
 
 ```go
-func Xem(amount int64) *Mosaic
+func Xem(amount uint64) *Mosaic
 ```
 returns XEM mosaic with passed amount
 
 #### func  XemRelative
 
 ```go
-func XemRelative(amount int64) *Mosaic
+func XemRelative(amount uint64) *Mosaic
 ```
 returns XEM with actual passed amount
 
 #### func  Xpx
 
 ```go
-func Xpx(amount int64) *Mosaic
+func Xpx(amount uint64) *Mosaic
 ```
 returns XPX mosaic with passed amount
 
 #### func  XpxRelative
 
 ```go
-func XpxRelative(amount int64) *Mosaic
+func XpxRelative(amount uint64) *Mosaic
 ```
 returns XPX with actual passed amount
 
@@ -1752,16 +1877,17 @@ func (tx *MosaicDefinitionTransaction) String() string
 #### type MosaicId
 
 ```go
-type MosaicId big.Int
+type MosaicId struct {
+}
 ```
 
 
 #### func  NewMosaicId
 
 ```go
-func NewMosaicId(id *big.Int) (*MosaicId, error)
+func NewMosaicId(id uint64) (*MosaicId, error)
 ```
-returns MosaicId from big int id
+returns MosaicId for passed mosaic identifier
 
 #### func  NewMosaicIdFromNonceAndOwner
 
@@ -1770,10 +1896,23 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 ```
 returns MosaicId for passed nonce and public key of mosaic owner
 
+#### func  NewMosaicIdNoCheck
+
+```go
+func NewMosaicIdNoCheck(id uint64) *MosaicId
+```
+TODO
+
 #### func (*MosaicId) Equals
 
 ```go
-func (m *MosaicId) Equals(id *MosaicId) bool
+func (m *MosaicId) Equals(id AssetId) bool
+```
+
+#### func (*MosaicId) Id
+
+```go
+func (m *MosaicId) Id() uint64
 ```
 
 #### func (*MosaicId) String
@@ -1782,13 +1921,19 @@ func (m *MosaicId) Equals(id *MosaicId) bool
 func (m *MosaicId) String() string
 ```
 
+#### func (*MosaicId) Type
+
+```go
+func (m *MosaicId) Type() AssetIdType
+```
+
 #### type MosaicInfo
 
 ```go
 type MosaicInfo struct {
 	MosaicId   *MosaicId
-	Supply     *big.Int
-	Height     *big.Int
+	Supply     Amount
+	Height     Height
 	Owner      *PublicAccount
 	Revision   uint32
 	Properties *MosaicProperties
@@ -1836,7 +1981,7 @@ type MosaicProperties struct {
 	Transferable  bool
 	LevyMutable   bool
 	Divisibility  uint8
-	Duration      *big.Int
+	Duration      Duration
 }
 ```
 
@@ -1854,7 +1999,7 @@ renewed
 #### func  NewMosaicProperties
 
 ```go
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration *big.Int) *MosaicProperties
+func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties
 ```
 returns MosaicProperties from actual values
 
@@ -1896,8 +2041,8 @@ GetMosaicsNames Get readable names for a set of mosaics post @/mosaic/names
 type MosaicSupplyChangeTransaction struct {
 	AbstractTransaction
 	MosaicSupplyType
-	*MosaicId
-	Delta *big.Int
+	AssetId
+	Delta Amount
 }
 ```
 
@@ -1905,9 +2050,9 @@ type MosaicSupplyChangeTransaction struct {
 #### func  NewMosaicSupplyChangeTransaction
 
 ```go
-func NewMosaicSupplyChangeTransaction(deadline *Deadline, mosaicId *MosaicId, supplyType MosaicSupplyType, delta *big.Int, networkType NetworkType) (*MosaicSupplyChangeTransaction, error)
+func NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration, networkType NetworkType) (*MosaicSupplyChangeTransaction, error)
 ```
-returns MosaicSupplyChangeTransaction from passed MosaicId, MosaicSupplyTypeand
+returns MosaicSupplyChangeTransaction from passed AssetId, MosaicSupplyTypeand
 supply delta
 
 #### func (*MosaicSupplyChangeTransaction) GetAbstractTransaction
@@ -2022,12 +2167,6 @@ type NamespaceAlias struct {
 
 NamespaceAlias contains aliased mosaicId or address and type of alias
 
-#### func  NewNamespaceAlias
-
-```go
-func NewNamespaceAlias(dto *namespaceAliasDTO) (*NamespaceAlias, error)
-```
-
 #### func (*NamespaceAlias) Address
 
 ```go
@@ -2049,15 +2188,28 @@ func (ref *NamespaceAlias) String() string
 #### type NamespaceId
 
 ```go
-type NamespaceId big.Int
+type NamespaceId struct {
+}
 ```
 
+
+#### func  GenerateNamespacePath
+
+```go
+func GenerateNamespacePath(name string) ([]*NamespaceId, error)
+```
+returns an array of big ints representation if namespace ids from passed
+namespace path to create root namespace pass namespace name in format like
+'rootname' to create child namespace pass namespace name in format like
+'rootname.childname' to create grand child namespace pass namespace name in
+format like 'rootname.childname.grandchildname'
 
 #### func  NewNamespaceId
 
 ```go
-func NewNamespaceId(id *big.Int) (*NamespaceId, error)
+func NewNamespaceId(id uint64) (*NamespaceId, error)
 ```
+returns new NamespaceId from passed namespace identifier
 
 #### func  NewNamespaceIdFromName
 
@@ -2070,43 +2222,35 @@ name in format like 'rootname' to create child namespace pass namespace name in
 format like 'rootname.childname' to create grand child namespace pass namespace
 name in format like 'rootname.childname.grandchildname'
 
+#### func  NewNamespaceIdNoCheck
+
+```go
+func NewNamespaceIdNoCheck(id uint64) *NamespaceId
+```
+returns new NamespaceId from passed namespace identifier TODO
+
+#### func (*NamespaceId) Equals
+
+```go
+func (m *NamespaceId) Equals(id AssetId) bool
+```
+
+#### func (*NamespaceId) Id
+
+```go
+func (m *NamespaceId) Id() uint64
+```
+
 #### func (*NamespaceId) String
 
 ```go
 func (m *NamespaceId) String() string
 ```
 
-#### type NamespaceIds
+#### func (*NamespaceId) Type
 
 ```go
-type NamespaceIds struct {
-	List []*NamespaceId
-}
-```
-
-
-#### func (*NamespaceIds) Decode
-
-```go
-func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator)
-```
-
-#### func (*NamespaceIds) Encode
-
-```go
-func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream)
-```
-
-#### func (*NamespaceIds) IsEmpty
-
-```go
-func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool
-```
-
-#### func (*NamespaceIds) MarshalJSON
-
-```go
-func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error)
+func (m *NamespaceId) Type() AssetIdType
 ```
 
 #### type NamespaceInfo
@@ -2121,8 +2265,8 @@ type NamespaceInfo struct {
 	Alias       *NamespaceAlias
 	Parent      *NamespaceInfo
 	Owner       *PublicAccount
-	StartHeight *big.Int
-	EndHeight   *big.Int
+	StartHeight Height
+	EndHeight   Height
 }
 ```
 
@@ -2520,7 +2664,7 @@ type RegisterNamespaceTransaction struct {
 	*NamespaceId
 	NamespaceType
 	NamspaceName string
-	Duration     *big.Int
+	Duration     Duration
 	ParentId     *NamespaceId
 }
 ```
@@ -2529,7 +2673,7 @@ type RegisterNamespaceTransaction struct {
 #### func  NewRegisterRootNamespaceTransaction
 
 ```go
-func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration *big.Int, networkType NetworkType) (*RegisterNamespaceTransaction, error)
+func NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration Duration, networkType NetworkType) (*RegisterNamespaceTransaction, error)
 ```
 returns a RegisterNamespaceTransaction from passed namespace name and duration
 in blocks
@@ -2558,6 +2702,29 @@ func (tx *RegisterNamespaceTransaction) Size() int
 
 ```go
 func (tx *RegisterNamespaceTransaction) String() string
+```
+
+#### type ResolverService
+
+```go
+type ResolverService struct {
+	NamespaceService *NamespaceService
+	MosaicService    *MosaicService
+}
+```
+
+TODO: Implement resolving namespace to account
+
+#### func (*ResolverService) GetMosaicInfoByAssetId
+
+```go
+func (ref *ResolverService) GetMosaicInfoByAssetId(ctx context.Context, assetId AssetId) (*MosaicInfo, error)
+```
+
+#### func (*ResolverService) GetMosaicInfosByAssetIds
+
+```go
+func (ref *ResolverService) GetMosaicInfosByAssetIds(ctx context.Context, assetIds ...AssetId) ([]*MosaicInfo, error)
 ```
 
 #### type RespErr
@@ -2616,7 +2783,7 @@ func (s *Secret) String() string
 type SecretLockTransaction struct {
 	AbstractTransaction
 	*Mosaic
-	Duration  *big.Int
+	Duration  Duration
 	Secret    *Secret
 	Recipient *Address
 }
@@ -2626,7 +2793,7 @@ type SecretLockTransaction struct {
 #### func  NewSecretLockTransaction
 
 ```go
-func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration *big.Int, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error)
+func NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, secret *Secret, recipient *Address, networkType NetworkType) (*SecretLockTransaction, error)
 ```
 returns a SecretLockTransaction from passed Mosaic, duration in blocks, Secret
 and mosaic recipient Address
@@ -2789,6 +2956,28 @@ type StatusMapperFn func(m []byte) (*StatusInfo, error)
 func (p StatusMapperFn) MapStatus(m []byte) (*StatusInfo, error)
 ```
 
+#### type Timestamp
+
+```go
+type Timestamp struct {
+	time.Time
+}
+```
+
+
+#### func  NewTimestamp
+
+```go
+func NewTimestamp(milliseconds int64) *Timestamp
+```
+returns new Timestamp from passed milliseconds value
+
+#### func (*Timestamp) ToBlockchainTimestamp
+
+```go
+func (t *Timestamp) ToBlockchainTimestamp() *BlockchainTimestamp
+```
+
 #### type Transaction
 
 ```go
@@ -2836,7 +3025,7 @@ type TransactionIdsDTO struct {
 
 ```go
 type TransactionInfo struct {
-	Height              *big.Int
+	Height              Height
 	Index               uint32
 	Id                  string
 	Hash                Hash
@@ -2941,7 +3130,7 @@ type TransactionStatus struct {
 	Group    string
 	Status   string
 	Hash     Hash
-	Height   *big.Int
+	Height   Height
 }
 ```
 

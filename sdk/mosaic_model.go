@@ -61,7 +61,7 @@ type Mosaic struct {
 	Amount  Amount
 }
 
-// returns a Mosaic for passed MosaicId and amount
+// returns a Mosaic for passed AssetId and amount
 func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 	if assetId == nil {
 		return nil, ErrNilAssetId
@@ -70,7 +70,7 @@ func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 	return NewMosaicNoCheck(assetId, amount), nil
 }
 
-// returns a Mosaic for passed MosaicId and amount without validation of parameters
+// returns a Mosaic for passed AssetId and amount without validation of parameters
 func NewMosaicNoCheck(assetId AssetId, amount Amount) *Mosaic {
 	return &Mosaic{
 		AssetId: assetId,
