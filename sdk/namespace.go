@@ -134,7 +134,7 @@ func (ref *NamespaceService) GetNamespaceNames(ctx context.Context, nsIds []*Nam
 
 	dtos := namespaceNameDTOs(make([]*namespaceNameDTO, 0))
 
-	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &NamespaceIds{nsIds}, &dtos)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, namespaceNamesRoute, &namespaceIds{nsIds}, &dtos)
 	if err != nil {
 		return nil, err
 	}

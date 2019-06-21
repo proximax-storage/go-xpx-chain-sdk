@@ -75,11 +75,11 @@ func NewNamespaceIdFromName(namespaceName string) (*NamespaceId, error) {
 	}
 }
 
-type NamespaceIds struct {
+type namespaceIds struct {
 	List []*NamespaceId
 }
 
-func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
+func (ref *namespaceIds) MarshalJSON() (buf []byte, err error) {
 	buf = []byte(`{"namespaceIds": [`)
 
 	for i, nsId := range ref.List {
@@ -95,13 +95,13 @@ func (ref *NamespaceIds) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-func (ref *NamespaceIds) IsEmpty(ptr unsafe.Pointer) bool {
-	return len((*NamespaceIds)(ptr).List) == 0
+func (ref *namespaceIds) IsEmpty(ptr unsafe.Pointer) bool {
+	return len((*namespaceIds)(ptr).List) == 0
 }
 
-func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
-	if (*NamespaceIds)(ptr) == nil {
-		ptr = (unsafe.Pointer)(&NamespaceIds{})
+func (ref *namespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
+	if (*namespaceIds)(ptr) == nil {
+		ptr = (unsafe.Pointer)(&namespaceIds{})
 	}
 
 	if iter.ReadNil() {
@@ -116,13 +116,13 @@ func (ref *NamespaceIds) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 			for _, val := range v.([]*NamespaceId) {
 				list = append(list, val)
 			}
-			(*NamespaceIds)(ptr).List = list
+			(*namespaceIds)(ptr).List = list
 		}
 	}
 }
 
-func (ref *NamespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	buf, err := (*NamespaceIds)(ptr).MarshalJSON()
+func (ref *namespaceIds) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
+	buf, err := (*namespaceIds)(ptr).MarshalJSON()
 	if err == nil {
 		_, err = stream.Write(buf)
 		//	todo: log error in future

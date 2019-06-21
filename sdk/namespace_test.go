@@ -41,12 +41,12 @@ var (
 	testAddress = Address{Address: "SCASIIAPS6BSFEC66V6MU5ZGEVWM53BES5GYBGLE"}
 
 	testNamespaceId  = NewNamespaceIdNoCheck(9562080086528621131)
-	testNamespaceIDs = &NamespaceIds{
+	testNamespaceIDs = &namespaceIds{
 		List: []*NamespaceId{
 			testNamespaceId,
 		},
 	}
-	ad   = &NamespaceIds{}
+	ad   = &namespaceIds{}
 	meta = `"meta": {
 			"active": true,
 			"index": 0,
