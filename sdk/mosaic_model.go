@@ -109,28 +109,24 @@ func (m *MosaicInfo) String() string {
 
 const Supply_Mutable = 0x01
 const Transferable = 0x02
-const LevyMutable = 0x04
 
 // structure which includes several properties for defining mosaic
 // `SupplyMutable` - is supply of defined mosaic can be changed in future
 // `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
-// `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
 // `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
 // `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicProperties struct {
 	SupplyMutable bool
 	Transferable  bool
-	LevyMutable   bool
 	Divisibility  uint8
 	Duration      Duration
 }
 
 // returns MosaicProperties from actual values
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, divisibility uint8, duration Duration) *MosaicProperties {
 	ref := &MosaicProperties{
 		supplyMutable,
 		transferable,
-		levyMutable,
 		divisibility,
 		duration,
 	}
@@ -143,7 +139,6 @@ func (mp *MosaicProperties) String() string {
 		"MosaicProperties",
 		str.NewField("SupplyMutable", str.BooleanPattern, mp.SupplyMutable),
 		str.NewField("Transferable", str.BooleanPattern, mp.Transferable),
-		str.NewField("LevyMutable", str.BooleanPattern, mp.LevyMutable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
 		str.NewField("Duration", str.StringPattern, mp.Duration),
 	)

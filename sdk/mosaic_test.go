@@ -37,20 +37,28 @@ const (
     "owner": "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 	"revision": 1,
     "properties": [
-      [
-        2,
-        0
-      ],
-      [
-        6,
-        0
-      ],
-      [
-        1,
-        0
-      ]
-    ],
-    "levy": {}
+	  {
+    	"value": [
+        	2,
+        	0
+      	],
+    	"id": 0
+	  },
+	  {
+    	"value": [
+        	6,
+        	0
+      	],
+    	"id": 1
+	  },
+	  {
+    	"value": [
+        	1,
+        	0
+      	],
+    	"id": 2
+	  }
+    ]
   }
 }`
 

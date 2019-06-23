@@ -68,6 +68,12 @@ var (
 	ErrNilOrZeroLimit  = errors.New("limit should not be nil or zero")
 )
 
+// Lock errors
+var (
+	ErrNilSecret = errors.New("secret should not be nil")
+	ErrNilProof  = errors.New("proof should not be nil")
+)
+
 // plain errors
 var (
 	ErrEmptyAddressesIds = errors.New("list of addresses should not be empty")

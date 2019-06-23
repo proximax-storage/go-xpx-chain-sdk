@@ -6,15 +6,17 @@ package integration
 
 import (
 	"context"
+	"encoding/hex"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"testing"
 )
 
 const iter = 1000
-const testUrl = "http://bcstage1.xpxsirius.io:3000"
-const networkType = sdk.PublicTest
-const privateKey = "D54AC0CB0FF50FB44233782B3A6B5FDE2F1C83B9AE2F1352119F93713F3AB923"
+const testUrl = "http://bcdev1.xpxsirius.io:3000"
+const networkType = sdk.PrivateTest
+const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
+var GenerationHash, _ = hex.DecodeString("5166DEDF0ADC0DA2F8456146CF434148809057532379450165EA50DA017B2EE4")
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {

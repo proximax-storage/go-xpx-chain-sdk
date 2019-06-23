@@ -70,7 +70,22 @@ func (dto *mosaicDTO) toStruct() (*Mosaic, error) {
 	return NewMosaic(assetId, dto.Amount.toStruct())
 }
 
-type mosaicPropertiesDTO []uint64DTO
+type MosaicPropertyId uint8
+
+// MosaicPropertyId enums
+const (
+	FlagsPropertyId MosaicPropertyId = iota
+	DivisibilityPropertyId
+	DurationPropertyId
+	SentinelPropertyId
+)
+
+type mosaicPropertyDTO struct {
+	Id    MosaicPropertyId `json:"id"`
+	Value uint64DTO        `json:"value"`
+}
+
+type mosaicPropertiesDTO []mosaicPropertyDTO
 
 // namespaceMosaicMetaDTO
 type namespaceMosaicMetaDTO struct {
@@ -94,15 +109,30 @@ type mosaicInfoDTO struct {
 	Mosaic mosaicDefinitionDTO
 }
 
-func (dto *mosaicPropertiesDTO) toStruct() *MosaicProperties {
-	flags := (*dto)[0].toUint64()
+func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
+	flags := uint64(0)
+	divisibility := uint8(0)
+	duration := Duration(0)
+	for _, property := range *dto {
+		switch property.Id {
+		case FlagsPropertyId:
+			flags = property.Value.toUint64()
+		case DivisibilityPropertyId:
+			divisibility = byte(property.Value.toUint64())
+		case DurationPropertyId:
+			duration = Duration(property.Value.toUint64())
+		case SentinelPropertyId:
+		default:
+			return nil, errors.New("Unknown Property Id")
+		}
+	}
+
 	return NewMosaicProperties(
 		hasBits(flags, Supply_Mutable),
 		hasBits(flags, Transferable),
-		hasBits(flags, LevyMutable),
-		byte((*dto)[1].toUint64()),
-		(*dto)[2].toStruct(),
-	)
+		divisibility,
+		duration,
+	), nil
 }
 
 func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
@@ -120,13 +150,18 @@ func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error)
 		return nil, err
 	}
 
+	properties, err := ref.Mosaic.Properties.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
 	mscInfo := &MosaicInfo{
 		MosaicId:   mosaicId,
 		Supply:     ref.Mosaic.Supply.toStruct(),
 		Height:     ref.Mosaic.Height.toStruct(),
 		Owner:      publicAcc,
 		Revision:   ref.Mosaic.Revision,
-		Properties: ref.Mosaic.Properties.toStruct(),
+		Properties: properties,
 	}
 
 	return mscInfo, nil

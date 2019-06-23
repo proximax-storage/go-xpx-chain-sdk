@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -182,4 +183,21 @@ func generateSecret(proofB []byte, hashType HashType) ([]byte, error) {
 	}
 
 	return nil, errors.New("Not supported HashType generateSecret")
+}
+
+func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) ([]byte, error) {
+	if secret == nil {
+		return nil, ErrNilSecret
+	}
+
+	if recipient == nil {
+		return nil, ErrNilAddress
+	}
+
+	addr, err := base32.StdEncoding.DecodeString(recipient.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return crypto.HashesSha3_256(append(secret.Hash, addr...))
 }

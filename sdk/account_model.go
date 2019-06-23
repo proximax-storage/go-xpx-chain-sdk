@@ -20,18 +20,18 @@ type Account struct {
 	*crypto.KeyPair
 }
 
-func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
-	return signTransactionWith(tx, a)
+func (a *Account) Sign(tx Transaction, generationHash []byte) (*SignedTransaction, error) {
+	return signTransactionWith(tx, a, generationHash)
 }
 
 // sign AggregateTransaction with current Account and with every passed cosignatory Account's
 // returns announced Aggregate SignedTransaction
-func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
-	return signTransactionWithCosignatures(tx, a, cosignatories)
+func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account, generationHash []byte) (*SignedTransaction, error) {
+	return signTransactionWithCosignatures(tx, a, cosignatories, generationHash)
 }
 
-func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
-	return signCosignatureTransaction(a, tx)
+func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction, generationHash []byte) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransaction(a, tx, generationHash)
 }
 
 func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error) {

@@ -21,7 +21,7 @@ type blockInfoDTO struct {
 		BlockTransactionsHash string                 `json:"blockTransactionsHash"`
 		BlockReceiptsHash     string                 `json:"blockReceiptsHash"`
 		StateHash             string                 `json:"stateHash"`
-		BeneficiaryPublicKey  string                 `json:"beneficiaryPublicKey"`
+		Beneficiary           string                 `json:"beneficiary"`
 	} `json:"block"`
 }
 
@@ -40,8 +40,8 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 
 	var bpa *PublicAccount = nil
 
-	if dto.Block.BeneficiaryPublicKey != EmptyPublicKey {
-		bpa, err = NewAccountFromPublicKey(dto.Block.BeneficiaryPublicKey, nt)
+	if dto.Block.Beneficiary != EmptyPublicKey {
+		bpa, err = NewAccountFromPublicKey(dto.Block.Beneficiary, nt)
 		if err != nil {
 			return nil, err
 		}

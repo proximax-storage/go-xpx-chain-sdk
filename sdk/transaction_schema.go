@@ -297,6 +297,7 @@ func secretProofTransactionSchema() *schema {
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("hashAlgorithm", ByteSize),
 			newArrayAttribute("secret", ByteSize),
+			newArrayAttribute("recipient", ByteSize),
 			newScalarAttribute("proofSize", ShortSize),
 			newArrayAttribute("proof", ByteSize),
 		},

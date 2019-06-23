@@ -49,7 +49,7 @@ func (b *BlockInfo) String() string {
 		str.NewField("BlockTransactionsHash", str.StringPattern, b.BlockTransactionsHash),
 		str.NewField("BlockReceiptsHash", str.StringPattern, b.BlockReceiptsHash),
 		str.NewField("StateHash", str.StringPattern, b.StateHash),
-		str.NewField("BeneficiaryPublicKey", str.StringPattern, b.Beneficiary),
+		str.NewField("Beneficiary", str.StringPattern, b.Beneficiary),
 	)
 }
 

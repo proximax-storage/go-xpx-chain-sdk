@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
@@ -23,7 +24,8 @@ const (
 )
 
 var (
-	baseUrls = []string{"http://127.0.0.1:3000"}
+	baseUrls          = []string{"http://127.0.0.1:3000"}
+	GenerationHash, _ = hex.DecodeString("86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790")
 )
 
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
@@ -128,7 +130,7 @@ func main() {
 		networkType,
 	)
 
-	stx, err := customerAcc.Sign(mctx)
+	stx, err := customerAcc.Sign(mctx, GenerationHash)
 	if err != nil {
 		panic(fmt.Errorf("TransaferTransaction signing returned error: %s", err))
 	}

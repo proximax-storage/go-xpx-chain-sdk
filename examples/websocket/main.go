@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
@@ -20,7 +21,8 @@ const (
 
 var (
 	//baseUrls = []string{"http://192.168.88.15:3000"}
-	baseUrls = []string{"http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002"}
+	baseUrls          = []string{"http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002"}
+	GenerationHash, _ = hex.DecodeString("86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790")
 )
 
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
@@ -118,7 +120,7 @@ func doTransferTransaction(address *sdk.Address, conf *sdk.Config) {
 		networkType,
 	)
 
-	stx, err := acc.Sign(ttx)
+	stx, err := acc.Sign(ttx, GenerationHash)
 	if err != nil {
 		panic(fmt.Errorf("TransaferTransaction signing returned error: %s", err))
 	}
@@ -182,7 +184,7 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 		panic(err)
 	}
 
-	signedBondedTx, err := acc.Sign(bondedTx)
+	signedBondedTx, err := acc.Sign(bondedTx, GenerationHash)
 	if err != nil {
 		panic(err)
 	}
@@ -192,7 +194,7 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 		panic(err)
 	}
 
-	signedLockFound, err := acc.Sign(lockFound)
+	signedLockFound, err := acc.Sign(lockFound, GenerationHash)
 	if err != nil {
 		panic(err)
 	}
