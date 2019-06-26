@@ -376,9 +376,12 @@ func TestSecretTransaction(t *testing.T) {
 }
 
 func TestCompleteAggregateTransaction(t *testing.T) {
+	acc, err := sdk.NewAccount(networkType)
+	assert.Nil(t, err)
+
 	ttx, err := sdk.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
-		sdk.NewAddress("SBILTA367K2LX2FEXG5TFWAS7GEFYAGY7QLFBYKC", networkType),
+		acc.Address,
 		[]*sdk.Mosaic{},
 		sdk.NewPlainMessage("test-message"),
 		networkType,

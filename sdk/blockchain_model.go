@@ -10,23 +10,25 @@ import (
 
 type BlockInfo struct {
 	NetworkType
-	Hash                  string
-	GenerationHash        string
-	TotalFee              Amount
-	NumTransactions       uint64
-	Signature             string
-	Signer                *PublicAccount
-	Version               uint8
-	Type                  uint64
-	Height                Height
-	Timestamp             *Timestamp
-	Difficulty            Difficulty
-	FeeMultiplier         uint32
-	PreviousBlockHash     string
-	BlockTransactionsHash string
-	BlockReceiptsHash     string
-	StateHash             string
-	Beneficiary           *PublicAccount
+	Hash                   string
+	GenerationHash         string
+	TotalFee               Amount
+	NumTransactions        uint64
+	Signature              string
+	Signer                 *PublicAccount
+	Version                uint8
+	Type                   uint64
+	Height                 Height
+	Timestamp              *Timestamp
+	Difficulty             Difficulty
+	FeeMultiplier          uint32
+	PreviousBlockHash      string
+	BlockTransactionsHash  string
+	BlockReceiptsHash      string
+	StateHash              string
+	Beneficiary            *PublicAccount
+	FeeInterest            uint32
+	FeeInterestDenominator uint32
 }
 
 func (b *BlockInfo) String() string {
@@ -50,6 +52,8 @@ func (b *BlockInfo) String() string {
 		str.NewField("BlockReceiptsHash", str.StringPattern, b.BlockReceiptsHash),
 		str.NewField("StateHash", str.StringPattern, b.StateHash),
 		str.NewField("Beneficiary", str.StringPattern, b.Beneficiary),
+		str.NewField("FeeInterest", str.IntPattern, b.FeeInterest),
+		str.NewField("FeeInterestDenominator", str.IntPattern, b.FeeInterestDenominator),
 	)
 }
 

@@ -11,12 +11,19 @@ import (
 	"testing"
 )
 
-const iter = 1000
-const testUrl = "http://bcdev1.xpxsirius.io:3000"
-const networkType = sdk.PrivateTest
-const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
+const testUrl = "http://127.0.0.1:3000"
+const networkType = sdk.MijinTest
+const privateKey = "A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"
 
-var GenerationHash, _ = hex.DecodeString("5166DEDF0ADC0DA2F8456146CF434148809057532379450165EA50DA017B2EE4")
+var GenerationHash, _ = hex.DecodeString("7B631D803F912B00DC0CBED3014BBD17A302BA50B99D233B9C2D9533B842ABDF")
+
+const iter = 1000
+
+//const testUrl = "http://bcdev1.xpxsirius.io:3000"
+//const networkType = sdk.PrivateTest
+//const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
+//
+//var GenerationHash, _ = hex.DecodeString("5166DEDF0ADC0DA2F8456146CF434148809057532379450165EA50DA017B2EE4")
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
