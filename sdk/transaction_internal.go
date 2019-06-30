@@ -2,14 +2,26 @@ package sdk
 
 type hashDto string
 
-func (dto *hashDto) Hash() (Hash, error) {
-	return StringToHash(string(*dto))
+func (dto *hashDto) Hash() (*Hash, error) {
+	s := string(*dto)
+
+	if len(s) == 0 {
+		return nil, nil
+	}
+
+	return StringToHash(s)
 }
 
 type signatureDto string
 
-func (dto *signatureDto) Signature() (Signature, error) {
-	return StringToSignature(string(*dto))
+func (dto *signatureDto) Signature() (*Signature, error) {
+	s := string(*dto)
+
+	if len(s) == 0 {
+		return nil, nil
+	}
+
+	return StringToSignature(s)
 }
 
 type transactionStatusDTOs []*transactionStatusDTO

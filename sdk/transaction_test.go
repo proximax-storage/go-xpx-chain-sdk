@@ -643,7 +643,6 @@ func TestTransferTransactionToAggregate(t *testing.T) {
 
 func TestTransferTransactionSigning(t *testing.T) {
 	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
-
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
 	tx, err := NewTransferTransaction(

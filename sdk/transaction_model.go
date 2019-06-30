@@ -16,7 +16,6 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-utils"
 	"github.com/proximax-storage/xpx-crypto-go"
-	"reflect"
 	"strings"
 	"sync"
 )
@@ -150,9 +149,9 @@ type TransactionInfo struct {
 	Height              Height
 	Index               uint32
 	Id                  string
-	TransactionHash     Hash
-	MerkleComponentHash Hash
-	AggregateHash       Hash
+	TransactionHash     *Hash
+	MerkleComponentHash *Hash
+	AggregateHash       *Hash
 	AggregateId         string
 }
 
@@ -2043,7 +2042,7 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) 
 type ModifyContractTransaction struct {
 	AbstractTransaction
 	DurationDelta Duration
-	Hash          Hash
+	Hash          *Hash
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
 	Verifiers     []*MultisigCosignatoryModification
@@ -2051,7 +2050,7 @@ type ModifyContractTransaction struct {
 
 // returns ModifyContractTransaction from passed duration delta in blocks, file hash, arrays of customers, replicators and verificators
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta Duration, hash Hash,
+	deadline *Deadline, durationDelta Duration, hash *Hash,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -2435,7 +2434,7 @@ func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.AssetId.toArray())
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.toArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
-	hV := transactions.TransactionBufferCreateByteVector(builder, tx.SignedTransaction.Hash)
+	hV := transactions.TransactionBufferCreateByteVector(builder, tx.SignedTransaction.Hash[:])
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -2562,7 +2561,7 @@ func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.toArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 
-	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash)
+	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash[:])
 
 	addr, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
 	if err != nil {
@@ -2702,8 +2701,7 @@ func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	sV := transactions.TransactionBufferCreateByteVector(builder, secret.Hash)
-
+	sV := transactions.TransactionBufferCreateByteVector(builder, secret.Hash[:])
 	pV := transactions.TransactionBufferCreateByteVector(builder, tx.Proof.Data)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -2787,7 +2785,7 @@ func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTr
 }
 
 // returns a CosignatureTransaction from passed hash of bounded AggregateTransaction
-func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction {
+func NewCosignatureTransactionFromHash(hash *Hash) *CosignatureTransaction {
 	return &CosignatureTransaction{
 		TransactionToCosign: &AggregateTransaction{
 			AbstractTransaction: AbstractTransaction{
@@ -2812,7 +2810,7 @@ type signedTransactionDto struct {
 type SignedTransaction struct {
 	TransactionType
 	Payload string
-	Hash    Hash
+	Hash    *Hash
 }
 
 type cosignatureSignedTransactionDto struct {
@@ -2822,8 +2820,8 @@ type cosignatureSignedTransactionDto struct {
 }
 
 type CosignatureSignedTransaction struct {
-	ParentHash Hash
-	Signature  Signature
+	ParentHash *Hash
+	Signature  *Signature
 	Signer     string
 }
 
@@ -2933,7 +2931,7 @@ type TransactionStatus struct {
 	Deadline *Deadline
 	Group    string
 	Status   string
-	Hash     Hash
+	Hash     *Hash
 	Height   Height
 }
 
@@ -3184,26 +3182,6 @@ const (
 	MetadataNamespaceType
 )
 
-type Signature []byte
-
-func (s Signature) String() string {
-	return hex.EncodeToString(s)
-}
-
-type Hash []byte
-
-func (h Hash) String() string {
-	return hex.EncodeToString(h)
-}
-
-func (h Hash) Empty() bool {
-	return len(h) == 0
-}
-
-func (h Hash) Equal(other Hash) bool {
-	return reflect.DeepEqual(h, other)
-}
-
 func ExtractVersion(version uint64) uint8 {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, version)
@@ -3317,26 +3295,34 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 	return dtoToTransaction(b, dto)
 }
 
-func createTransactionHash(p string, generationHash Hash) (Hash, error) {
+func createTransactionHash(p string, generationHash *Hash) (*Hash, error) {
 	b, err := hex.DecodeString(p)
 	if err != nil {
 		return nil, err
 	}
 
 	const HalfOfSignature = SignatureSize / 2
+	var sizeOfGenerationHash = 0
+	if generationHash != nil {
+		sizeOfGenerationHash = len(generationHash)
+	}
 
-	sb := make([]byte, len(b)-SizeSize-HalfOfSignature+len(generationHash))
+	sb := make([]byte, len(b)-SizeSize-HalfOfSignature+sizeOfGenerationHash)
 	copy(sb[:HalfOfSignature], b[SizeSize:SizeSize+HalfOfSignature])
 	copy(sb[HalfOfSignature:HalfOfSignature+SignerSize], b[SizeSize+SignatureSize:SizeSize+SignatureSize+SignerSize])
-	copy(sb[HalfOfSignature+SignerSize:], generationHash)
-	copy(sb[HalfOfSignature+SignerSize+len(generationHash):], b[SizeSize+SignatureSize+SignerSize:])
+
+	if generationHash != nil {
+		copy(sb[HalfOfSignature+SignerSize:], generationHash[:])
+	}
+
+	copy(sb[HalfOfSignature+SignerSize+sizeOfGenerationHash:], b[SizeSize+SignatureSize+SignerSize:])
 
 	r, err := crypto.HashesSha3_256(sb)
 	if err != nil {
 		return nil, err
 	}
 
-	return r, nil
+	return bytesToHash(r)
 }
 
 func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
@@ -3376,7 +3362,11 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 	}
 	sb := make([]byte, len(b)-SizeSize-SignerSize-SignatureSize)
 	copy(sb, b[SizeSize+SignerSize+SignatureSize:])
-	signature, err := s.Sign(append(a.generationHash, sb...))
+
+	if a.generationHash != nil {
+		sb = append(a.generationHash[:], sb...)
+	}
+	signature, err := s.Sign(sb)
 	if err != nil {
 		return nil, err
 	}
@@ -3404,7 +3394,7 @@ func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosig
 	p := stx.Payload
 	for _, cos := range cosignatories {
 		s := crypto.NewSignerFromKeyPair(cos.KeyPair, nil)
-		sb, err := s.Sign(stx.Hash)
+		sb, err := s.Sign(stx.Hash[:])
 		if err != nil {
 			return nil, err
 		}
@@ -3430,14 +3420,23 @@ func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*Cosign
 	}
 
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
-	b := tx.TransactionToCosign.TransactionInfo.TransactionHash
+	b := tx.TransactionToCosign.TransactionInfo.TransactionHash[:]
 
-	sb, err := s.Sign(append(a.generationHash, b...))
+	if a.generationHash != nil {
+		b = append(a.generationHash[:], b...)
+	}
+
+	sb, err := s.Sign(b)
 	if err != nil {
 		return nil, err
 	}
 
-	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.TransactionHash, sb.Bytes(), a.PublicAccount.PublicKey}, nil
+	signature, err := bytesToSignature(sb.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.TransactionHash, signature, a.PublicAccount.PublicKey}, nil
 }
 
 func cosignatoryModificationArrayToBuffer(builder *flatbuffers.Builder, modifications []*MultisigCosignatoryModification) (flatbuffers.UOffsetT, error) {
@@ -3506,8 +3505,8 @@ func mosaicPropertyArrayToBuffer(builder *flatbuffers.Builder, properties []Mosa
 	return transactions.TransactionBufferCreateUOffsetVector(builder, pBuffer)
 }
 
-func hashToBuffer(builder *flatbuffers.Builder, hash Hash) flatbuffers.UOffsetT {
-	pV := transactions.TransactionBufferCreateByteVector(builder, hash)
+func hashToBuffer(builder *flatbuffers.Builder, hash *Hash) flatbuffers.UOffsetT {
+	pV := transactions.TransactionBufferCreateByteVector(builder, hash[:])
 
 	return pV
 }

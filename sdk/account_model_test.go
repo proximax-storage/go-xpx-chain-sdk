@@ -13,7 +13,7 @@ const (
 	testNEMPublicKey = "b4f12e7c9f6946091e2cb8b6d3a12b50d17ccbbf646386ea27ce2946a7423dcf"
 )
 
-var GenerationHash = []byte{}
+var GenerationHash *Hash = nil
 
 var testAddressesForEncoded = map[NetworkType]string{
 	MijinTest:   "SARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJETM3ZSP",

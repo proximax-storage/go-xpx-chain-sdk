@@ -18,7 +18,7 @@ const EmptyPublicKey = "00000000000000000000000000000000000000000000000000000000
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
-	generationHash Hash
+	generationHash *Hash
 }
 
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
@@ -168,7 +168,7 @@ type MultisigAccountGraphInfo struct {
 }
 
 // returns new Account generated for passed NetworkType
-func NewAccount(networkType NetworkType, generationHash Hash) (*Account, error) {
+func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func NewAccount(networkType NetworkType, generationHash Hash) (*Account, error) 
 }
 
 // returns new Account from private key for passed NetworkType
-func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash Hash) (*Account, error) {
+func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash *Hash) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
 		return nil, err

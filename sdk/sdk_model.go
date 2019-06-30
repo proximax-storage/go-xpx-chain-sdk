@@ -6,9 +6,31 @@ package sdk
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
+	"reflect"
 	"time"
 )
+
+type Signature [64]byte
+
+func (s Signature) String() string {
+	return hex.EncodeToString(s[:])
+}
+
+type Hash [32]byte
+
+func (h Hash) String() string {
+	return hex.EncodeToString(h[:])
+}
+
+func (h Hash) Empty() bool {
+	return h.Equal(&Hash{})
+}
+
+func (h Hash) Equal(other *Hash) bool {
+	return reflect.DeepEqual(h, other)
+}
 
 type blockchainInt64 interface {
 	toArray() [2]uint32

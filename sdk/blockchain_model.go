@@ -10,11 +10,11 @@ import (
 
 type BlockInfo struct {
 	NetworkType
-	BlockHash              Hash
-	GenerationHash         Hash
+	BlockHash              *Hash
+	GenerationHash         *Hash
 	TotalFee               Amount
 	NumTransactions        uint64
-	Signature              Signature
+	Signature              *Signature
 	Signer                 *PublicAccount
 	Version                uint8
 	Type                   uint64
@@ -22,10 +22,10 @@ type BlockInfo struct {
 	Timestamp              *Timestamp
 	Difficulty             Difficulty
 	FeeMultiplier          uint32
-	PreviousBlockHash      Hash
-	BlockTransactionsHash  Hash
-	BlockReceiptsHash      Hash
-	StateHash              Hash
+	PreviousBlockHash      *Hash
+	BlockTransactionsHash  *Hash
+	BlockReceiptsHash      *Hash
+	StateHash              *Hash
 	Beneficiary            *PublicAccount
 	FeeInterest            uint32
 	FeeInterestDenominator uint32

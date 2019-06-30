@@ -317,9 +317,9 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 }
 
 func TestLockFundsTransactionTransaction(t *testing.T) {
-	hash := make([]byte, 32)
+	hash := &sdk.Hash{}
 
-	_, err := rand.Read(hash)
+	_, err := rand.Read(hash[:])
 	assert.Nil(t, err)
 
 	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "payload", hash}

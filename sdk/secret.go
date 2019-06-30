@@ -41,11 +41,11 @@ func (s *Secret) String() string {
 }
 
 func (s *Secret) HashString() string {
-	return strings.ToUpper(hex.EncodeToString(s.Hash))
+	return strings.ToUpper(hex.EncodeToString(s.Hash[:]))
 }
 
 // returns Secret from passed hash and HashType
-func NewSecret(hash Hash, hashType HashType) (*Secret, error) {
+func NewSecret(hash []byte, hashType HashType) (*Secret, error) {
 	l := len(hash)
 
 	switch hashType {
@@ -64,13 +64,15 @@ func NewSecret(hash Hash, hashType HashType) (*Secret, error) {
 		return nil, errors.New("Not supported HashType NewSecret")
 	}
 
-	secret := Secret{hash, hashType}
+	var arr [32]byte
+	copy(arr[:], hash[:32])
+	secret := Secret{arr, hashType}
 	return &secret, nil
 }
 
 // returns Secret from passed hex string hash and HashType
 func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error) {
-	bytes, err := StringToHash(hash)
+	bytes, err := hex.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +187,7 @@ func generateSecret(proofB []byte, hashType HashType) ([]byte, error) {
 	return nil, errors.New("Not supported HashType generateSecret")
 }
 
-func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (Hash, error) {
+func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (*Hash, error) {
 	if secret == nil {
 		return nil, ErrNilSecret
 	}
@@ -199,5 +201,10 @@ func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (Hash, erro
 		return nil, err
 	}
 
-	return crypto.HashesSha3_256(append(secret.Hash, addr...))
+	bytes, err := crypto.HashesSha3_256(append(secret.Hash[:], addr...))
+	if err != nil {
+		return nil, err
+	}
+
+	return bytesToHash(bytes)
 }

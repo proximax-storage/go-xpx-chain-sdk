@@ -11,7 +11,7 @@ type statusInfoDto struct {
 
 type StatusInfo struct {
 	Status string
-	Hash   Hash
+	Hash   *Hash
 }
 
 type signerInfoDto struct {
@@ -22,8 +22,8 @@ type signerInfoDto struct {
 
 type SignerInfo struct {
 	Signer     string
-	Signature  Signature
-	ParentHash Hash
+	Signature  *Signature
+	ParentHash *Hash
 }
 
 type UnconfirmedRemoved struct {

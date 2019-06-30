@@ -39,9 +39,11 @@ var (
 
 // Common errors
 var (
-	ErrNilAssetId            = errors.New("assetId must not be nil")
-	ErrEmptyAssetIds         = errors.New("list blockchain ids must not by empty")
-	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
+	ErrNilAssetId             = errors.New("assetId must not be nil")
+	ErrEmptyAssetIds          = errors.New("list blockchain ids must not by empty")
+	ErrUnknownBlockchainType  = errors.New("Not supported Blockchain Type")
+	ErrInvalidHashLength      = errors.New("The length of Hash is invalid")
+	ErrInvalidSignatureLength = errors.New("The length of Signature is invalid")
 )
 
 // Mosaic errors

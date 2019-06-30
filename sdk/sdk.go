@@ -21,7 +21,7 @@ import (
 const (
 	DefaultNetworkType                  = NotSupportedNet
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
-	DefaultGenerationHash               = ""
+	DefaultGenerationHash               = "0000000000000000000000000000000000000000000000000000000000000000"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -37,8 +37,8 @@ type Config struct {
 	BaseURLs              []*url.URL
 	UsedBaseUrl           *url.URL
 	WsReconnectionTimeout time.Duration
+	GenerationHash        *Hash
 	NetworkType
-	GenerationHash Hash
 }
 
 type reputationConfig struct {
@@ -166,7 +166,7 @@ func (c *Client) NetworkType() NetworkType {
 }
 
 // GenerationHash returns generation hash of config
-func (c *Client) GenerationHash() Hash {
+func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
 }
 
@@ -368,7 +368,7 @@ func (c *Client) NewModifyMultisigAccountTransaction(deadline *Deadline, minAppr
 }
 
 func (c *Client) NewModifyContractTransaction(
-	deadline *Deadline, durationDelta Duration, hash Hash,
+	deadline *Deadline, durationDelta Duration, hash *Hash,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification) (*ModifyContractTransaction, error) {
