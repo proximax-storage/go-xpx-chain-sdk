@@ -98,11 +98,13 @@ var (
 			PublicKey: "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 		},
 		Revision: 1,
-		Properties: &MosaicProperties{
-			Transferable: true,
-			Divisibility: 6,
-			Duration:     uint64DTO{1, 0}.toStruct(),
-		},
+		Properties: NewMosaicProperties(
+			false,
+			true,
+			false,
+			6,
+			uint64DTO{1, 0}.toStruct(),
+		),
 	}
 
 	mosaicNames = []*MosaicName{

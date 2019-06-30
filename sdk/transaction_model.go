@@ -420,7 +420,7 @@ func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
 	for i, m := range tx.Modifications {
-		mosaicB := make([]byte, MosaicSize)
+		mosaicB := make([]byte, MosaicIdSize)
 		binary.LittleEndian.PutUint64(mosaicB, m.AssetId.Id())
 		mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
@@ -846,15 +846,15 @@ func (tx *MosaicAliasTransaction) String() string {
 
 func (tx *MosaicAliasTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	mosaicB := make([]byte, MosaicSize)
+	mosaicB := make([]byte, MosaicIdSize)
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.AliasTransaction.generateBytes(builder, mV, MosaicSize)
+	return tx.AliasTransaction.generateBytes(builder, mV, MosaicIdSize)
 }
 
 func (tx *MosaicAliasTransaction) Size() int {
-	return tx.AliasTransaction.Size() + MosaicSize
+	return tx.AliasTransaction.Size() + MosaicIdSize
 }
 
 type mosaicAliasTransactionDTO struct {
@@ -1322,15 +1322,15 @@ func (tx *ModifyMetadataMosaicTransaction) String() string {
 
 func (tx *ModifyMetadataMosaicTransaction) generateBytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	mosaicB := make([]byte, MosaicSize)
+	mosaicB := make([]byte, MosaicIdSize)
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, MosaicSize)
+	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, MosaicIdSize)
 }
 
 func (tx *ModifyMetadataMosaicTransaction) Size() int {
-	return tx.ModifyMetadataTransaction.Size() + MosaicSize
+	return tx.ModifyMetadataTransaction.Size() + MosaicIdSize
 }
 
 type modifyMetadataMosaicTransactionDTO struct {
@@ -1501,7 +1501,7 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	}
 
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
-	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicProperties.Duration.toArray())
+	pV := mosaicPropertyArrayToBuffer(builder, tx.MosaicProperties.OptionalProperties)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1513,18 +1513,18 @@ func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, tx.MosaicNonce)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
-	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, 1)
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
-	transactions.MosaicDefinitionTransactionBufferAddIndicateDuration(builder, 2)
-	transactions.MosaicDefinitionTransactionBufferAddDuration(builder, dV)
+	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, byte(len(tx.MosaicProperties.OptionalProperties)))
+	transactions.MosaicDefinitionTransactionBufferAddOptionalProperties(builder, pV)
+
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 	return mosaicDefinitionTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
 func (tx *MosaicDefinitionTransaction) Size() int {
-	return MosaicDefinitionTransactionSize
+	return MosaicDefinitionTransactionHeaderSize + len(tx.OptionalProperties)*MosaicOptionalPropertySize
 }
 
 type mosaicDefinitionTransactionDTO struct {
@@ -1795,7 +1795,7 @@ func (tx *TransferTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *TransferTransaction) Size() int {
-	return TransferHeaderSize + ((MosaicSize + AmountSize) * len(tx.Mosaics)) + tx.MessageSize()
+	return TransferHeaderSize + ((MosaicIdSize + AmountSize) * len(tx.Mosaics)) + tx.MessageSize()
 }
 
 func (tx *TransferTransaction) MessageSize() int {
@@ -2854,24 +2854,25 @@ type TransactionHashesDTO struct {
 
 const (
 	AddressSize                              int = 25
-	AmountSize                               int = 8
+	BaseInt64Size                            int = 8
+	AmountSize                               int = BaseInt64Size
 	KeySize                                  int = 32
 	Hash256                                  int = 32
-	MosaicSize                               int = 8
-	NamespaceSize                            int = 8
+	MosaicIdSize                             int = BaseInt64Size
+	NamespaceSize                            int = BaseInt64Size
 	SizeSize                                 int = 4
 	SignerSize                               int = KeySize
 	SignatureSize                            int = 64
 	VersionSize                              int = 2
 	TypeSize                                 int = 2
-	MaxFeeSize                               int = 8
-	DeadLineSize                             int = 8
-	DurationSize                             int = 8
+	MaxFeeSize                               int = BaseInt64Size
+	DeadLineSize                             int = BaseInt64Size
+	DurationSize                             int = BaseInt64Size
 	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
 	PropertyModificationTypeSize             int = 1
 	AccountPropertiesAddressModificationSize int = PropertyModificationTypeSize + AddressSize
-	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicSize
+	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicIdSize
 	AccountPropertiesEntityModificationSize  int = PropertyModificationTypeSize + TypeSize
 	AccountPropertyAddressHeader             int = TransactionHeaderSize + PropertyTypeSize
 	AccountPropertyMosaicHeader              int = TransactionHeaderSize + PropertyTypeSize
@@ -2882,7 +2883,7 @@ const (
 	AliasTransactionHeader                   int = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeader                    int = TransactionHeaderSize + SizeSize
 	HashTypeSize                             int = 1
-	LockSize                                 int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + Hash256
+	LockSize                                 int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
 	MetadataHeaderSize                       int = TransactionHeaderSize + MetadataTypeSize
 	ModificationsSizeSize                    int = 1
@@ -2891,14 +2892,16 @@ const (
 	MinRemovalSize                           int = 1
 	ModifyMultisigHeaderSize                 int = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
 	MosaicNonceSize                          int = 4
-	MosaicPropertySize                       int = 4
-	MosaicDefinitionTransactionSize          int = TransactionHeaderSize + MosaicNonceSize + MosaicSize + DurationSize + MosaicPropertySize
+	MosaicPropertiesHeaderSize               int = 3
+	MosaicPropertyIdSize                     int = 1
+	MosaicOptionalPropertySize               int = MosaicPropertyIdSize + BaseInt64Size
+	MosaicDefinitionTransactionHeaderSize    int = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
-	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicSize + AmountSize + MosaicSupplyDirectionSize
+	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
 	NamespaceTypeSize                        int = 1
 	NamespaceNameSizeSize                    int = 1
 	RegisterNamespaceHeaderSize              int = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
-	SecretLockSize                           int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
+	SecretLockSize                           int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
 	ProofSizeSize                            int = 2
 	SecretProofHeaderSize                    int = TransactionHeaderSize + HashTypeSize + Hash256 + AddressSize + ProofSizeSize
 	MosaicsSizeSize                          int = 1
@@ -3011,6 +3014,15 @@ const (
 	BlockAddress     PropertyType = 0x80 + 0x01
 	BlockMosaic      PropertyType = 0x80 + 0x02
 	BlockTransaction PropertyType = 0x80 + 0x04
+)
+
+type MosaicPropertyId uint8
+
+// MosaicPropertyId enums
+const (
+	MosaicPropertyFlags MosaicPropertyId = iota
+	MosaicPropertyDivisibility
+	MosaicPropertyDuration
 )
 
 type MultisigCosignatoryModificationType uint8
@@ -3348,6 +3360,21 @@ func metadataModificationArrayToBuffer(builder *flatbuffers.Builder, modificatio
 	}
 
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
+}
+
+func mosaicPropertyArrayToBuffer(builder *flatbuffers.Builder, properties []MosaicProperty) flatbuffers.UOffsetT {
+	pBuffer := make([]flatbuffers.UOffsetT, len(properties))
+	for i, p := range properties {
+		valueV := transactions.TransactionBufferCreateUint32Vector(builder, p.Value.toArray())
+
+		transactions.MosaicPropertyStart(builder)
+		transactions.MosaicPropertyAddMosaicPropertyId(builder, byte(p.Id))
+		transactions.MosaicPropertyAddValue(builder, valueV)
+
+		pBuffer[i] = transactions.TransactionBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, pBuffer)
 }
 
 func stringToBuffer(builder *flatbuffers.Builder, hash string) flatbuffers.UOffsetT {

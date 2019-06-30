@@ -116,8 +116,12 @@ func mosaicDefinitionTransactionSchema() *schema {
 			newScalarAttribute("numOptionalProperties", ByteSize),
 			newScalarAttribute("flags", ByteSize),
 			newScalarAttribute("divisibility", ByteSize),
-			newScalarAttribute("indicateDuration", ByteSize),
-			newArrayAttribute("duration", IntSize),
+			newTableArrayAttribute("modifications", schema{
+				[]schemaAttribute{
+					newScalarAttribute("mosaicPropertyId", ByteSize),
+					newArrayAttribute("value", IntSize),
+				},
+			}.schemaDefinition),
 		},
 	}
 }
