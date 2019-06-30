@@ -328,7 +328,11 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 
 	atx := tx.(*AggregateTransaction)
 
-	acc, err := NewAccountFromPrivateKey("26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey(
+		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
+		MijinTest,
+		StringToHashNoCheck("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
+	)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 

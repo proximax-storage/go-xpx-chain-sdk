@@ -3422,10 +3422,6 @@ func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*Cosign
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
 	b := tx.TransactionToCosign.TransactionInfo.TransactionHash[:]
 
-	if a.generationHash != nil {
-		b = append(a.generationHash[:], b...)
-	}
-
 	sb, err := s.Sign(b)
 	if err != nil {
 		return nil, err
