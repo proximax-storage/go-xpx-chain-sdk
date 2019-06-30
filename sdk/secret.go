@@ -28,7 +28,7 @@ const (
 )
 
 type Secret struct {
-	Hash []byte
+	Hash Hash
 	Type HashType
 }
 
@@ -45,7 +45,7 @@ func (s *Secret) HashString() string {
 }
 
 // returns Secret from passed hash and HashType
-func NewSecret(hash []byte, hashType HashType) (*Secret, error) {
+func NewSecret(hash Hash, hashType HashType) (*Secret, error) {
 	l := len(hash)
 
 	switch hashType {
@@ -70,7 +70,7 @@ func NewSecret(hash []byte, hashType HashType) (*Secret, error) {
 
 // returns Secret from passed hex string hash and HashType
 func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error) {
-	bytes, err := hex.DecodeString(hash)
+	bytes, err := StringToHash(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func generateSecret(proofB []byte, hashType HashType) ([]byte, error) {
 	return nil, errors.New("Not supported HashType generateSecret")
 }
 
-func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) ([]byte, error) {
+func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (Hash, error) {
 	if secret == nil {
 		return nil, ErrNilSecret
 	}

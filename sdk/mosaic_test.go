@@ -101,7 +101,6 @@ var (
 		Properties: NewMosaicProperties(
 			false,
 			true,
-			false,
 			6,
 			uint64DTO{1, 0}.toStruct(),
 		),

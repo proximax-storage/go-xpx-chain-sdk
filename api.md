@@ -2643,10 +2643,10 @@ type PublicAccount struct {
 ```
 
 
-#### func  NewAccountFromPublicKey
+#### func  NewPublicAccountFromPublicKey
 
 ```go
-func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error)
+func NewPublicAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error)
 ```
 returns a PublicAccount from public key for passed NetworkType
 

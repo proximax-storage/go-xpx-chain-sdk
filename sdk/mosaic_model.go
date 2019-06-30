@@ -144,7 +144,7 @@ func NewMosaicProperties(supplyMutable bool, transferable bool, divisibility uin
 	properties := make([]MosaicProperty, 0)
 
 	if duration != 0 {
-		properties = append(properties, MosaicProperty{MosaicPropertyDuration, duration})
+		properties = append(properties, MosaicProperty{MosaicPropertyDurationId, duration})
 	}
 
 	ref := &MosaicProperties{
@@ -165,13 +165,13 @@ func (mp *MosaicProperties) String() string {
 		str.NewField("SupplyMutable", str.BooleanPattern, mp.SupplyMutable),
 		str.NewField("Transferable", str.BooleanPattern, mp.Transferable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
-		str.NewField("OptionalProperties", str.StringPattern, mp.OptionalProperties),
+		str.NewField("OptionalProperties", str.ValuePattern, mp.OptionalProperties),
 	)
 }
 
 func (mp *MosaicProperties) Duration() Duration {
 	for _, property := range mp.OptionalProperties {
-		if property.Id == MosaicPropertyDuration {
+		if property.Id == MosaicPropertyDurationId {
 			return Duration(property.Value)
 		}
 	}

@@ -2,14 +2,14 @@ package sdk
 
 type blockInfoDTO struct {
 	BlockMeta struct {
-		Hash            string    `json:"hash"`
-		GenerationHash  string    `json:"generationHash"`
+		BlockHash       hashDto   `json:"hash"`
+		GenerationHash  hashDto   `json:"generationHash"`
 		TotalFee        uint64DTO `json:"totalFee"`
 		NumTransactions uint64    `json:"numTransactions"`
 		// MerkleTree      uint64DTO `json:"merkleTree"` is needed?
 	} `json:"meta"`
 	Block struct {
-		Signature              string                 `json:"signature"`
+		Signature              signatureDto           `json:"signature"`
 		Signer                 string                 `json:"signer"`
 		Version                uint64                 `json:"version"`
 		Type                   uint64                 `json:"type"`
@@ -17,10 +17,10 @@ type blockInfoDTO struct {
 		Timestamp              blockchainTimestampDTO `json:"timestamp"`
 		Difficulty             uint64DTO              `json:"difficulty"`
 		FeeMultiplier          uint32                 `json:"feeMultiplier"`
-		PreviousBlockHash      string                 `json:"previousBlockHash"`
-		BlockTransactionsHash  string                 `json:"blockTransactionsHash"`
-		BlockReceiptsHash      string                 `json:"blockReceiptsHash"`
-		StateHash              string                 `json:"stateHash"`
+		PreviousBlockHash      hashDto                `json:"previousBlockHash"`
+		BlockTransactionsHash  hashDto                `json:"blockTransactionsHash"`
+		BlockReceiptsHash      hashDto                `json:"blockReceiptsHash"`
+		StateHash              hashDto                `json:"stateHash"`
 		Beneficiary            string                 `json:"beneficiary"`
 		FeeInterest            uint32                 `json:"feeInterest"`
 		FeeInterestDenominator uint32                 `json:"feeInterestDenominator"`
@@ -30,7 +30,7 @@ type blockInfoDTO struct {
 func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 	nt := ExtractNetworkType(dto.Block.Version)
 
-	pa, err := NewAccountFromPublicKey(dto.Block.Signer, nt)
+	pa, err := NewPublicAccountFromPublicKey(dto.Block.Signer, nt)
 	if err != nil {
 		return nil, err
 	}
@@ -43,19 +43,54 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 	var bpa *PublicAccount = nil
 
 	if dto.Block.Beneficiary != EmptyPublicKey {
-		bpa, err = NewAccountFromPublicKey(dto.Block.Beneficiary, nt)
+		bpa, err = NewPublicAccountFromPublicKey(dto.Block.Beneficiary, nt)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	blockHash, err := dto.BlockMeta.BlockHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	generationHash, err := dto.BlockMeta.GenerationHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := dto.Block.Signature.Signature()
+	if err != nil {
+		return nil, err
+	}
+
+	previousBlockHash, err := dto.Block.PreviousBlockHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	blockTransactionsHash, err := dto.Block.BlockTransactionsHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	blockReceiptsHash, err := dto.Block.BlockReceiptsHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	stateHash, err := dto.Block.StateHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
 	return &BlockInfo{
 		NetworkType:            nt,
-		Hash:                   dto.BlockMeta.Hash,
-		GenerationHash:         dto.BlockMeta.GenerationHash,
+		BlockHash:              blockHash,
+		GenerationHash:         generationHash,
 		TotalFee:               dto.BlockMeta.TotalFee.toStruct(),
 		NumTransactions:        dto.BlockMeta.NumTransactions,
-		Signature:              dto.Block.Signature,
+		Signature:              signature,
 		Signer:                 pa,
 		Version:                v,
 		Type:                   dto.Block.Type,
@@ -63,10 +98,10 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 		Timestamp:              dto.Block.Timestamp.toStruct().ToTimestamp(),
 		Difficulty:             dto.Block.Difficulty.toStruct(),
 		FeeMultiplier:          dto.Block.FeeMultiplier,
-		PreviousBlockHash:      dto.Block.PreviousBlockHash,
-		BlockTransactionsHash:  dto.Block.BlockTransactionsHash,
-		BlockReceiptsHash:      dto.Block.BlockReceiptsHash,
-		StateHash:              dto.Block.StateHash,
+		PreviousBlockHash:      previousBlockHash,
+		BlockTransactionsHash:  blockTransactionsHash,
+		BlockReceiptsHash:      blockReceiptsHash,
+		StateHash:              stateHash,
 		Beneficiary:            bpa,
 		FeeInterest:            dto.Block.FeeInterest,
 		FeeInterestDenominator: dto.Block.FeeInterestDenominator,

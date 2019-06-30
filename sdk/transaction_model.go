@@ -16,6 +16,7 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-utils"
 	"github.com/proximax-storage/xpx-crypto-go"
+	"reflect"
 	"strings"
 	"sync"
 )
@@ -44,7 +45,7 @@ type AbstractTransaction struct {
 }
 
 func (tx *AbstractTransaction) IsUnconfirmed() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.Hash == tx.TransactionInfo.MerkleComponentHash
+	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
 func (tx *AbstractTransaction) IsConfirmed() bool {
@@ -52,7 +53,7 @@ func (tx *AbstractTransaction) IsConfirmed() bool {
 }
 
 func (tx *AbstractTransaction) HasMissingSignatures() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.Hash != tx.TransactionInfo.MerkleComponentHash
+	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && !tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
 func (tx *AbstractTransaction) IsUnannounced() bool {
@@ -118,7 +119,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 
 	tv := TransactionVersion(ExtractVersion(dto.Version))
 
-	pa, err := NewAccountFromPublicKey(dto.Signer, nt)
+	pa, err := NewPublicAccountFromPublicKey(dto.Signer, nt)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +150,7 @@ type TransactionInfo struct {
 	Height              Height
 	Index               uint32
 	Id                  string
-	Hash                Hash
+	TransactionHash     Hash
 	MerkleComponentHash Hash
 	AggregateHash       Hash
 	AggregateId         string
@@ -161,7 +162,7 @@ func (ti *TransactionInfo) String() string {
 			"Height": %s,
 			"Index": %d,
 			"Id": %s,
-			"Content": %s,
+			"TransactionHash": %s,
 			"MerkleComponentHash:" %s,
 			"AggregateHash": %s,
 			"AggregateId": %s
@@ -169,7 +170,7 @@ func (ti *TransactionInfo) String() string {
 		ti.Height,
 		ti.Index,
 		ti.Id,
-		ti.Hash,
+		ti.TransactionHash,
 		ti.MerkleComponentHash,
 		ti.AggregateHash,
 		ti.AggregateId,
@@ -180,22 +181,37 @@ type transactionInfoDTO struct {
 	Height              uint64DTO `json:"height"`
 	Index               uint32    `json:"index"`
 	Id                  string    `json:"id"`
-	Hash                Hash      `json:"hash"`
-	MerkleComponentHash Hash      `json:"merkleComponentHash"`
-	AggregateHash       Hash      `json:"aggregateHash,omitempty"`
+	TransactionHash     hashDto   `json:"hash"`
+	MerkleComponentHash hashDto   `json:"merkleComponentHash"`
+	AggregateHash       hashDto   `json:"aggregateHash,omitempty"`
 	AggregateId         string    `json:"aggregateId,omitempty"`
 }
 
-func (dto *transactionInfoDTO) toStruct() *TransactionInfo {
-	return &TransactionInfo{
+func (dto *transactionInfoDTO) toStruct() (*TransactionInfo, error) {
+	transactionHash, err := dto.TransactionHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+	merkleComponentHash, err := dto.MerkleComponentHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+	aggregateHash, err := dto.AggregateHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	ref := TransactionInfo{
 		dto.Height.toStruct(),
 		dto.Index,
 		dto.Id,
-		dto.Hash,
-		dto.MerkleComponentHash,
-		dto.AggregateHash,
+		transactionHash,
+		merkleComponentHash,
+		aggregateHash,
 		dto.AggregateId,
 	}
+
+	return &ref, nil
 }
 
 type AccountPropertiesAddressModification struct {
@@ -330,7 +346,12 @@ type accountPropertiesAddressTransactionDTO struct {
 }
 
 func (dto *accountPropertiesAddressTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -480,7 +501,12 @@ type accountPropertiesMosaicTransactionDTO struct {
 }
 
 func (dto *accountPropertiesMosaicTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -625,7 +651,12 @@ type accountPropertiesEntityTypeTransactionDTO struct {
 }
 
 func (dto *accountPropertiesEntityTypeTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -785,7 +816,12 @@ type addressAliasTransactionDTO struct {
 }
 
 func (dto *addressAliasTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.aliasTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.aliasTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -866,7 +902,12 @@ type mosaicAliasTransactionDTO struct {
 }
 
 func (dto *mosaicAliasTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.aliasTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.aliasTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -961,12 +1002,17 @@ type accountLinkTransactionDTO struct {
 }
 
 func (dto *accountLinkTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
-	acc, err := NewAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewPublicAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
 	if err != nil {
 		return nil, err
 	}
@@ -1090,7 +1136,12 @@ func (dto *aggregateTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1265,7 +1316,12 @@ type modifyMetadataAddressTransactionDTO struct {
 }
 
 func (dto *modifyMetadataAddressTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1342,7 +1398,12 @@ type modifyMetadataMosaicTransactionDTO struct {
 }
 
 func (dto *modifyMetadataMosaicTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1419,7 +1480,12 @@ type modifyMetadataNamespaceTransactionDTO struct {
 }
 
 func (dto *modifyMetadataNamespaceTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.modifyMetadataTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1538,7 +1604,12 @@ type mosaicDefinitionTransactionDTO struct {
 }
 
 func (dto *mosaicDefinitionTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1648,7 +1719,12 @@ type mosaicSupplyChangeTransactionDTO struct {
 }
 
 func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1814,7 +1890,12 @@ type transferTransactionDTO struct {
 }
 
 func (dto *transferTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1936,7 +2017,12 @@ type modifyMultisigAccountTransactionDTO struct {
 }
 
 func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1957,7 +2043,7 @@ func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) 
 type ModifyContractTransaction struct {
 	AbstractTransaction
 	DurationDelta Duration
-	Hash          string
+	Hash          Hash
 	Customers     []*MultisigCosignatoryModification
 	Executors     []*MultisigCosignatoryModification
 	Verifiers     []*MultisigCosignatoryModification
@@ -1965,7 +2051,7 @@ type ModifyContractTransaction struct {
 
 // returns ModifyContractTransaction from passed duration delta in blocks, file hash, arrays of customers, replicators and verificators
 func NewModifyContractTransaction(
-	deadline *Deadline, durationDelta Duration, hash string,
+	deadline *Deadline, durationDelta Duration, hash Hash,
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification,
@@ -2030,7 +2116,7 @@ func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
 	}
 
 	durationV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DurationDelta.toArray())
-	hashV := stringToBuffer(builder, tx.Hash)
+	hashV := hashToBuffer(builder, tx.Hash)
 
 	customersV, err := cosignatoryModificationArrayToBuffer(builder, tx.Customers)
 	if err != nil {
@@ -2074,7 +2160,7 @@ type modifyContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		DurationDelta uint64DTO                             `json:"durationDelta"`
-		Hash          string                                `json:"hash"`
+		Hash          hashDto                               `json:"hash"`
 		Customers     []*multisigCosignatoryModificationDTO `json:"customers"`
 		Executors     []*multisigCosignatoryModificationDTO `json:"executors"`
 		Verifiers     []*multisigCosignatoryModificationDTO `json:"verifiers"`
@@ -2083,7 +2169,12 @@ type modifyContractTransactionDTO struct {
 }
 
 func (dto *modifyContractTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -2103,10 +2194,15 @@ func (dto *modifyContractTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	hash, err := dto.Tx.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ModifyContractTransaction{
 		*atx,
 		dto.Tx.DurationDelta.toStruct(),
-		dto.Tx.Hash,
+		hash,
 		customers,
 		executors,
 		verifiers,
@@ -2243,7 +2339,12 @@ type registerNamespaceTransactionDTO struct {
 }
 
 func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -2334,12 +2435,7 @@ func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
 	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.AssetId.toArray())
 	maV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.Amount.toArray())
 	dV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
-
-	h, err := hex.DecodeString((string)(tx.SignedTransaction.Hash))
-	if err != nil {
-		return nil, err
-	}
-	hV := transactions.TransactionBufferCreateByteVector(builder, h)
+	hV := transactions.TransactionBufferCreateByteVector(builder, tx.SignedTransaction.Hash)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -2368,13 +2464,18 @@ type lockFundsTransactionDTO struct {
 		abstractTransactionDTO
 		Mosaic   mosaicDTO `json:"mosaic"`
 		Duration uint64DTO `json:"duration"`
-		Hash     Hash      `json:"hash"`
+		Hash     hashDto   `json:"hash"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
 func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -2384,11 +2485,16 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	hash, err := dto.Tx.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
 	return &LockFundsTransaction{
 		*atx,
 		mosaic,
 		dto.Tx.Duration.toStruct(),
-		&SignedTransaction{Lock, "", dto.Tx.Hash},
+		&SignedTransaction{Lock, "", hash},
 	}, nil
 }
 
@@ -2502,7 +2608,12 @@ type secretLockTransactionDTO struct {
 }
 
 func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -2635,7 +2746,12 @@ type secretProofTransactionDTO struct {
 }
 
 func (dto *secretProofTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -2676,7 +2792,7 @@ func NewCosignatureTransactionFromHash(hash Hash) *CosignatureTransaction {
 		TransactionToCosign: &AggregateTransaction{
 			AbstractTransaction: AbstractTransaction{
 				TransactionInfo: &TransactionInfo{
-					Hash: hash,
+					TransactionHash: hash,
 				},
 			},
 		},
@@ -2687,16 +2803,28 @@ func (tx *CosignatureTransaction) String() string {
 	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign)
 }
 
-type SignedTransaction struct {
+type signedTransactionDto struct {
 	TransactionType `json:"transactionType"`
 	Payload         string `json:"payload"`
-	Hash            Hash   `json:"hash"`
+	Hash            string `json:"hash"`
+}
+
+type SignedTransaction struct {
+	TransactionType
+	Payload string
+	Hash    Hash
+}
+
+type cosignatureSignedTransactionDto struct {
+	ParentHash string `json:"parentHash"`
+	Signature  string `json:"signature"`
+	Signer     string `json:"signer"`
 }
 
 type CosignatureSignedTransaction struct {
-	ParentHash Hash   `json:"parentHash"`
-	Signature  string `json:"signature"`
-	Signer     string `json:"signer"`
+	ParentHash Hash
+	Signature  Signature
+	Signer     string
 }
 
 type AggregateTransactionCosignature struct {
@@ -2710,7 +2838,7 @@ type aggregateTransactionCosignatureDTO struct {
 }
 
 func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType) (*AggregateTransactionCosignature, error) {
-	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
+	acc, err := NewPublicAccountFromPublicKey(dto.Signer, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -2753,7 +2881,7 @@ type multisigCosignatoryModificationDTO struct {
 }
 
 func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType) (*MultisigCosignatoryModification, error) {
-	acc, err := NewAccountFromPublicKey(dto.PublicAccount, networkType)
+	acc, err := NewPublicAccountFromPublicKey(dto.PublicAccount, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -2814,7 +2942,7 @@ func (ts *TransactionStatus) String() string {
 		`
 			"Group:" %s,
 			"Status:" %s,
-			"Content": %s,
+			"Hash": %s,
 			"Deadline": %s,
 			"Height": %s
 		`,
@@ -2829,17 +2957,22 @@ func (ts *TransactionStatus) String() string {
 type transactionStatusDTO struct {
 	Group    string                 `json:"group"`
 	Status   string                 `json:"status"`
-	Hash     Hash                   `json:"hash"`
+	Hash     hashDto                `json:"hash"`
 	Deadline blockchainTimestampDTO `json:"deadline"`
 	Height   uint64DTO              `json:"height"`
 }
 
 func (dto *transactionStatusDTO) toStruct() (*TransactionStatus, error) {
+	hash, err := dto.Hash.Hash()
+	if err != nil {
+		return nil, err
+
+	}
 	return &TransactionStatus{
 		NewDeadlineFromBlockchainTimestamp(dto.Deadline.toStruct()),
 		dto.Group,
 		dto.Status,
-		dto.Hash,
+		hash,
 		dto.Height.toStruct(),
 	}, nil
 }
@@ -3016,15 +3149,6 @@ const (
 	BlockTransaction PropertyType = 0x80 + 0x04
 )
 
-type MosaicPropertyId uint8
-
-// MosaicPropertyId enums
-const (
-	MosaicPropertyFlags MosaicPropertyId = iota
-	MosaicPropertyDivisibility
-	MosaicPropertyDuration
-)
-
 type MultisigCosignatoryModificationType uint8
 
 func (t MultisigCosignatoryModificationType) String() string {
@@ -3060,10 +3184,24 @@ const (
 	MetadataNamespaceType
 )
 
-type Hash string
+type Signature []byte
+
+func (s Signature) String() string {
+	return hex.EncodeToString(s)
+}
+
+type Hash []byte
 
 func (h Hash) String() string {
-	return (string)(h)
+	return hex.EncodeToString(h)
+}
+
+func (h Hash) Empty() bool {
+	return len(h) == 0
+}
+
+func (h Hash) Equal(other Hash) bool {
+	return reflect.DeepEqual(h, other)
 }
 
 func ExtractVersion(version uint64) uint8 {
@@ -3179,10 +3317,10 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 	return dtoToTransaction(b, dto)
 }
 
-func createTransactionHash(p string, generationHash []byte) (string, error) {
+func createTransactionHash(p string, generationHash Hash) (Hash, error) {
 	b, err := hex.DecodeString(p)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	const HalfOfSignature = SignatureSize / 2
@@ -3195,10 +3333,10 @@ func createTransactionHash(p string, generationHash []byte) (string, error) {
 
 	r, err := crypto.HashesSha3_256(sb)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return strings.ToUpper(hex.EncodeToString(r)), nil
+	return r, nil
 }
 
 func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
@@ -3230,7 +3368,7 @@ func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
 	return rB, nil
 }
 
-func signTransactionWith(tx Transaction, a *Account, generationHash []byte) (*SignedTransaction, error) {
+func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error) {
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
 	b, err := tx.generateBytes()
 	if err != nil {
@@ -3238,7 +3376,7 @@ func signTransactionWith(tx Transaction, a *Account, generationHash []byte) (*Si
 	}
 	sb := make([]byte, len(b)-SizeSize-SignerSize-SignatureSize)
 	copy(sb, b[SizeSize+SignerSize+SignatureSize:])
-	signature, err := s.Sign(append(generationHash, sb...))
+	signature, err := s.Sign(append(a.generationHash, sb...))
 	if err != nil {
 		return nil, err
 	}
@@ -3250,29 +3388,23 @@ func signTransactionWith(tx Transaction, a *Account, generationHash []byte) (*Si
 	copy(p[SizeSize+SignatureSize+SignerSize:], b[SizeSize+SignatureSize+SignerSize:])
 
 	ph := hex.EncodeToString(p)
-	h, err := createTransactionHash(ph, generationHash)
+	h, err := createTransactionHash(ph, a.generationHash)
 	if err != nil {
 		return nil, err
 	}
-	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(ph), (Hash)(h)}, nil
+	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(ph), h}, nil
 }
 
-func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosignatories []*Account, generationHash []byte) (*SignedTransaction, error) {
-	stx, err := signTransactionWith(tx, a, generationHash)
+func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
+	stx, err := signTransactionWith(tx, a)
 	if err != nil {
 		return nil, err
 	}
 
 	p := stx.Payload
-
-	b, err := hex.DecodeString((string)(stx.Hash))
-	if err != nil {
-		return nil, err
-	}
-
 	for _, cos := range cosignatories {
 		s := crypto.NewSignerFromKeyPair(cos.KeyPair, nil)
-		sb, err := s.Sign(b)
+		sb, err := s.Sign(stx.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -3292,23 +3424,20 @@ func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosig
 	return &SignedTransaction{tx.Type, hex.EncodeToString(pb), stx.Hash}, nil
 }
 
-func signCosignatureTransaction(a *Account, tx *CosignatureTransaction, generationHash []byte) (*CosignatureSignedTransaction, error) {
-	if tx.TransactionToCosign.TransactionInfo == nil || tx.TransactionToCosign.TransactionInfo.Hash == "" {
+func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
+	if tx.TransactionToCosign.TransactionInfo == nil || tx.TransactionToCosign.TransactionInfo.TransactionHash.Empty() {
 		return nil, errors.New("cosignature transaction hash is nil")
 	}
 
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
-	b, err := hex.DecodeString((string)(tx.TransactionToCosign.TransactionInfo.Hash))
+	b := tx.TransactionToCosign.TransactionInfo.TransactionHash
+
+	sb, err := s.Sign(append(a.generationHash, b...))
 	if err != nil {
 		return nil, err
 	}
 
-	sb, err := s.Sign(append(generationHash, b...))
-	if err != nil {
-		return nil, err
-	}
-
-	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.Hash, hex.EncodeToString(sb.Bytes()), a.PublicAccount.PublicKey}, nil
+	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.TransactionHash, sb.Bytes(), a.PublicAccount.PublicKey}, nil
 }
 
 func cosignatoryModificationArrayToBuffer(builder *flatbuffers.Builder, modifications []*MultisigCosignatoryModification) (flatbuffers.UOffsetT, error) {
@@ -3377,9 +3506,8 @@ func mosaicPropertyArrayToBuffer(builder *flatbuffers.Builder, properties []Mosa
 	return transactions.TransactionBufferCreateUOffsetVector(builder, pBuffer)
 }
 
-func stringToBuffer(builder *flatbuffers.Builder, hash string) flatbuffers.UOffsetT {
-	b := utils.MustHexDecodeString(hash)
-	pV := transactions.TransactionBufferCreateByteVector(builder, b)
+func hashToBuffer(builder *flatbuffers.Builder, hash Hash) flatbuffers.UOffsetT {
+	pV := transactions.TransactionBufferCreateByteVector(builder, hash)
 
 	return pV
 }

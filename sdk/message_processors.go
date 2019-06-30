@@ -78,7 +78,7 @@ func MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error) {
 		return nil, err
 	}
 
-	return dto.toStruct(), nil
+	return dto.toStruct()
 }
 
 type UnconfirmedRemovedMapper interface {
@@ -93,12 +93,20 @@ func (p UnconfirmedRemovedMapperFn) MapUnconfirmedRemoved(m []byte) (*Unconfirme
 //======================================================================================================================
 
 func MapStatus(m []byte) (*StatusInfo, error) {
-	statusInfo := &StatusInfo{}
-	if err := json.Unmarshal(m, statusInfo); err != nil {
+	statusInfoDto := &statusInfoDto{}
+	if err := json.Unmarshal(m, statusInfoDto); err != nil {
 		return nil, err
 	}
 
-	return statusInfo, nil
+	hash, err := statusInfoDto.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &StatusInfo{
+		statusInfoDto.Status,
+		hash,
+	}, nil
 }
 
 type StatusMapper interface {
@@ -150,7 +158,7 @@ func MapPartialRemoved(m []byte) (*PartialRemovedInfo, error) {
 		return nil, err
 	}
 
-	return dto.toStruct(), nil
+	return dto.toStruct()
 }
 
 type PartialRemovedMapper interface {
@@ -166,12 +174,26 @@ func (p PartialRemovedMapperFn) MapPartialRemoved(m []byte) (*PartialRemovedInfo
 //======================================================================================================================
 
 func MapCosignature(m []byte) (*SignerInfo, error) {
-	signerInfo := &SignerInfo{}
-	if err := json.Unmarshal(m, signerInfo); err != nil {
+	signerInfoDto := &signerInfoDto{}
+	if err := json.Unmarshal(m, signerInfoDto); err != nil {
 		return nil, err
 	}
 
-	return signerInfo, nil
+	signature, err := signerInfoDto.Signature.Signature()
+	if err != nil {
+		return nil, err
+	}
+
+	parentHash, err := signerInfoDto.ParentHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &SignerInfo{
+		signerInfoDto.Signer,
+		signature,
+		parentHash,
+	}, nil
 }
 
 type CosignatureMapper interface {

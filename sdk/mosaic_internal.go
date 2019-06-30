@@ -74,10 +74,9 @@ type MosaicPropertyId uint8
 
 // MosaicPropertyId enums
 const (
-	FlagsPropertyId MosaicPropertyId = iota
-	DivisibilityPropertyId
-	DurationPropertyId
-	SentinelPropertyId
+	MosaicPropertyFlagsId MosaicPropertyId = iota
+	MosaicPropertyDivisibilityId
+	MosaicPropertyDurationId
 )
 
 type mosaicPropertyDTO struct {
@@ -115,13 +114,12 @@ func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
 	duration := Duration(0)
 	for _, property := range *dto {
 		switch property.Id {
-		case FlagsPropertyId:
+		case MosaicPropertyFlagsId:
 			flags = property.Value.toUint64()
-		case DivisibilityPropertyId:
+		case MosaicPropertyDivisibilityId:
 			divisibility = byte(property.Value.toUint64())
-		case DurationPropertyId:
+		case MosaicPropertyDurationId:
 			duration = Duration(property.Value.toUint64())
-		case SentinelPropertyId:
 		default:
 			return nil, errors.New("Unknown Property Id")
 		}
@@ -136,7 +134,7 @@ func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
 }
 
 func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
-	publicAcc, err := NewAccountFromPublicKey(ref.Mosaic.Owner, networkType)
+	publicAcc, err := NewPublicAccountFromPublicKey(ref.Mosaic.Owner, networkType)
 	if err != nil {
 		return nil, err
 	}

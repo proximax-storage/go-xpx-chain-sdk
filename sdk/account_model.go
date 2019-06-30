@@ -18,20 +18,21 @@ const EmptyPublicKey = "00000000000000000000000000000000000000000000000000000000
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
+	generationHash Hash
 }
 
-func (a *Account) Sign(tx Transaction, generationHash []byte) (*SignedTransaction, error) {
-	return signTransactionWith(tx, a, generationHash)
+func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
+	return signTransactionWith(tx, a)
 }
 
 // sign AggregateTransaction with current Account and with every passed cosignatory Account's
 // returns announced Aggregate SignedTransaction
-func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account, generationHash []byte) (*SignedTransaction, error) {
-	return signTransactionWithCosignatures(tx, a, cosignatories, generationHash)
+func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
+	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
 
-func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction, generationHash []byte) (*CosignatureSignedTransaction, error) {
-	return signCosignatureTransaction(a, tx, generationHash)
+func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransaction(a, tx)
 }
 
 func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error) {
@@ -167,22 +168,22 @@ type MultisigAccountGraphInfo struct {
 }
 
 // returns new Account generated for passed NetworkType
-func NewAccount(networkType NetworkType) (*Account, error) {
+func NewAccount(networkType NetworkType, generationHash Hash) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
 	if err != nil {
 		return nil, err
 	}
 
-	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
+	pa, err := NewPublicAccountFromPublicKey(kp.PublicKey.String(), networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Account{pa, kp}, nil
+	return &Account{pa, kp, generationHash}, nil
 }
 
 // returns new Account from private key for passed NetworkType
-func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
+func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash Hash) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
 		return nil, err
@@ -193,16 +194,16 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, e
 		return nil, err
 	}
 
-	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
+	pa, err := NewPublicAccountFromPublicKey(kp.PublicKey.String(), networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Account{pa, kp}, nil
+	return &Account{pa, kp, generationHash}, nil
 }
 
 // returns a PublicAccount from public key for passed NetworkType
-func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
+func NewPublicAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
 	ad, err := NewAddressFromPublicKey(pKey, networkType)
 	if err != nil {
 		return nil, err

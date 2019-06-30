@@ -10,23 +10,20 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 )
 
-const (
-	networkType = sdk.MijinTest
-)
-
 var (
 	baseUrls = []string{"http://localhost:3000"}
 )
 
 // Simple Blockchain API request
 func main() {
-	conf, err := sdk.NewConfig(baseUrls, networkType, sdk.WebsocketReconnectionDefaultTimeout)
+	conf, err := sdk.NewDefaultConfig(baseUrls)
 	if err != nil {
 		panic(err)
 	}
 
 	// Use the default http client
 	client := sdk.NewClient(nil, conf)
+	client.SetupConfigFromRest(context.Background())
 
 	// Get the chain height
 	chainHeight, err := client.Blockchain.GetBlockchainHeight(context.Background())

@@ -10,11 +10,11 @@ import (
 
 type BlockInfo struct {
 	NetworkType
-	Hash                   string
-	GenerationHash         string
+	BlockHash              Hash
+	GenerationHash         Hash
 	TotalFee               Amount
 	NumTransactions        uint64
-	Signature              string
+	Signature              Signature
 	Signer                 *PublicAccount
 	Version                uint8
 	Type                   uint64
@@ -22,10 +22,10 @@ type BlockInfo struct {
 	Timestamp              *Timestamp
 	Difficulty             Difficulty
 	FeeMultiplier          uint32
-	PreviousBlockHash      string
-	BlockTransactionsHash  string
-	BlockReceiptsHash      string
-	StateHash              string
+	PreviousBlockHash      Hash
+	BlockTransactionsHash  Hash
+	BlockReceiptsHash      Hash
+	StateHash              Hash
 	Beneficiary            *PublicAccount
 	FeeInterest            uint32
 	FeeInterestDenominator uint32
@@ -35,7 +35,7 @@ func (b *BlockInfo) String() string {
 	return str.StructToString(
 		"BlockInfo",
 		str.NewField("NetworkType", str.IntPattern, b.NetworkType),
-		str.NewField("Content", str.StringPattern, b.Hash),
+		str.NewField("BlockHash", str.StringPattern, b.BlockHash),
 		str.NewField("GenerationHash", str.StringPattern, b.GenerationHash),
 		str.NewField("TotalFee", str.StringPattern, b.TotalFee),
 		str.NewField("NumTransactions", str.IntPattern, b.NumTransactions),

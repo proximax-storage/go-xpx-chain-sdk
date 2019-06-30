@@ -1,5 +1,17 @@
 package sdk
 
+type hashDto string
+
+func (dto *hashDto) Hash() (Hash, error) {
+	return StringToHash(string(*dto))
+}
+
+type signatureDto string
+
+func (dto *signatureDto) Signature() (Signature, error) {
+	return StringToSignature(string(*dto))
+}
+
 type transactionStatusDTOs []*transactionStatusDTO
 
 func (t *transactionStatusDTOs) toStruct() ([]*TransactionStatus, error) {

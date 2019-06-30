@@ -58,7 +58,7 @@ func TestNamespacePathRejectsNamesWithTooManyParts(t *testing.T) {
 
 // @Test
 func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
-	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
 	assert.Nil(t, err)
 	id, err := generateMosaicId(0, account.PublicAccount.PublicKey)
 	assert.Nil(t, err)
