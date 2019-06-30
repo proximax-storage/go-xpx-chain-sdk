@@ -157,6 +157,21 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
+func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewMosaicDefinitionTransaction(
+			sdk.NewDeadline(time.Hour),
+			nonce,
+			defaultAccount.PublicAccount.PublicKey,
+			sdk.NewMosaicProperties(true, true, true, 4, sdk.Duration(0)),
+			networkType)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
 func TestTransferTransaction(t *testing.T) {
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewTransferTransaction(
