@@ -1,5 +1,10 @@
 namespace Catapult.Buffers;
 
+table MosaicProperty {
+    mosaicPropertyId:ubyte;
+    value:[uint];
+}
+
 table MosaicDefinitionTransactionBuffer {
     size: uint;
     signature: [ubyte];
@@ -13,8 +18,7 @@ table MosaicDefinitionTransactionBuffer {
     numOptionalProperties:ubyte;
     flags:ubyte;
     divisibility:ubyte;
-    indicateDuration:ubyte;
-    duration:[uint];
+    optionalProperties: [MosaicProperty];
 }
 
 root_type MosaicDefinitionTransactionBuffer;

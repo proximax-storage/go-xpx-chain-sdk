@@ -117,22 +117,47 @@ const LevyMutable = 0x04
 // `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
 // `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
 // `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
-type MosaicProperties struct {
+type MosaicPropertiesHeader struct {
 	SupplyMutable bool
 	Transferable  bool
 	LevyMutable   bool
 	Divisibility  uint8
-	Duration      Duration
+}
+
+type MosaicProperties struct {
+	MosaicPropertiesHeader
+	OptionalProperties []MosaicProperty
+}
+
+type MosaicProperty struct {
+	Id    MosaicPropertyId
+	Value baseInt64
+}
+
+func (mp *MosaicProperty) String() string {
+	return str.StructToString(
+		"MosaicProperty",
+		str.NewField("Id", str.IntPattern, mp.Id),
+		str.NewField("Value", str.IntPattern, mp.Value),
+	)
 }
 
 // returns MosaicProperties from actual values
 func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties {
+	properties := make([]MosaicProperty, 0)
+
+	if duration != 0 {
+		properties = append(properties, MosaicProperty{MosaicPropertyDuration, duration})
+	}
+
 	ref := &MosaicProperties{
-		supplyMutable,
-		transferable,
-		levyMutable,
-		divisibility,
-		duration,
+		MosaicPropertiesHeader{
+			supplyMutable,
+			transferable,
+			levyMutable,
+			divisibility,
+		},
+		properties,
 	}
 
 	return ref
@@ -145,8 +170,18 @@ func (mp *MosaicProperties) String() string {
 		str.NewField("Transferable", str.BooleanPattern, mp.Transferable),
 		str.NewField("LevyMutable", str.BooleanPattern, mp.LevyMutable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
-		str.NewField("Duration", str.StringPattern, mp.Duration),
+		str.NewField("OptionalProperties", str.StringPattern, mp.OptionalProperties),
 	)
+}
+
+func (mp *MosaicProperties) Duration() Duration {
+	for _, property := range mp.OptionalProperties {
+		if property.Id == MosaicPropertyDuration {
+			return Duration(property.Value)
+		}
+	}
+
+	return 0
 }
 
 type MosaicName struct {
