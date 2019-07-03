@@ -13,6 +13,7 @@ import (
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	math "math/rand"
 	"testing"
 	"time"
@@ -139,6 +140,36 @@ func TestAccountLinkTransaction(t *testing.T) {
 			sdk.AccountLink,
 			networkType)
 	}, rootAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestCatapultConfigTransaction(t *testing.T) {
+	config, err := ioutil.ReadFile("config-network.properties")
+	assert.Nil(t, err)
+	versions, err := ioutil.ReadFile("supported-entities.json")
+	assert.Nil(t, err)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCatapultConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(2),
+			string(config),
+			string(versions),
+			networkType)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestCatapultUpdateTransaction(t *testing.T) {
+	version := sdk.NewCatapultVersion(0, 3, 0, 0)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return sdk.NewCatapultUpdateTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(2),
+			version,
+			networkType)
+	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
 

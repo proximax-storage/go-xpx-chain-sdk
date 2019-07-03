@@ -11,11 +11,13 @@ import (
 )
 
 const iter = 1000
-const testUrl = "http://bcstage1.xpxsirius.io:3000"
-const networkType = sdk.PublicTest
-const privateKey = "D54AC0CB0FF50FB44233782B3A6B5FDE2F1C83B9AE2F1352119F93713F3AB923"
+const testUrl = "http://127.0.0.1:3000"
+const networkType = sdk.MijinTest
+const privateKey = "FFCA7367B4EE8E14041091F438B7BC6C3206ADE2D312670B218C7516395C7D7F"
+const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
 
 var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
+var nemesisAccount, _ = sdk.NewAccountFromPrivateKey(nemesisPrivateKey, networkType)
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 	cfg, _ := sdk.NewConfig([]string{testUrl}, networkType, sdk.WebsocketReconnectionDefaultTimeout)

@@ -109,16 +109,16 @@ func (rcv *ModifyMultisigAccountTransactionBuffer) MutateSigner(j int, n byte) b
 	return false
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) Version() uint16 {
+func (rcv *ModifyMultisigAccountTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *ModifyMultisigAccountTransactionBuffer) MutateVersion(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *ModifyMultisigAccountTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
 }
 
 func (rcv *ModifyMultisigAccountTransactionBuffer) Type() uint16 {
@@ -259,14 +259,14 @@ func ModifyMultisigAccountTransactionBufferAddSigner(builder *flatbuffers.Builde
 func ModifyMultisigAccountTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func ModifyMultisigAccountTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
-	builder.PrependUint16Slot(3, version, 0)
+func ModifyMultisigAccountTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
 }
 func ModifyMultisigAccountTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func ModifyMultisigAccountTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
+func ModifyMultisigAccountTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
 func ModifyMultisigAccountTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

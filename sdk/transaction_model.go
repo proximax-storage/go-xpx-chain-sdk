@@ -86,8 +86,8 @@ func (tx *AbstractTransaction) String() string {
 	)
 }
 
-func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v uint16, signatureV, signerV, dV, fV flatbuffers.UOffsetT, err error) {
-	v = (uint16(tx.NetworkType) << 8) + uint16(tx.Version)
+func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v uint32, signatureV, signerV, dV, fV flatbuffers.UOffsetT, err error) {
+	v = (uint32(tx.NetworkType) << 24) + uint32(tx.Version)
 	signatureV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignatureSize))
 	signerV = transactions.TransactionBufferCreateByteVector(builder, make([]byte, SignerSize))
 	dV = transactions.TransactionBufferCreateUint32Vector(builder, tx.Deadline.ToBlockchainTimestamp().toArray())
@@ -95,7 +95,7 @@ func (tx *AbstractTransaction) generateVectors(builder *flatbuffers.Builder) (v 
 	return
 }
 
-func (tx *AbstractTransaction) buildVectors(builder *flatbuffers.Builder, v uint16, signatureV, signerV, dV, fV flatbuffers.UOffsetT) {
+func (tx *AbstractTransaction) buildVectors(builder *flatbuffers.Builder, v uint32, signatureV, signerV, dV, fV flatbuffers.UOffsetT) {
 	transactions.TransactionBufferAddSignature(builder, signatureV)
 	transactions.TransactionBufferAddSigner(builder, signerV)
 	transactions.TransactionBufferAddVersion(builder, v)
@@ -686,7 +686,7 @@ func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV f
 }
 
 func (tx *AliasTransaction) Size() int {
-	return AliasTransactionHeader
+	return AliasTransactionHeaderSize
 }
 
 func (tx *AliasTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -978,6 +978,193 @@ func (dto *accountLinkTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
+type CatapultConfigTransaction struct {
+	AbstractTransaction
+	ApplyHeightDelta        Duration
+	BlockChainConfig        string
+	SupportedEntityVersions string
+}
+
+// returns CatapultConfigTransaction from passed ApplyHeightDelta, BlockChainConfig and SupportedEntityVersions
+func NewCatapultConfigTransaction(deadline *Deadline, delta Duration, config string, versions string, networkType NetworkType) (*CatapultConfigTransaction, error) {
+	return &CatapultConfigTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        CatapultConfig,
+			Version:     CatapultConfigVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		ApplyHeightDelta:        delta,
+		BlockChainConfig:        config,
+		SupportedEntityVersions: versions,
+	}, nil
+}
+
+func (tx *CatapultConfigTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *CatapultConfigTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"ApplyHeightDelta": %s,
+			"BlockChainConfig": %s,
+			"SupportedEntityVersions": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.ApplyHeightDelta,
+		tx.BlockChainConfig,
+		tx.SupportedEntityVersions,
+	)
+}
+
+func (tx *CatapultConfigTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	deltaV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ApplyHeightDelta.toArray())
+	configV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.BlockChainConfig))
+	supportedV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.SupportedEntityVersions))
+
+	transactions.CatapultConfigTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+
+	transactions.CatapultConfigTransactionBufferAddApplyHeightDelta(builder, deltaV)
+	transactions.CatapultConfigTransactionBufferAddBlockChainConfigSize(builder, uint32(len(tx.BlockChainConfig)))
+	transactions.CatapultConfigTransactionBufferAddBlockChainConfig(builder, configV)
+	transactions.CatapultConfigTransactionBufferAddSupportedEntityVersionsSize(builder, uint32(len(tx.SupportedEntityVersions)))
+	transactions.CatapultConfigTransactionBufferAddSupportedEntityVersions(builder, supportedV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return catapultConfigTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *CatapultConfigTransaction) Size() int {
+	return CatapultConfigHeaderSize + len(tx.BlockChainConfig) + len(tx.SupportedEntityVersions)
+}
+
+type catapultConfigTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		ApplyHeightDelta        uint64DTO `json:"applyHeightDelta"`
+		BlockChainConfig        string    `json:"blockChainConfig"`
+		SupportedEntityVersions string    `json:"supportedEntityVersions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *catapultConfigTransactionDTO) toStruct() (Transaction, error) {
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	applyHeightDelta := dto.Tx.ApplyHeightDelta.toUint64()
+
+	return &CatapultConfigTransaction{
+		*atx,
+		Duration(applyHeightDelta),
+		dto.Tx.BlockChainConfig,
+		dto.Tx.SupportedEntityVersions,
+	}, nil
+}
+
+type CatapultUpdateTransaction struct {
+	AbstractTransaction
+	UpgradePeriod      Duration
+	NewCatapultVersion CatapultVersion
+}
+
+// returns CatapultConfigTransaction from passed ApplyHeightDelta, BlockChainConfig and SupportedEntityVersions
+func NewCatapultUpdateTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion, networkType NetworkType) (*CatapultUpdateTransaction, error) {
+	return &CatapultUpdateTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        CatapultUpdate,
+			Version:     CatapultUpdateVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		UpgradePeriod:      upgradePeriod,
+		NewCatapultVersion: newCatapultVersion,
+	}, nil
+}
+
+func (tx *CatapultUpdateTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *CatapultUpdateTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"UpgradePeriod": %s,
+			"NewCatapultVersion": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.UpgradePeriod,
+		tx.NewCatapultVersion,
+	)
+}
+
+func (tx *CatapultUpdateTransaction) generateBytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	upgradeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.UpgradePeriod.toArray())
+	versionV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NewCatapultVersion.toArray())
+
+	transactions.CatapultUpgradeTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+
+	transactions.CatapultUpgradeTransactionBufferAddUpgradePeriod(builder, upgradeV)
+	transactions.CatapultUpgradeTransactionBufferAddNewCatapultVersion(builder, versionV)
+	t := transactions.CatapultConfigTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return catapultUpdateTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *CatapultUpdateTransaction) Size() int {
+	return CatapultUpdateTransactionSize
+}
+
+type catapultUpgradeTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		UpgradePeriod      uint64DTO `json:"upgradePeriod"`
+		NewCatapultVersion uint64DTO `json:"newCatapultVersion"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *catapultUpgradeTransactionDTO) toStruct() (Transaction, error) {
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	if err != nil {
+		return nil, err
+	}
+
+	upgradePeriod := dto.Tx.UpgradePeriod.toUint64()
+	newCatapultVersion := dto.Tx.NewCatapultVersion.toUint64()
+
+	return &CatapultUpdateTransaction{
+		*atx,
+		Duration(upgradePeriod),
+		CatapultVersion(newCatapultVersion),
+	}, nil
+}
+
 type AggregateTransaction struct {
 	AbstractTransaction
 	InnerTransactions []Transaction
@@ -1067,7 +1254,7 @@ func (tx *AggregateTransaction) Size() int {
 	for _, itx := range tx.InnerTransactions {
 		sizeOfInnerTransactions += itx.Size() - SignatureSize - MaxFeeSize - DeadLineSize
 	}
-	return AggregateBondedHeader + sizeOfInnerTransactions
+	return AggregateBondedHeaderSize + sizeOfInnerTransactions
 }
 
 type aggregateTransactionDTO struct {
@@ -2860,7 +3047,7 @@ const (
 	SizeSize                                 int = 4
 	SignerSize                               int = KeySize
 	SignatureSize                            int = 64
-	VersionSize                              int = 2
+	VersionSize                              int = 4
 	TypeSize                                 int = 2
 	MaxFeeSize                               int = BaseInt64Size
 	DeadLineSize                             int = BaseInt64Size
@@ -2877,8 +3064,10 @@ const (
 	LinkActionSize                           int = 1
 	AccountLinkTransactionSize               int = TransactionHeaderSize + KeySize + LinkActionSize
 	AliasActionSize                          int = 1
-	AliasTransactionHeader                   int = TransactionHeaderSize + NamespaceSize + AliasActionSize
-	AggregateBondedHeader                    int = TransactionHeaderSize + SizeSize
+	AliasTransactionHeaderSize               int = TransactionHeaderSize + NamespaceSize + AliasActionSize
+	AggregateBondedHeaderSize                int = TransactionHeaderSize + SizeSize
+	CatapultConfigHeaderSize                 int = TransactionHeaderSize + BaseInt64Size + SizeSize + SizeSize
+	CatapultUpdateTransactionSize            int = TransactionHeaderSize + DurationSize + BaseInt64Size
 	HashTypeSize                             int = 1
 	LockSize                                 int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
@@ -2915,6 +3104,8 @@ const (
 	AddressAlias              TransactionType = 0x424e
 	AggregateBonded           TransactionType = 0x4241
 	AggregateCompleted        TransactionType = 0x4141
+	CatapultConfig            TransactionType = 0x4159
+	CatapultUpdate            TransactionType = 0x4158
 	LinkAccount               TransactionType = 0x414c
 	Lock                      TransactionType = 0x4148
 	MetadataAddress           TransactionType = 0x413d
@@ -2937,7 +3128,7 @@ func (t TransactionType) String() string {
 
 var transactionTypeError = errors.New("wrong raw TransactionType int")
 
-type TransactionVersion uint8
+type TransactionVersion uint32
 
 const (
 	AccountPropertyAddressVersion    TransactionVersion = 1
@@ -2946,6 +3137,8 @@ const (
 	AddressAliasVersion              TransactionVersion = 1
 	AggregateBondedVersion           TransactionVersion = 2
 	AggregateCompletedVersion        TransactionVersion = 2
+	CatapultConfigVersion            TransactionVersion = 1
+	CatapultUpdateVersion            TransactionVersion = 1
 	LinkAccountVersion               TransactionVersion = 2
 	LockVersion                      TransactionVersion = 1
 	MetadataAddressVersion           TransactionVersion = 1
@@ -3143,6 +3336,10 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &addressAliasTransactionDTO{}
 	case AggregateBonded, AggregateCompleted:
 		dto = &aggregateTransactionDTO{}
+	case CatapultConfig:
+		dto = &catapultConfigTransactionDTO{}
+	case CatapultUpdate:
+		dto = &catapultUpgradeTransactionDTO{}
 	case LinkAccount:
 		dto = &accountLinkTransactionDTO{}
 	case Lock:

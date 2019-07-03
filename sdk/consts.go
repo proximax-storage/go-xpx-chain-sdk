@@ -73,6 +73,8 @@ const (
 // routes for NetworkService
 const (
 	networkRoute = "/network"
+	configRoute  = "/config/%s"
+	upgradeRoute = "/upgrade/%s"
 )
 
 // routes for TransactionService

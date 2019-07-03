@@ -65,6 +65,42 @@ type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
 
+type CatapultVersion uint64
+
+func NewCatapultVersion(major uint16, minor uint16, revision uint16, build uint16) CatapultVersion {
+	version := CatapultVersion(0)
+	version |= CatapultVersion(major) << 48
+	version |= CatapultVersion(minor) << 32
+	version |= CatapultVersion(revision) << 16
+	version |= CatapultVersion(build) << 0
+	return version
+}
+
+func (m CatapultVersion) String() string {
+	getTwoBytesByShift := func(number CatapultVersion, shift uint) uint16 {
+		return uint16(number>>shift) & 0xFF
+	}
+
+	return fmt.Sprintf(
+		"%d [Major %d, Minor %d, Revision %d, Build %d]",
+		m,
+		getTwoBytesByShift(m, 48),
+		getTwoBytesByShift(m, 32),
+		getTwoBytesByShift(m, 16),
+		getTwoBytesByShift(m, 0),
+	)
+}
+
+func (m CatapultVersion) toArray() [2]uint32 {
+	return uint64ToArray(uint64(m))
+}
+
+func (m CatapultVersion) toLittleEndian() []byte {
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, uint64(m))
+	return bytes
+}
+
 type ChainScore [2]uint64
 
 func (m *ChainScore) String() string {

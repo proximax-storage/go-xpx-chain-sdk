@@ -11,11 +11,9 @@ import (
 	"net/http"
 )
 
-type NetworkService service
-
-type networkDTO struct {
-	Name        string
-	Description string
+type NetworkService struct {
+	*service
+	BlockchainService *BlockchainService
 }
 
 func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, error) {
@@ -24,7 +22,7 @@ func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, err
 	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, networkRoute, nil, netDTO)
 
 	if err != nil {
-		return 0, err
+		return NotSupportedNet, err
 	}
 
 	if err = handleResponseStatusCode(resp, nil); err != nil {
@@ -38,4 +36,58 @@ func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, err
 	}
 
 	return networkType, err
+}
+
+func (ref *NetworkService) GetNetworkConfigAtHeight(ctx context.Context, height Height) (*NetworkConfig, error) {
+	netDTO := &networkConfigDTO{}
+
+	url := fmt.Sprintf(configRoute, height)
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url, nil, netDTO)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, nil); err != nil {
+		return nil, err
+	}
+
+	return netDTO.toStruct(), nil
+}
+
+func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*NetworkConfig, error) {
+	height, err := ref.BlockchainService.GetBlockchainHeight(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return ref.GetNetworkConfigAtHeight(ctx, height)
+}
+
+func (ref *NetworkService) GetNetworkVersionAtHeight(ctx context.Context, height Height) (*NetworkVersion, error) {
+	netDTO := &networkVersionDTO{}
+
+	url := fmt.Sprintf(upgradeRoute, height)
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url, nil, netDTO)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, nil); err != nil {
+		return nil, err
+	}
+
+	return netDTO.toStruct(), nil
+}
+
+func (ref *NetworkService) GetNetworkVersion(ctx context.Context) (*NetworkVersion, error) {
+	height, err := ref.BlockchainService.GetBlockchainHeight(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return ref.GetNetworkVersionAtHeight(ctx, height)
 }

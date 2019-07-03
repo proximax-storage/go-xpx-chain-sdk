@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
 type NetworkType uint8
@@ -53,4 +54,32 @@ func ExtractNetworkType(version uint64) NetworkType {
 	binary.LittleEndian.PutUint64(b, version)
 
 	return NetworkType(b[1])
+}
+
+type NetworkConfig struct {
+	StartedHeight           Height
+	BlockChainConfig        string
+	SupportedEntityVersions string
+}
+
+func (nc NetworkConfig) String() string {
+	return str.StructToString(
+		"NetworkConfig",
+		str.NewField("StartedHeight", str.StringPattern, nc.StartedHeight),
+		str.NewField("BlockChainConfig", str.StringPattern, nc.BlockChainConfig),
+		str.NewField("SupportedEntityVersions", str.StringPattern, nc.SupportedEntityVersions),
+	)
+}
+
+type NetworkVersion struct {
+	StartedHeight   Height
+	CatapultVersion CatapultVersion
+}
+
+func (nv NetworkVersion) String() string {
+	return str.StructToString(
+		"NetworkVersion",
+		str.NewField("StartedHeight", str.StringPattern, nv.StartedHeight),
+		str.NewField("CatapultVersion", str.StringPattern, nv.CatapultVersion),
+	)
 }
