@@ -16,14 +16,13 @@ var (
 
 // Simple Blockchain API request
 func main() {
-	conf, err := sdk.NewDefaultConfig(baseUrls)
+	conf, err := sdk.NewConfigFromRemote(baseUrls)
 	if err != nil {
 		panic(err)
 	}
 
 	// Use the default http client
 	client := sdk.NewClient(nil, conf)
-	client.SetupConfigFromRest(context.Background())
 
 	// Get the chain height
 	chainHeight, err := client.Blockchain.GetBlockchainHeight(context.Background())

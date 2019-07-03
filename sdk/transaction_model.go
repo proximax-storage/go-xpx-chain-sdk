@@ -118,7 +118,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 
 	tv := TransactionVersion(ExtractVersion(dto.Version))
 
-	pa, err := NewPublicAccountFromPublicKey(dto.Signer, nt)
+	pa, err := NewAccountFromPublicKey(dto.Signer, nt)
 	if err != nil {
 		return nil, err
 	}
@@ -1011,7 +1011,7 @@ func (dto *accountLinkTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	acc, err := NewPublicAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
+	acc, err := NewAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
 	if err != nil {
 		return nil, err
 	}
@@ -2349,7 +2349,7 @@ func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
 	}
 
 	d := Duration(0)
-	n := NewNamespaceIdNoCheck(0)
+	n := NewNamespaceIdPanic(0)
 
 	if dto.Tx.NamespaceType == Root {
 		d = dto.Tx.Duration.toStruct()
@@ -2836,7 +2836,7 @@ type aggregateTransactionCosignatureDTO struct {
 }
 
 func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType) (*AggregateTransactionCosignature, error) {
-	acc, err := NewPublicAccountFromPublicKey(dto.Signer, networkType)
+	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -2879,7 +2879,7 @@ type multisigCosignatoryModificationDTO struct {
 }
 
 func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType) (*MultisigCosignatoryModification, error) {
-	acc, err := NewPublicAccountFromPublicKey(dto.PublicAccount, networkType)
+	acc, err := NewAccountFromPublicKey(dto.PublicAccount, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -2994,6 +2994,7 @@ const (
 	SizeSize                                 int = 4
 	SignerSize                               int = KeySize
 	SignatureSize                            int = 64
+	HalfOfSignature                          int = SignatureSize / 2
 	VersionSize                              int = 2
 	TypeSize                                 int = 2
 	MaxFeeSize                               int = BaseInt64Size
@@ -3301,7 +3302,6 @@ func createTransactionHash(p string, generationHash *Hash) (*Hash, error) {
 		return nil, err
 	}
 
-	const HalfOfSignature = SignatureSize / 2
 	var sizeOfGenerationHash = 0
 	if generationHash != nil {
 		sizeOfGenerationHash = len(generationHash)

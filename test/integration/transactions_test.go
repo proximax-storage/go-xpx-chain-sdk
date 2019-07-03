@@ -263,7 +263,7 @@ func TestModifyContracTransaction(t *testing.T) {
 		return client.NewModifyContractTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
-			sdk.StringToHashNoCheck("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
+			sdk.StringToHashPanic("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
 			[]*sdk.MultisigCosignatoryModification{
 				{
 					sdk.Add,

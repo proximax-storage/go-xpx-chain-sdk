@@ -174,7 +174,7 @@ func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error)
 		return nil, err
 	}
 
-	pa, err := NewPublicAccountFromPublicKey(kp.PublicKey.String(), networkType)
+	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error)
 	return &Account{pa, kp, generationHash}, nil
 }
 
-// returns new Account from private key for passed NetworkType
+// returns new Account from private key for passed NetworkType and generationHash
 func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash *Hash) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
@@ -194,7 +194,7 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHa
 		return nil, err
 	}
 
-	pa, err := NewPublicAccountFromPublicKey(kp.PublicKey.String(), networkType)
+	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHa
 }
 
 // returns a PublicAccount from public key for passed NetworkType
-func NewPublicAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
+func NewAccountFromPublicKey(pKey string, networkType NetworkType) (*PublicAccount, error) {
 	ad, err := NewAddressFromPublicKey(pKey, networkType)
 	if err != nil {
 		return nil, err

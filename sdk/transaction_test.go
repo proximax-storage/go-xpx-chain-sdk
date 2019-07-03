@@ -29,14 +29,14 @@ var transaction = &TransferTransaction{
 		Deadline:    NewDeadlineFromBlockchainTimestamp(blockchainTimestampDTO{1094650402, 17}.toStruct()),
 		TransactionInfo: &TransactionInfo{
 			Height:              uint64DTO{42, 0}.toStruct(),
-			TransactionHash:     StringToHashNoCheck("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
-			MerkleComponentHash: StringToHashNoCheck("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
+			TransactionHash:     StringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
+			MerkleComponentHash: StringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
 			Index:               0,
 			Id:                  "5B686E97F0C0EA00017B9437",
 		},
 	},
 	Mosaics: []*Mosaic{
-		NewMosaicNoCheck(NewNamespaceIdNoCheck(uint64DTO{3646934825, 3576016193}.toUint64()), uint64DTO{10000000, 0}.toStruct()),
+		NewMosaicPanic(NewNamespaceIdPanic(uint64DTO{3646934825, 3576016193}.toUint64()), uint64DTO{10000000, 0}.toStruct()),
 	},
 	Recipient: &Address{MijinTest, "SBJUINHAC3FKCMVLL2WHBQFPPXYEHOMQY6E2SPVR"},
 	Message:   NewPlainMessage(""),
@@ -91,7 +91,7 @@ var status = &TransactionStatus{
 	NewDeadlineFromBlockchainTimestamp(blockchainTimestampDTO{1, 0}.toStruct()),
 	"confirmed",
 	"Success",
-	StringToHashNoCheck("7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F"),
+	StringToHashPanic("7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F"),
 	uint64DTO{1, 0}.toStruct(),
 }
 
@@ -259,9 +259,9 @@ func TestTransactionService_GetTransactionStatuses(t *testing.T) {
 }
 
 func TestAggregateTransactionSerialization(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("846B4439154579A5903B1459C9CF69CB8153F6D0110A7A0ED61DE29AE4810BF2", MijinTest)
+	p, err := NewAccountFromPublicKey("846B4439154579A5903B1459C9CF69CB8153F6D0110A7A0ED61DE29AE4810BF2", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	ttx, err := NewTransferTransaction(
 		fakeDeadline,
@@ -286,9 +286,9 @@ func TestAggregateTransactionSerialization(t *testing.T) {
 }
 
 func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("B694186EE4AB0558CA4AFCFDD43B42114AE71094F5A1FC4A913FE9971CACD21D", MijinTest)
+	p, err := NewAccountFromPublicKey("B694186EE4AB0558CA4AFCFDD43B42114AE71094F5A1FC4A913FE9971CACD21D", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	ttx, err := NewTransferTransaction(
 		fakeDeadline,
@@ -331,7 +331,7 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 	acc, err := NewAccountFromPrivateKey(
 		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
 		MijinTest,
-		StringToHashNoCheck("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
+		StringToHashPanic("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
 	)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
@@ -343,13 +343,13 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 	cstx, err := acc.SignCosignatureTransaction(ctx)
 
 	assert.Nilf(t, err, "Account.SignCosignatureTransaction signing returned error: %s", err)
-	assert.Equal(t, StringToSignatureNoCheck(cosignatureTransactionSigningCorr), cstx.Signature)
+	assert.Equal(t, StringToSignaturePanic(cosignatureTransactionSigningCorr), cstx.Signature)
 }
 
 func TestModifyAddressMetadataTransactionSerialization(t *testing.T) {
-	acc, err := NewPublicAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
+	acc, err := NewAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	tx, err := NewModifyMetadataAddressTransaction(
 		fakeDeadline,
@@ -406,7 +406,7 @@ func TestAccountPropertiesAddressTransaction(t *testing.T) {
 }
 
 func TestAccountPropertiesMosaicTransaction(t *testing.T) {
-	id := NewMosaicIdNoCheck(6300565133566699912)
+	id := NewMosaicIdPanic(6300565133566699912)
 	tx, err := NewAccountPropertiesMosaicTransaction(
 		fakeDeadline,
 		BlockMosaic,
@@ -457,7 +457,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 }
 
 func TestAddressAliasTransaction(t *testing.T) {
-	nsId := NewNamespaceIdNoCheck(6300565133566699912)
+	nsId := NewNamespaceIdPanic(6300565133566699912)
 	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
 
 	tx, err := NewAddressAliasTransaction(
@@ -477,8 +477,8 @@ func TestAddressAliasTransaction(t *testing.T) {
 }
 
 func TestMosaicAliasTransaction(t *testing.T) {
-	nsId := NewNamespaceIdNoCheck(6300565133566699912)
-	msId := NewMosaicIdNoCheck(6300565133566699913)
+	nsId := NewNamespaceIdPanic(6300565133566699912)
+	msId := NewMosaicIdPanic(6300565133566699913)
 
 	tx, err := NewMosaicAliasTransaction(
 		fakeDeadline,
@@ -497,8 +497,8 @@ func TestMosaicAliasTransaction(t *testing.T) {
 }
 
 func TestAccountLinkTransaction(t *testing.T) {
-	childAccount, err := NewPublicAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	childAccount, err := NewAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	tx, err := NewAccountLinkTransaction(
 		fakeDeadline,
@@ -516,7 +516,7 @@ func TestAccountLinkTransaction(t *testing.T) {
 }
 
 func TestModifyMosaicMetadataTransactionSerialization(t *testing.T) {
-	id := NewMosaicIdNoCheck(6300565133566699912)
+	id := NewMosaicIdPanic(6300565133566699912)
 	tx, err := NewModifyMetadataMosaicTransaction(
 		fakeDeadline,
 		id,
@@ -544,7 +544,7 @@ func TestModifyMosaicMetadataTransactionSerialization(t *testing.T) {
 }
 
 func TestModifyNamespaceMetadataTransactionSerialization(t *testing.T) {
-	id := NewNamespaceIdNoCheck(6300565133566699912)
+	id := NewNamespaceIdPanic(6300565133566699912)
 	tx, err := NewModifyMetadataNamespaceTransaction(
 		fakeDeadline,
 		id,
@@ -594,7 +594,7 @@ func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
 }
 
 func TestMosaicSupplyChangeTransactionSerialization(t *testing.T) {
-	id := NewMosaicIdNoCheck(6300565133566699912)
+	id := NewMosaicIdPanic(6300565133566699912)
 	tx, err := NewMosaicSupplyChangeTransaction(fakeDeadline, id, Increase, Duration(10), MijinTest)
 
 	assert.Nilf(t, err, "NewMosaicSupplyChangeTransaction returned error: %s", err)
@@ -610,7 +610,7 @@ func TestTransferTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
 		[]*Mosaic{
-			NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), Amount(100)),
+			NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100)),
 		},
 		NewPlainMessage(""),
 		MijinTest,
@@ -623,14 +623,14 @@ func TestTransferTransactionSerialization(t *testing.T) {
 }
 
 func TestTransferTransactionToAggregate(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
+	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), Amount(100))},
+		[]*Mosaic{NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -652,7 +652,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{NewMosaicNoCheck(NewMosaicIdNoCheck(95442763262823), Amount(100))},
+		[]*Mosaic{NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -663,17 +663,17 @@ func TestTransferTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
 	assert.Equal(t, transferTransactionSigningCorr, stx.Payload)
-	assert.Equal(t, StringToHashNoCheck("6CBAE731B06A6A75429232749C69AC7A3C0ECD899354F36D2913796B07110CAE"), stx.Hash)
+	assert.Equal(t, StringToHashPanic("6CBAE731B06A6A75429232749C69AC7A3C0ECD899354F36D2913796B07110CAE"), stx.Hash)
 }
 
 func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
-	acc1, err := NewPublicAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
+	acc1, err := NewAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
-	acc2, err := NewPublicAccountFromPublicKey("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb", MijinTest)
+	acc2, err := NewAccountFromPublicKey("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	tx, err := NewModifyMultisigAccountTransaction(
 		fakeDeadline,
@@ -701,18 +701,18 @@ func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
 }
 
 func TestModifyContractTransactionSerialization(t *testing.T) {
-	acc1, err := NewPublicAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
+	acc1, err := NewAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
-	acc2, err := NewPublicAccountFromPublicKey("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb", MijinTest)
+	acc2, err := NewAccountFromPublicKey("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	tx, err := NewModifyContractTransaction(
 		fakeDeadline,
 		Duration(2),
-		StringToHashNoCheck("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
+		StringToHashPanic("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
 		[]*MultisigCosignatoryModification{
 			{
 				Add,
@@ -774,7 +774,7 @@ func TestRegisterSubNamespaceTransactionSerialization(t *testing.T) {
 	tx, err := NewRegisterSubNamespaceTransaction(
 		fakeDeadline,
 		"subnamespace",
-		NewNamespaceIdNoCheck(4635294387305441662),
+		NewNamespaceIdPanic(4635294387305441662),
 		MijinTest,
 	)
 
@@ -790,7 +790,7 @@ func TestLockFundsTransactionSerialization(t *testing.T) {
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashNoCheck("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -804,14 +804,14 @@ func TestLockFundsTransactionSerialization(t *testing.T) {
 }
 
 func TestLockFundsTransactionToAggregate(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
+	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashNoCheck("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -834,7 +834,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashNoCheck("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -845,7 +845,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "signTransactionWith returned error: %s", err)
 	assert.Equal(t, lockFundsTransactionSigningCorr, b.Payload)
-	assert.Equal(t, StringToHashNoCheck("909C1EEF8F1B9343F9922BE83D47380B3C801FB8893FAC10851D77F7D6F8D5C3"), b.Hash)
+	assert.Equal(t, StringToHashPanic("909C1EEF8F1B9343F9922BE83D47380B3C801FB8893FAC10851D77F7D6F8D5C3"), b.Hash)
 }
 
 func TestSecretLockTransactionSerialization(t *testing.T) {
@@ -867,9 +867,9 @@ func TestSecretLockTransactionSerialization(t *testing.T) {
 }
 
 func TestSecretLockTransactionToAggregate(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
+	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	ad, err := NewAddressFromRaw("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM")
 
@@ -910,7 +910,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Sign returned error: %s", err)
 	assert.Equal(t, secretLockTransactionSigningCorr, b.Payload)
-	assert.Equal(t, StringToHashNoCheck("C3E86966A763D5FBFA543E7AE69D9C9C665E0E77C51CF6CE8A68C9C89049CBF5"), b.Hash)
+	assert.Equal(t, StringToHashPanic("C3E86966A763D5FBFA543E7AE69D9C9C665E0E77C51CF6CE8A68C9C89049CBF5"), b.Hash)
 }
 
 func TestSecretProofTransactionSerialization(t *testing.T) {
@@ -929,9 +929,9 @@ func TestSecretProofTransactionSerialization(t *testing.T) {
 }
 
 func TestSecretProofTransactionToAggregate(t *testing.T) {
-	p, err := NewPublicAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
+	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
 
-	assert.Nilf(t, err, "NewPublicAccountFromPublicKey returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	proof, err := NewProofFromHexString("9a493664")
 	assert.Nil(t, err)

@@ -134,7 +134,7 @@ func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
 }
 
 func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
-	publicAcc, err := NewPublicAccountFromPublicKey(ref.Mosaic.Owner, networkType)
+	publicAcc, err := NewAccountFromPublicKey(ref.Mosaic.Owner, networkType)
 	if err != nil {
 		return nil, err
 	}

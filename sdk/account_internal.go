@@ -183,7 +183,7 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 	var linkedAccount *PublicAccount = nil
 
 	if dto.Account.AccountType != UnlinkedAccount && dto.Account.AccountType != RemoteUnlinkedAccount {
-		linkedAccount, err = NewPublicAccountFromPublicKey(dto.Account.LinkedAccountPublicKey, add.Type)
+		linkedAccount, err = NewAccountFromPublicKey(dto.Account.LinkedAccountPublicKey, add.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -239,20 +239,20 @@ func (dto *multisigAccountInfoDTO) toStruct(networkType NetworkType) (*MultisigA
 	cs := make([]*PublicAccount, len(dto.Multisig.Cosignatories))
 	ms := make([]*PublicAccount, len(dto.Multisig.MultisigAccounts))
 
-	acc, err := NewPublicAccountFromPublicKey(dto.Multisig.Account, networkType)
+	acc, err := NewAccountFromPublicKey(dto.Multisig.Account, networkType)
 	if err != nil {
 		return nil, err
 	}
 
 	for i, c := range dto.Multisig.Cosignatories {
-		cs[i], err = NewPublicAccountFromPublicKey(c, networkType)
+		cs[i], err = NewAccountFromPublicKey(c, networkType)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	for i, m := range dto.Multisig.MultisigAccounts {
-		ms[i], err = NewPublicAccountFromPublicKey(m, networkType)
+		ms[i], err = NewAccountFromPublicKey(m, networkType)
 		if err != nil {
 			return nil, err
 		}

@@ -40,7 +40,7 @@ var (
 	}
 	testAddress = Address{Address: "SCASIIAPS6BSFEC66V6MU5ZGEVWM53BES5GYBGLE"}
 
-	testNamespaceId  = NewNamespaceIdNoCheck(9562080086528621131)
+	testNamespaceId  = NewNamespaceIdPanic(9562080086528621131)
 	testNamespaceIDs = &namespaceIds{
 		List: []*NamespaceId{
 			testNamespaceId,
@@ -86,12 +86,12 @@ var (
 			}`
 
 	namespaceCorr = &NamespaceInfo{
-		NamespaceId: NewNamespaceIdNoCheck(uint64DTO{929036875, 2226345261}.toUint64()),
+		NamespaceId: NewNamespaceIdPanic(uint64DTO{929036875, 2226345261}.toUint64()),
 		Active:      true,
 		Depth:       1,
 		TypeSpace:   Root,
 		Alias: &NamespaceAlias{
-			NewMosaicIdNoCheck(uint64DTO{1382215848, 1583663204}.toUint64()),
+			NewMosaicIdPanic(uint64DTO{1382215848, 1583663204}.toUint64()),
 			&Address{
 				MijinTest,
 				"SCJW742TNBMMX2UO4DVKXGP6T3CO6XXR6ZRWMVU2",
@@ -111,9 +111,9 @@ var (
 	}
 
 	namespaceNameCorr = &NamespaceName{
-		NamespaceId: NewNamespaceIdNoCheck(0),
+		NamespaceId: NewNamespaceIdPanic(0),
 		Name:        "nem",
-		ParentId:    NewNamespaceIdNoCheck(0),
+		ParentId:    NewNamespaceIdPanic(0),
 	}
 
 	tplInfoArr = "[" + tplInfo + "]"

@@ -19,9 +19,7 @@ import (
 )
 
 const (
-	DefaultNetworkType                  = NotSupportedNet
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
-	DefaultGenerationHash               = "0000000000000000000000000000000000000000000000000000000000000000"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -59,24 +57,49 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// returns default config for HTTP Client from passed node url
-func NewDefaultConfig(baseUrls []string) (*Config, error) {
-	return NewConfigWithReputation(
+// returns config for HTTP Client from passed node url, filled by information from remote blockchain node
+func NewConfigFromRemote(baseUrls []string) (*Config, error) {
+	tempConf, err := NewConfigWithReputation(
 		baseUrls,
-		DefaultNetworkType,
+		NotSupportedNet,
 		&defaultRepConfig,
 		DefaultWebsocketReconnectionTimeout,
-		DefaultGenerationHash,
+		nil,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tempClient := NewClient(nil, tempConf)
+	ctx := context.TODO()
+
+	block, err := tempClient.Blockchain.GetBlockByHeight(ctx, Height(1))
+	if err != nil {
+		return nil, err
+	}
+
+	networkType, err := tempClient.Network.GetNetworkType(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewConfigWithReputation(
+		baseUrls,
+		networkType,
+		&defaultRepConfig,
+		DefaultWebsocketReconnectionTimeout,
+		block.GenerationHash,
 	)
 }
 
-// returns config for HTTP Client from passed node url and network type
-func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration, GenerationHash string) (*Config, error) {
+// returns config for HTTP Client from passed node url, network type, recconeciton timeout and generation Hash
+func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration, generationHash *Hash) (*Config, error) {
 	if wsReconnectionTimeout == 0 {
 		wsReconnectionTimeout = DefaultWebsocketReconnectionTimeout
 	}
 
-	return NewConfigWithReputation(baseUrls, networkType, &defaultRepConfig, wsReconnectionTimeout, GenerationHash)
+	return NewConfigWithReputation(baseUrls, networkType, &defaultRepConfig, wsReconnectionTimeout, generationHash)
 }
 
 func NewConfigWithReputation(
@@ -84,7 +107,7 @@ func NewConfigWithReputation(
 	networkType NetworkType,
 	repConf *reputationConfig,
 	wsReconnectionTimeout time.Duration,
-	GenerationHash string) (*Config, error) {
+	generationHash *Hash) (*Config, error) {
 	if len(baseUrls) == 0 {
 		return nil, errors.New("empty base urls")
 	}
@@ -99,19 +122,13 @@ func NewConfigWithReputation(
 		urls = append(urls, u)
 	}
 
-	hash, err := StringToHash(GenerationHash)
-
-	if err != nil {
-		return nil, err
-	}
-
 	c := &Config{
 		BaseURLs:              urls,
 		UsedBaseUrl:           urls[0],
 		WsReconnectionTimeout: wsReconnectionTimeout,
 		NetworkType:           networkType,
 		reputationConfig:      repConf,
-		GenerationHash:        hash,
+		GenerationHash:        generationHash,
 	}
 
 	return c, nil
@@ -160,12 +177,10 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	return c
 }
 
-// NetworkType returns network type of config
 func (c *Client) NetworkType() NetworkType {
 	return c.config.NetworkType
 }
 
-// GenerationHash returns generation hash of config
 func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
 }
@@ -173,23 +188,6 @@ func (c *Client) GenerationHash() *Hash {
 // AdaptAccount returns a new account with the same network type and generation hash like a Client
 func (c *Client) AdaptAccount(account *Account) (*Account, error) {
 	return c.NewAccountFromPrivateKey(account.PrivateKey.String())
-}
-
-// UpdateConfig takes information about network from rest server and updates config of Client
-func (c *Client) SetupConfigFromRest(ctx context.Context) error {
-	block, err := c.Blockchain.GetBlockByHeight(ctx, Height(1))
-	if err != nil {
-		return err
-	}
-	c.config.GenerationHash = block.GenerationHash
-
-	networkType, err := c.Network.GetNetworkType(ctx)
-	if err != nil {
-		return err
-	}
-	c.config.NetworkType = networkType
-
-	return nil
 }
 
 // doNewRequest creates new request, Do it & return result in V
@@ -302,19 +300,16 @@ func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Requ
 	return req, nil
 }
 
-// returns new Account
 func (c *Client) NewAccount() (*Account, error) {
 	return NewAccount(c.config.NetworkType, c.config.GenerationHash)
 }
 
-// returns new Account from private key
 func (c *Client) NewAccountFromPrivateKey(pKey string) (*Account, error) {
 	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash)
 }
 
-// returns a PublicAccount from public key
-func (c *Client) NewPublicAccountFromPublicKey(pKey string) (*PublicAccount, error) {
-	return NewPublicAccountFromPublicKey(pKey, c.config.NetworkType)
+func (c *Client) NewAccountFromPublicKey(pKey string) (*PublicAccount, error) {
+	return NewAccountFromPublicKey(pKey, c.config.NetworkType)
 }
 
 // region transactions

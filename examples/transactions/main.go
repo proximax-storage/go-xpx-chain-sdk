@@ -15,13 +15,13 @@ import (
 
 var (
 	baseUrls = []string{"http://127.0.0.1:3000"}
-	Hash     = sdk.StringToHashNoCheck("86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790")
+	Hash     = sdk.StringToHashPanic("86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790")
 )
 
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
 // The notification is received in real time without having to poll the API waiting for a reply.
 func main() {
-	conf, err := sdk.NewDefaultConfig(baseUrls)
+	conf, err := sdk.NewConfigFromRemote(baseUrls)
 	if err != nil {
 		panic(err)
 	}
@@ -34,10 +34,6 @@ func main() {
 	}
 
 	client := sdk.NewClient(nil, conf)
-	err = client.SetupConfigFromRest(ctx)
-	if err != nil {
-		panic(err)
-	}
 
 	customerAcc, err := client.NewAccount()
 	wg := new(sync.WaitGroup)

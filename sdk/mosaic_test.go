@@ -86,7 +86,7 @@ const (
 
 var (
 	mosaicCorr = &MosaicInfo{
-		MosaicId: NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()),
+		MosaicId: NewMosaicIdPanic(uint64DTO{298950589, 1817567325}.toUint64()),
 		Supply:   uint64DTO{3403414400, 2095475}.toStruct(),
 		Height:   uint64DTO{1, 0}.toStruct(),
 		Owner: &PublicAccount{
@@ -108,11 +108,11 @@ var (
 
 	mosaicNames = []*MosaicName{
 		{
-			NewMosaicIdNoCheck(0x26514E2A1EF33824),
+			NewMosaicIdPanic(0x26514E2A1EF33824),
 			[]string{"cat.storage"},
 		},
 		{
-			NewMosaicIdNoCheck(0x0DC67FBE1CAD29E3),
+			NewMosaicIdPanic(0x0DC67FBE1CAD29E3),
 			[]string{"cat.currency"},
 		},
 	}

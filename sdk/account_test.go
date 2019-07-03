@@ -22,7 +22,7 @@ var (
 			"F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
 		},
 		Mosaics: []*Mosaic{
-			NewMosaicNoCheck(NewMosaicIdNoCheck(uint64DTO{298950589, 1817567325}.toUint64()), uint64DTO{3863990592, 95248}.toStruct()),
+			NewMosaicPanic(NewMosaicIdPanic(uint64DTO{298950589, 1817567325}.toUint64()), uint64DTO{3863990592, 95248}.toStruct()),
 		},
 		Reputation: 0.9,
 	}
@@ -30,10 +30,10 @@ var (
 	accountProperties = &AccountProperties{
 		Address:            &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
 		AllowedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
-		AllowedMosaicId:    []*MosaicId{NewMosaicIdNoCheck(uint64DTO{1486560344, 659392627}.toUint64())},
+		AllowedMosaicId:    []*MosaicId{NewMosaicIdPanic(uint64DTO{1486560344, 659392627}.toUint64())},
 		AllowedEntityTypes: []TransactionType{LinkAccount},
 		BlockedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
-		BlockedMosaicId:    []*MosaicId{NewMosaicIdNoCheck(uint64DTO{1486560344, 659392627}.toUint64())},
+		BlockedMosaicId:    []*MosaicId{NewMosaicIdPanic(uint64DTO{1486560344, 659392627}.toUint64())},
 		BlockedEntityTypes: []TransactionType{LinkAccount},
 	}
 

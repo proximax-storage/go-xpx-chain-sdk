@@ -39,8 +39,8 @@ var (
 
 // Common errors
 var (
-	ErrNilAssetId             = errors.New("assetId must not be nil")
-	ErrEmptyAssetIds          = errors.New("list blockchain ids must not by empty")
+	ErrNilAssetId             = errors.New("AssetId should not be nil")
+	ErrEmptyAssetIds          = errors.New("AssetId's array should not be empty")
 	ErrUnknownBlockchainType  = errors.New("Not supported Blockchain Type")
 	ErrInvalidHashLength      = errors.New("The length of Hash is invalid")
 	ErrInvalidSignatureLength = errors.New("The length of Signature is invalid")
@@ -72,8 +72,8 @@ var (
 
 // Lock errors
 var (
-	ErrNilSecret = errors.New("secret should not be nil")
-	ErrNilProof  = errors.New("proof should not be nil")
+	ErrNilSecret = errors.New("Secret should not be nil")
+	ErrNilProof  = errors.New("Proof should not be nil")
 )
 
 // plain errors

@@ -26,6 +26,15 @@ func StringToHash(hash string) (*Hash, error) {
 	return bytesToHash(bytes)
 }
 
+func StringToHashPanic(hash string) *Hash {
+	arr, err := StringToHash(hash)
+	if err != nil {
+		panic(err)
+	}
+
+	return arr
+}
+
 func bytesToSignature(bytes []byte) (*Signature, error) {
 	if len(bytes) != 64 {
 		return nil, ErrInvalidSignatureLength
@@ -35,15 +44,6 @@ func bytesToSignature(bytes []byte) (*Signature, error) {
 	copy(arr[:], bytes[:64])
 
 	return &arr, nil
-}
-
-func StringToHashNoCheck(hash string) *Hash {
-	arr, err := StringToHash(hash)
-	if err != nil {
-		panic(err)
-	}
-
-	return arr
 }
 
 func StringToSignature(signature string) (*Signature, error) {
@@ -59,7 +59,7 @@ func StringToSignature(signature string) (*Signature, error) {
 	return bytesToSignature(bytes)
 }
 
-func StringToSignatureNoCheck(signature string) *Signature {
+func StringToSignaturePanic(signature string) *Signature {
 	arr, err := StringToSignature(signature)
 	if err != nil {
 		panic(err)
