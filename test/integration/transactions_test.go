@@ -148,13 +148,17 @@ func TestCatapultConfigTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	versions, err := ioutil.ReadFile("supported-entities.json")
 	assert.Nil(t, err)
+	sup, err := sdk.NewSupportedEntitiesFromBytes(versions)
+	assert.Nil(t, err)
+	conf, err := sdk.NewBlockChainConfig(config)
+	assert.Nil(t, err)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return sdk.NewCatapultConfigTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
-			string(config),
-			string(versions),
+			conf,
+			sup,
 			networkType)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)

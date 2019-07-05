@@ -77,10 +77,10 @@ type AccountProperties struct {
 	Address            *Address
 	AllowedAddresses   []*Address
 	AllowedMosaicId    []*MosaicId
-	AllowedEntityTypes []TransactionType
+	AllowedEntityTypes []EntityType
 	BlockedAddresses   []*Address
 	BlockedMosaicId    []*MosaicId
-	BlockedEntityTypes []TransactionType
+	BlockedEntityTypes []EntityType
 }
 
 func (a *AccountProperties) String() string {

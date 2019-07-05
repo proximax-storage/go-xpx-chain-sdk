@@ -4,9 +4,53 @@
 
 package sdk
 
+import (
+	"strconv"
+)
+
 type networkDTO struct {
 	Name        string
 	Description string
+}
+
+type entityDTO struct {
+	Name              string               `json:"name"`
+	Type              string               `json:"type"`
+	SupportedVersions []TransactionVersion `json:"supportedVersions"`
+}
+
+func (dto *entityDTO) toStruct() (*Entity, error) {
+	entityType, err := strconv.ParseUint(dto.Type, 10, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Entity{
+		Name:              dto.Name,
+		Type:              EntityType(entityType),
+		SupportedVersions: dto.SupportedVersions,
+	}, nil
+}
+
+type supportedEntitiesDTO struct {
+	Entities []*entityDTO `json:"entities"`
+}
+
+func (dto *supportedEntitiesDTO) toStruct() (*SupportedEntities, error) {
+	ref := &SupportedEntities{
+		Entities: make(map[EntityType]*Entity),
+	}
+
+	for _, dto := range dto.Entities {
+		entity, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		ref.Entities[entity.Type] = entity
+	}
+
+	return ref, nil
 }
 
 type networkConfigDTO struct {
@@ -17,12 +61,22 @@ type networkConfigDTO struct {
 	} `json:"catapultConfig"`
 }
 
-func (dto *networkConfigDTO) toStruct() *NetworkConfig {
+func (dto *networkConfigDTO) toStruct() (*NetworkConfig, error) {
+	s, err := NewSupportedEntitiesFromBytes([]byte(dto.DTO.SupportedEntityVersions))
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := NewBlockChainConfig([]byte(dto.DTO.BlockChainConfig))
+	if err != nil {
+		return nil, err
+	}
+
 	return &NetworkConfig{
 		Height(dto.DTO.StartedHeight.toUint64()),
-		dto.DTO.BlockChainConfig,
-		dto.DTO.SupportedEntityVersions,
-	}
+		c,
+		s,
+	}, nil
 }
 
 type networkVersionDTO struct {

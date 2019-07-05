@@ -53,7 +53,7 @@ func (ref *NetworkService) GetNetworkConfigAtHeight(ctx context.Context, height 
 		return nil, err
 	}
 
-	return netDTO.toStruct(), nil
+	return netDTO.toStruct()
 }
 
 func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*NetworkConfig, error) {
