@@ -123,12 +123,40 @@ const (
   }
 }
 `
+	accountNameJson = `{  
+    "address": "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y",
+    "names": [
+      "alias1",
+      "alias2"
+    ]
+},
+{  
+    "address": "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA",
+    "names": [
+      "alias3",
+      "alias4"
+    ]
+}
+`
 )
 
 var (
 	nemTestAddress1 = "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"
 	nemTestAddress2 = "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"
 	publicKey1      = "27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9"
+)
+
+var (
+	accountNames = []*AccountName{
+		{
+			Address: newAddressFromRaw(nemTestAddress1),
+			Names:   []string{"alias1", "alias2"},
+		},
+		{
+			Address: newAddressFromRaw(nemTestAddress2),
+			Names:   []string{"alias3", "alias4"},
+		},
+	}
 )
 
 func TestAccountService_GetAccountProperties(t *testing.T) {
@@ -213,4 +241,43 @@ func TestAccountService_Transactions(t *testing.T) {
 	for _, tx := range transactions {
 		tests.ValidateStringers(t, transaction, tx)
 	}
+}
+
+func TestAccountService_GetAccountsNames(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     accountNamesRoute,
+		RespBody: "[" + accountNameJson + "]",
+	})
+
+	t.Run("return list of names as expect", func(t *testing.T) {
+
+		names, err := accountClient.GetAccountNames(
+			context.Background(),
+			&Address{MijinTest, accountNames[0].Address.Address},
+			&Address{MijinTest, accountNames[1].Address.Address},
+		)
+
+		assert.Nilf(t, err, "AccountService.GetAccountNames returned error: %s", err)
+
+		for i, accNames := range names {
+			tests.ValidateStringers(t, accountNames[i], accNames)
+		}
+	})
+	t.Run("return error for empty accounts arguments as expect", func(t *testing.T) {
+
+		_, err := accountClient.GetAccountNames(
+			context.Background(),
+		)
+
+		assert.EqualError(t, err, ErrEmptyAddressesIds.Error())
+
+	})
+}
+
+func newAddressFromRaw(addressString string) (address *Address) {
+	address, err := NewAddressFromRaw(addressString)
+	if err != nil {
+		return nil
+	}
+	return address
 }

@@ -354,3 +354,38 @@ func generateEncodedAddress(pKey string, version NetworkType) (string, error) {
 	// step 6: base32 encode (5)
 	return base32.StdEncoding.EncodeToString(concatStepThreeAndStepSix), nil
 }
+
+type accountNamesDTO struct {
+	Names   []string `json:"names"`
+	Address string   `json:"address"`
+}
+
+type accountNamesDTOs []*accountNamesDTO
+
+func (m *accountNamesDTO) toStruct() (*AccountName, error) {
+
+	address, err := NewAddressFromRaw(m.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &AccountName{
+		Address: address,
+		Names:   m.Names,
+	}, nil
+}
+
+func (m *accountNamesDTOs) toStruct() ([]*AccountName, error) {
+	dtos := *m
+	accNames := make([]*AccountName, 0, len(dtos))
+
+	for _, dto := range dtos {
+		accName, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		accNames = append(accNames, accName)
+	}
+
+	return accNames, nil
+}
