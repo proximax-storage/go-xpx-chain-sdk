@@ -364,7 +364,7 @@ type accountNamesDTOs []*accountNamesDTO
 
 func (m *accountNamesDTO) toStruct() (*AccountName, error) {
 
-	address, err := NewAddressFromRaw(m.Address)
+	address, err := NewAddressFromBase32(m.Address)
 	if err != nil {
 		return nil, err
 	}
