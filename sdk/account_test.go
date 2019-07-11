@@ -124,14 +124,14 @@ const (
 }
 `
 	accountNameJson = `{  
-    "address": "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y",
+    "address": "901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58",
     "names": [
       "alias1",
       "alias2"
     ]
 },
 {  
-    "address": "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA",
+    "address": "9053D1FE65426CFC77C9092FBD329647634F2AAACE113868E0",
     "names": [
       "alias3",
       "alias4"
