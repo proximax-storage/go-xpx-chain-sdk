@@ -2349,7 +2349,7 @@ func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
 	}
 
 	d := Duration(0)
-	n := NewNamespaceIdPanic(0)
+	n := newNamespaceIdPanic(0)
 
 	if dto.Tx.NamespaceType == Root {
 		d = dto.Tx.Duration.toStruct()

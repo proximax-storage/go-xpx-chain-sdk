@@ -24,12 +24,12 @@ var (
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
 // The notification is received in real time without having to poll the API waiting for a reply.
 func main() {
-	cfg, err := sdk.NewConfigFromRemote(baseUrls)
+	ctx := context.Background()
+	cfg, err := sdk.NewConfig(ctx, baseUrls)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx := context.Background()
 	client := sdk.NewClient(nil, cfg)
 
 	wsc, err := websocket.NewClient(ctx, cfg)

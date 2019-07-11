@@ -26,7 +26,7 @@ func StringToHash(hash string) (*Hash, error) {
 	return bytesToHash(bytes)
 }
 
-func StringToHashPanic(hash string) *Hash {
+func stringToHashPanic(hash string) *Hash {
 	arr, err := StringToHash(hash)
 	if err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func StringToSignature(signature string) (*Signature, error) {
 	return bytesToSignature(bytes)
 }
 
-func StringToSignaturePanic(signature string) *Signature {
+func stringToSignaturePanic(signature string) *Signature {
 	arr, err := StringToSignature(signature)
 	if err != nil {
 		panic(err)

@@ -58,7 +58,11 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 }
 
 // returns config for HTTP Client from passed node url, filled by information from remote blockchain node
-func NewConfigFromRemote(baseUrls []string) (*Config, error) {
+func NewConfig(ctx context.Context, baseUrls []string) (*Config, error) {
+	// We want to fill config from remote node(get network type, generationHash of network and etc.).
+	// To fill config we need to create a Client. But to create a Client we need to create config =)
+	// So we create temporary config with information about connection to server, then create temporary client,
+	// which requests information and after that we create a final fully filled config
 	tempConf, err := NewConfigWithReputation(
 		baseUrls,
 		NotSupportedNet,
@@ -72,7 +76,6 @@ func NewConfigFromRemote(baseUrls []string) (*Config, error) {
 	}
 
 	tempClient := NewClient(nil, tempConf)
-	ctx := context.TODO()
 
 	block, err := tempClient.Blockchain.GetBlockByHeight(ctx, Height(1))
 	if err != nil {
@@ -91,15 +94,6 @@ func NewConfigFromRemote(baseUrls []string) (*Config, error) {
 		DefaultWebsocketReconnectionTimeout,
 		block.GenerationHash,
 	)
-}
-
-// returns config for HTTP Client from passed node url, network type, recconeciton timeout and generation Hash
-func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration, generationHash *Hash) (*Config, error) {
-	if wsReconnectionTimeout == 0 {
-		wsReconnectionTimeout = DefaultWebsocketReconnectionTimeout
-	}
-
-	return NewConfigWithReputation(baseUrls, networkType, &defaultRepConfig, wsReconnectionTimeout, generationHash)
 }
 
 func NewConfigWithReputation(

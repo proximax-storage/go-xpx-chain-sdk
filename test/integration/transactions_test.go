@@ -255,6 +255,8 @@ func TestModifyContracTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	acc2, err := client.NewAccount()
 	assert.Nil(t, err)
+	hash, err := sdk.StringToHash("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb")
+	assert.Nil(t, err)
 
 	contractAccount, err := client.NewAccount()
 	fmt.Println(contractAccount)
@@ -263,7 +265,7 @@ func TestModifyContracTransaction(t *testing.T) {
 		return client.NewModifyContractTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
-			sdk.StringToHashPanic("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
+			hash,
 			[]*sdk.MultisigCosignatoryModification{
 				{
 					sdk.Add,

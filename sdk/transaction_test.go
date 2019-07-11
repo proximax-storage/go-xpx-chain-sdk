@@ -29,14 +29,14 @@ var transaction = &TransferTransaction{
 		Deadline:    NewDeadlineFromBlockchainTimestamp(blockchainTimestampDTO{1094650402, 17}.toStruct()),
 		TransactionInfo: &TransactionInfo{
 			Height:              uint64DTO{42, 0}.toStruct(),
-			TransactionHash:     StringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
-			MerkleComponentHash: StringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
+			TransactionHash:     stringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
+			MerkleComponentHash: stringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
 			Index:               0,
 			Id:                  "5B686E97F0C0EA00017B9437",
 		},
 	},
 	Mosaics: []*Mosaic{
-		NewMosaicPanic(NewNamespaceIdPanic(uint64DTO{3646934825, 3576016193}.toUint64()), uint64DTO{10000000, 0}.toStruct()),
+		newMosaicPanic(newNamespaceIdPanic(uint64DTO{3646934825, 3576016193}.toUint64()), uint64DTO{10000000, 0}.toStruct()),
 	},
 	Recipient: &Address{MijinTest, "SBJUINHAC3FKCMVLL2WHBQFPPXYEHOMQY6E2SPVR"},
 	Message:   NewPlainMessage(""),
@@ -91,7 +91,7 @@ var status = &TransactionStatus{
 	NewDeadlineFromBlockchainTimestamp(blockchainTimestampDTO{1, 0}.toStruct()),
 	"confirmed",
 	"Success",
-	StringToHashPanic("7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F"),
+	stringToHashPanic("7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F"),
 	uint64DTO{1, 0}.toStruct(),
 }
 
@@ -331,7 +331,7 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 	acc, err := NewAccountFromPrivateKey(
 		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
 		MijinTest,
-		StringToHashPanic("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
+		stringToHashPanic("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
 	)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
@@ -343,7 +343,7 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 	cstx, err := acc.SignCosignatureTransaction(ctx)
 
 	assert.Nilf(t, err, "Account.SignCosignatureTransaction signing returned error: %s", err)
-	assert.Equal(t, StringToSignaturePanic(cosignatureTransactionSigningCorr), cstx.Signature)
+	assert.Equal(t, stringToSignaturePanic(cosignatureTransactionSigningCorr), cstx.Signature)
 }
 
 func TestModifyAddressMetadataTransactionSerialization(t *testing.T) {
@@ -406,7 +406,7 @@ func TestAccountPropertiesAddressTransaction(t *testing.T) {
 }
 
 func TestAccountPropertiesMosaicTransaction(t *testing.T) {
-	id := NewMosaicIdPanic(6300565133566699912)
+	id := newMosaicIdPanic(6300565133566699912)
 	tx, err := NewAccountPropertiesMosaicTransaction(
 		fakeDeadline,
 		BlockMosaic,
@@ -457,7 +457,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 }
 
 func TestAddressAliasTransaction(t *testing.T) {
-	nsId := NewNamespaceIdPanic(6300565133566699912)
+	nsId := newNamespaceIdPanic(6300565133566699912)
 	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
 
 	tx, err := NewAddressAliasTransaction(
@@ -477,8 +477,8 @@ func TestAddressAliasTransaction(t *testing.T) {
 }
 
 func TestMosaicAliasTransaction(t *testing.T) {
-	nsId := NewNamespaceIdPanic(6300565133566699912)
-	msId := NewMosaicIdPanic(6300565133566699913)
+	nsId := newNamespaceIdPanic(6300565133566699912)
+	msId := newMosaicIdPanic(6300565133566699913)
 
 	tx, err := NewMosaicAliasTransaction(
 		fakeDeadline,
@@ -516,7 +516,7 @@ func TestAccountLinkTransaction(t *testing.T) {
 }
 
 func TestModifyMosaicMetadataTransactionSerialization(t *testing.T) {
-	id := NewMosaicIdPanic(6300565133566699912)
+	id := newMosaicIdPanic(6300565133566699912)
 	tx, err := NewModifyMetadataMosaicTransaction(
 		fakeDeadline,
 		id,
@@ -544,7 +544,7 @@ func TestModifyMosaicMetadataTransactionSerialization(t *testing.T) {
 }
 
 func TestModifyNamespaceMetadataTransactionSerialization(t *testing.T) {
-	id := NewNamespaceIdPanic(6300565133566699912)
+	id := newNamespaceIdPanic(6300565133566699912)
 	tx, err := NewModifyMetadataNamespaceTransaction(
 		fakeDeadline,
 		id,
@@ -594,7 +594,7 @@ func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
 }
 
 func TestMosaicSupplyChangeTransactionSerialization(t *testing.T) {
-	id := NewMosaicIdPanic(6300565133566699912)
+	id := newMosaicIdPanic(6300565133566699912)
 	tx, err := NewMosaicSupplyChangeTransaction(fakeDeadline, id, Increase, Duration(10), MijinTest)
 
 	assert.Nilf(t, err, "NewMosaicSupplyChangeTransaction returned error: %s", err)
@@ -610,7 +610,7 @@ func TestTransferTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
 		[]*Mosaic{
-			NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100)),
+			newMosaicPanic(newMosaicIdPanic(95442763262823), Amount(100)),
 		},
 		NewPlainMessage(""),
 		MijinTest,
@@ -630,7 +630,7 @@ func TestTransferTransactionToAggregate(t *testing.T) {
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100))},
+		[]*Mosaic{newMosaicPanic(newMosaicIdPanic(95442763262823), Amount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -652,7 +652,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 	tx, err := NewTransferTransaction(
 		fakeDeadline,
 		NewAddress("SDUP5PLHDXKBX3UU5Q52LAY4WYEKGEWC6IB3VBFM", MijinTest),
-		[]*Mosaic{NewMosaicPanic(NewMosaicIdPanic(95442763262823), Amount(100))},
+		[]*Mosaic{newMosaicPanic(newMosaicIdPanic(95442763262823), Amount(100))},
 		NewPlainMessage(""),
 		MijinTest,
 	)
@@ -663,7 +663,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
 	assert.Equal(t, transferTransactionSigningCorr, stx.Payload)
-	assert.Equal(t, StringToHashPanic("6CBAE731B06A6A75429232749C69AC7A3C0ECD899354F36D2913796B07110CAE"), stx.Hash)
+	assert.Equal(t, stringToHashPanic("6CBAE731B06A6A75429232749C69AC7A3C0ECD899354F36D2913796B07110CAE"), stx.Hash)
 }
 
 func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
@@ -712,7 +712,7 @@ func TestModifyContractTransactionSerialization(t *testing.T) {
 	tx, err := NewModifyContractTransaction(
 		fakeDeadline,
 		Duration(2),
-		StringToHashPanic("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
+		stringToHashPanic("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb"),
 		[]*MultisigCosignatoryModification{
 			{
 				Add,
@@ -774,7 +774,7 @@ func TestRegisterSubNamespaceTransactionSerialization(t *testing.T) {
 	tx, err := NewRegisterSubNamespaceTransaction(
 		fakeDeadline,
 		"subnamespace",
-		NewNamespaceIdPanic(4635294387305441662),
+		newNamespaceIdPanic(4635294387305441662),
 		MijinTest,
 	)
 
@@ -790,7 +790,7 @@ func TestLockFundsTransactionSerialization(t *testing.T) {
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -811,7 +811,7 @@ func TestLockFundsTransactionToAggregate(t *testing.T) {
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -834,7 +834,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 	stx := &SignedTransaction{
 		AggregateBonded,
 		"payload",
-		StringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
 
 	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
@@ -845,7 +845,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "signTransactionWith returned error: %s", err)
 	assert.Equal(t, lockFundsTransactionSigningCorr, b.Payload)
-	assert.Equal(t, StringToHashPanic("909C1EEF8F1B9343F9922BE83D47380B3C801FB8893FAC10851D77F7D6F8D5C3"), b.Hash)
+	assert.Equal(t, stringToHashPanic("909C1EEF8F1B9343F9922BE83D47380B3C801FB8893FAC10851D77F7D6F8D5C3"), b.Hash)
 }
 
 func TestSecretLockTransactionSerialization(t *testing.T) {
@@ -910,7 +910,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Sign returned error: %s", err)
 	assert.Equal(t, secretLockTransactionSigningCorr, b.Payload)
-	assert.Equal(t, StringToHashPanic("C3E86966A763D5FBFA543E7AE69D9C9C665E0E77C51CF6CE8A68C9C89049CBF5"), b.Hash)
+	assert.Equal(t, stringToHashPanic("C3E86966A763D5FBFA543E7AE69D9C9C665E0E77C51CF6CE8A68C9C89049CBF5"), b.Hash)
 }
 
 func TestSecretProofTransactionSerialization(t *testing.T) {

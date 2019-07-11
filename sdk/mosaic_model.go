@@ -18,11 +18,10 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 	if hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitMosaicId
 	}
-	return NewMosaicIdPanic(id), nil
+	return newMosaicIdPanic(id), nil
 }
 
-// TODO
-func NewMosaicIdPanic(id uint64) *MosaicId {
+func newMosaicIdPanic(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
 	return &mosaicId
 }
@@ -67,11 +66,11 @@ func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 		return nil, ErrNilAssetId
 	}
 
-	return NewMosaicPanic(assetId, amount), nil
+	return newMosaicPanic(assetId, amount), nil
 }
 
 // returns a Mosaic for passed AssetId and amount without validation of parameters
-func NewMosaicPanic(assetId AssetId, amount Amount) *Mosaic {
+func newMosaicPanic(assetId AssetId, amount Amount) *Mosaic {
 	return &Mosaic{
 		AssetId: assetId,
 		Amount:  amount,
@@ -205,12 +204,12 @@ func (tx MosaicSupplyType) String() string {
 
 // returns XEM mosaic with passed amount
 func Xem(amount uint64) *Mosaic {
-	return NewMosaicPanic(XemMosaicId, Amount(amount))
+	return newMosaicPanic(XemMosaicId, Amount(amount))
 }
 
 // returns XPX mosaic with passed amount
 func Xpx(amount uint64) *Mosaic {
-	return NewMosaicPanic(XpxMosaicId, Amount(amount))
+	return newMosaicPanic(XpxMosaicId, Amount(amount))
 }
 
 // returns XEM with actual passed amount

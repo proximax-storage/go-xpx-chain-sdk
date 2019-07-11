@@ -50,7 +50,7 @@ func TestBigIntegerToHex_bigIntegerNEMAndXEMToHex(t *testing.T) {
 }
 
 func testHexConversion(t *testing.T, id uint64, hexStr string) {
-	assert.Equal(t, hexStr, NewNamespaceIdPanic(id).toHexString())
+	assert.Equal(t, hexStr, newNamespaceIdPanic(id).toHexString())
 }
 
 type sdkMock struct {
@@ -70,7 +70,7 @@ func newSdkMockWithRouter(router *mock.Router) *sdkMock {
 }
 
 func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error) {
-	conf, err := NewConfig([]string{m.GetServerURL()}, networkType, DefaultWebsocketReconnectionTimeout, nil)
+	conf, err := NewConfigWithReputation([]string{m.GetServerURL()}, networkType, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, nil)
 
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func TestClient_AdaptAccount(t *testing.T) {
 	account, err := NewAccount(PublicTest, stockHash)
 	assert.Nil(t, err)
 
-	config, err := NewConfig([]string{""}, MijinTest, DefaultWebsocketReconnectionTimeout, defaultHash)
+	config, err := NewConfigWithReputation([]string{""}, MijinTest, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, defaultHash)
 	assert.Nil(t, err)
 
 	client := NewClient(nil, config)

@@ -1765,10 +1765,10 @@ func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error)
 ```
 returns a Mosaic for passed AssetId and amount
 
-#### func  NewMosaicPanic
+#### func  newMosaicPanic
 
 ```go
-func NewMosaicPanic(assetId AssetId, amount Amount) *Mosaic
+func newMosaicPanic(assetId AssetId, amount Amount) *Mosaic
 ```
 returns a Mosaic for passed AssetId and amount without validation of parameters
 
@@ -1896,10 +1896,10 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 ```
 returns MosaicId for passed nonce and public key of mosaic owner
 
-#### func  NewMosaicIdPanic
+#### func  newMosaicIdPanic
 
 ```go
-func NewMosaicIdPanic(id uint64) *MosaicId
+func newMosaicIdPanic(id uint64) *MosaicId
 ```
 TODO
 
@@ -2222,10 +2222,10 @@ name in format like 'rootname' to create child namespace pass namespace name in
 format like 'rootname.childname' to create grand child namespace pass namespace
 name in format like 'rootname.childname.grandchildname'
 
-#### func  NewNamespaceIdPanic
+#### func  newNamespaceIdPanic
 
 ```go
-func NewNamespaceIdPanic(id uint64) *NamespaceId
+func newNamespaceIdPanic(id uint64) *NamespaceId
 ```
 returns new NamespaceId from passed namespace identifier TODO
 

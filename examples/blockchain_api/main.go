@@ -16,7 +16,7 @@ var (
 
 // Simple Blockchain API request
 func main() {
-	conf, err := sdk.NewConfigFromRemote(baseUrls)
+	conf, err := sdk.NewConfig(context.Background(), baseUrls)
 	if err != nil {
 		panic(err)
 	}

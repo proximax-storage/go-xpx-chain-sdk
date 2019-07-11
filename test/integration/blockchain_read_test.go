@@ -29,12 +29,13 @@ var defaultAccount *sdk.Account
 const iter = 1000
 
 func init() {
-	cfg, err := sdk.NewConfigFromRemote([]string{testUrl})
+	ctx = context.Background()
+
+	cfg, err := sdk.NewConfig(ctx, []string{testUrl})
 	if err != nil {
 		panic(err)
 	}
 
-	ctx = context.Background()
 	client = sdk.NewClient(nil, cfg)
 
 	wsc, err = websocket.NewClient(ctx, cfg)
