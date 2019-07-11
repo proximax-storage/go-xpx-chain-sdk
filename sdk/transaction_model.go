@@ -726,7 +726,7 @@ func (tx *AliasTransaction) GetAbstractTransaction() *AbstractTransaction {
 type aliasTransactionDTO struct {
 	abstractTransactionDTO
 	NamespaceId namespaceIdDTO  `json:"namespaceId"`
-	ActionType  AliasActionType `json:"action"`
+	ActionType  AliasActionType `json:"aliasAction"`
 }
 
 func (dto *aliasTransactionDTO) toStruct(tInfo *TransactionInfo) (*AliasTransaction, error) {
