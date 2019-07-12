@@ -112,8 +112,7 @@ var (
 
 	namespaceNameCorr = &NamespaceName{
 		NamespaceId: NewNamespaceIdNoCheck(0),
-		Name:        "nem",
-		ParentId:    NewNamespaceIdNoCheck(0),
+		FullName:    "nem.xem",
 	}
 
 	tplInfoArr = "[" + tplInfo + "]"
@@ -174,7 +173,7 @@ func TestNamespaceService_GetNamespaceNames(t *testing.T) {
 				  929036875,
 				  2226345261
 				],
-				"name": "nem"
+				"name": "nem.xem"
 			  }
 			]`,
 		})
