@@ -167,6 +167,19 @@ type MultisigAccountGraphInfo struct {
 	MultisigAccounts map[int32][]*MultisigAccountInfo
 }
 
+type AccountName struct {
+	Address *Address
+	Names   []string
+}
+
+func (a *AccountName) String() string {
+	return str.StructToString(
+		"AccountName",
+		str.NewField("Address", str.StringPattern, a.Address),
+		str.NewField("Names", str.StringPattern, a.Names),
+	)
+}
+
 // returns new Account generated for passed NetworkType
 func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)

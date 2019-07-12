@@ -631,6 +631,13 @@ func (a *AccountService) OutgoingTransactions(ctx context.Context, account *Publ
 ```
 returns an array of Transaction's for which passed account is sender
 
+#### func (*AccountService) GetAccountNames
+
+```go
+func (ref *AccountService) GetAccountNames(ctx context.Context, addresses ...*Address) ([]*AccountName, error)
+```
+returns friendly names for accounts.
+
 #### func (*AccountService) Transactions
 
 ```go

@@ -18,6 +18,7 @@ var XpxMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 const (
 	accountsRoute                 = "/account"
 	accountRoute                  = "/account/%s"
+	accountNamesRoute             = "/account/names"
 	accountPropertiesRoute        = "/account/%s/properties"
 	accountsPropertiesRoute       = "/account/properties"
 	multisigAccountRoute          = "/account/%s/multisig"
