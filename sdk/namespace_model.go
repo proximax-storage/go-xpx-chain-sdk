@@ -197,16 +197,14 @@ func (ref *NamespaceInfo) String() string {
 
 type NamespaceName struct {
 	NamespaceId *NamespaceId
-	Name        string
-	ParentId    *NamespaceId /* Optional NamespaceId my be nil */
+	FullName    string
 }
 
 func (n *NamespaceName) String() string {
 	return str.StructToString(
 		"NamespaceName",
 		str.NewField("NamespaceId", str.StringPattern, n.NamespaceId),
-		str.NewField("Name", str.StringPattern, n.Name),
-		str.NewField("ParentId", str.StringPattern, n.ParentId),
+		str.NewField("FullName", str.StringPattern, n.FullName),
 	)
 }
 
