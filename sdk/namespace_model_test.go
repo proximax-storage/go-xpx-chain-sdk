@@ -36,7 +36,7 @@ func TestNamespacePath_GeneratesCorrectWellKnownChildPath(t *testing.T) {
 func TestNamespacePathSupportsMultiLevelNamespaces(t *testing.T) {
 	ids := make([]*NamespaceId, 3)
 	var err error
-	ids[0], err = generateNamespaceId("foo", NewNamespaceIdNoCheck(0))
+	ids[0], err = generateNamespaceId("foo", newNamespaceIdPanic(0))
 	assert.Nil(t, err)
 	ids[1], err = generateNamespaceId("bar", ids[0])
 	assert.Nil(t, err)
@@ -58,7 +58,7 @@ func TestNamespacePathRejectsNamesWithTooManyParts(t *testing.T) {
 
 // @Test
 func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
-	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
 	assert.Nil(t, err)
 	id, err := generateMosaicId(0, account.PublicAccount.PublicKey)
 	assert.Nil(t, err)
@@ -67,7 +67,7 @@ func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
 
 // @Test
 func TestNewAddressFromNamespace(t *testing.T) {
-	namespaceId := NewNamespaceIdNoCheck(0x85bbea6cc462b244)
+	namespaceId := newNamespaceIdPanic(0x85bbea6cc462b244)
 	address, err := NewAddressFromNamespace(namespaceId)
 	assert.Nil(t, err)
 

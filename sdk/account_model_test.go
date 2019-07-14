@@ -13,6 +13,8 @@ const (
 	testNEMPublicKey = "b4f12e7c9f6946091e2cb8b6d3a12b50d17ccbbf646386ea27ce2946a7423dcf"
 )
 
+var GenerationHash *Hash = nil
+
 var testAddressesForEncoded = map[NetworkType]string{
 	MijinTest:   "SARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJETM3ZSP",
 	Mijin:       "MARNASAS2BIAB6LMFA3FPMGBPGIJGK6IJE5K5RYU",
@@ -23,7 +25,7 @@ var testAddressesForEncoded = map[NetworkType]string{
 }
 
 func TestGenerateNewAccount_NEM(t *testing.T) {
-	acc, err := NewAccount(MijinTest)
+	acc, err := NewAccount(MijinTest, GenerationHash)
 	if err != nil {
 		t.Fatal("Error")
 	}
@@ -58,9 +60,9 @@ func TestGenerateEncodedAddress(t *testing.T) {
 func TestEncryptMessageAndDecryptMessage(t *testing.T) {
 	const networkType = MijinTest
 	const message = "Hello guys, let's do this!"
-	sender, err := NewAccount(networkType)
+	sender, err := NewAccount(networkType, GenerationHash)
 	assert.Nil(t, err)
-	recipient, err := NewAccount(networkType)
+	recipient, err := NewAccount(networkType, GenerationHash)
 	assert.Nil(t, err)
 
 	secureMessage, err := sender.EncryptMessage(message, recipient.PublicAccount)

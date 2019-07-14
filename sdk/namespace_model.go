@@ -26,12 +26,12 @@ func NewNamespaceId(id uint64) (*NamespaceId, error) {
 		return nil, ErrWrongBitNamespaceId
 	}
 
-	return NewNamespaceIdNoCheck(id), nil
+	return newNamespaceIdPanic(id), nil
 }
 
 // returns new NamespaceId from passed namespace identifier
 // TODO
-func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
+func newNamespaceIdPanic(id uint64) *NamespaceId {
 	namespaceId := NamespaceId{baseInt64(id)}
 	return &namespaceId
 }
@@ -224,7 +224,7 @@ func GenerateNamespacePath(name string) ([]*NamespaceId, error) {
 	}
 
 	var (
-		namespaceId = NewNamespaceIdNoCheck(0)
+		namespaceId = newNamespaceIdPanic(0)
 		path        = make([]*NamespaceId, 0)
 		err         error
 	)

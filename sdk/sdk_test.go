@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	address = "http://10.32.150.136:3000"
+	address = "http://127.0.0.1:3000"
 )
 
 var (
@@ -50,7 +50,7 @@ func TestBigIntegerToHex_bigIntegerNEMAndXEMToHex(t *testing.T) {
 }
 
 func testHexConversion(t *testing.T, id uint64, hexStr string) {
-	assert.Equal(t, hexStr, NewNamespaceIdNoCheck(id).toHexString())
+	assert.Equal(t, hexStr, newNamespaceIdPanic(id).toHexString())
 }
 
 type sdkMock struct {
@@ -70,7 +70,7 @@ func newSdkMockWithRouter(router *mock.Router) *sdkMock {
 }
 
 func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error) {
-	conf, err := NewConfig([]string{m.GetServerURL()}, networkType, WebsocketReconnectionDefaultTimeout)
+	conf, err := NewConfigWithReputation([]string{m.GetServerURL()}, networkType, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, nil)
 
 	if err != nil {
 		return nil, err
@@ -89,4 +89,23 @@ func (m *sdkMock) getPublicTestClientUnsafe() *Client {
 	client, _ := m.getPublicTestClient()
 
 	return client
+}
+
+func TestClient_AdaptAccount(t *testing.T) {
+	var stockHash = &Hash{1}
+	var defaultHash = &Hash{2}
+	account, err := NewAccount(PublicTest, stockHash)
+	assert.Nil(t, err)
+
+	config, err := NewConfigWithReputation([]string{""}, MijinTest, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, defaultHash)
+	assert.Nil(t, err)
+
+	client := NewClient(nil, config)
+
+	adaptedAccount, err := client.AdaptAccount(account)
+	assert.Equal(t, MijinTest, adaptedAccount.PublicAccount.Address.Type)
+	assert.Equal(t, defaultHash, adaptedAccount.generationHash)
+
+	assert.Equal(t, PublicTest, account.PublicAccount.Address.Type)
+	assert.Equal(t, stockHash, account.generationHash)
 }

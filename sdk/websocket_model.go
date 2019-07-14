@@ -4,15 +4,26 @@
 
 package sdk
 
+type statusInfoDto struct {
+	Status string  `json:"status"`
+	Hash   hashDto `json:"hash"`
+}
+
 type StatusInfo struct {
-	Status string `json:"status"`
-	Hash   Hash   `json:"hash"`
+	Status string
+	Hash   *Hash
+}
+
+type signerInfoDto struct {
+	Signer     string       `json:"signer"`
+	Signature  signatureDto `json:"signature"`
+	ParentHash hashDto      `json:"parentHash"`
 }
 
 type SignerInfo struct {
-	Signer     string `json:"signer"`
-	Signature  string `json:"signature"`
-	ParentHash Hash   `json:"parentHash"`
+	Signer     string
+	Signature  *Signature
+	ParentHash *Hash
 }
 
 type UnconfirmedRemoved struct {
@@ -23,21 +34,30 @@ type unconfirmedRemovedDto struct {
 	Meta *transactionInfoDTO `json:"meta"`
 }
 
-func (dto *unconfirmedRemovedDto) toStruct() *UnconfirmedRemoved {
-	trInfo := dto.Meta.toStruct()
-	return &UnconfirmedRemoved{
-		Meta: trInfo,
+func (dto *unconfirmedRemovedDto) toStruct() (*UnconfirmedRemoved, error) {
+	info, err := dto.Meta.toStruct()
+	if err != nil {
+		return nil, err
 	}
+
+	return &UnconfirmedRemoved{
+		Meta: info,
+	}, nil
 }
 
 type partialRemovedInfoDTO struct {
 	Meta *transactionInfoDTO `json:"meta"`
 }
 
-func (dto partialRemovedInfoDTO) toStruct() *PartialRemovedInfo {
-	return &PartialRemovedInfo{
-		Meta: dto.Meta.toStruct(),
+func (dto partialRemovedInfoDTO) toStruct() (*PartialRemovedInfo, error) {
+	info, err := dto.Meta.toStruct()
+	if err != nil {
+		return nil, err
 	}
+
+	return &PartialRemovedInfo{
+		Meta: info,
+	}, nil
 }
 
 type PartialRemovedInfo struct {

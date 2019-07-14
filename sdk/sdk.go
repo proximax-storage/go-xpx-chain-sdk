@@ -18,7 +18,9 @@ import (
 	"time"
 )
 
-const WebsocketReconnectionDefaultTimeout = time.Second * 5
+const (
+	DefaultWebsocketReconnectionTimeout = time.Second * 5
+)
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
@@ -33,6 +35,7 @@ type Config struct {
 	BaseURLs              []*url.URL
 	UsedBaseUrl           *url.URL
 	WsReconnectionTimeout time.Duration
+	GenerationHash        *Hash
 	NetworkType
 }
 
@@ -54,16 +57,51 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 	return &reputationConfig{minInteractions: minInter, defaultReputation: defaultRep}, nil
 }
 
-// returns config for HTTP Client from passed node url and network type
-func NewConfig(baseUrls []string, networkType NetworkType, wsReconnectionTimeout time.Duration) (*Config, error) {
-	if wsReconnectionTimeout == 0 {
-		wsReconnectionTimeout = WebsocketReconnectionDefaultTimeout
+// returns config for HTTP Client from passed node url, filled by information from remote blockchain node
+func NewConfig(ctx context.Context, baseUrls []string) (*Config, error) {
+	// We want to fill config from remote node(get network type, generationHash of network and etc.).
+	// To fill config we need to create a Client. But to create a Client we need to create config =)
+	// So we create temporary config with information about connection to server, then create temporary client,
+	// which requests information and after that we create a final fully filled config
+	tempConf, err := NewConfigWithReputation(
+		baseUrls,
+		NotSupportedNet,
+		&defaultRepConfig,
+		DefaultWebsocketReconnectionTimeout,
+		nil,
+	)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return NewConfigWithReputation(baseUrls, networkType, &defaultRepConfig, wsReconnectionTimeout)
+	tempClient := NewClient(nil, tempConf)
+
+	block, err := tempClient.Blockchain.GetBlockByHeight(ctx, Height(1))
+	if err != nil {
+		return nil, err
+	}
+
+	networkType, err := tempClient.Network.GetNetworkType(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewConfigWithReputation(
+		baseUrls,
+		networkType,
+		&defaultRepConfig,
+		DefaultWebsocketReconnectionTimeout,
+		block.GenerationHash,
+	)
 }
 
-func NewConfigWithReputation(baseUrls []string, networkType NetworkType, repConf *reputationConfig, wsReconnectionTimeout time.Duration) (*Config, error) {
+func NewConfigWithReputation(
+	baseUrls []string,
+	networkType NetworkType,
+	repConf *reputationConfig,
+	wsReconnectionTimeout time.Duration,
+	generationHash *Hash) (*Config, error) {
 	if len(baseUrls) == 0 {
 		return nil, errors.New("empty base urls")
 	}
@@ -84,6 +122,7 @@ func NewConfigWithReputation(baseUrls []string, networkType NetworkType, repConf
 		WsReconnectionTimeout: wsReconnectionTimeout,
 		NetworkType:           networkType,
 		reputationConfig:      repConf,
+		GenerationHash:        generationHash,
 	}
 
 	return c, nil
@@ -130,6 +169,19 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Metadata = (*MetadataService)(&c.common)
 
 	return c
+}
+
+func (c *Client) NetworkType() NetworkType {
+	return c.config.NetworkType
+}
+
+func (c *Client) GenerationHash() *Hash {
+	return c.config.GenerationHash
+}
+
+// AdaptAccount returns a new account with the same network type and generation hash like a Client
+func (c *Client) AdaptAccount(account *Account) (*Account, error) {
+	return c.NewAccountFromPrivateKey(account.PrivateKey.String())
 }
 
 // doNewRequest creates new request, Do it & return result in V
@@ -240,6 +292,112 @@ func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Requ
 	}
 
 	return req, nil
+}
+
+func (c *Client) NewAccount() (*Account, error) {
+	return NewAccount(c.config.NetworkType, c.config.GenerationHash)
+}
+
+func (c *Client) NewAccountFromPrivateKey(pKey string) (*Account, error) {
+	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash)
+}
+
+func (c *Client) NewAccountFromPublicKey(pKey string) (*PublicAccount, error) {
+	return NewAccountFromPublicKey(pKey, c.config.NetworkType)
+}
+
+// region transactions
+
+func (c *Client) NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType) (*AddressAliasTransaction, error) {
+	return NewAddressAliasTransaction(deadline, address, namespaceId, actionType, c.config.NetworkType)
+}
+
+func (c *Client) NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespaceId *NamespaceId, actionType AliasActionType) (*MosaicAliasTransaction, error) {
+	return NewMosaicAliasTransaction(deadline, mosaicId, namespaceId, actionType, c.config.NetworkType)
+}
+
+func (c *Client) NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction) (*AccountLinkTransaction, error) {
+	return NewAccountLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+}
+
+func (c *Client) NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesAddressModification) (*AccountPropertiesAddressTransaction, error) {
+	return NewAccountPropertiesAddressTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesMosaicModification) (*AccountPropertiesMosaicTransaction, error) {
+	return NewAccountPropertiesMosaicTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesEntityTypeModification) (*AccountPropertiesEntityTypeTransaction, error) {
+	return NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
+	return NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+}
+
+func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
+	return NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+}
+
+func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
+	return NewModifyMetadataAddressTransaction(deadline, address, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification) (*ModifyMetadataMosaicTransaction, error) {
+	return NewModifyMetadataMosaicTransaction(deadline, mosaicId, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification) (*ModifyMetadataNamespaceTransaction, error) {
+	return NewModifyMetadataNamespaceTransaction(deadline, namespaceId, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification) (*ModifyMultisigAccountTransaction, error) {
+	return NewModifyMultisigAccountTransaction(deadline, minApprovalDelta, minRemovalDelta, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewModifyContractTransaction(
+	deadline *Deadline, durationDelta Duration, hash *Hash,
+	customers []*MultisigCosignatoryModification,
+	executors []*MultisigCosignatoryModification,
+	verifiers []*MultisigCosignatoryModification) (*ModifyContractTransaction, error) {
+	return NewModifyContractTransaction(deadline, durationDelta, hash, customers, executors, verifiers, c.config.NetworkType)
+}
+
+func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties) (*MosaicDefinitionTransaction, error) {
+	return NewMosaicDefinitionTransaction(deadline, nonce, ownerPublicKey, mosaicProps, c.config.NetworkType)
+}
+
+func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration) (*MosaicSupplyChangeTransaction, error) {
+	return NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
+}
+
+func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
+	return NewTransferTransaction(deadline, recipient, mosaics, message, c.config.NetworkType)
+}
+
+func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
+	return NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+}
+
+func (c *Client) NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration Duration) (*RegisterNamespaceTransaction, error) {
+	return NewRegisterRootNamespaceTransaction(deadline, namespaceName, duration, c.config.NetworkType)
+}
+
+func (c *Client) NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string, parentId *NamespaceId) (*RegisterNamespaceTransaction, error) {
+	return NewRegisterSubNamespaceTransaction(deadline, namespaceName, parentId, c.config.NetworkType)
+}
+
+func (c *Client) NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, signedTx *SignedTransaction) (*LockFundsTransaction, error) {
+	return NewLockFundsTransaction(deadline, mosaic, duration, signedTx, c.config.NetworkType)
+}
+
+func (c *Client) NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, secret *Secret, recipient *Address) (*SecretLockTransaction, error) {
+	return NewSecretLockTransaction(deadline, mosaic, duration, secret, recipient, c.config.NetworkType)
+}
+
+func (c *Client) NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Proof, recipient *Address) (*SecretProofTransaction, error) {
+	return NewSecretProofTransaction(deadline, hashType, proof, recipient, c.config.NetworkType)
 }
 
 func addOptions(s string, opt interface{}) (string, error) {
