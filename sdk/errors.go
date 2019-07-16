@@ -37,11 +37,20 @@ var (
 	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
 )
 
+// Common errors
+var (
+	ErrNilAssetId             = errors.New("AssetId should not be nil")
+	ErrEmptyAssetIds          = errors.New("AssetId's array should not be empty")
+	ErrUnknownBlockchainType  = errors.New("Not supported Blockchain Type")
+	ErrInvalidHashLength      = errors.New("The length of Hash is invalid")
+	ErrInvalidSignatureLength = errors.New("The length of Signature is invalid")
+)
+
 // Mosaic errors
 var (
 	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
 	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
-	ErrNilMosaicAmount       = errors.New("amount must be not nil")
+	ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
 	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
 	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
 )
@@ -50,6 +59,7 @@ var (
 var (
 	ErrNamespaceTooManyPart = errors.New("too many parts")
 	ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
+	ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
 	ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
 	ErrInvalidNamespaceName = errors.New("namespace name is invalid")
 )
@@ -58,6 +68,12 @@ var (
 var (
 	ErrNilOrZeroHeight = errors.New("block height should not be nil or zero")
 	ErrNilOrZeroLimit  = errors.New("limit should not be nil or zero")
+)
+
+// Lock errors
+var (
+	ErrNilSecret = errors.New("Secret should not be nil")
+	ErrNilProof  = errors.New("Proof should not be nil")
 )
 
 // plain errors

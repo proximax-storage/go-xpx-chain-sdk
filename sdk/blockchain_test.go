@@ -9,7 +9,6 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 	"time"
 )
@@ -49,7 +48,9 @@ const (
 		"blockTransactionsHash": "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19",
     	"blockReceiptsHash": "C1CCDD2786E301BD384A3E3717FF2383BBFB013FC86E885F0889CD18A3508001",
     	"stateHash": "E563E955B14B1C8A58FBD4B2D8B28F42EF3C2200D6BC8260A693ABCBD43C5BB7",
-    	"beneficiaryPublicKey": "0000000000000000000000000000000000000000000000000000000000000000"
+    	"beneficiary": "0000000000000000000000000000000000000000000000000000000000000000",
+    	"feeInterest": 1,
+    	"feeInterestDenominator": 1
 	}
 }`
 	// Mock response for TestBlockchainService_GetBlockTransactions
@@ -95,8 +96,8 @@ const (
 
 var (
 	blockClient = mockServer.getPublicTestClientUnsafe().Blockchain
-	testHeight  = big.NewInt(1)
-	testLimit   = big.NewInt(100)
+	testHeight  = Height(1)
+	testLimit   = Amount(100)
 )
 
 // Expected value for TestBlockchainService_GetBlockHeight
@@ -109,24 +110,26 @@ func init() {
 	pubAcc, _ := NewAccountFromPublicKey("321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E", MijinTest)
 
 	wantBlockInfo = &BlockInfo{
-		NetworkType:           MijinTest,
-		Hash:                  "83FB2550BDB72B6F507BDBDE90C265D4A324DF9F1EFEFD9F7BD0FDF6391C30D8",
-		GenerationHash:        "8EC49BBADB3B2FD90810DB9BDACF1FDE999295C594B5FD4B584A0A72F5AAFA59",
-		TotalFee:              uint64DTO{0, 0}.toBigInt(),
-		NumTransactions:       25,
-		Signature:             "0BEAE2B3DCDEC268B43797C7A855EC03FDEE0B4687EC14F250D0EA3588ADDD0B42EBB77E14157EAB168B41457CA28395C1EBAB354B0A20CCB5FC73CFA65A3107",
-		Signer:                pubAcc,
-		Version:               3,
-		Type:                  32835,
-		Height:                uint64DTO{1, 0}.toBigInt(),
-		Timestamp:             uint64DTO{0, 0}.toBigInt(),
-		Difficulty:            uint64DTO{276447232, 23283}.toBigInt(),
-		FeeMultiplier:         0,
-		PreviousBlockHash:     "0000000000000000000000000000000000000000000000000000000000000000",
-		BlockTransactionsHash: "8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19",
-		BlockReceiptsHash:     "C1CCDD2786E301BD384A3E3717FF2383BBFB013FC86E885F0889CD18A3508001",
-		StateHash:             "E563E955B14B1C8A58FBD4B2D8B28F42EF3C2200D6BC8260A693ABCBD43C5BB7",
-		Beneficiary:           nil,
+		NetworkType:            MijinTest,
+		BlockHash:              stringToHashPanic("83FB2550BDB72B6F507BDBDE90C265D4A324DF9F1EFEFD9F7BD0FDF6391C30D8"),
+		GenerationHash:         stringToHashPanic("8EC49BBADB3B2FD90810DB9BDACF1FDE999295C594B5FD4B584A0A72F5AAFA59"),
+		TotalFee:               uint64DTO{0, 0}.toStruct(),
+		NumTransactions:        25,
+		Signature:              stringToSignaturePanic("0BEAE2B3DCDEC268B43797C7A855EC03FDEE0B4687EC14F250D0EA3588ADDD0B42EBB77E14157EAB168B41457CA28395C1EBAB354B0A20CCB5FC73CFA65A3107"),
+		Signer:                 pubAcc,
+		Version:                3,
+		Type:                   32835,
+		Height:                 uint64DTO{1, 0}.toStruct(),
+		Timestamp:              blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+		Difficulty:             uint64DTO{276447232, 23283}.toStruct(),
+		FeeMultiplier:          0,
+		PreviousBlockHash:      stringToHashPanic("0000000000000000000000000000000000000000000000000000000000000000"),
+		BlockTransactionsHash:  stringToHashPanic("8A77819676852F20EB7ACDE5A18F7CE060C3D1A61A7EF80A99B3346EB9091B19"),
+		BlockReceiptsHash:      stringToHashPanic("C1CCDD2786E301BD384A3E3717FF2383BBFB013FC86E885F0889CD18A3508001"),
+		StateHash:              stringToHashPanic("E563E955B14B1C8A58FBD4B2D8B28F42EF3C2200D6BC8260A693ABCBD43C5BB7"),
+		Beneficiary:            nil,
+		FeeInterest:            1,
+		FeeInterestDenominator: 1,
 	}
 
 	wantBlockTransactions = append(wantBlockTransactions, &RegisterNamespaceTransaction{
@@ -136,18 +139,18 @@ func init() {
 			NetworkType: MijinTest,
 			Signature:   "AE1558A33F4F595AD5DCEAE4EC11606E815A781E75E3EEC7E9F8BB46BDAF16670C8C36C6815F74FD83487178DDAB8FCE4B4B633875A1549D4FB068ABC5B22A0C",
 			Signer:      nil,
-			MaxFee:      uint64DTO{0, 0}.toBigInt(),
-			Deadline:    &Deadline{time.Unix(uint64DTO{1, 0}.toBigInt().Int64(), int64(time.Millisecond))},
+			MaxFee:      uint64DTO{0, 0}.toStruct(),
+			Deadline:    &Deadline{Timestamp{time.Unix(int64(uint64DTO{1, 0}.toUint64()), int64(time.Millisecond))}},
 			TransactionInfo: &TransactionInfo{
-				Height:              uint64DTO{1, 0}.toBigInt(),
-				Hash:                "D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366",
-				MerkleComponentHash: "D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366",
+				Height:              uint64DTO{1, 0}.toStruct(),
+				TransactionHash:     stringToHashPanic("D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366"),
+				MerkleComponentHash: stringToHashPanic("D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366"),
 				Index:               0,
 				Id:                  "5B55E02EACCB7B00015DB6D2",
 			},
 		},
 		NamspaceName: "nem",
-		Duration:     uint64DTO{0, 0}.toBigInt(),
+		Duration:     uint64DTO{0, 0}.toStruct(),
 	})
 }
 
@@ -165,7 +168,7 @@ func TestBlockchainService_GetBlocksByHeightWithLimit(t *testing.T) {
 }
 
 func TestBlockchainService_GetBlockchainHeight(t *testing.T) {
-	want := uint64DTO{11235, 0}.toBigInt()
+	want := uint64DTO{11235, 0}.toStruct()
 
 	mockServer.AddRouter(&mock.Router{
 		Path:     blockHeightRoute,

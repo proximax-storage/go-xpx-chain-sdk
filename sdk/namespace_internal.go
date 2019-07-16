@@ -2,57 +2,46 @@ package sdk
 
 import (
 	"encoding/binary"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/utils"
 	"golang.org/x/crypto/sha3"
-	"math/big"
 )
-
-func bigIntToNamespaceId(bigInt *big.Int) *NamespaceId {
-	if bigInt == nil {
-		return nil
-	}
-
-	nsId := NamespaceId(*bigInt)
-
-	return &nsId
-}
-
-func namespaceIdToBigInt(nsId *NamespaceId) *big.Int {
-	if nsId == nil {
-		return nil
-	}
-
-	return (*big.Int)(nsId)
-}
 
 type namespaceIdDTO uint64DTO
 
 func (dto *namespaceIdDTO) toStruct() (*NamespaceId, error) {
-	return NewNamespaceId(uint64DTO(*dto).toBigInt())
+	return NewNamespaceId(uint64DTO(*dto).toUint64())
+}
+
+type namespaceIdDTOs []*namespaceIdDTO
+
+func (dto *namespaceIdDTOs) toStruct() ([]*NamespaceId, error) {
+	ids := make([]*NamespaceId, len(*dto))
+	var err error
+
+	for i, n := range *dto {
+		ids[i], err = n.toStruct()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ids, nil
 }
 
 // namespaceNameDTO temporary struct for reading responce & fill NamespaceName
 type namespaceNameDTO struct {
-	NamespaceId uint64DTO
-	Name        string
-	ParentId    uint64DTO
+	NamespaceId namespaceIdDTO `json:"namespaceId"`
+	FullName    string         `json:"name"`
 }
 
 func (ref *namespaceNameDTO) toStruct() (*NamespaceName, error) {
-	nsId, err := NewNamespaceId(ref.NamespaceId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
-	parentId, err := NewNamespaceId(ref.ParentId.toBigInt())
+	nsId, err := ref.NamespaceId.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
 	return &NamespaceName{
 		nsId,
-		ref.Name,
-		parentId,
+		ref.FullName,
 	}, nil
 }
 
@@ -76,21 +65,44 @@ func (n *namespaceNameDTOs) toStruct() ([]*NamespaceName, error) {
 
 // namespaceAliasDTO
 type namespaceAliasDTO struct {
-	MosaicId *uint64DTO
+	MosaicId *mosaicIdDTO
 	Address  string
 	Type     AliasType
 }
 
+func (dto *namespaceAliasDTO) toStruct() (*NamespaceAlias, error) {
+	alias := NamespaceAlias{}
+
+	alias.Type = dto.Type
+
+	switch alias.Type {
+	case AddressAliasType:
+		a, err := NewAddressFromBase32(dto.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		alias.address = a
+	case MosaicAliasType:
+		mosaicId, err := dto.MosaicId.toStruct()
+		if err != nil {
+			return nil, err
+		}
+		alias.mosaicId = mosaicId
+	}
+
+	return &alias, nil
+}
+
 // namespaceDTO temporary struct for reading responce & fill NamespaceInfo
 type namespaceDTO struct {
-	NamespaceId  uint64DTO
 	Type         int
 	Depth        int
-	Level0       *uint64DTO
-	Level1       *uint64DTO
-	Level2       *uint64DTO
+	Level0       *namespaceIdDTO
+	Level1       *namespaceIdDTO
+	Level2       *namespaceIdDTO
 	Alias        *namespaceAliasDTO
-	ParentId     uint64DTO
+	ParentId     namespaceIdDTO
 	Owner        string
 	OwnerAddress string
 	StartHeight  uint64DTO
@@ -105,17 +117,12 @@ type namespaceInfoDTO struct {
 
 //toStruct create & return new NamespaceInfo from namespaceInfoDTO
 func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
-	nsId, err := NewNamespaceId(ref.Namespace.NamespaceId.toBigInt())
-	if err != nil {
-		return nil, err
-	}
-
 	pubAcc, err := NewAccountFromPublicKey(ref.Namespace.Owner, NetworkType(ref.Namespace.Type))
 	if err != nil {
 		return nil, err
 	}
 
-	parentId, err := NewNamespaceId(ref.Namespace.ParentId.toBigInt())
+	parentId, err := ref.Namespace.ParentId.toStruct()
 	if err != nil {
 		return nil, err
 	}
@@ -125,24 +132,28 @@ func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
 		return nil, err
 	}
 
-	alias, err := NewNamespaceAlias(ref.Namespace.Alias)
+	if len(levels) == 0 {
+		return nil, ErrNilNamespaceId
+	}
+
+	alias, err := ref.Namespace.Alias.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
 	ns := &NamespaceInfo{
-		NamespaceId: nsId,
+		NamespaceId: levels[len(levels)-1],
 		Active:      ref.Meta.Active,
 		TypeSpace:   NamespaceType(ref.Namespace.Type),
 		Depth:       ref.Namespace.Depth,
 		Levels:      levels,
 		Alias:       alias,
 		Owner:       pubAcc,
-		StartHeight: ref.Namespace.StartHeight.toBigInt(),
-		EndHeight:   ref.Namespace.EndHeight.toBigInt(),
+		StartHeight: ref.Namespace.StartHeight.toStruct(),
+		EndHeight:   ref.Namespace.EndHeight.toStruct(),
 	}
 
-	if parentId != nil && namespaceIdToBigInt(parentId).Int64() != 0 {
+	if parentId != nil && parentId.Id() != 0 {
 		ns.Parent = &NamespaceInfo{NamespaceId: parentId}
 	}
 
@@ -151,32 +162,31 @@ func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
 
 func (ref *namespaceInfoDTO) extractLevels() ([]*NamespaceId, error) {
 	levels := make([]*NamespaceId, 0)
+	extractLevel := func(level *namespaceIdDTO) error {
+		if level != nil {
+			nsName, err := level.toStruct()
+			if err != nil {
+				return err
+			}
 
-	if ref.Namespace.Level0 != nil {
-		nsName, err := NewNamespaceId(ref.Namespace.Level0.toBigInt())
-		if err != nil {
-			return nil, err
+			levels = append(levels, nsName)
 		}
-
-		levels = append(levels, nsName)
+		return nil
 	}
 
-	if ref.Namespace.Level1 != nil {
-		nsName, err := NewNamespaceId(ref.Namespace.Level1.toBigInt())
-		if err != nil {
-			return nil, err
-		}
-
-		levels = append(levels, nsName)
+	err := extractLevel(ref.Namespace.Level0)
+	if err != nil {
+		return nil, err
 	}
 
-	if ref.Namespace.Level2 != nil {
-		nsName, err := NewNamespaceId(ref.Namespace.Level2.toBigInt())
-		if err != nil {
-			return nil, err
-		}
+	err = extractLevel(ref.Namespace.Level1)
+	if err != nil {
+		return nil, err
+	}
 
-		levels = append(levels, nsName)
+	err = extractLevel(ref.Namespace.Level2)
+	if err != nil {
+		return nil, err
 	}
 
 	return levels, nil
@@ -200,14 +210,8 @@ func (n *namespaceInfoDTOs) toStruct() ([]*NamespaceInfo, error) {
 	return nsInfos, nil
 }
 
-func generateNamespaceId(name string, parentId *big.Int) (*big.Int, error) {
-	b := make([]byte, 8)
-
-	if parentId.Int64() != 0 {
-		b = parentId.Bytes()
-	}
-
-	utils.ReverseByteArray(b)
+func generateNamespaceId(name string, parentId *NamespaceId) (*NamespaceId, error) {
+	b := parentId.toLittleEndian()
 
 	result := sha3.New256()
 
@@ -221,5 +225,5 @@ func generateNamespaceId(name string, parentId *big.Int) (*big.Int, error) {
 
 	t := result.Sum(nil)
 
-	return uint64DTO{binary.LittleEndian.Uint32(t[0:4]), binary.LittleEndian.Uint32(t[4:8]) | 0x80000000}.toBigInt(), nil
+	return NewNamespaceId(binary.LittleEndian.Uint64(t) | NamespaceBit)
 }

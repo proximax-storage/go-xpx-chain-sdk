@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"net/http"
 	"testing"
 )
@@ -65,8 +64,8 @@ const (
 var (
 	testMetadataInfoPubKey         = "SCJW742TNBMMX2UO4DVKXGP6T3CO6XXR6ZRWMVU2"
 	testMetadataAddress, _         = NewAddressFromRaw(testMetadataInfoPubKey)
-	testMetadataInfoMosaicId, _    = NewMosaicId(big.NewInt(0x49B59D3473C49A6B))
-	testMetadataInfoNamespaceId, _ = NewNamespaceId(big.NewInt(0).SetUint64(uint64(0xAD829C74059BF6EA)))
+	testMetadataInfoMosaicId, _    = NewMosaicId(0x49B59D3473C49A6B)
+	testMetadataInfoNamespaceId, _ = NewNamespaceId(0xAD829C74059BF6EA)
 
 	testAddressMetadataInfo = &AddressMetadataInfo{
 		MetadataInfo: MetadataInfo{

@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"strings"
 	"testing"
 )
@@ -20,7 +19,7 @@ func TestGenerateNamespacePath_GeneratesCorrectWellKnownRootPath(t *testing.T) {
 
 	assert.Equal(t, len(ids), 1, `ids.size() and 1 must by equal !`)
 
-	assert.Equal(t, big.NewInt(-8884663987180930485).Int64(), ids[0].Int64())
+	assert.Equal(t, uint64(0x84B3552D375FFA4B), ids[0].Id())
 }
 
 // @Test
@@ -29,15 +28,15 @@ func TestNamespacePath_GeneratesCorrectWellKnownChildPath(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, len(ids), 2, `ids.size() and 2 must be equal !`)
 
-	assert.Equal(t, big.NewInt(-8884663987180930485).Int64(), ids[0].Int64())
-	assert.Equal(t, big.NewInt(-3087871471161192663).Int64(), ids[1].Int64(), `NewBigInteger(testNewXemBigInt) and ids.get(1) must by equal !`)
+	assert.Equal(t, uint64(0x84B3552D375FFA4B), ids[0].Id())
+	assert.Equal(t, uint64(0xD525AD41D95FCF29), ids[1].Id())
 }
 
 // @Test
 func TestNamespacePathSupportsMultiLevelNamespaces(t *testing.T) {
-	ids := make([]*big.Int, 3)
+	ids := make([]*NamespaceId, 3)
 	var err error
-	ids[0], err = generateNamespaceId("foo", big.NewInt(0))
+	ids[0], err = generateNamespaceId("foo", newNamespaceIdPanic(0))
 	assert.Nil(t, err)
 	ids[1], err = generateNamespaceId("bar", ids[0])
 	assert.Nil(t, err)
@@ -59,16 +58,16 @@ func TestNamespacePathRejectsNamesWithTooManyParts(t *testing.T) {
 
 // @Test
 func TestMosaicIdGeneratesCorrectWellKnowId(t *testing.T) {
-	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest)
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
 	assert.Nil(t, err)
 	id, err := generateMosaicId(0, account.PublicAccount.PublicKey)
 	assert.Nil(t, err)
-	assert.Equal(t, big.NewInt(992621222383397347).Int64(), id.Int64())
+	assert.Equal(t, uint64(992621222383397347), id.Id())
 }
 
 // @Test
 func TestNewAddressFromNamespace(t *testing.T) {
-	namespaceId := bigIntToNamespaceId(big.NewInt(0).SetUint64(0x85bbea6cc462b244))
+	namespaceId := newNamespaceIdPanic(0x85bbea6cc462b244)
 	address, err := NewAddressFromNamespace(namespaceId)
 	assert.Nil(t, err)
 

@@ -8,13 +8,12 @@ import (
 	"context"
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 	"time"
 )
 
 const (
-	address = "http://10.32.150.136:3000"
+	address = "http://127.0.0.1:3000"
 )
 
 var (
@@ -43,18 +42,15 @@ func Uint64(v uint64) *uint64 { return &v }
 func String(v string) *string { return &v }
 
 func TestBigIntegerToHex_bigIntegerNEMAndXEMToHex(t *testing.T) {
-	testBigInt(t, "15358872602548358953", "D525AD41D95FCF29")
-	testBigInt(t, "9562080086528621131", "84B3552D375FFA4B")
-	testBigInt(t, "153588726025483589", "0221A821F040F545")
-	testBigInt(t, "-7680974160236284465", "9567B2B2622975CF")
-	testBigInt(t, "23160236284465", "0000151069A81A31")
+	testHexConversion(t, 15358872602548358953, "D525AD41D95FCF29")
+	testHexConversion(t, 9562080086528621131, "84B3552D375FFA4B")
+	testHexConversion(t, 153588726025483589, "0221A821F040F545")
+	testHexConversion(t, 0x9567B2B2622975CF, "9567B2B2622975CF")
+	testHexConversion(t, 23160236284465, "0000151069A81A31")
 }
 
-func testBigInt(t *testing.T, str, hexStr string) {
-	i, ok := (&big.Int{}).SetString(str, 10)
-	assert.True(t, ok)
-	result := bigIntegerToHex(i)
-	assert.Equal(t, hexStr, result)
+func testHexConversion(t *testing.T, id uint64, hexStr string) {
+	assert.Equal(t, hexStr, newNamespaceIdPanic(id).toHexString())
 }
 
 type sdkMock struct {
@@ -74,7 +70,7 @@ func newSdkMockWithRouter(router *mock.Router) *sdkMock {
 }
 
 func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error) {
-	conf, err := NewConfig([]string{m.GetServerURL()}, networkType, WebsocketReconnectionDefaultTimeout)
+	conf, err := NewConfigWithReputation([]string{m.GetServerURL()}, networkType, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, nil)
 
 	if err != nil {
 		return nil, err
@@ -93,4 +89,23 @@ func (m *sdkMock) getPublicTestClientUnsafe() *Client {
 	client, _ := m.getPublicTestClient()
 
 	return client
+}
+
+func TestClient_AdaptAccount(t *testing.T) {
+	var stockHash = &Hash{1}
+	var defaultHash = &Hash{2}
+	account, err := NewAccount(PublicTest, stockHash)
+	assert.Nil(t, err)
+
+	config, err := NewConfigWithReputation([]string{""}, MijinTest, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, defaultHash)
+	assert.Nil(t, err)
+
+	client := NewClient(nil, config)
+
+	adaptedAccount, err := client.AdaptAccount(account)
+	assert.Equal(t, MijinTest, adaptedAccount.PublicAccount.Address.Type)
+	assert.Equal(t, defaultHash, adaptedAccount.generationHash)
+
+	assert.Equal(t, PublicTest, account.PublicAccount.Address.Type)
+	assert.Equal(t, stockHash, account.generationHash)
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"errors"
-	"github.com/proximax-storage/nem2-crypto-go"
+	"github.com/proximax-storage/xpx-crypto-go"
 )
 
 var addressNet = map[uint8]NetworkType{
@@ -19,7 +19,7 @@ var addressNet = map[uint8]NetworkType{
 
 type propertiesDTO struct {
 	PropertyType PropertyType `json:"propertyType"`
-	MosaicIds    uint64DTOs
+	MosaicIds    mosaicIdDTOs
 	Addresses    []string
 	EntityTypes  []TransactionType
 }
@@ -45,7 +45,7 @@ func (d *propertiesDTO) UnmarshalJSON(data []byte) error {
 		d.Addresses = addresses.Addresses
 	} else if temp.PropertyType&AllowMosaic != 0 {
 		mosaicIds := struct {
-			MosaicIds uint64DTOs `json:"values"`
+			MosaicIds mosaicIdDTOs `json:"values"`
 		}{}
 		if err := json.Unmarshal(data, &mosaicIds); err != nil {
 			return err
@@ -94,13 +94,13 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 		case AllowAddress:
 			properties.AllowedAddresses, err = EncodedStringToAddresses(p.Addresses...)
 		case AllowMosaic:
-			properties.AllowedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+			properties.AllowedMosaicId, err = p.MosaicIds.toStruct()
 		case AllowTransaction:
 			properties.AllowedEntityTypes = p.EntityTypes
 		case BlockAddress:
 			properties.BlockedAddresses, err = EncodedStringToAddresses(p.Addresses...)
 		case BlockMosaic:
-			properties.BlockedMosaicId, err = bigIntsToMosaicIds(p.MosaicIds.toBigInts()...)
+			properties.BlockedMosaicId, err = p.MosaicIds.toStruct()
 		case BlockTransaction:
 			properties.BlockedEntityTypes = p.EntityTypes
 		}
@@ -137,8 +137,8 @@ type reputationDTO struct {
 }
 
 func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
-	posInter := ref.PositiveInteractions.toBigInt().Uint64()
-	negInter := ref.NegativeInteractions.toBigInt().Uint64()
+	posInter := ref.PositiveInteractions.toUint64()
+	negInter := ref.NegativeInteractions.toUint64()
 
 	if posInter < repConfig.minInteractions {
 		return repConfig.defaultReputation
@@ -191,9 +191,9 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 
 	acc := &AccountInfo{
 		Address:         add,
-		AddressHeight:   dto.Account.AddressHeight.toBigInt(),
+		AddressHeight:   dto.Account.AddressHeight.toStruct(),
 		PublicKey:       dto.Account.PublicKey,
-		PublicKeyHeight: dto.Account.PublicKeyHeight.toBigInt(),
+		PublicKeyHeight: dto.Account.PublicKeyHeight.toStruct(),
 		AccountType:     dto.Account.AccountType,
 		LinkedAccount:   linkedAccount,
 		Mosaics:         ms,
@@ -353,4 +353,39 @@ func generateEncodedAddress(pKey string, version NetworkType) (string, error) {
 
 	// step 6: base32 encode (5)
 	return base32.StdEncoding.EncodeToString(concatStepThreeAndStepSix), nil
+}
+
+type accountNamesDTO struct {
+	Names   []string `json:"names"`
+	Address string   `json:"address"`
+}
+
+type accountNamesDTOs []*accountNamesDTO
+
+func (m *accountNamesDTO) toStruct() (*AccountName, error) {
+
+	address, err := NewAddressFromBase32(m.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &AccountName{
+		Address: address,
+		Names:   m.Names,
+	}, nil
+}
+
+func (m *accountNamesDTOs) toStruct() ([]*AccountName, error) {
+	dtos := *m
+	accNames := make([]*AccountName, 0, len(dtos))
+
+	for _, dto := range dtos {
+		accName, err := dto.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		accNames = append(accNames, accName)
+	}
+
+	return accNames, nil
 }

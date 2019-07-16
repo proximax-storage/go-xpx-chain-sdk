@@ -9,28 +9,31 @@ import (
 	"encoding/hex"
 	"errors"
 	"golang.org/x/crypto/sha3"
-	"math/big"
 )
 
-func bigIntToMosaicId(bigInt *big.Int) *MosaicId {
-	if bigInt == nil {
-		return nil
-	}
+type mosaicIdDTO uint64DTO
 
-	mscId := MosaicId(*bigInt)
-
-	return &mscId
+func (dto *mosaicIdDTO) toStruct() (*MosaicId, error) {
+	return NewMosaicId(uint64DTO(*dto).toUint64())
 }
 
-func mosaicIdToBigInt(mscId *MosaicId) *big.Int {
-	if mscId == nil {
-		return nil
+type mosaicIdDTOs []*mosaicIdDTO
+
+func (dto *mosaicIdDTOs) toStruct() ([]*MosaicId, error) {
+	ids := make([]*MosaicId, len(*dto))
+	var err error
+
+	for i, m := range *dto {
+		ids[i], err = m.toStruct()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return (*big.Int)(mscId)
+	return ids, nil
 }
 
-func generateMosaicId(nonce uint32, ownerPublicKey string) (*big.Int, error) {
+func generateMosaicId(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	result := sha3.New256()
 	nonceB := make([]byte, 4)
 	binary.LittleEndian.PutUint32(nonceB, nonce)
@@ -50,25 +53,38 @@ func generateMosaicId(nonce uint32, ownerPublicKey string) (*big.Int, error) {
 	}
 
 	t := result.Sum(nil)
-
-	return uint64DTO{binary.LittleEndian.Uint32(t[0:4]), binary.LittleEndian.Uint32(t[4:8]) & 0x7FFFFFFF}.toBigInt(), nil
+	return NewMosaicId(binary.LittleEndian.Uint64(t) & (^NamespaceBit))
 }
 
 type mosaicDTO struct {
-	MosaicId uint64DTO `json:"id"`
-	Amount   uint64DTO `json:"amount"`
+	AssetId assetIdDTO `json:"id"`
+	Amount  uint64DTO  `json:"amount"`
 }
 
 func (dto *mosaicDTO) toStruct() (*Mosaic, error) {
-	mosaicId, err := NewMosaicId(dto.MosaicId.toBigInt())
+	assetId, err := dto.AssetId.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Mosaic{mosaicId, dto.Amount.toBigInt()}, nil
+	return NewMosaic(assetId, dto.Amount.toStruct())
 }
 
-type mosaicPropertiesDTO []uint64DTO
+type MosaicPropertyId uint8
+
+// MosaicPropertyId enums
+const (
+	MosaicPropertyFlagsId MosaicPropertyId = iota
+	MosaicPropertyDivisibilityId
+	MosaicPropertyDurationId
+)
+
+type mosaicPropertyDTO struct {
+	Id    MosaicPropertyId `json:"id"`
+	Value uint64DTO        `json:"value"`
+}
+
+type mosaicPropertiesDTO []mosaicPropertyDTO
 
 // namespaceMosaicMetaDTO
 type namespaceMosaicMetaDTO struct {
@@ -78,7 +94,7 @@ type namespaceMosaicMetaDTO struct {
 }
 
 type mosaicDefinitionDTO struct {
-	MosaicId   uint64DTO
+	MosaicId   mosaicIdDTO
 	Supply     uint64DTO
 	Height     uint64DTO
 	Owner      string
@@ -92,16 +108,29 @@ type mosaicInfoDTO struct {
 	Mosaic mosaicDefinitionDTO
 }
 
-func (dto *mosaicPropertiesDTO) toStruct() *MosaicProperties {
-	flags := "00" + (*dto)[0].toBigInt().Text(2)
-	bitMapFlags := flags[len(flags)-3:]
+func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
+	flags := uint64(0)
+	divisibility := uint8(0)
+	duration := Duration(0)
+	for _, property := range *dto {
+		switch property.Id {
+		case MosaicPropertyFlagsId:
+			flags = property.Value.toUint64()
+		case MosaicPropertyDivisibilityId:
+			divisibility = byte(property.Value.toUint64())
+		case MosaicPropertyDurationId:
+			duration = Duration(property.Value.toUint64())
+		default:
+			return nil, errors.New("Unknown Property Id")
+		}
+	}
 
-	return NewMosaicProperties(bitMapFlags[2] == '1',
-		bitMapFlags[1] == '1',
-		bitMapFlags[0] == '1',
-		byte((*dto)[1].toBigInt().Int64()),
-		(*dto)[2].toBigInt(),
-	)
+	return NewMosaicProperties(
+		hasBits(flags, Supply_Mutable),
+		hasBits(flags, Transferable),
+		divisibility,
+		duration,
+	), nil
 }
 
 func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
@@ -114,15 +143,23 @@ func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error)
 		return nil, errors.New("mosaic Properties is not valid")
 	}
 
-	mosaicId, err := NewMosaicId(ref.Mosaic.MosaicId.toBigInt())
+	mosaicId, err := ref.Mosaic.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	properties, err := ref.Mosaic.Properties.toStruct()
+	if err != nil {
+		return nil, err
+	}
 
 	mscInfo := &MosaicInfo{
 		MosaicId:   mosaicId,
-		Supply:     ref.Mosaic.Supply.toBigInt(),
-		Height:     ref.Mosaic.Height.toBigInt(),
+		Supply:     ref.Mosaic.Supply.toStruct(),
+		Height:     ref.Mosaic.Height.toStruct(),
 		Owner:      publicAcc,
 		Revision:   ref.Mosaic.Revision,
-		Properties: ref.Mosaic.Properties.toStruct(),
+		Properties: properties,
 	}
 
 	return mscInfo, nil
@@ -168,12 +205,12 @@ func (ref *mosaicIds) MarshalJSON() ([]byte, error) {
 }
 
 type mosaicNameDTO struct {
-	MosaicId uint64DTO `json:"mosaicId"`
-	Names    []string  `json:"names"`
+	MosaicId mosaicIdDTO `json:"mosaicId"`
+	Names    []string    `json:"names"`
 }
 
 func (m *mosaicNameDTO) toStruct() (*MosaicName, error) {
-	mosaicId, err := NewMosaicId(m.MosaicId.toBigInt())
+	mosaicId, err := m.MosaicId.toStruct()
 	if err != nil {
 		return nil, err
 	}

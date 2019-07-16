@@ -5,20 +5,20 @@
 package sdk
 
 import (
-	"math/big"
 	"regexp"
 )
 
 // mosaic id for XEM mosaic
-var XemMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+var XemMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 
 // mosaic id for XPX mosaic
-var XpxMosaicId, _ = NewMosaicId(big.NewInt(0x0DC67FBE1CAD29E3))
+var XpxMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 
 // routes for AccountService
 const (
 	accountsRoute                 = "/account"
 	accountRoute                  = "/account/%s"
+	accountNamesRoute             = "/account/names"
 	accountPropertiesRoute        = "/account/%s/properties"
 	accountsPropertiesRoute       = "/account/properties"
 	multisigAccountRoute          = "/account/%s/multisig"
@@ -49,10 +49,10 @@ const (
 // routes for BlockchainService
 const (
 	blockHeightRoute         = "/chain/height"
-	blockByHeightRoute       = "/block/%d"
+	blockByHeightRoute       = "/block/%s"
 	blockScoreRoute          = "/chain/score"
-	blockGetTransactionRoute = "/block/%d/transactions"
-	blockInfoRoute           = "/blocks/%d/limit/%d"
+	blockGetTransactionRoute = "/block/%s/transactions"
+	blockInfoRoute           = "/blocks/%s/limit/%s"
 	blockStorageRoute        = "/diagnostic/storage"
 )
 

@@ -9,14 +9,11 @@ import (
 	"fmt"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
-	"math/big"
-	"net/http"
 	"time"
 )
 
 const (
-	networkType = sdk.MijinTest
-	privateKey  = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
+	privateKey = "A97B139EB641BCC841A610231870925EB301BA680D07BBCF9AEE83FAA5E9FB43"
 )
 
 var (
@@ -27,18 +24,13 @@ var (
 // WebSockets make possible receiving notifications when a transaction or event occurs in the blockchain.
 // The notification is received in real time without having to poll the API waiting for a reply.
 func main() {
-
-	destAccount, _ := sdk.NewAccountFromPrivateKey(privateKey, networkType)
-	address := destAccount.PublicAccount.Address
-
-	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
-
-	cfg, err := sdk.NewConfig(baseUrls, networkType, sdk.WebsocketReconnectionDefaultTimeout)
+	ctx := context.Background()
+	cfg, err := sdk.NewConfig(ctx, baseUrls)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx := context.Background()
+	client := sdk.NewClient(nil, cfg)
 
 	wsc, err := websocket.NewClient(ctx, cfg)
 	if err != nil {
@@ -47,6 +39,11 @@ func main() {
 
 	//Starting listening messages from websocket
 	go wsc.Listen()
+
+	destAccount, _ := client.NewAccountFromPrivateKey(privateKey)
+	address := destAccount.PublicAccount.Address
+
+	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
 
 	// Register handlers functions for needed topics
 
@@ -95,28 +92,24 @@ func main() {
 	}()
 
 	//Publish test transactions
-	doTransferTransaction(address, cfg)
+	doTransferTransaction(address, client)
 	time.Sleep(time.Second * 30)
-	doBondedAggregateTransaction(address, cfg)
+	doBondedAggregateTransaction(address, client)
 
 	<-time.NewTimer(time.Minute * 5).C
 }
 
 // publish test transfer transaction
-func doTransferTransaction(address *sdk.Address, conf *sdk.Config) {
+func doTransferTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing transfer transaction")
-	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
+	acc, err := client.NewAccountFromPrivateKey(privateKey)
 
-	// Use the default http client
-	client := sdk.NewClient(http.DefaultClient, conf)
-
-	ttx, err := sdk.NewTransferTransaction(
+	ttx, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
 		address,
 		[]*sdk.Mosaic{sdk.Xem(10000000)},
 		sdk.NewPlainMessage("my test transaction"),
-		networkType,
 	)
 
 	stx, err := acc.Sign(ttx)
@@ -137,20 +130,16 @@ func doTransferTransaction(address *sdk.Address, conf *sdk.Config) {
 }
 
 // publish test aggregated transaction
-func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
+func doBondedAggregateTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
-	acc, err := sdk.NewAccountFromPrivateKey(privateKey, networkType)
+	acc, err := client.NewAccountFromPrivateKey(privateKey)
 
-	// Use the default http client
-	client := sdk.NewClient(http.DefaultClient, conf)
-
-	ttx1, err := sdk.NewTransferTransaction(
+	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
 		address,
 		[]*sdk.Mosaic{sdk.Xem(50)},
 		sdk.NewPlainMessage("first transaction"),
-		networkType,
 	)
 
 	if err != nil {
@@ -159,12 +148,11 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 
 	ttx1.ToAggregate(acc.PublicAccount)
 
-	ttx2, err := sdk.NewTransferTransaction(
+	ttx2, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
 		address,
 		[]*sdk.Mosaic{sdk.Xem(90)},
 		sdk.NewPlainMessage("second transaction"),
-		networkType,
 	)
 
 	if err != nil {
@@ -173,10 +161,9 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 
 	ttx2.ToAggregate(acc.PublicAccount)
 
-	bondedTx, err := sdk.NewBondedAggregateTransaction(
+	bondedTx, err := client.NewBondedAggregateTransaction(
 		sdk.NewDeadline(time.Hour*3),
 		[]sdk.Transaction{ttx1, ttx2},
-		networkType,
 	)
 
 	if err != nil {
@@ -188,7 +175,7 @@ func doBondedAggregateTransaction(address *sdk.Address, conf *sdk.Config) {
 		panic(err)
 	}
 
-	lockFound, err := sdk.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), big.NewInt(240), signedBondedTx, networkType)
+	lockFound, err := client.NewLockFundsTransaction(sdk.NewDeadline(time.Hour*3), sdk.XpxRelative(10), sdk.Duration(240), signedBondedTx)
 	if err != nil {
 		panic(err)
 	}

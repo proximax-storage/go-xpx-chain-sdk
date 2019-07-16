@@ -26,7 +26,7 @@ type contractInfoDTO struct {
 		MultisigAddress string
 		Start           uint64DTO
 		Duration        uint64DTO
-		Hash            string
+		Hash            hashDto
 		Customers       []string
 		Executors       []string
 		Verifiers       []string
@@ -36,12 +36,17 @@ type contractInfoDTO struct {
 func (ref *contractInfoDTO) toStruct(networkType NetworkType) (*ContractInfo, error) {
 	contract := ref.Contract
 
+	hash, err := ref.Contract.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ContractInfo{
 		Multisig:        contract.Multisig,
 		MultisigAddress: NewAddress(contract.MultisigAddress, networkType),
-		Start:           contract.Start.toBigInt(),
-		Duration:        contract.Duration.toBigInt(),
-		Content:         contract.Hash,
+		Start:           contract.Start.toStruct(),
+		Duration:        contract.Duration.toStruct(),
+		Content:         hash,
 		Customers:       contract.Customers,
 		Executors:       contract.Executors,
 		Verifiers:       contract.Verifiers,

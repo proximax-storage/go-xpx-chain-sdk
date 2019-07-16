@@ -6,35 +6,36 @@ package sdk
 
 import (
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"math/big"
 )
 
 type BlockInfo struct {
 	NetworkType
-	Hash                  string
-	GenerationHash        string
-	TotalFee              *big.Int
-	NumTransactions       uint64
-	Signature             string
-	Signer                *PublicAccount
-	Version               uint8
-	Type                  uint64
-	Height                *big.Int
-	Timestamp             *big.Int
-	Difficulty            *big.Int
-	FeeMultiplier         uint32
-	PreviousBlockHash     string
-	BlockTransactionsHash string
-	BlockReceiptsHash     string
-	StateHash             string
-	Beneficiary           *PublicAccount
+	BlockHash              *Hash
+	GenerationHash         *Hash
+	TotalFee               Amount
+	NumTransactions        uint64
+	Signature              *Signature
+	Signer                 *PublicAccount
+	Version                uint8
+	Type                   uint64
+	Height                 Height
+	Timestamp              *Timestamp
+	Difficulty             Difficulty
+	FeeMultiplier          uint32
+	PreviousBlockHash      *Hash
+	BlockTransactionsHash  *Hash
+	BlockReceiptsHash      *Hash
+	StateHash              *Hash
+	Beneficiary            *PublicAccount
+	FeeInterest            uint32
+	FeeInterestDenominator uint32
 }
 
 func (b *BlockInfo) String() string {
 	return str.StructToString(
 		"BlockInfo",
 		str.NewField("NetworkType", str.IntPattern, b.NetworkType),
-		str.NewField("Content", str.StringPattern, b.Hash),
+		str.NewField("BlockHash", str.StringPattern, b.BlockHash),
 		str.NewField("GenerationHash", str.StringPattern, b.GenerationHash),
 		str.NewField("TotalFee", str.StringPattern, b.TotalFee),
 		str.NewField("NumTransactions", str.IntPattern, b.NumTransactions),
@@ -50,7 +51,9 @@ func (b *BlockInfo) String() string {
 		str.NewField("BlockTransactionsHash", str.StringPattern, b.BlockTransactionsHash),
 		str.NewField("BlockReceiptsHash", str.StringPattern, b.BlockReceiptsHash),
 		str.NewField("StateHash", str.StringPattern, b.StateHash),
-		str.NewField("BeneficiaryPublicKey", str.StringPattern, b.Beneficiary),
+		str.NewField("Beneficiary", str.StringPattern, b.Beneficiary),
+		str.NewField("FeeInterest", str.IntPattern, b.FeeInterest),
+		str.NewField("FeeInterestDenominator", str.IntPattern, b.FeeInterestDenominator),
 	)
 }
 
