@@ -1596,7 +1596,7 @@ type mosaicDefinitionTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		Properties  mosaicPropertiesDTO `json:"properties"`
-		MosaicNonce int32               `json:"mosaicNonce"`
+		MosaicNonce int64               `json:"mosaicNonce"`
 		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
