@@ -29,9 +29,8 @@ func (dto *namespaceIdDTOs) toStruct() ([]*NamespaceId, error) {
 
 // namespaceNameDTO temporary struct for reading responce & fill NamespaceName
 type namespaceNameDTO struct {
-	NamespaceId namespaceIdDTO
-	Name        string
-	ParentId    namespaceIdDTO
+	NamespaceId namespaceIdDTO `json:"namespaceId"`
+	FullName    string         `json:"name"`
 }
 
 func (ref *namespaceNameDTO) toStruct() (*NamespaceName, error) {
@@ -40,15 +39,9 @@ func (ref *namespaceNameDTO) toStruct() (*NamespaceName, error) {
 		return nil, err
 	}
 
-	parentId, err := ref.ParentId.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
 	return &NamespaceName{
 		nsId,
-		ref.Name,
-		parentId,
+		ref.FullName,
 	}, nil
 }
 

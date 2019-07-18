@@ -18,11 +18,10 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 	if hasBits(id, NamespaceBit) {
 		return nil, ErrWrongBitMosaicId
 	}
-	return NewMosaicIdNoCheck(id), nil
+	return newMosaicIdPanic(id), nil
 }
 
-// TODO
-func NewMosaicIdNoCheck(id uint64) *MosaicId {
+func newMosaicIdPanic(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
 	return &mosaicId
 }
@@ -67,11 +66,11 @@ func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 		return nil, ErrNilAssetId
 	}
 
-	return NewMosaicNoCheck(assetId, amount), nil
+	return newMosaicPanic(assetId, amount), nil
 }
 
 // returns a Mosaic for passed AssetId and amount without validation of parameters
-func NewMosaicNoCheck(assetId AssetId, amount Amount) *Mosaic {
+func newMosaicPanic(assetId AssetId, amount Amount) *Mosaic {
 	return &Mosaic{
 		AssetId: assetId,
 		Amount:  amount,
@@ -109,18 +108,15 @@ func (m *MosaicInfo) String() string {
 
 const Supply_Mutable = 0x01
 const Transferable = 0x02
-const LevyMutable = 0x04
 
 // structure which includes several properties for defining mosaic
 // `SupplyMutable` - is supply of defined mosaic can be changed in future
 // `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
-// `LevyMutable` - if this property is set to "true", whenever other users transact with your mosaic, owner gets a levy fee from them
 // `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
 // `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicPropertiesHeader struct {
 	SupplyMutable bool
 	Transferable  bool
-	LevyMutable   bool
 	Divisibility  uint8
 }
 
@@ -143,18 +139,17 @@ func (mp *MosaicProperty) String() string {
 }
 
 // returns MosaicProperties from actual values
-func NewMosaicProperties(supplyMutable bool, transferable bool, levyMutable bool, divisibility uint8, duration Duration) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, divisibility uint8, duration Duration) *MosaicProperties {
 	properties := make([]MosaicProperty, 0)
 
 	if duration != 0 {
-		properties = append(properties, MosaicProperty{MosaicPropertyDuration, duration})
+		properties = append(properties, MosaicProperty{MosaicPropertyDurationId, duration})
 	}
 
 	ref := &MosaicProperties{
 		MosaicPropertiesHeader{
 			supplyMutable,
 			transferable,
-			levyMutable,
 			divisibility,
 		},
 		properties,
@@ -168,15 +163,14 @@ func (mp *MosaicProperties) String() string {
 		"MosaicProperties",
 		str.NewField("SupplyMutable", str.BooleanPattern, mp.SupplyMutable),
 		str.NewField("Transferable", str.BooleanPattern, mp.Transferable),
-		str.NewField("LevyMutable", str.BooleanPattern, mp.LevyMutable),
 		str.NewField("Divisibility", str.IntPattern, mp.Divisibility),
-		str.NewField("OptionalProperties", str.StringPattern, mp.OptionalProperties),
+		str.NewField("OptionalProperties", str.ValuePattern, mp.OptionalProperties),
 	)
 }
 
 func (mp *MosaicProperties) Duration() Duration {
 	for _, property := range mp.OptionalProperties {
-		if property.Id == MosaicPropertyDuration {
+		if property.Id == MosaicPropertyDurationId {
 			return Duration(property.Value)
 		}
 	}
@@ -210,12 +204,12 @@ func (tx MosaicSupplyType) String() string {
 
 // returns XEM mosaic with passed amount
 func Xem(amount uint64) *Mosaic {
-	return NewMosaicNoCheck(XemMosaicId, Amount(amount))
+	return newMosaicPanic(XemMosaicId, Amount(amount))
 }
 
 // returns XPX mosaic with passed amount
 func Xpx(amount uint64) *Mosaic {
-	return NewMosaicNoCheck(XpxMosaicId, Amount(amount))
+	return newMosaicPanic(XpxMosaicId, Amount(amount))
 }
 
 // returns XEM with actual passed amount

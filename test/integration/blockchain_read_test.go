@@ -7,31 +7,57 @@ package integration
 import (
 	"context"
 	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"testing"
+	"time"
 )
 
-const iter = 1000
-const testUrl = "http://127.0.0.1:3000"
-const networkType = sdk.MijinTest
-const privateKey = "FFCA7367B4EE8E14041091F438B7BC6C3206ADE2D312670B218C7516395C7D7F"
-const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
+//const testUrl = "http://bcdev1.xpxsirius.io:3000"
+//const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
-var defaultAccount, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
-var nemesisAccount, _ = sdk.NewAccountFromPrivateKey(nemesisPrivateKey, networkType)
+const testUrl = "http://127.0.0.1:3000"
+const privateKey = "A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"
+
+const timeout = 2 * time.Minute
+
+var cfg *sdk.Config
+var ctx context.Context
+var client *sdk.Client
+var wsc websocket.CatapultClient
+var defaultAccount *sdk.Account
+
+const iter = 1000
+
+func init() {
+	ctx = context.Background()
+
+	cfg, err := sdk.NewConfig(ctx, []string{testUrl})
+	if err != nil {
+		panic(err)
+	}
+
+	client = sdk.NewClient(nil, cfg)
+
+	wsc, err = websocket.NewClient(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
-	cfg, _ := sdk.NewConfig([]string{testUrl}, networkType, sdk.WebsocketReconnectionDefaultTimeout)
-	ctx := context.TODO()
-
-	serv := sdk.NewClient(nil, cfg)
-	h, err := serv.Blockchain.GetBlockchainHeight(ctx)
+	h, err := client.Blockchain.GetBlockchainHeight(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for i := sdk.Height(1); i < h && i <= iter; i++ {
 		h := i
-		trans, err := serv.Blockchain.GetBlockTransactions(ctx, h)
+		trans, err := client.Blockchain.GetBlockTransactions(ctx, h)
 		if err != nil {
 			t.Fatal(err)
 			continue
@@ -56,7 +82,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
+				mscInfo, err := client.Mosaic.GetMosaicInfo(ctx, tran.MosaicId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -70,7 +96,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 					t.Log(tran)
 					continue
 				}
-				mscInfo, err := serv.Resolve.GetMosaicInfoByAssetId(ctx, tran.AssetId)
+				mscInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, tran.AssetId)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -91,7 +117,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 
 				if len(assetIds) > 0 {
-					mscInfoArr, err := serv.Resolve.GetMosaicInfosByAssetIds(ctx, assetIds...)
+					mscInfoArr, err := client.Resolve.GetMosaicInfosByAssetIds(ctx, assetIds...)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -102,7 +128,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				}
 			case sdk.RegisterNamespace:
 				tran := val.(*sdk.RegisterNamespaceTransaction)
-				nsInfo, err := serv.Namespace.GetNamespaceInfo(ctx, tran.NamespaceId)
+				nsInfo, err := client.Namespace.GetNamespaceInfo(ctx, tran.NamespaceId)
 				if err != nil {
 					t.Fatal(err)
 				}

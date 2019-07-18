@@ -56,17 +56,32 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 
 // returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
-	return txs.announceTransaction(ctx, tx, transactionsRoute)
+	dto := signedTransactionDto{
+		tx.TransactionType,
+		tx.Payload,
+		tx.Hash.String(),
+	}
+	return txs.announceTransaction(ctx, &dto, transactionsRoute)
 }
 
 // returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
-	return txs.announceTransaction(ctx, tx, announceAggregateRoute)
+	dto := signedTransactionDto{
+		tx.TransactionType,
+		tx.Payload,
+		tx.Hash.String(),
+	}
+	return txs.announceTransaction(ctx, &dto, announceAggregateRoute)
 }
 
 // returns transaction hash after announcing passed CosignatureSignedTransaction
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error) {
-	return txs.announceTransaction(ctx, c, announceAggregateCosignatureRoute)
+	dto := cosignatureSignedTransactionDto{
+		c.ParentHash.String(),
+		c.Signature.String(),
+		c.Signer,
+	}
+	return txs.announceTransaction(ctx, &dto, announceAggregateCosignatureRoute)
 }
 
 // returns TransactionStatus for passed transaction id or hash

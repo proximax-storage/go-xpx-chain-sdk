@@ -18,6 +18,7 @@ const EmptyPublicKey = "00000000000000000000000000000000000000000000000000000000
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
+	generationHash *Hash
 }
 
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
@@ -166,8 +167,21 @@ type MultisigAccountGraphInfo struct {
 	MultisigAccounts map[int32][]*MultisigAccountInfo
 }
 
+type AccountName struct {
+	Address *Address
+	Names   []string
+}
+
+func (a *AccountName) String() string {
+	return str.StructToString(
+		"AccountName",
+		str.NewField("Address", str.StringPattern, a.Address),
+		str.NewField("Names", str.StringPattern, a.Names),
+	)
+}
+
 // returns new Account generated for passed NetworkType
-func NewAccount(networkType NetworkType) (*Account, error) {
+func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
 	if err != nil {
 		return nil, err
@@ -178,11 +192,11 @@ func NewAccount(networkType NetworkType) (*Account, error) {
 		return nil, err
 	}
 
-	return &Account{pa, kp}, nil
+	return &Account{pa, kp, generationHash}, nil
 }
 
-// returns new Account from private key for passed NetworkType
-func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, error) {
+// returns new Account from private key for passed NetworkType and generationHash
+func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash *Hash) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
 		return nil, err
@@ -198,7 +212,7 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType) (*Account, e
 		return nil, err
 	}
 
-	return &Account{pa, kp}, nil
+	return &Account{pa, kp, generationHash}, nil
 }
 
 // returns a PublicAccount from public key for passed NetworkType

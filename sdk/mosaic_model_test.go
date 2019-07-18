@@ -44,15 +44,15 @@ func TestNewMosaicId(t *testing.T) {
 }
 
 func TestNewMosaicIdFromIdViaConstructor(t *testing.T) {
-	mosaicId := NewMosaicIdNoCheck(992621222383397347)
+	mosaicId := newMosaicIdPanic(992621222383397347)
 
 	assert.Equal(t, uint64(992621222383397347), mosaicId.Id())
 }
 
 //
 func TestNewMosaic_ShouldCompareMosaicIdsForEquality(t *testing.T) {
-	mosaicId := NewMosaicIdNoCheck(992621222383397347)
-	mosaicId2 := NewMosaicIdNoCheck(992621222383397347)
+	mosaicId := newMosaicIdPanic(992621222383397347)
+	mosaicId2 := newMosaicIdPanic(992621222383397347)
 
 	assert.Equal(t, mosaicId.String(), mosaicId2.String())
 }

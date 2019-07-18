@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -27,7 +28,7 @@ const (
 )
 
 type Secret struct {
-	Hash []byte
+	Hash Hash
 	Type HashType
 }
 
@@ -40,7 +41,7 @@ func (s *Secret) String() string {
 }
 
 func (s *Secret) HashString() string {
-	return strings.ToUpper(hex.EncodeToString(s.Hash))
+	return strings.ToUpper(hex.EncodeToString(s.Hash[:]))
 }
 
 // returns Secret from passed hash and HashType
@@ -63,7 +64,9 @@ func NewSecret(hash []byte, hashType HashType) (*Secret, error) {
 		return nil, errors.New("Not supported HashType NewSecret")
 	}
 
-	secret := Secret{hash, hashType}
+	var arr [32]byte
+	copy(arr[:], hash[:32])
+	secret := Secret{arr, hashType}
 	return &secret, nil
 }
 
@@ -182,4 +185,26 @@ func generateSecret(proofB []byte, hashType HashType) ([]byte, error) {
 	}
 
 	return nil, errors.New("Not supported HashType generateSecret")
+}
+
+func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (*Hash, error) {
+	if secret == nil {
+		return nil, ErrNilSecret
+	}
+
+	if recipient == nil {
+		return nil, ErrNilAddress
+	}
+
+	addr, err := base32.StdEncoding.DecodeString(recipient.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := crypto.HashesSha3_256(append(secret.Hash[:], addr...))
+	if err != nil {
+		return nil, err
+	}
+
+	return bytesToHash(bytes)
 }

@@ -26,12 +26,12 @@ func NewNamespaceId(id uint64) (*NamespaceId, error) {
 		return nil, ErrWrongBitNamespaceId
 	}
 
-	return NewNamespaceIdNoCheck(id), nil
+	return newNamespaceIdPanic(id), nil
 }
 
 // returns new NamespaceId from passed namespace identifier
 // TODO
-func NewNamespaceIdNoCheck(id uint64) *NamespaceId {
+func newNamespaceIdPanic(id uint64) *NamespaceId {
 	namespaceId := NamespaceId{baseInt64(id)}
 	return &namespaceId
 }
@@ -197,16 +197,14 @@ func (ref *NamespaceInfo) String() string {
 
 type NamespaceName struct {
 	NamespaceId *NamespaceId
-	Name        string
-	ParentId    *NamespaceId /* Optional NamespaceId my be nil */
+	FullName    string
 }
 
 func (n *NamespaceName) String() string {
 	return str.StructToString(
 		"NamespaceName",
 		str.NewField("NamespaceId", str.StringPattern, n.NamespaceId),
-		str.NewField("Name", str.StringPattern, n.Name),
-		str.NewField("ParentId", str.StringPattern, n.ParentId),
+		str.NewField("FullName", str.StringPattern, n.FullName),
 	)
 }
 
@@ -226,7 +224,7 @@ func GenerateNamespacePath(name string) ([]*NamespaceId, error) {
 	}
 
 	var (
-		namespaceId = NewNamespaceIdNoCheck(0)
+		namespaceId = newNamespaceIdPanic(0)
 		path        = make([]*NamespaceId, 0)
 		err         error
 	)
