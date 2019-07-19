@@ -210,7 +210,7 @@ type AbstractTransaction struct {
 	NetworkType NetworkType
 	Deadline    *Deadline
 	Type        EntityType
-	Version     TransactionVersion
+	Version     EntityVersion
 	MaxFee      Amount
 	Signature   string
 	Signer      *PublicAccount
@@ -3186,35 +3186,35 @@ const (
 func (t EntityType) String() string
 ```
 
-#### type TransactionVersion
+#### type EntityVersion
 
 ```go
-type TransactionVersion uint8
+type EntityVersion uint8
 ```
 
 
 ```go
 const (
-	AccountPropertyAddressVersion    TransactionVersion = 1
-	AccountPropertyMosaicVersion     TransactionVersion = 1
-	AccountPropertyEntityTypeVersion TransactionVersion = 1
-	AddressAliasVersion              TransactionVersion = 1
-	AggregateBondedVersion           TransactionVersion = 2
-	AggregateCompletedVersion        TransactionVersion = 2
-	LinkAccountVersion               TransactionVersion = 2
-	LockVersion                      TransactionVersion = 1
-	MetadataAddressVersion           TransactionVersion = 1
-	MetadataMosaicVersion            TransactionVersion = 1
-	MetadataNamespaceVersion         TransactionVersion = 1
-	ModifyContractVersion            TransactionVersion = 3
-	ModifyMultisigVersion            TransactionVersion = 3
-	MosaicAliasVersion               TransactionVersion = 1
-	MosaicDefinitionVersion          TransactionVersion = 3
-	MosaicSupplyChangeVersion        TransactionVersion = 2
-	RegisterNamespaceVersion         TransactionVersion = 2
-	SecretLockVersion                TransactionVersion = 1
-	SecretProofVersion               TransactionVersion = 1
-	TransferVersion                  TransactionVersion = 3
+	AccountPropertyAddressVersion    EntityVersion = 1
+	AccountPropertyMosaicVersion     EntityVersion = 1
+	AccountPropertyEntityTypeVersion EntityVersion = 1
+	AddressAliasVersion              EntityVersion = 1
+	AggregateBondedVersion           EntityVersion = 2
+	AggregateCompletedVersion        EntityVersion = 2
+	LinkAccountVersion               EntityVersion = 2
+	LockVersion                      EntityVersion = 1
+	MetadataAddressVersion           EntityVersion = 1
+	MetadataMosaicVersion            EntityVersion = 1
+	MetadataNamespaceVersion         EntityVersion = 1
+	ModifyContractVersion            EntityVersion = 3
+	ModifyMultisigVersion            EntityVersion = 3
+	MosaicAliasVersion               EntityVersion = 1
+	MosaicDefinitionVersion          EntityVersion = 3
+	MosaicSupplyChangeVersion        EntityVersion = 2
+	RegisterNamespaceVersion         EntityVersion = 2
+	SecretLockVersion                EntityVersion = 1
+	SecretProofVersion               EntityVersion = 1
+	TransferVersion                  EntityVersion = 3
 )
 ```
 

@@ -69,16 +69,19 @@ var (
 							Comment: "\n",
 							Key:     "identifier",
 							Value:   "mijin-test",
+							Index:   0,
 						},
 						"publicKey": &Field{
 							Comment: "",
 							Key:     "publicKey",
 							Value:   "B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF",
+							Index:   1,
 						},
 						"generationHash": &Field{
 							Comment: "",
 							Key:     "generationHash",
 							Value:   "86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790",
+							Index:   2,
 						},
 					},
 				},
@@ -89,7 +92,7 @@ var (
 				Block: &Entity{
 					Name:              "Block",
 					Type:              Block,
-					SupportedVersions: []TransactionVersion{3},
+					SupportedVersions: []EntityVersion{3},
 				},
 			},
 		},
@@ -141,9 +144,14 @@ func TestNetworkService_GetNetworkType(t *testing.T) {
 }
 
 func TestExtractNetworkType(t *testing.T) {
-	i := uint64(36888)
+	i := int64(-1879048189)
 
 	nt := ExtractNetworkType(i)
+
+	assert.Equal(t, MijinTest, nt)
+	i = int64(2415919106)
+
+	nt = ExtractNetworkType(i)
 
 	assert.Equal(t, MijinTest, nt)
 }

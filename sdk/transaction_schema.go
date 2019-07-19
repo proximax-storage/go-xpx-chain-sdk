@@ -94,7 +94,7 @@ func catapultConfigTransactionSchema() *schema {
 	}
 }
 
-func catapultUpdateTransactionSchema() *schema {
+func catapultUpgradeTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),

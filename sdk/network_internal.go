@@ -14,9 +14,9 @@ type networkDTO struct {
 }
 
 type entityDTO struct {
-	Name              string               `json:"name"`
-	Type              string               `json:"type"`
-	SupportedVersions []TransactionVersion `json:"supportedVersions"`
+	Name              string          `json:"name"`
+	Type              string          `json:"type"`
+	SupportedVersions []EntityVersion `json:"supportedVersions"`
 }
 
 func (dto *entityDTO) toStruct() (*Entity, error) {
@@ -36,21 +36,17 @@ type supportedEntitiesDTO struct {
 	Entities []*entityDTO `json:"entities"`
 }
 
-func (dto *supportedEntitiesDTO) toStruct() (*SupportedEntities, error) {
-	ref := &SupportedEntities{
-		Entities: make(map[EntityType]*Entity),
-	}
-
+func (dto *supportedEntitiesDTO) toStruct(ref *SupportedEntities) error {
 	for _, dto := range dto.Entities {
 		entity, err := dto.toStruct()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		ref.Entities[entity.Type] = entity
 	}
 
-	return ref, nil
+	return nil
 }
 
 type networkConfigDTO struct {
@@ -62,12 +58,16 @@ type networkConfigDTO struct {
 }
 
 func (dto *networkConfigDTO) toStruct() (*NetworkConfig, error) {
-	s, err := NewSupportedEntitiesFromBytes([]byte(dto.DTO.SupportedEntityVersions))
+	s := NewSupportedEntities()
+
+	err := s.UnmarshalBinary([]byte(dto.DTO.SupportedEntityVersions))
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := NewBlockChainConfig([]byte(dto.DTO.BlockChainConfig))
+	c := NewBlockChainConfig()
+
+	err = c.UnmarshalBinary([]byte(dto.DTO.BlockChainConfig))
 	if err != nil {
 		return nil, err
 	}

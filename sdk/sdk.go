@@ -336,8 +336,8 @@ func (c *Client) NewCatapultConfigTransaction(deadline *Deadline, delta Duration
 	return NewCatapultConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
 }
 
-func (c *Client) NewCatapultUpdateTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion) (*CatapultUpdateTransaction, error) {
-	return NewCatapultUpdateTransaction(deadline, upgradePeriod, newCatapultVersion, c.config.NetworkType)
+func (c *Client) NewCatapultUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion) (*CatapultUpgradeTransaction, error) {
+	return NewCatapultUpgradeTransaction(deadline, upgradePeriod, newCatapultVersion, c.config.NetworkType)
 }
 
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {

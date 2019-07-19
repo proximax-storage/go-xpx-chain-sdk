@@ -7,7 +7,6 @@ package sdk
 import (
 	"bufio"
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/str"
@@ -54,17 +53,14 @@ func (nt NetworkType) String() string {
 
 var networkTypeError = errors.New("wrong raw NetworkType value")
 
-func ExtractNetworkType(version uint64) NetworkType {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, version)
-
-	return NetworkType(b[1])
+func ExtractNetworkType(version int64) NetworkType {
+	return NetworkType(uint32(version) >> 24)
 }
 
 type Entity struct {
 	Name              string
 	Type              EntityType
-	SupportedVersions []TransactionVersion
+	SupportedVersions []EntityVersion
 }
 
 func (e Entity) String() string {
@@ -139,17 +135,20 @@ type BlockChainConfig struct {
 	Sections map[string]*ConfigBag
 }
 
-func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
+func NewBlockChainConfig() *BlockChainConfig {
+	c := BlockChainConfig{
+		Sections: make(map[string]*ConfigBag),
+	}
+	return &c
+}
+
+func (c *BlockChainConfig) UnmarshalBinary(data []byte) error {
 	const HASH = '#'
 	const SEMICOLON = ';'
 	const L_BRACKET = '['
 	const R_BRACKET = ']'
 
-	c := BlockChainConfig{
-		Sections: make(map[string]*ConfigBag),
-	}
-
-	r := bufio.NewReader(bytes.NewReader(b))
+	r := bufio.NewReader(bytes.NewReader(data))
 	l := 0
 	var bag *ConfigBag = nil
 	comment := ""
@@ -159,12 +158,12 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 		l += 1
 
 		if isPrefix {
-			return nil, fmt.Errorf("Line %d is to long", l)
+			return fmt.Errorf("Line %d is to long", l)
 		}
 
 		if err != nil {
 			if err != io.EOF {
-				return nil, fmt.Errorf("Got error during read the line %d", l)
+				return fmt.Errorf("Got error during read the line %d", l)
 			}
 			break
 		}
@@ -189,13 +188,13 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 			right := strings.Index(lineS, string(R_BRACKET))
 
 			if right == -1 {
-				return nil, fmt.Errorf("Wrong header of section at line %d", l)
+				return fmt.Errorf("Wrong header of section at line %d", l)
 			}
 
 			bag.Name = strings.TrimSpace(lineS[left:right])
 
 			if _, ok := c.Sections[bag.Name]; ok {
-				return nil, fmt.Errorf("Duplicate section at line %d with name %s", l, bag.Name)
+				return fmt.Errorf("Duplicate section at line %d with name %s", l, bag.Name)
 			}
 
 			c.Sections[bag.Name] = bag
@@ -204,12 +203,12 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 
 			switch separatorIndex {
 			case -1:
-				return nil, fmt.Errorf("'=' character not found at line %d", l)
+				return fmt.Errorf("'=' character not found at line %d", l)
 			case 0:
-				return nil, fmt.Errorf("Key is empty at line %d", l)
+				return fmt.Errorf("Key is empty at line %d", l)
 			default:
 				if bag == nil {
-					return nil, fmt.Errorf("The section without header at line %d", l)
+					return fmt.Errorf("The section without header at line %d", l)
 				}
 
 				field := NewField()
@@ -225,10 +224,10 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 		}
 	}
 
-	return &c, nil
+	return nil
 }
 
-func (c BlockChainConfig) String() string {
+func (c *BlockChainConfig) MarshalBinary() (data []byte, err error) {
 	s := ""
 
 	sections := make([]*ConfigBag, 0, len(c.Sections))
@@ -244,32 +243,50 @@ func (c BlockChainConfig) String() string {
 		s += section.String()
 	}
 
-	return s
+	return []byte(s), nil
+}
+
+func (c *BlockChainConfig) String() string {
+	s, _ := c.MarshalBinary()
+
+	return string(s)
 }
 
 type SupportedEntities struct {
 	Entities map[EntityType]*Entity
 }
 
-func NewSupportedEntitiesFromBytes(b []byte) (*SupportedEntities, error) {
-	data := supportedEntitiesDTO{}
-	err := json.Unmarshal(b, &data)
-
-	if err != nil {
-		return nil, err
+func NewSupportedEntities() *SupportedEntities {
+	ref := &SupportedEntities{
+		Entities: make(map[EntityType]*Entity),
 	}
 
-	return data.toStruct()
+	return ref
 }
 
-func (s SupportedEntities) String() string {
-	data := supportedEntitiesDTO{
+func (s *SupportedEntities) UnmarshalBinary(data []byte) error {
+	dto := supportedEntitiesDTO{}
+	err := json.Unmarshal(data, &dto)
+	if err != nil {
+		return err
+	}
+
+	err = dto.toStruct(s)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SupportedEntities) MarshalBinary() (data []byte, err error) {
+	dto := supportedEntitiesDTO{
 		Entities: make([]*entityDTO, len(s.Entities)),
 	}
 
 	i := 0
 	for _, entity := range s.Entities {
-		data.Entities[i] = &entityDTO{
+		dto.Entities[i] = &entityDTO{
 			Name:              entity.Name,
 			Type:              fmt.Sprintf("%d", entity.Type),
 			SupportedVersions: entity.SupportedVersions,
@@ -278,11 +295,15 @@ func (s SupportedEntities) String() string {
 		i += 1
 	}
 
-	sort.Slice(data.Entities, func(i, j int) bool {
-		return data.Entities[i].Name < data.Entities[j].Name
+	sort.Slice(dto.Entities, func(i, j int) bool {
+		return dto.Entities[i].Name < dto.Entities[j].Name
 	})
 
-	b, err := json.MarshalIndent(&data, "", "    ")
+	return json.MarshalIndent(&dto, "", "    ")
+}
+
+func (s *SupportedEntities) String() string {
+	b, err := s.MarshalBinary()
 	// We can't get error, because we created dto by self
 	if err != nil {
 		panic(err)

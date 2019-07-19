@@ -138,10 +138,10 @@ func TestCatapultConfigTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	versions, err := ioutil.ReadFile("supported-entities.json")
 	assert.Nil(t, err)
-	sup, err := sdk.NewSupportedEntitiesFromBytes(versions)
-	assert.Nil(t, err)
-	conf, err := sdk.NewBlockChainConfig(config)
-	assert.Nil(t, err)
+	sup := sdk.NewSupportedEntities()
+	assert.Nil(t, sup.UnmarshalBinary(versions))
+	conf := sdk.NewBlockChainConfig()
+	assert.Nil(t, conf.UnmarshalBinary(config))
 
 	prevValue := conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
 	conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
@@ -149,28 +149,30 @@ func TestCatapultConfigTransaction(t *testing.T) {
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCatapultConfigTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.Duration(2),
+			sdk.Duration(1),
 			conf,
 			sup)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 
+	time.Sleep(time.Minute)
+
 	conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCatapultConfigTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.Duration(2),
+			sdk.Duration(5),
 			conf,
 			sup)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
 
-func TestCatapultUpdateTransaction(t *testing.T) {
+func TestCatapultUpgradeTransaction(t *testing.T) {
 	version := sdk.NewCatapultVersion(0, 3, 0, 0)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCatapultUpdateTransaction(
+		return client.NewCatapultUpgradeTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
 			version)
