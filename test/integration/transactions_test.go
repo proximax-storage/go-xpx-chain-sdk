@@ -143,13 +143,25 @@ func TestCatapultConfigTransaction(t *testing.T) {
 	conf, err := sdk.NewBlockChainConfig(config)
 	assert.Nil(t, err)
 
+	prevValue := conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
+	conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
+
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewCatapultConfigTransaction(
+		return client.NewCatapultConfigTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
 			conf,
-			sup,
-			networkType)
+			sup)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+
+	conf.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCatapultConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(2),
+			conf,
+			sup)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
@@ -158,11 +170,10 @@ func TestCatapultUpdateTransaction(t *testing.T) {
 	version := sdk.NewCatapultVersion(0, 3, 0, 0)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return sdk.NewCatapultUpdateTransaction(
+		return client.NewCatapultUpdateTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(2),
-			version,
-			networkType)
+			version)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }

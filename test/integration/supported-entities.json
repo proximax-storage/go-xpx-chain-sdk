@@ -1,5 +1,5 @@
 {
-    "entities": [
+	"entities": [
 		{
 			"name": "Block",
 			"type": "33091",
@@ -83,17 +83,17 @@
 		{
 			"name": "Address_Property",
 			"type": "16720",
-			"supportedVersions": [2]
+			"supportedVersions": [1]
 		},
 		{
 			"name": "Mosaic_Property",
 			"type": "16976",
-			"supportedVersions": [2]
+			"supportedVersions": [1]
 		},
 		{
 			"name": "Transaction_Type_Property",
 			"type": "17232",
-			"supportedVersions": [2]
+			"supportedVersions": [1]
 		},
 		{
 			"name": "Aggregate_Complete",

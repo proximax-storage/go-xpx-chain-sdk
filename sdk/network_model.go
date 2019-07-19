@@ -80,6 +80,7 @@ type Field struct {
 	Key     string
 	Value   string
 	Comment string
+	Index   int
 }
 
 func NewField() *Field {
@@ -99,6 +100,7 @@ func (c Field) String() string {
 type ConfigBag struct {
 	Name    string
 	Comment string
+	Index   int
 	Fields  map[string]*Field
 }
 
@@ -122,7 +124,7 @@ func (c ConfigBag) String() string {
 	}
 
 	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].Key < fields[j].Key
+		return fields[i].Index < fields[j].Index
 	})
 
 	for _, field := range fields {
@@ -180,6 +182,7 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 		case L_BRACKET:
 			bag = NewConfigBag()
 			bag.Comment = comment
+			bag.Index = len(c.Sections)
 			comment = ""
 
 			left := 1
@@ -214,6 +217,7 @@ func NewBlockChainConfig(b []byte) (*BlockChainConfig, error) {
 				field.Key = strings.TrimSpace(lineS[0:separatorIndex])
 				field.Value = strings.TrimSpace(lineS[separatorIndex+1:])
 				field.Comment = comment
+				field.Index = len(bag.Fields)
 				comment = ""
 
 				bag.Fields[field.Key] = field
@@ -233,7 +237,7 @@ func (c BlockChainConfig) String() string {
 	}
 
 	sort.Slice(sections, func(i, j int) bool {
-		return sections[i].Name < sections[j].Name
+		return sections[i].Index < sections[j].Index
 	})
 
 	for _, section := range sections {
@@ -267,7 +271,7 @@ func (s SupportedEntities) String() string {
 	for _, entity := range s.Entities {
 		data.Entities[i] = &entityDTO{
 			Name:              entity.Name,
-			Type:              fmt.Sprint(entity.Type),
+			Type:              fmt.Sprintf("%d", entity.Type),
 			SupportedVersions: entity.SupportedVersions,
 		}
 

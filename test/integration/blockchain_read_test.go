@@ -12,11 +12,13 @@ import (
 	"time"
 )
 
+//
 //const testUrl = "http://bcdev1.xpxsirius.io:3000"
 //const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
 const testUrl = "http://127.0.0.1:3000"
 const privateKey = "A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"
+const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
 
 const timeout = 2 * time.Minute
 
@@ -25,6 +27,7 @@ var ctx context.Context
 var client *sdk.Client
 var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
+var nemesisAccount *sdk.Account
 
 const iter = 1000
 
@@ -44,6 +47,11 @@ func init() {
 	}
 
 	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey)
 	if err != nil {
 		panic(err)
 	}

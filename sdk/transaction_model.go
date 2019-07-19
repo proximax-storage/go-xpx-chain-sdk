@@ -1115,7 +1115,12 @@ type catapultConfigTransactionDTO struct {
 }
 
 func (dto *catapultConfigTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -1214,7 +1219,12 @@ type catapultUpgradeTransactionDTO struct {
 }
 
 func (dto *catapultUpgradeTransactionDTO) toStruct() (Transaction, error) {
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(dto.TDto.toStruct())
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
 	if err != nil {
 		return nil, err
 	}
@@ -3008,13 +3018,13 @@ func (tx *CosignatureTransaction) String() string {
 }
 
 type signedTransactionDto struct {
-	EntityType 				`json:"transactionType"`
-	Payload         string 	`json:"payload"`
-	Hash            string 	`json:"hash"`
+	EntityType `json:"transactionType"`
+	Payload    string `json:"payload"`
+	Hash       string `json:"hash"`
 }
 
 type SignedTransaction struct {
-	TransactionType
+	EntityType
 	Payload string
 	Hash    *Hash
 }

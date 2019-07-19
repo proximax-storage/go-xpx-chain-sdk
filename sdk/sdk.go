@@ -332,6 +332,14 @@ func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, p
 	return NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
 }
 
+func (c *Client) NewCatapultConfigTransaction(deadline *Deadline, delta Duration, config *BlockChainConfig, entities *SupportedEntities) (*CatapultConfigTransaction, error) {
+	return NewCatapultConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
+}
+
+func (c *Client) NewCatapultUpdateTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion) (*CatapultUpdateTransaction, error) {
+	return NewCatapultUpdateTransaction(deadline, upgradePeriod, newCatapultVersion, c.config.NetworkType)
+}
+
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
 	return NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
 }
