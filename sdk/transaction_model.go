@@ -2688,9 +2688,10 @@ func (tx *LockFundsTransaction) Size() int {
 type lockFundsTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Mosaic   mosaicDTO `json:"mosaic"`
-		Duration uint64DTO `json:"duration"`
-		Hash     hashDto   `json:"hash"`
+		AssetId  assetIdDTO `json:"mosaicId"`
+		Amount   uint64DTO  `json:"amount"`
+		Duration uint64DTO  `json:"duration"`
+		Hash     hashDto    `json:"hash"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -2706,7 +2707,12 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	mosaic, err := dto.Tx.Mosaic.toStruct()
+	assetId, err := dto.Tx.AssetId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	mosaic, err := NewMosaic(assetId, dto.Tx.Amount.toStruct())
 	if err != nil {
 		return nil, err
 	}
@@ -3300,7 +3306,7 @@ const (
 )
 
 func (t EntityType) String() string {
-	return fmt.Sprintf("%x", uint16(t))
+	return fmt.Sprintf("0x%x", uint16(t))
 }
 
 type EntityVersion uint32
