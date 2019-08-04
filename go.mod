@@ -1,4 +1,4 @@
-module github.com/proximax-storage/go-xpx-catapult-sdk
+module github.com/proximax-storage/go-xpx-chain-sdk
 
 go 1.12
 
