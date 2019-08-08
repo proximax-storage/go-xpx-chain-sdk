@@ -16,7 +16,7 @@ type BlockInfo struct {
 	NumTransactions        uint64
 	Signature              *Signature
 	Signer                 *PublicAccount
-	Version                uint8
+	Version                EntityVersion
 	Type                   uint64
 	Height                 Height
 	Timestamp              *Timestamp

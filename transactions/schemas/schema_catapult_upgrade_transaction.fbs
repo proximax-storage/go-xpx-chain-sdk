@@ -1,6 +1,6 @@
 namespace Catapult.Buffers;
 
-table LockFundsTransactionBuffer {
+table CatapultUpgradeTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -8,10 +8,8 @@ table LockFundsTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    mosaicId:[uint];
-    mosaicAmount:[uint];
-    duration:[uint];
-    hash:[ubyte];
+    upgradePeriod: [uint];
+    newCatapultVersion: [uint];
 }
 
-root_type LockFundsTransactionBuffer;
+root_type CatapultUpgradeTransactionBuffer;

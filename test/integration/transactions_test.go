@@ -25,7 +25,7 @@ type Result struct {
 	error
 }
 
-func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
+func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash) <-chan Result {
 	if !listening {
 		// Starting listening messages from websocket
 		go wsc.Listen()
@@ -36,6 +36,9 @@ func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
 
 	// Register handlers functions for needed topics
 	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
+		if !hash.Equal(transaction.GetAbstractTransaction().TransactionHash) {
+			return false
+		}
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
 		fmt.Println("Successful!")
 		out <- Result{transaction, nil}
@@ -45,6 +48,9 @@ func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
 	}
 
 	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
+		if !hash.Equal(info.Hash) {
+			return false
+		}
 		fmt.Printf("Got error: %v \n", info)
 		t.Error()
 		out <- Result{nil, errors.New(info.Status)}
@@ -73,10 +79,8 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	signTx, err := account.Sign(tx)
 	assert.Nil(t, err)
 
-	time.Sleep(2 * time.Second)
-
 	assert.Nil(t, err)
-	wg := initListeners(t, account)
+	wg := initListeners(t, account, signTx.Hash)
 	_, err = client.Transaction.Announce(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -107,7 +111,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 
 	time.Sleep(2 * time.Second)
 
-	wg := initListeners(t, account)
+	wg := initListeners(t, account, signTx.Hash)
 	_, err = client.Transaction.AnnounceAggregateBonded(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -129,6 +133,47 @@ func TestAccountLinkTransaction(t *testing.T) {
 			sdk.AccountLink,
 		)
 	}, rootAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestCatapultConfigTransaction(t *testing.T) {
+	config, err := client.Network.GetNetworkConfig(ctx)
+	assert.Nil(t, err)
+
+	prevValue := config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
+	config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCatapultConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(1),
+			config.BlockChainConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+
+	time.Sleep(time.Minute)
+
+	config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCatapultConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(5),
+			config.BlockChainConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestCatapultUpgradeTransaction(t *testing.T) {
+	version := sdk.NewCatapultVersion(0, 3, 0, 0)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCatapultUpgradeTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(2),
+			version)
+	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
 

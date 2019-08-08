@@ -21,7 +21,7 @@ type propertiesDTO struct {
 	PropertyType PropertyType `json:"propertyType"`
 	MosaicIds    mosaicIdDTOs
 	Addresses    []string
-	EntityTypes  []TransactionType
+	EntityTypes  []EntityType
 }
 
 func (d *propertiesDTO) UnmarshalJSON(data []byte) error {
@@ -53,7 +53,7 @@ func (d *propertiesDTO) UnmarshalJSON(data []byte) error {
 		d.MosaicIds = mosaicIds.MosaicIds
 	} else if temp.PropertyType&AllowTransaction != 0 {
 		entityTypes := struct {
-			EntityTypes []TransactionType `json:"values"`
+			EntityTypes []EntityType `json:"values"`
 		}{}
 		if err := json.Unmarshal(data, &entityTypes); err != nil {
 			return err
@@ -78,10 +78,10 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 	properties := AccountProperties{
 		AllowedAddresses:   make([]*Address, 0),
 		AllowedMosaicId:    make([]*MosaicId, 0),
-		AllowedEntityTypes: make([]TransactionType, 0),
+		AllowedEntityTypes: make([]EntityType, 0),
 		BlockedAddresses:   make([]*Address, 0),
 		BlockedMosaicId:    make([]*MosaicId, 0),
-		BlockedEntityTypes: make([]TransactionType, 0),
+		BlockedEntityTypes: make([]EntityType, 0),
 	}
 
 	properties.Address, err = NewAddressFromBase32(ref.AccountProperties.Address)

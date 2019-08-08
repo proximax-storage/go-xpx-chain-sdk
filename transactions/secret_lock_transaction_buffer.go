@@ -66,6 +66,15 @@ func (rcv *SecretLockTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *SecretLockTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
@@ -91,16 +100,25 @@ func (rcv *SecretLockTransactionBuffer) SignerBytes() []byte {
 	return nil
 }
 
-func (rcv *SecretLockTransactionBuffer) Version() uint16 {
+func (rcv *SecretLockTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *SecretLockTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *SecretLockTransactionBuffer) MutateVersion(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *SecretLockTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
 }
 
 func (rcv *SecretLockTransactionBuffer) Type() uint16 {
@@ -132,6 +150,15 @@ func (rcv *SecretLockTransactionBuffer) MaxFeeLength() int {
 	return 0
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *SecretLockTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
@@ -147,6 +174,15 @@ func (rcv *SecretLockTransactionBuffer) DeadlineLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *SecretLockTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
 }
 
 func (rcv *SecretLockTransactionBuffer) MosaicId(j int) uint32 {
@@ -166,6 +202,15 @@ func (rcv *SecretLockTransactionBuffer) MosaicIdLength() int {
 	return 0
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateMosaicId(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *SecretLockTransactionBuffer) MosaicAmount(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
@@ -183,6 +228,15 @@ func (rcv *SecretLockTransactionBuffer) MosaicAmountLength() int {
 	return 0
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateMosaicAmount(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *SecretLockTransactionBuffer) Duration(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
@@ -198,6 +252,15 @@ func (rcv *SecretLockTransactionBuffer) DurationLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *SecretLockTransactionBuffer) MutateDuration(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
 }
 
 func (rcv *SecretLockTransactionBuffer) HashAlgorithm() byte {
@@ -237,6 +300,15 @@ func (rcv *SecretLockTransactionBuffer) SecretBytes() []byte {
 	return nil
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateSecret(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *SecretLockTransactionBuffer) Recipient(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
@@ -262,6 +334,15 @@ func (rcv *SecretLockTransactionBuffer) RecipientBytes() []byte {
 	return nil
 }
 
+func (rcv *SecretLockTransactionBuffer) MutateRecipient(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func SecretLockTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(13)
 }
@@ -280,14 +361,14 @@ func SecretLockTransactionBufferAddSigner(builder *flatbuffers.Builder, signer f
 func SecretLockTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func SecretLockTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
-	builder.PrependUint16Slot(3, version, 0)
+func SecretLockTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
 }
 func SecretLockTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func SecretLockTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
+func SecretLockTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
 func SecretLockTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

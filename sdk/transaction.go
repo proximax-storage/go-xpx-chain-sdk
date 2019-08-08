@@ -57,7 +57,7 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 // returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
-		tx.TransactionType,
+		tx.EntityType,
 		tx.Payload,
 		tx.Hash.String(),
 	}
@@ -67,7 +67,7 @@ func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransacti
 // returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
-		tx.TransactionType,
+		tx.EntityType,
 		tx.Payload,
 		tx.Hash.String(),
 	}

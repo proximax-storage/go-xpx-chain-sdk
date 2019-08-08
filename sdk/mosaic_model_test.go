@@ -40,7 +40,7 @@ var mosaicTestVector = []MosaicIdGenerator{
 }
 
 func TestNewMosaicId(t *testing.T) {
-	assert.Equal(t, uint64(992621222383397347), XpxMosaicId.Id())
+	assert.Equal(t, uint64(0xbffb42a19116bdf6), XpxNamespaceId.Id())
 }
 
 func TestNewMosaicIdFromIdViaConstructor(t *testing.T) {

@@ -8,11 +8,11 @@ import (
 	"regexp"
 )
 
-// mosaic id for XEM mosaic
-var XemMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
+// namespace id for XEM mosaic
+var XemNamespaceId, _ = NewNamespaceIdFromName("nem.xem")
 
-// mosaic id for XPX mosaic
-var XpxMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
+// namespace id for XPX mosaic
+var XpxNamespaceId, _ = NewNamespaceIdFromName("prx.xpx")
 
 // routes for AccountService
 const (
@@ -74,6 +74,8 @@ const (
 // routes for NetworkService
 const (
 	networkRoute = "/network"
+	configRoute  = "/config/%s"
+	upgradeRoute = "/upgrade/%s"
 )
 
 // routes for TransactionService

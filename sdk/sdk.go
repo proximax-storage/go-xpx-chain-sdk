@@ -161,7 +161,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Blockchain = (*BlockchainService)(&c.common)
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
-	c.Network = (*NetworkService)(&c.common)
+	c.Network = &NetworkService{&c.common, c.Blockchain}
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
@@ -330,6 +330,14 @@ func (c *Client) NewAccountPropertiesMosaicTransaction(deadline *Deadline, prope
 
 func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesEntityTypeModification) (*AccountPropertiesEntityTypeTransaction, error) {
 	return NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+}
+
+func (c *Client) NewCatapultConfigTransaction(deadline *Deadline, delta Duration, config *BlockChainConfig, entities *SupportedEntities) (*CatapultConfigTransaction, error) {
+	return NewCatapultConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
+}
+
+func (c *Client) NewCatapultUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion) (*CatapultUpgradeTransaction, error) {
+	return NewCatapultUpgradeTransaction(deadline, upgradePeriod, newCatapultVersion, c.config.NetworkType)
 }
 
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {

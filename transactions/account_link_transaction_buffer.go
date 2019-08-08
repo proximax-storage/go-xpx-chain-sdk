@@ -109,16 +109,16 @@ func (rcv *AccountLinkTransactionBuffer) MutateSigner(j int, n byte) bool {
 	return false
 }
 
-func (rcv *AccountLinkTransactionBuffer) Version() uint16 {
+func (rcv *AccountLinkTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *AccountLinkTransactionBuffer) MutateVersion(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *AccountLinkTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
 }
 
 func (rcv *AccountLinkTransactionBuffer) Type() uint16 {
@@ -249,8 +249,8 @@ func AccountLinkTransactionBufferAddSigner(builder *flatbuffers.Builder, signer 
 func AccountLinkTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func AccountLinkTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
-	builder.PrependUint16Slot(3, version, 0)
+func AccountLinkTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
 }
 func AccountLinkTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
