@@ -5,10 +5,10 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"reflect"
 	"time"
 )
 
@@ -29,7 +29,7 @@ func (h Hash) Empty() bool {
 }
 
 func (h Hash) Equal(other *Hash) bool {
-	return reflect.DeepEqual(h, other)
+	return bytes.Compare(h[:], other[:]) == 0
 }
 
 type blockchainInt64 interface {

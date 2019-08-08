@@ -1097,9 +1097,9 @@ func (tx *CatapultConfigTransaction) generateBytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
 
 	transactions.CatapultConfigTransactionBufferAddApplyHeightDelta(builder, deltaV)
-	transactions.CatapultConfigTransactionBufferAddBlockChainConfigSize(builder, uint32(len(config)))
+	transactions.CatapultConfigTransactionBufferAddBlockChainConfigSize(builder, uint16(len(config)))
 	transactions.CatapultConfigTransactionBufferAddBlockChainConfig(builder, configV)
-	transactions.CatapultConfigTransactionBufferAddSupportedEntityVersionsSize(builder, uint32(len(sup)))
+	transactions.CatapultConfigTransactionBufferAddSupportedEntityVersionsSize(builder, uint16(len(sup)))
 	transactions.CatapultConfigTransactionBufferAddSupportedEntityVersions(builder, supportedV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -3225,6 +3225,7 @@ const (
 	MosaicIdSize                             int = BaseInt64Size
 	NamespaceSize                            int = BaseInt64Size
 	SizeSize                                 int = 4
+	MaxStringSize                            int = 2
 	SignerSize                               int = KeySize
 	SignatureSize                            int = 64
 	HalfOfSignature                          int = SignatureSize / 2
@@ -3247,7 +3248,7 @@ const (
 	AliasActionSize                          int = 1
 	AliasTransactionHeaderSize               int = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeaderSize                int = TransactionHeaderSize + SizeSize
-	CatapultConfigHeaderSize                 int = TransactionHeaderSize + BaseInt64Size + SizeSize + SizeSize
+	CatapultConfigHeaderSize                 int = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
 	CatapultUpgradeTransactionSize           int = TransactionHeaderSize + DurationSize + BaseInt64Size
 	HashTypeSize                             int = 1
 	LockSize                                 int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256

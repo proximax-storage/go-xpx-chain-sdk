@@ -86,10 +86,10 @@ func catapultConfigTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("applyHeightDelta", IntSize),
-			newScalarAttribute("blockChainConfigSize", IntSize),
-			newScalarAttribute("supportedEntityVersionsSize", IntSize),
+			newScalarAttribute("blockChainConfigSize", ShortSize),
+			newScalarAttribute("supportedEntityVersionsSize", ShortSize),
 			newArrayAttribute("blockChainConfig", ByteSize),
-			newArrayAttribute("supportedEntityVersionsSize", ByteSize),
+			newArrayAttribute("supportedEntityVersions", ByteSize),
 		},
 	}
 }

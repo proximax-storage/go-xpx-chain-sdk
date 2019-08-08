@@ -211,28 +211,28 @@ func (rcv *CatapultConfigTransactionBuffer) MutateApplyHeightDelta(j int, n uint
 	return false
 }
 
-func (rcv *CatapultConfigTransactionBuffer) BlockChainConfigSize() uint32 {
+func (rcv *CatapultConfigTransactionBuffer) BlockChainConfigSize() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *CatapultConfigTransactionBuffer) MutateBlockChainConfigSize(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(20, n)
+func (rcv *CatapultConfigTransactionBuffer) MutateBlockChainConfigSize(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(20, n)
 }
 
-func (rcv *CatapultConfigTransactionBuffer) SupportedEntityVersionsSize() uint32 {
+func (rcv *CatapultConfigTransactionBuffer) SupportedEntityVersionsSize() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *CatapultConfigTransactionBuffer) MutateSupportedEntityVersionsSize(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(22, n)
+func (rcv *CatapultConfigTransactionBuffer) MutateSupportedEntityVersionsSize(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(22, n)
 }
 
 func (rcv *CatapultConfigTransactionBuffer) BlockChainConfig(j int) byte {
@@ -345,11 +345,11 @@ func CatapultConfigTransactionBufferAddApplyHeightDelta(builder *flatbuffers.Bui
 func CatapultConfigTransactionBufferStartApplyHeightDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func CatapultConfigTransactionBufferAddBlockChainConfigSize(builder *flatbuffers.Builder, blockChainConfigSize uint32) {
-	builder.PrependUint32Slot(8, blockChainConfigSize, 0)
+func CatapultConfigTransactionBufferAddBlockChainConfigSize(builder *flatbuffers.Builder, blockChainConfigSize uint16) {
+	builder.PrependUint16Slot(8, blockChainConfigSize, 0)
 }
-func CatapultConfigTransactionBufferAddSupportedEntityVersionsSize(builder *flatbuffers.Builder, supportedEntityVersionsSize uint32) {
-	builder.PrependUint32Slot(9, supportedEntityVersionsSize, 0)
+func CatapultConfigTransactionBufferAddSupportedEntityVersionsSize(builder *flatbuffers.Builder, supportedEntityVersionsSize uint16) {
+	builder.PrependUint16Slot(9, supportedEntityVersionsSize, 0)
 }
 func CatapultConfigTransactionBufferAddBlockChainConfig(builder *flatbuffers.Builder, blockChainConfig flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(blockChainConfig), 0)
