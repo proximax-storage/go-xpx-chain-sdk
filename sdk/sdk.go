@@ -21,6 +21,7 @@ import (
 const (
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
 	DefaultFeeCalculationStrategy       = MiddleCalculationStrategy
+	DefaultMaxFee                       = 5 * 1000000
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -323,9 +324,16 @@ func (c *Client) NewAccountFromPublicKey(pKey string) (*PublicAccount, error) {
 
 // region transactions
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (c *Client) modifyTransaction(tx Transaction) {
 	if tx != nil {
-		tx.GetAbstractTransaction().MaxFee = Amount(tx.Size()) * Amount(c.config.FeeCalculationStrategy)
+		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
 	}
 }
 
