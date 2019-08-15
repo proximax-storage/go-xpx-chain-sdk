@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+const defaultDurationNamespaceAndMosaic = 1000000
+
 var listening = false
 
 type CreateTransaction func() (sdk.Transaction, error)
@@ -165,17 +167,23 @@ func TestCatapultConfigTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestCatapultUpgradeTransaction(t *testing.T) {
-	version := sdk.NewCatapultVersion(0, 3, 0, 0)
-
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCatapultUpgradeTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.Duration(2),
-			version)
-	}, nemesisAccount)
-	assert.Nil(t, result.error)
-}
+//// This test will break blockchain, so only for local testing
+//func TestCatapultUpgradeTransaction(t *testing.T) {
+//	version := sdk.NewCatapultVersion(1, 4, 0, 0)
+//	network, err := client.Network.GetNetworkVersion(ctx)
+//
+//	if err == nil {
+//		version = network.CatapultVersion + 1
+//	}
+//
+//	result := sendTransaction(t, func() (sdk.Transaction, error) {
+//		return client.NewCatapultUpgradeTransaction(
+//			sdk.NewDeadline(time.Hour),
+//			sdk.Duration(2),
+//			version)
+//	}, nemesisAccount)
+//	assert.Nil(t, result.error)
+//}
 
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
@@ -186,7 +194,7 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -357,7 +365,7 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 		return client.NewRegisterRootNamespaceTransaction(
 			sdk.NewDeadline(time.Hour),
 			nameHex,
-			sdk.Duration(1),
+			sdk.Duration(defaultDurationNamespaceAndMosaic),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -481,7 +489,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 	registerTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registerTx.ToAggregate(defaultAccount.PublicAccount)
@@ -530,7 +538,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 	registerTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registerTx.ToAggregate(defaultAccount.PublicAccount)
@@ -544,7 +552,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
@@ -609,7 +617,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
@@ -673,7 +681,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 	registrNamespaceTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registrNamespaceTx.ToAggregate(defaultAccount.PublicAccount)
@@ -755,7 +763,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
