@@ -38,6 +38,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	cfg.FeeCalculationStrategy = 0
 
 	client = sdk.NewClient(nil, cfg)
 
