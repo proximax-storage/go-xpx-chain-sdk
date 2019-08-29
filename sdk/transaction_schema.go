@@ -75,7 +75,7 @@ func aggregateTransactionSchema() *schema {
 	}
 }
 
-func catapultConfigTransactionSchema() *schema {
+func networkConfigTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -86,15 +86,15 @@ func catapultConfigTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("applyHeightDelta", IntSize),
-			newScalarAttribute("blockChainConfigSize", ShortSize),
+			newScalarAttribute("networkConfigSize", ShortSize),
 			newScalarAttribute("supportedEntityVersionsSize", ShortSize),
-			newArrayAttribute("blockChainConfig", ByteSize),
+			newArrayAttribute("networkConfig", ByteSize),
 			newArrayAttribute("supportedEntityVersions", ByteSize),
 		},
 	}
 }
 
-func catapultUpgradeTransactionSchema() *schema {
+func blockchainUpgradeTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -105,7 +105,7 @@ func catapultUpgradeTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("upgradePeriod", IntSize),
-			newArrayAttribute("newCatapultVersion", IntSize),
+			newArrayAttribute("newBlockChainVersion", IntSize),
 		},
 	}
 }

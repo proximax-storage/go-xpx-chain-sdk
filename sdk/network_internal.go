@@ -49,15 +49,15 @@ func (dto *supportedEntitiesDTO) toStruct(ref *SupportedEntities) error {
 	return nil
 }
 
-type networkConfigDTO struct {
+type blockchainConfigDTO struct {
 	DTO struct {
 		StartedHeight           uint64DTO `json:"height"`
-		BlockChainConfig        string    `json:"blockChainConfig"`
+		NetworkConfig           string    `json:"networkConfig"`
 		SupportedEntityVersions string    `json:"supportedEntityVersions"`
-	} `json:"catapultConfig"`
+	} `json:"networkConfig"`
 }
 
-func (dto *networkConfigDTO) toStruct() (*NetworkConfig, error) {
+func (dto *blockchainConfigDTO) toStruct() (*BlockchainConfig, error) {
 	s := NewSupportedEntities()
 
 	err := s.UnmarshalBinary([]byte(dto.DTO.SupportedEntityVersions))
@@ -65,14 +65,14 @@ func (dto *networkConfigDTO) toStruct() (*NetworkConfig, error) {
 		return nil, err
 	}
 
-	c := NewBlockChainConfig()
+	c := NewNetworkConfig()
 
-	err = c.UnmarshalBinary([]byte(dto.DTO.BlockChainConfig))
+	err = c.UnmarshalBinary([]byte(dto.DTO.NetworkConfig))
 	if err != nil {
 		return nil, err
 	}
 
-	return &NetworkConfig{
+	return &BlockchainConfig{
 		Height(dto.DTO.StartedHeight.toUint64()),
 		c,
 		s,
@@ -81,14 +81,14 @@ func (dto *networkConfigDTO) toStruct() (*NetworkConfig, error) {
 
 type networkVersionDTO struct {
 	DTO struct {
-		StartedHeight   uint64DTO `json:"height"`
-		CatapultVersion uint64DTO `json:"catapultVersion"`
-	} `json:"catapultUpgrade"`
+		StartedHeight     uint64DTO `json:"height"`
+		BlockChainVersion uint64DTO `json:"blockChainVersion"`
+	} `json:"blockchainUpgrade"`
 }
 
 func (dto *networkVersionDTO) toStruct() *NetworkVersion {
 	return &NetworkVersion{
 		Height(dto.DTO.StartedHeight.toUint64()),
-		CatapultVersion(dto.DTO.CatapultVersion.toUint64()),
+		BlockChainVersion(dto.DTO.BlockChainVersion.toUint64()),
 	}
 }

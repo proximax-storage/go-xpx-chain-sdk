@@ -38,12 +38,12 @@ func (ref *NetworkService) GetNetworkType(ctx context.Context) (NetworkType, err
 	return networkType, err
 }
 
-func (ref *NetworkService) GetNetworkConfigAtHeight(ctx context.Context, height Height) (*NetworkConfig, error) {
-	netDTO := &networkConfigDTO{}
+func (ref *NetworkService) GetNetworkConfigAtHeight(ctx context.Context, height Height) (*BlockchainConfig, error) {
+	blockchainDTO := &blockchainConfigDTO{}
 
 	url := fmt.Sprintf(configRoute, height)
 
-	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url, nil, netDTO)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url, nil, blockchainDTO)
 
 	if err != nil {
 		return nil, err
@@ -53,10 +53,10 @@ func (ref *NetworkService) GetNetworkConfigAtHeight(ctx context.Context, height 
 		return nil, err
 	}
 
-	return netDTO.toStruct()
+	return blockchainDTO.toStruct()
 }
 
-func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*NetworkConfig, error) {
+func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*BlockchainConfig, error) {
 	height, err := ref.BlockchainService.GetBlockchainHeight(ctx)
 	if err != nil {
 		return nil, err

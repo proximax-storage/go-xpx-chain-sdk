@@ -1,6 +1,6 @@
 namespace Catapult.Buffers;
 
-table CatapultUpgradeTransactionBuffer {
+table BlockchainUpgradeTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -9,7 +9,7 @@ table CatapultUpgradeTransactionBuffer {
     maxFee: [uint];
     deadline:[uint];
     upgradePeriod: [uint];
-    newCatapultVersion: [uint];
+    newBlockChainVersion: [uint];
 }
 
-root_type CatapultUpgradeTransactionBuffer;
+root_type BlockchainUpgradeTransactionBuffer;

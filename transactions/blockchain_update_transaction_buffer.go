@@ -9,27 +9,27 @@ import (
 	"github.com/google/flatbuffers/go"
 )
 
-type CatapultUpgradeTransactionBuffer struct {
+type BlockchainUpgradeTransactionBuffer struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsCatapultUpgradeTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *CatapultUpgradeTransactionBuffer {
+func GetRootAsBlockchainUpgradeTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *BlockchainUpgradeTransactionBuffer {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &CatapultUpgradeTransactionBuffer{}
+	x := &BlockchainUpgradeTransactionBuffer{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *BlockchainUpgradeTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Table() flatbuffers.Table {
+func (rcv *BlockchainUpgradeTransactionBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Size() uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) Size() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetUint32(o + rcv._tab.Pos)
@@ -37,11 +37,11 @@ func (rcv *CatapultUpgradeTransactionBuffer) Size() uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateSize(n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateSize(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(4, n)
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Signature(j int) byte {
+func (rcv *BlockchainUpgradeTransactionBuffer) Signature(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -50,7 +50,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) Signature(j int) byte {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) SignatureLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) SignatureLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -58,7 +58,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) SignatureLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) SignatureBytes() []byte {
+func (rcv *BlockchainUpgradeTransactionBuffer) SignatureBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -66,7 +66,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateSignature(j int, n byte) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateSignature(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -75,7 +75,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateSignature(j int, n byte) bool
 	return false
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Signer(j int) byte {
+func (rcv *BlockchainUpgradeTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -84,7 +84,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) Signer(j int) byte {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) SignerLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) SignerLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -92,7 +92,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) SignerLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) SignerBytes() []byte {
+func (rcv *BlockchainUpgradeTransactionBuffer) SignerBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -100,7 +100,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) SignerBytes() []byte {
 	return nil
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateSigner(j int, n byte) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateSigner(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -109,7 +109,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateSigner(j int, n byte) bool {
 	return false
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Version() uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		return rcv._tab.GetUint32(o + rcv._tab.Pos)
@@ -117,11 +117,11 @@ func (rcv *CatapultUpgradeTransactionBuffer) Version() uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateVersion(n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateVersion(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(10, n)
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Type() uint16 {
+func (rcv *BlockchainUpgradeTransactionBuffer) Type() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.GetUint16(o + rcv._tab.Pos)
@@ -129,11 +129,11 @@ func (rcv *CatapultUpgradeTransactionBuffer) Type() uint16 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateType(n uint16) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MaxFee(j int) uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -142,7 +142,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MaxFee(j int) uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MaxFeeLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -150,7 +150,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MaxFeeLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -159,7 +159,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateMaxFee(j int, n uint32) bool 
 	return false
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) Deadline(j int) uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -168,7 +168,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) Deadline(j int) uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) DeadlineLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) DeadlineLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -176,7 +176,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) DeadlineLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -185,7 +185,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateDeadline(j int, n uint32) boo
 	return false
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) UpgradePeriod(j int) uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) UpgradePeriod(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -194,7 +194,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) UpgradePeriod(j int) uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) UpgradePeriodLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) UpgradePeriodLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -202,7 +202,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) UpgradePeriodLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateUpgradePeriod(j int, n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateUpgradePeriod(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -211,7 +211,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateUpgradePeriod(j int, n uint32
 	return false
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) NewCatapultVersion(j int) uint32 {
+func (rcv *BlockchainUpgradeTransactionBuffer) NewBlockChainVersion(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -220,7 +220,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) NewCatapultVersion(j int) uint32 {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) NewCatapultVersionLength() int {
+func (rcv *BlockchainUpgradeTransactionBuffer) NewBlockChainVersionLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -228,7 +228,7 @@ func (rcv *CatapultUpgradeTransactionBuffer) NewCatapultVersionLength() int {
 	return 0
 }
 
-func (rcv *CatapultUpgradeTransactionBuffer) MutateNewCatapultVersion(j int, n uint32) bool {
+func (rcv *BlockchainUpgradeTransactionBuffer) MutateNewBlockChainVersion(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -237,54 +237,54 @@ func (rcv *CatapultUpgradeTransactionBuffer) MutateNewCatapultVersion(j int, n u
 	return false
 }
 
-func CatapultUpgradeTransactionBufferStart(builder *flatbuffers.Builder) {
+func BlockchainUpgradeTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(9)
 }
-func CatapultUpgradeTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+func BlockchainUpgradeTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
 }
-func CatapultUpgradeTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+func BlockchainUpgradeTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
 }
-func CatapultUpgradeTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func CatapultUpgradeTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+func BlockchainUpgradeTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
 }
-func CatapultUpgradeTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func CatapultUpgradeTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+func BlockchainUpgradeTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
 	builder.PrependUint32Slot(3, version, 0)
 }
-func CatapultUpgradeTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+func BlockchainUpgradeTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func CatapultUpgradeTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+func BlockchainUpgradeTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
-func CatapultUpgradeTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func CatapultUpgradeTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+func BlockchainUpgradeTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
 }
-func CatapultUpgradeTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func CatapultUpgradeTransactionBufferAddUpgradePeriod(builder *flatbuffers.Builder, upgradePeriod flatbuffers.UOffsetT) {
+func BlockchainUpgradeTransactionBufferAddUpgradePeriod(builder *flatbuffers.Builder, upgradePeriod flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(upgradePeriod), 0)
 }
-func CatapultUpgradeTransactionBufferStartUpgradePeriodVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartUpgradePeriodVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func CatapultUpgradeTransactionBufferAddNewCatapultVersion(builder *flatbuffers.Builder, newCatapultVersion flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(newCatapultVersion), 0)
+func BlockchainUpgradeTransactionBufferAddNewBlockChainVersion(builder *flatbuffers.Builder, newBlockChainVersion flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(newBlockChainVersion), 0)
 }
-func CatapultUpgradeTransactionBufferStartNewCatapultVersionVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferStartNewBlockChainVersionVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func CatapultUpgradeTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func BlockchainUpgradeTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

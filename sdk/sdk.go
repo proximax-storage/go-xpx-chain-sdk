@@ -334,7 +334,7 @@ func min(a, b int) int {
 func (c *Client) modifyTransaction(tx Transaction) {
 	// We don't change MaxFee for versioning transactions
 	switch tx.GetAbstractTransaction().Type {
-	case CatapultConfig, CatapultUpgrade:
+	case NetworkConfigEntityType, BlockchainUpgrade:
 	default:
 		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
 	}
@@ -394,8 +394,8 @@ func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, p
 	return tx, err
 }
 
-func (c *Client) NewCatapultConfigTransaction(deadline *Deadline, delta Duration, config *BlockChainConfig, entities *SupportedEntities) (*CatapultConfigTransaction, error) {
-	tx, err := NewCatapultConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
+func (c *Client) NewNetworkConfigTransaction(deadline *Deadline, delta Duration, config *NetworkConfig, entities *SupportedEntities) (*NetworkConfigTransaction, error) {
+	tx, err := NewNetworkConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -403,8 +403,8 @@ func (c *Client) NewCatapultConfigTransaction(deadline *Deadline, delta Duration
 	return tx, err
 }
 
-func (c *Client) NewCatapultUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newCatapultVersion CatapultVersion) (*CatapultUpgradeTransaction, error) {
-	tx, err := NewCatapultUpgradeTransaction(deadline, upgradePeriod, newCatapultVersion, c.config.NetworkType)
+func (c *Client) NewBlockchainUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newBlockChainVersion BlockChainVersion) (*BlockchainUpgradeTransaction, error) {
+	tx, err := NewBlockchainUpgradeTransaction(deadline, upgradePeriod, newBlockChainVersion, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
