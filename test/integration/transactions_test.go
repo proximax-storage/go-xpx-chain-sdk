@@ -138,52 +138,49 @@ func TestAccountLinkTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestCatapultConfigTransaction(t *testing.T) {
+func TestNetworkConfigTransaction(t *testing.T) {
 	config, err := client.Network.GetNetworkConfig(ctx)
 	assert.Nil(t, err)
 
-	prevValue := config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
-	config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
+	prevValue := config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
+	config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCatapultConfigTransaction(
+		return client.NewNetworkConfigTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(1),
-			config.BlockChainConfig,
+			config.NetworkConfig,
 			config.SupportedEntityVersions)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 
 	time.Sleep(time.Minute)
 
-	config.BlockChainConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
+	config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCatapultConfigTransaction(
+		return client.NewNetworkConfigTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Duration(5),
-			config.BlockChainConfig,
+			config.NetworkConfig,
 			config.SupportedEntityVersions)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
 
-//// This test will break blockchain, so only for local testing
-//func TestCatapultUpgradeTransaction(t *testing.T) {
-//	version := sdk.NewCatapultVersion(1, 4, 0, 0)
-//	network, err := client.Network.GetNetworkVersion(ctx)
-//
-//	if err == nil {
-//		version = network.CatapultVersion + 1
-//	}
-//
-//	result := sendTransaction(t, func() (sdk.Transaction, error) {
-//		return client.NewCatapultUpgradeTransaction(
-//			sdk.NewDeadline(time.Hour),
-//			sdk.Duration(2),
-//			version)
-//	}, nemesisAccount)
-//	assert.Nil(t, result.error)
-//}
+// This test will break blockchain, so only for local testing
+func TestBlockchainUpgradeTransaction(t *testing.T) {
+	network, err := client.Network.GetNetworkVersion(ctx)
+	assert.Nil(t, err)
+	version := network.BlockChainVersion + 1
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewBlockchainUpgradeTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(361),
+			version)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
 
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))

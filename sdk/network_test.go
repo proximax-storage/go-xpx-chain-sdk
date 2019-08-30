@@ -26,26 +26,26 @@ const (
 			"description": "catapult development network"
 	}`
 
-	catapultUpgrade = `{
-  		"catapultUpgrade": {
+	blockchainUpgrade = `{
+  		"blockchainUpgrade": {
     		"height": [
       			206,
       			0
     		],
-			"catapultVersion": [
+			"blockChainVersion": [
       			0,
       			4
     		]
 		}
 	}`
 
-	catapultConfig = `{
-  		"catapultConfig": {
+	networkConfigJson = `{
+  		"networkConfig": {
     		"height": [
       			144,
       			0
     		],
-			"blockChainConfig": "[network]\n\nidentifier = mijin-test\npublicKey = B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\ngenerationHash = 86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790\n\n",
+			"networkConfig": "[network]\n\nidentifier = mijin-test\npublicKey = B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\ngenerationHash = 86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790\n\n",
 			"supportedEntityVersions": "{\n    \"entities\": [\n\t\t{\n\t\t\t\"name\": \"Block\",\n\t\t\t\"type\": \"33091\",\n\t\t\t\"supportedVersions\": [3]\n\t\t}]\n}"
 		}
 	}`
@@ -53,13 +53,13 @@ const (
 
 var (
 	networkVersion = &NetworkVersion{
-		StartedHeight:   Height(206),
-		CatapultVersion: NewCatapultVersion(0, 4, 0, 0),
+		StartedHeight:     Height(206),
+		BlockChainVersion: NewBlockChainVersion(0, 4, 0, 0),
 	}
 
-	networkConfig = &NetworkConfig{
+	networkConfig = &BlockchainConfig{
 		StartedHeight: Height(144),
-		BlockChainConfig: &BlockChainConfig{
+		NetworkConfig: &NetworkConfig{
 			Sections: map[string]*ConfigBag{
 				"network": &ConfigBag{
 					Name:    "network",
@@ -159,7 +159,7 @@ func TestExtractNetworkType(t *testing.T) {
 func TestNetworkService_GetNetworkVersionAtHeight(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf(upgradeRoute, Height(210)),
-		RespBody: catapultUpgrade,
+		RespBody: blockchainUpgrade,
 	})
 
 	nVersion, err := mockServer.getPublicTestClientUnsafe().Network.GetNetworkVersionAtHeight(ctx, Height(210))
@@ -171,7 +171,7 @@ func TestNetworkService_GetNetworkVersionAtHeight(t *testing.T) {
 func TestNetworkService_GetNetworkConfigAtHeight(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf(configRoute, Height(150)),
-		RespBody: catapultConfig,
+		RespBody: networkConfigJson,
 	})
 
 	nConfig, err := mockServer.getPublicTestClientUnsafe().Network.GetNetworkConfigAtHeight(ctx, Height(150))

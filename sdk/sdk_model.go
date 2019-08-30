@@ -87,19 +87,19 @@ type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
 
-type CatapultVersion uint64
+type BlockChainVersion uint64
 
-func NewCatapultVersion(major uint16, minor uint16, revision uint16, build uint16) CatapultVersion {
-	version := CatapultVersion(0)
-	version |= CatapultVersion(major) << 48
-	version |= CatapultVersion(minor) << 32
-	version |= CatapultVersion(revision) << 16
-	version |= CatapultVersion(build) << 0
+func NewBlockChainVersion(major uint16, minor uint16, revision uint16, build uint16) BlockChainVersion {
+	version := BlockChainVersion(0)
+	version |= BlockChainVersion(major) << 48
+	version |= BlockChainVersion(minor) << 32
+	version |= BlockChainVersion(revision) << 16
+	version |= BlockChainVersion(build) << 0
 	return version
 }
 
-func (m CatapultVersion) String() string {
-	getTwoBytesByShift := func(number CatapultVersion, shift uint) uint16 {
+func (m BlockChainVersion) String() string {
+	getTwoBytesByShift := func(number BlockChainVersion, shift uint) uint16 {
 		return uint16(number>>shift) & 0xFF
 	}
 
@@ -113,11 +113,11 @@ func (m CatapultVersion) String() string {
 	)
 }
 
-func (m CatapultVersion) toArray() [2]uint32 {
+func (m BlockChainVersion) toArray() [2]uint32 {
 	return uint64ToArray(uint64(m))
 }
 
-func (m CatapultVersion) toLittleEndian() []byte {
+func (m BlockChainVersion) toLittleEndian() []byte {
 	bytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bytes, uint64(m))
 	return bytes

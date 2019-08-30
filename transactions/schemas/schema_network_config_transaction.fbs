@@ -1,6 +1,6 @@
 namespace Catapult.Buffers;
 
-table CatapultConfigTransactionBuffer {
+table NetworkConfigTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -9,10 +9,10 @@ table CatapultConfigTransactionBuffer {
     maxFee: [uint];
     deadline:[uint];
     applyHeightDelta: [uint];
-    blockChainConfigSize: ushort;
+    networkConfigSize: ushort;
     supportedEntityVersionsSize: ushort;
-    blockChainConfig: [ubyte];
+    networkConfig: [ubyte];
     supportedEntityVersions: [ubyte];
 }
 
-root_type CatapultConfigTransactionBuffer;
+root_type NetworkConfigTransactionBuffer;

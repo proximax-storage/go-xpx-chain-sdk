@@ -131,18 +131,18 @@ func (c ConfigBag) String() string {
 	return s
 }
 
-type BlockChainConfig struct {
+type NetworkConfig struct {
 	Sections map[string]*ConfigBag
 }
 
-func NewBlockChainConfig() *BlockChainConfig {
-	c := BlockChainConfig{
+func NewNetworkConfig() *NetworkConfig {
+	c := NetworkConfig{
 		Sections: make(map[string]*ConfigBag),
 	}
 	return &c
 }
 
-func (c *BlockChainConfig) UnmarshalBinary(data []byte) error {
+func (c *NetworkConfig) UnmarshalBinary(data []byte) error {
 	const HASH = '#'
 	const SEMICOLON = ';'
 	const L_BRACKET = '['
@@ -227,7 +227,7 @@ func (c *BlockChainConfig) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-func (c *BlockChainConfig) MarshalBinary() (data []byte, err error) {
+func (c *NetworkConfig) MarshalBinary() (data []byte, err error) {
 	s := ""
 
 	sections := make([]*ConfigBag, 0, len(c.Sections))
@@ -246,7 +246,7 @@ func (c *BlockChainConfig) MarshalBinary() (data []byte, err error) {
 	return []byte(s), nil
 }
 
-func (c *BlockChainConfig) String() string {
+func (c *NetworkConfig) String() string {
 	s, _ := c.MarshalBinary()
 
 	return string(s)
@@ -312,30 +312,30 @@ func (s *SupportedEntities) String() string {
 	return string(b)
 }
 
-type NetworkConfig struct {
+type BlockchainConfig struct {
 	StartedHeight           Height
-	BlockChainConfig        *BlockChainConfig
+	NetworkConfig           *NetworkConfig
 	SupportedEntityVersions *SupportedEntities
 }
 
-func (nc NetworkConfig) String() string {
+func (nc BlockchainConfig) String() string {
 	return str.StructToString(
 		"NetworkConfig",
 		str.NewField("StartedHeight", str.StringPattern, nc.StartedHeight),
-		str.NewField("BlockChainConfig", str.StringPattern, nc.BlockChainConfig),
+		str.NewField("NetworkConfig", str.StringPattern, nc.NetworkConfig),
 		str.NewField("SupportedEntityVersions", str.StringPattern, nc.SupportedEntityVersions),
 	)
 }
 
 type NetworkVersion struct {
-	StartedHeight   Height
-	CatapultVersion CatapultVersion
+	StartedHeight     Height
+	BlockChainVersion BlockChainVersion
 }
 
 func (nv NetworkVersion) String() string {
 	return str.StructToString(
 		"NetworkVersion",
 		str.NewField("StartedHeight", str.StringPattern, nv.StartedHeight),
-		str.NewField("CatapultVersion", str.StringPattern, nv.CatapultVersion),
+		str.NewField("BlockChainVersion", str.StringPattern, nv.BlockChainVersion),
 	)
 }
