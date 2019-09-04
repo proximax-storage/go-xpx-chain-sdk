@@ -12,12 +12,14 @@ import (
 	jsonLib "encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/flatbuffers/go"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/transactions"
-	"github.com/proximax-storage/go-xpx-utils"
-	"github.com/proximax-storage/xpx-crypto-go"
 	"strings"
 	"sync"
+
+	"github.com/google/flatbuffers/go"
+	"github.com/proximax-storage/go-xpx-utils"
+	"github.com/proximax-storage/xpx-crypto-go"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
 type Transaction interface {

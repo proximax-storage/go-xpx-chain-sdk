@@ -1,9 +1,10 @@
 package sdk
 
 import (
+	"testing"
+
 	"github.com/proximax-storage/xpx-crypto-go"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestPlaintTexToSecureMessageAndBack(t *testing.T) {

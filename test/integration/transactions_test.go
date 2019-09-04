@@ -9,11 +9,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/stretchr/testify/assert"
 	math "math/rand"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 const defaultDurationNamespaceAndMosaic = 1000000

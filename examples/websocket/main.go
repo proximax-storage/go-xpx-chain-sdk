@@ -7,9 +7,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 )
 
 const (

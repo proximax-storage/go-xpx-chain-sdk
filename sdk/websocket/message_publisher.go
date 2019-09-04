@@ -1,9 +1,10 @@
 package websocket
 
 import (
+	"sync"
+
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 func newMessagePublisher(conn *websocket.Conn) MessagePublisher {

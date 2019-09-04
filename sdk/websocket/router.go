@@ -3,9 +3,11 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/pkg/errors"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
 )
 
 func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandlersStorage) Router {

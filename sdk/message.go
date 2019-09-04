@@ -3,6 +3,7 @@ package sdk
 import (
 	"encoding/hex"
 	"errors"
+
 	"github.com/proximax-storage/go-xpx-utils/str"
 	xpxcrypto "github.com/proximax-storage/xpx-crypto-go"
 )

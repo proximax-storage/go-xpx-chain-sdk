@@ -1,6 +1,6 @@
 # sdk
 --
-    import "github.com/go-xpx-catapult-sdk/sdk"
+    import "github.com/go-xpx-chain-sdk/sdk"
 
 Package sdk provides a client library for the Catapult REST API.
 

@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"github.com/pkg/errors"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"sync"
+
+	"github.com/pkg/errors"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
 func NewUnconfirmedAddedHandler(messageMapper sdk.UnconfirmedAddedMapper, handlers subscribers.UnconfirmedAdded) *unconfirmedAddedHandler {

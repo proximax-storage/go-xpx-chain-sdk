@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"bytes"
+
 	"github.com/pkg/errors"
 )
 

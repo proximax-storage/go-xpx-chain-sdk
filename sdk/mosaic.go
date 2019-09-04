@@ -7,8 +7,9 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
+
+	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type MosaicService service

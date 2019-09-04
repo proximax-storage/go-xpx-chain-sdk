@@ -7,9 +7,10 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 	"strconv"
+
+	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 // NamespaceService provides a set of methods for obtaining information about the namespace

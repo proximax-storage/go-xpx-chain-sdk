@@ -1,9 +1,11 @@
 package subscribers
 
 import (
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 var blockHandlerFunc1 = func(blockInfo *sdk.BlockInfo) bool {

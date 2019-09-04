@@ -13,7 +13,7 @@ The ProximaX Sirius Catapult Chain Golang SDK works as a lightweight Golang libr
 All catapult stuff starts from importing sdk:
 
 ```go
-import "github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+import "github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 ```
 
 Then create a Catapult network configuration
@@ -43,7 +43,7 @@ deadlines, cancelation signals, and other request-scoped values
 
 ## Wiki / Examples
 
-For more examples, go to our [wiki](https://github.com/proximax-storage/go-xpx-catapult-sdk/wiki)
+For more examples, go to our [wiki](https://github.com/proximax-storage/go-xpx-chain-sdk/wiki)
 
 ## API docs
 

@@ -6,11 +6,12 @@ package sdk
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/json-iterator/go"
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func init() {

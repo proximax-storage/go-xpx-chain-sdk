@@ -6,15 +6,16 @@ package integration
 
 import (
 	"context"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 )
 
 //
-//const testUrl = "http://bcdev1.xpxsirius.io:3000"
-//const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
+// const testUrl = "http://bcdev1.xpxsirius.io:3000"
+// const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
 const testUrl = "http://127.0.0.1:3000"
 const privateKey = "A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"
@@ -81,7 +82,7 @@ func TestMosaicService_GetMosaicsFromNamespaceExt(t *testing.T) {
 				t.Logf("empty trans #%d", j)
 				continue
 			}
-			//t.Log(val.String())
+			// t.Log(val.String())
 			switch val.GetAbstractTransaction().Type {
 			case sdk.MosaicDefinition:
 				tran := val.(*sdk.MosaicDefinitionTransaction)
