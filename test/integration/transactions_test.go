@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+const defaultDurationNamespaceAndMosaic = 1000000
+
 var listening = false
 
 type CreateTransaction func() (sdk.Transaction, error)
@@ -25,7 +27,7 @@ type Result struct {
 	error
 }
 
-func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
+func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash) <-chan Result {
 	if !listening {
 		// Starting listening messages from websocket
 		go wsc.Listen()
@@ -36,6 +38,9 @@ func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
 
 	// Register handlers functions for needed topics
 	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
+		if !hash.Equal(transaction.GetAbstractTransaction().TransactionHash) {
+			return false
+		}
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
 		fmt.Println("Successful!")
 		out <- Result{transaction, nil}
@@ -45,6 +50,9 @@ func initListeners(t *testing.T, account *sdk.Account) <-chan Result {
 	}
 
 	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
+		if !hash.Equal(info.Hash) {
+			return false
+		}
 		fmt.Printf("Got error: %v \n", info)
 		t.Error()
 		out <- Result{nil, errors.New(info.Status)}
@@ -73,10 +81,8 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	signTx, err := account.Sign(tx)
 	assert.Nil(t, err)
 
-	time.Sleep(2 * time.Second)
-
 	assert.Nil(t, err)
-	wg := initListeners(t, account)
+	wg := initListeners(t, account, signTx.Hash)
 	_, err = client.Transaction.Announce(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -107,7 +113,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 
 	time.Sleep(2 * time.Second)
 
-	wg := initListeners(t, account)
+	wg := initListeners(t, account, signTx.Hash)
 	_, err = client.Transaction.AnnounceAggregateBonded(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -132,6 +138,50 @@ func TestAccountLinkTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
+func TestNetworkConfigTransaction(t *testing.T) {
+	config, err := client.Network.GetNetworkConfig(ctx)
+	assert.Nil(t, err)
+
+	prevValue := config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value
+	config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = "1"
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewNetworkConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(1),
+			config.NetworkConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+
+	time.Sleep(time.Minute)
+
+	config.NetworkConfig.Sections["plugin:catapult.plugins.upgrade"].Fields["minUpgradePeriod"].Value = prevValue
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewNetworkConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(5),
+			config.NetworkConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
+
+// This test will break blockchain, so only for local testing
+func TestBlockchainUpgradeTransaction(t *testing.T) {
+	network, err := client.Network.GetNetworkVersion(ctx)
+	assert.Nil(t, err)
+	version := network.BlockChainVersion + 1
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewBlockchainUpgradeTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(361),
+			version)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
+
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
@@ -141,7 +191,7 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -312,7 +362,7 @@ func TestRegisterRootNamespaceTransaction(t *testing.T) {
 		return client.NewRegisterRootNamespaceTransaction(
 			sdk.NewDeadline(time.Hour),
 			nameHex,
-			sdk.Duration(1),
+			sdk.Duration(defaultDurationNamespaceAndMosaic),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -436,7 +486,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 	registerTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registerTx.ToAggregate(defaultAccount.PublicAccount)
@@ -485,7 +535,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 	registerTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registerTx.ToAggregate(defaultAccount.PublicAccount)
@@ -499,7 +549,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
@@ -564,7 +614,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
@@ -628,7 +678,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 	registrNamespaceTx, err := client.NewRegisterRootNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
 		nameHex,
-		sdk.Duration(10),
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
 	registrNamespaceTx.ToAggregate(defaultAccount.PublicAccount)
@@ -710,7 +760,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(1)),
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)

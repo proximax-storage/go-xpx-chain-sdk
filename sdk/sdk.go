@@ -20,6 +20,8 @@ import (
 
 const (
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
+	DefaultFeeCalculationStrategy       = MiddleCalculationStrategy
+	DefaultMaxFee                       = 5 * 1000000
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -29,6 +31,15 @@ type HttpError struct {
 	StatusCode int
 }
 
+type FeeCalculationStrategy uint32
+
+// FeeCalculationStrategy enums
+const (
+	HighCalculationStrategy   FeeCalculationStrategy = 2500
+	MiddleCalculationStrategy FeeCalculationStrategy = 250
+	LowCalculationStrategy    FeeCalculationStrategy = 25
+)
+
 // Provides service configuration
 type Config struct {
 	reputationConfig      *reputationConfig
@@ -37,6 +48,7 @@ type Config struct {
 	WsReconnectionTimeout time.Duration
 	GenerationHash        *Hash
 	NetworkType
+	FeeCalculationStrategy
 }
 
 type reputationConfig struct {
@@ -69,6 +81,7 @@ func NewConfig(ctx context.Context, baseUrls []string) (*Config, error) {
 		&defaultRepConfig,
 		DefaultWebsocketReconnectionTimeout,
 		nil,
+		DefaultFeeCalculationStrategy,
 	)
 
 	if err != nil {
@@ -93,6 +106,7 @@ func NewConfig(ctx context.Context, baseUrls []string) (*Config, error) {
 		&defaultRepConfig,
 		DefaultWebsocketReconnectionTimeout,
 		block.GenerationHash,
+		DefaultFeeCalculationStrategy,
 	)
 }
 
@@ -101,7 +115,8 @@ func NewConfigWithReputation(
 	networkType NetworkType,
 	repConf *reputationConfig,
 	wsReconnectionTimeout time.Duration,
-	generationHash *Hash) (*Config, error) {
+	generationHash *Hash,
+	strategy FeeCalculationStrategy) (*Config, error) {
 	if len(baseUrls) == 0 {
 		return nil, errors.New("empty base urls")
 	}
@@ -117,12 +132,13 @@ func NewConfigWithReputation(
 	}
 
 	c := &Config{
-		BaseURLs:              urls,
-		UsedBaseUrl:           urls[0],
-		WsReconnectionTimeout: wsReconnectionTimeout,
-		NetworkType:           networkType,
-		reputationConfig:      repConf,
-		GenerationHash:        generationHash,
+		BaseURLs:               urls,
+		UsedBaseUrl:            urls[0],
+		WsReconnectionTimeout:  wsReconnectionTimeout,
+		NetworkType:            networkType,
+		reputationConfig:       repConf,
+		GenerationHash:         generationHash,
+		FeeCalculationStrategy: strategy,
 	}
 
 	return c, nil
@@ -161,7 +177,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Blockchain = (*BlockchainService)(&c.common)
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
-	c.Network = (*NetworkService)(&c.common)
+	c.Network = &NetworkService{&c.common, c.Blockchain}
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
@@ -308,52 +324,146 @@ func (c *Client) NewAccountFromPublicKey(pKey string) (*PublicAccount, error) {
 
 // region transactions
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (c *Client) modifyTransaction(tx Transaction) {
+	// We don't change MaxFee for versioning transactions
+	switch tx.GetAbstractTransaction().Type {
+	case NetworkConfigEntityType, BlockchainUpgrade:
+	default:
+		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
+	}
+}
+
 func (c *Client) NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType) (*AddressAliasTransaction, error) {
-	return NewAddressAliasTransaction(deadline, address, namespaceId, actionType, c.config.NetworkType)
+	tx, err := NewAddressAliasTransaction(deadline, address, namespaceId, actionType, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicId, namespaceId *NamespaceId, actionType AliasActionType) (*MosaicAliasTransaction, error) {
-	return NewMosaicAliasTransaction(deadline, mosaicId, namespaceId, actionType, c.config.NetworkType)
+	tx, err := NewMosaicAliasTransaction(deadline, mosaicId, namespaceId, actionType, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction) (*AccountLinkTransaction, error) {
-	return NewAccountLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+	tx, err := NewAccountLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesAddressModification) (*AccountPropertiesAddressTransaction, error) {
-	return NewAccountPropertiesAddressTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	tx, err := NewAccountPropertiesAddressTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewAccountPropertiesMosaicTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesMosaicModification) (*AccountPropertiesMosaicTransaction, error) {
-	return NewAccountPropertiesMosaicTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	tx, err := NewAccountPropertiesMosaicTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesEntityTypeModification) (*AccountPropertiesEntityTypeTransaction, error) {
-	return NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	tx, err := NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewNetworkConfigTransaction(deadline *Deadline, delta Duration, config *NetworkConfig, entities *SupportedEntities) (*NetworkConfigTransaction, error) {
+	tx, err := NewNetworkConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewBlockchainUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newBlockChainVersion BlockChainVersion) (*BlockchainUpgradeTransaction, error) {
+	tx, err := NewBlockchainUpgradeTransaction(deadline, upgradePeriod, newBlockChainVersion, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
-	return NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+	tx, err := NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
-	return NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+	tx, err := NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
-	return NewModifyMetadataAddressTransaction(deadline, address, modifications, c.config.NetworkType)
+	tx, err := NewModifyMetadataAddressTransaction(deadline, address, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewModifyMetadataMosaicTransaction(deadline *Deadline, mosaicId *MosaicId, modifications []*MetadataModification) (*ModifyMetadataMosaicTransaction, error) {
-	return NewModifyMetadataMosaicTransaction(deadline, mosaicId, modifications, c.config.NetworkType)
+	tx, err := NewModifyMetadataMosaicTransaction(deadline, mosaicId, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewModifyMetadataNamespaceTransaction(deadline *Deadline, namespaceId *NamespaceId, modifications []*MetadataModification) (*ModifyMetadataNamespaceTransaction, error) {
-	return NewModifyMetadataNamespaceTransaction(deadline, namespaceId, modifications, c.config.NetworkType)
+	tx, err := NewModifyMetadataNamespaceTransaction(deadline, namespaceId, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewModifyMultisigAccountTransaction(deadline *Deadline, minApprovalDelta int8, minRemovalDelta int8, modifications []*MultisigCosignatoryModification) (*ModifyMultisigAccountTransaction, error) {
-	return NewModifyMultisigAccountTransaction(deadline, minApprovalDelta, minRemovalDelta, modifications, c.config.NetworkType)
+	tx, err := NewModifyMultisigAccountTransaction(deadline, minApprovalDelta, minRemovalDelta, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewModifyContractTransaction(
@@ -361,43 +471,93 @@ func (c *Client) NewModifyContractTransaction(
 	customers []*MultisigCosignatoryModification,
 	executors []*MultisigCosignatoryModification,
 	verifiers []*MultisigCosignatoryModification) (*ModifyContractTransaction, error) {
-	return NewModifyContractTransaction(deadline, durationDelta, hash, customers, executors, verifiers, c.config.NetworkType)
+	tx, err := NewModifyContractTransaction(deadline, durationDelta, hash, customers, executors, verifiers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties) (*MosaicDefinitionTransaction, error) {
-	return NewMosaicDefinitionTransaction(deadline, nonce, ownerPublicKey, mosaicProps, c.config.NetworkType)
+	tx, err := NewMosaicDefinitionTransaction(deadline, nonce, ownerPublicKey, mosaicProps, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration) (*MosaicSupplyChangeTransaction, error) {
-	return NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
+	tx, err := NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
-	return NewTransferTransaction(deadline, recipient, mosaics, message, c.config.NetworkType)
+	tx, err := NewTransferTransaction(deadline, recipient, mosaics, message, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
-	return NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+	tx, err := NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewRegisterRootNamespaceTransaction(deadline *Deadline, namespaceName string, duration Duration) (*RegisterNamespaceTransaction, error) {
-	return NewRegisterRootNamespaceTransaction(deadline, namespaceName, duration, c.config.NetworkType)
+	tx, err := NewRegisterRootNamespaceTransaction(deadline, namespaceName, duration, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewRegisterSubNamespaceTransaction(deadline *Deadline, namespaceName string, parentId *NamespaceId) (*RegisterNamespaceTransaction, error) {
-	return NewRegisterSubNamespaceTransaction(deadline, namespaceName, parentId, c.config.NetworkType)
+	tx, err := NewRegisterSubNamespaceTransaction(deadline, namespaceName, parentId, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, signedTx *SignedTransaction) (*LockFundsTransaction, error) {
-	return NewLockFundsTransaction(deadline, mosaic, duration, signedTx, c.config.NetworkType)
+	tx, err := NewLockFundsTransaction(deadline, mosaic, duration, signedTx, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewSecretLockTransaction(deadline *Deadline, mosaic *Mosaic, duration Duration, secret *Secret, recipient *Address) (*SecretLockTransaction, error) {
-	return NewSecretLockTransaction(deadline, mosaic, duration, secret, recipient, c.config.NetworkType)
+	tx, err := NewSecretLockTransaction(deadline, mosaic, duration, secret, recipient, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func (c *Client) NewSecretProofTransaction(deadline *Deadline, hashType HashType, proof *Proof, recipient *Address) (*SecretProofTransaction, error) {
-	return NewSecretProofTransaction(deadline, hashType, proof, recipient, c.config.NetworkType)
+	tx, err := NewSecretProofTransaction(deadline, hashType, proof, recipient, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }
 
 func addOptions(s string, opt interface{}) (string, error) {

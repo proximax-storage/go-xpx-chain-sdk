@@ -66,6 +66,15 @@ func (rcv *LockFundsTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
+func (rcv *LockFundsTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *LockFundsTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
@@ -91,16 +100,25 @@ func (rcv *LockFundsTransactionBuffer) SignerBytes() []byte {
 	return nil
 }
 
-func (rcv *LockFundsTransactionBuffer) Version() uint16 {
+func (rcv *LockFundsTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *LockFundsTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *LockFundsTransactionBuffer) MutateVersion(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *LockFundsTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
 }
 
 func (rcv *LockFundsTransactionBuffer) Type() uint16 {
@@ -132,6 +150,15 @@ func (rcv *LockFundsTransactionBuffer) MaxFeeLength() int {
 	return 0
 }
 
+func (rcv *LockFundsTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *LockFundsTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
@@ -147,6 +174,15 @@ func (rcv *LockFundsTransactionBuffer) DeadlineLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *LockFundsTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
 }
 
 func (rcv *LockFundsTransactionBuffer) MosaicId(j int) uint32 {
@@ -166,6 +202,15 @@ func (rcv *LockFundsTransactionBuffer) MosaicIdLength() int {
 	return 0
 }
 
+func (rcv *LockFundsTransactionBuffer) MutateMosaicId(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *LockFundsTransactionBuffer) MosaicAmount(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
@@ -183,6 +228,15 @@ func (rcv *LockFundsTransactionBuffer) MosaicAmountLength() int {
 	return 0
 }
 
+func (rcv *LockFundsTransactionBuffer) MutateMosaicAmount(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *LockFundsTransactionBuffer) Duration(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
@@ -198,6 +252,15 @@ func (rcv *LockFundsTransactionBuffer) DurationLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *LockFundsTransactionBuffer) MutateDuration(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
 }
 
 func (rcv *LockFundsTransactionBuffer) Hash(j int) byte {
@@ -225,6 +288,15 @@ func (rcv *LockFundsTransactionBuffer) HashBytes() []byte {
 	return nil
 }
 
+func (rcv *LockFundsTransactionBuffer) MutateHash(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func LockFundsTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(11)
 }
@@ -243,14 +315,14 @@ func LockFundsTransactionBufferAddSigner(builder *flatbuffers.Builder, signer fl
 func LockFundsTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func LockFundsTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
-	builder.PrependUint16Slot(3, version, 0)
+func LockFundsTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
 }
 func LockFundsTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func LockFundsTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
+func LockFundsTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
 func LockFundsTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

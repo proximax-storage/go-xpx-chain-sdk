@@ -66,6 +66,15 @@ func (rcv *AggregateTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
+func (rcv *AggregateTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *AggregateTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
@@ -91,16 +100,25 @@ func (rcv *AggregateTransactionBuffer) SignerBytes() []byte {
 	return nil
 }
 
-func (rcv *AggregateTransactionBuffer) Version() uint16 {
+func (rcv *AggregateTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *AggregateTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *AggregateTransactionBuffer) MutateVersion(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(10, n)
+func (rcv *AggregateTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
 }
 
 func (rcv *AggregateTransactionBuffer) Type() uint16 {
@@ -132,6 +150,15 @@ func (rcv *AggregateTransactionBuffer) MaxFeeLength() int {
 	return 0
 }
 
+func (rcv *AggregateTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
 func (rcv *AggregateTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
@@ -147,6 +174,15 @@ func (rcv *AggregateTransactionBuffer) DeadlineLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *AggregateTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
 }
 
 func (rcv *AggregateTransactionBuffer) TransactionsSize() uint32 {
@@ -186,6 +222,15 @@ func (rcv *AggregateTransactionBuffer) TransactionsBytes() []byte {
 	return nil
 }
 
+func (rcv *AggregateTransactionBuffer) MutateTransactions(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func AggregateTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(9)
 }
@@ -204,14 +249,14 @@ func AggregateTransactionBufferAddSigner(builder *flatbuffers.Builder, signer fl
 func AggregateTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func AggregateTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint16) {
-	builder.PrependUint16Slot(3, version, 0)
+func AggregateTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
 }
 func AggregateTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func AggregateTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxMaxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxMaxFee), 0)
+func AggregateTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
 func AggregateTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

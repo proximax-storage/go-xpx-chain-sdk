@@ -5,10 +5,10 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"reflect"
 	"time"
 )
 
@@ -29,7 +29,7 @@ func (h Hash) Empty() bool {
 }
 
 func (h Hash) Equal(other *Hash) bool {
-	return reflect.DeepEqual(h, other)
+	return bytes.Compare(h[:], other[:]) == 0
 }
 
 type blockchainInt64 interface {
@@ -86,6 +86,42 @@ type Amount = baseInt64
 type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
+
+type BlockChainVersion uint64
+
+func NewBlockChainVersion(major uint16, minor uint16, revision uint16, build uint16) BlockChainVersion {
+	version := BlockChainVersion(0)
+	version |= BlockChainVersion(major) << 48
+	version |= BlockChainVersion(minor) << 32
+	version |= BlockChainVersion(revision) << 16
+	version |= BlockChainVersion(build) << 0
+	return version
+}
+
+func (m BlockChainVersion) String() string {
+	getTwoBytesByShift := func(number BlockChainVersion, shift uint) uint16 {
+		return uint16(number>>shift) & 0xFF
+	}
+
+	return fmt.Sprintf(
+		"%d [Major %d, Minor %d, Revision %d, Build %d]",
+		m,
+		getTwoBytesByShift(m, 48),
+		getTwoBytesByShift(m, 32),
+		getTwoBytesByShift(m, 16),
+		getTwoBytesByShift(m, 0),
+	)
+}
+
+func (m BlockChainVersion) toArray() [2]uint32 {
+	return uint64ToArray(uint64(m))
+}
+
+func (m BlockChainVersion) toLittleEndian() []byte {
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, uint64(m))
+	return bytes
+}
 
 type ChainScore [2]uint64
 

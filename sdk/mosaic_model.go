@@ -204,12 +204,12 @@ func (tx MosaicSupplyType) String() string {
 
 // returns XEM mosaic with passed amount
 func Xem(amount uint64) *Mosaic {
-	return newMosaicPanic(XemMosaicId, Amount(amount))
+	return newMosaicPanic(XemNamespaceId, Amount(amount))
 }
 
 // returns XPX mosaic with passed amount
 func Xpx(amount uint64) *Mosaic {
-	return newMosaicPanic(XpxMosaicId, Amount(amount))
+	return newMosaicPanic(XpxNamespaceId, Amount(amount))
 }
 
 // returns XEM with actual passed amount

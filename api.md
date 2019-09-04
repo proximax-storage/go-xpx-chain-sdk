@@ -209,8 +209,8 @@ type AbstractTransaction struct {
 	*TransactionInfo
 	NetworkType NetworkType
 	Deadline    *Deadline
-	Type        TransactionType
-	Version     TransactionVersion
+	Type        EntityType
+	Version     EntityVersion
 	MaxFee      Amount
 	Signature   string
 	Signer      *PublicAccount
@@ -390,10 +390,10 @@ type AccountProperties struct {
 	Address            *Address
 	AllowedAddresses   []*Address
 	AllowedMosaicId    []*MosaicId
-	AllowedEntityTypes []TransactionType
+	AllowedEntityTypes []EntityType
 	BlockedAddresses   []*Address
 	BlockedMosaicId    []*MosaicId
-	BlockedEntityTypes []TransactionType
+	BlockedEntityTypes []EntityType
 }
 ```
 
@@ -463,7 +463,7 @@ func (tx *AccountPropertiesAddressTransaction) String() string
 ```go
 type AccountPropertiesEntityTypeModification struct {
 	ModificationType PropertyModificationType
-	EntityType       TransactionType
+	EntityType       EntityType
 }
 ```
 
@@ -2901,7 +2901,7 @@ func (m *SecureMessage) Type() MessageType
 
 ```go
 type SignedTransaction struct {
-	TransactionType `json:"transactionType"`
+	EntityType `json:"transactionType"`
 	Payload         string `json:"payload"`
 	Hash            Hash   `json:"hash"`
 }
@@ -3148,73 +3148,73 @@ type TransactionStatus struct {
 func (ts *TransactionStatus) String() string
 ```
 
-#### type TransactionType
+#### type EntityType
 
 ```go
-type TransactionType uint16
+type EntityType uint16
 ```
 
 
 ```go
 const (
-	AccountPropertyAddress    TransactionType = 0x4150
-	AccountPropertyMosaic     TransactionType = 0x4250
-	AccountPropertyEntityType TransactionType = 0x4350
-	AddressAlias              TransactionType = 0x424e
-	AggregateBonded           TransactionType = 0x4241
-	AggregateCompleted        TransactionType = 0x4141
-	LinkAccount               TransactionType = 0x414c
-	Lock                      TransactionType = 0x4148
-	MetadataAddress           TransactionType = 0x413d
-	MetadataMosaic            TransactionType = 0x423d
-	MetadataNamespace         TransactionType = 0x433d
-	ModifyContract            TransactionType = 0x4157
-	ModifyMultisig            TransactionType = 0x4155
-	MosaicAlias               TransactionType = 0x434e
-	MosaicDefinition          TransactionType = 0x414d
-	MosaicSupplyChange        TransactionType = 0x424d
-	RegisterNamespace         TransactionType = 0x414e
-	SecretLock                TransactionType = 0x4152
-	SecretProof               TransactionType = 0x4252
-	Transfer                  TransactionType = 0x4154
+	AccountPropertyAddress    EntityType = 0x4150
+	AccountPropertyMosaic     EntityType = 0x4250
+	AccountPropertyEntityType EntityType = 0x4350
+	AddressAlias              EntityType = 0x424e
+	AggregateBonded           EntityType = 0x4241
+	AggregateCompleted        EntityType = 0x4141
+	LinkAccount               EntityType = 0x414c
+	Lock                      EntityType = 0x4148
+	MetadataAddress           EntityType = 0x413d
+	MetadataMosaic            EntityType = 0x423d
+	MetadataNamespace         EntityType = 0x433d
+	ModifyContract            EntityType = 0x4157
+	ModifyMultisig            EntityType = 0x4155
+	MosaicAlias               EntityType = 0x434e
+	MosaicDefinition          EntityType = 0x414d
+	MosaicSupplyChange        EntityType = 0x424d
+	RegisterNamespace         EntityType = 0x414e
+	SecretLock                EntityType = 0x4152
+	SecretProof               EntityType = 0x4252
+	Transfer                  EntityType = 0x4154
 )
 ```
 
-#### func (TransactionType) String
+#### func (EntityType) String
 
 ```go
-func (t TransactionType) String() string
+func (t EntityType) String() string
 ```
 
-#### type TransactionVersion
+#### type EntityVersion
 
 ```go
-type TransactionVersion uint8
+type EntityVersion uint8
 ```
 
 
 ```go
 const (
-	AccountPropertyAddressVersion    TransactionVersion = 1
-	AccountPropertyMosaicVersion     TransactionVersion = 1
-	AccountPropertyEntityTypeVersion TransactionVersion = 1
-	AddressAliasVersion              TransactionVersion = 1
-	AggregateBondedVersion           TransactionVersion = 2
-	AggregateCompletedVersion        TransactionVersion = 2
-	LinkAccountVersion               TransactionVersion = 2
-	LockVersion                      TransactionVersion = 1
-	MetadataAddressVersion           TransactionVersion = 1
-	MetadataMosaicVersion            TransactionVersion = 1
-	MetadataNamespaceVersion         TransactionVersion = 1
-	ModifyContractVersion            TransactionVersion = 3
-	ModifyMultisigVersion            TransactionVersion = 3
-	MosaicAliasVersion               TransactionVersion = 1
-	MosaicDefinitionVersion          TransactionVersion = 3
-	MosaicSupplyChangeVersion        TransactionVersion = 2
-	RegisterNamespaceVersion         TransactionVersion = 2
-	SecretLockVersion                TransactionVersion = 1
-	SecretProofVersion               TransactionVersion = 1
-	TransferVersion                  TransactionVersion = 3
+	AccountPropertyAddressVersion    EntityVersion = 1
+	AccountPropertyMosaicVersion     EntityVersion = 1
+	AccountPropertyEntityTypeVersion EntityVersion = 1
+	AddressAliasVersion              EntityVersion = 1
+	AggregateBondedVersion           EntityVersion = 2
+	AggregateCompletedVersion        EntityVersion = 2
+	LinkAccountVersion               EntityVersion = 2
+	LockVersion                      EntityVersion = 1
+	MetadataAddressVersion           EntityVersion = 1
+	MetadataMosaicVersion            EntityVersion = 1
+	MetadataNamespaceVersion         EntityVersion = 1
+	ModifyContractVersion            EntityVersion = 3
+	ModifyMultisigVersion            EntityVersion = 3
+	MosaicAliasVersion               EntityVersion = 1
+	MosaicDefinitionVersion          EntityVersion = 3
+	MosaicSupplyChangeVersion        EntityVersion = 2
+	RegisterNamespaceVersion         EntityVersion = 2
+	SecretLockVersion                EntityVersion = 1
+	SecretProofVersion               EntityVersion = 1
+	TransferVersion                  EntityVersion = 3
 )
 ```
 

@@ -11,7 +11,7 @@ type blockInfoDTO struct {
 	Block struct {
 		Signature              signatureDto           `json:"signature"`
 		Signer                 string                 `json:"signer"`
-		Version                uint64                 `json:"version"`
+		Version                int64                  `json:"version"`
 		Type                   uint64                 `json:"type"`
 		Height                 uint64DTO              `json:"height"`
 		Timestamp              blockchainTimestampDTO `json:"timestamp"`
@@ -36,10 +36,6 @@ func (dto *blockInfoDTO) toStruct() (*BlockInfo, error) {
 	}
 
 	v := ExtractVersion(dto.Block.Version)
-	if err != nil {
-		return nil, err
-	}
-
 	var bpa *PublicAccount = nil
 
 	if dto.Block.Beneficiary != EmptyPublicKey {

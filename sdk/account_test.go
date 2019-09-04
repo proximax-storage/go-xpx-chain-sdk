@@ -31,10 +31,10 @@ var (
 		Address:            &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
 		AllowedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
 		AllowedMosaicId:    []*MosaicId{newMosaicIdPanic(uint64DTO{1486560344, 659392627}.toUint64())},
-		AllowedEntityTypes: []TransactionType{LinkAccount},
+		AllowedEntityTypes: []EntityType{LinkAccount},
 		BlockedAddresses:   []*Address{{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"}},
 		BlockedMosaicId:    []*MosaicId{newMosaicIdPanic(uint64DTO{1486560344, 659392627}.toUint64())},
-		BlockedEntityTypes: []TransactionType{LinkAccount},
+		BlockedEntityTypes: []EntityType{LinkAccount},
 	}
 
 	accountClient = mockServer.getPublicTestClientUnsafe().Account

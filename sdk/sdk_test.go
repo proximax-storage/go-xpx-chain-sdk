@@ -70,7 +70,14 @@ func newSdkMockWithRouter(router *mock.Router) *sdkMock {
 }
 
 func (m sdkMock) getClientByNetworkType(networkType NetworkType) (*Client, error) {
-	conf, err := NewConfigWithReputation([]string{m.GetServerURL()}, networkType, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, nil)
+	conf, err := NewConfigWithReputation(
+		[]string{m.GetServerURL()},
+		networkType,
+		&defaultRepConfig,
+		DefaultWebsocketReconnectionTimeout,
+		nil,
+		DefaultFeeCalculationStrategy,
+	)
 
 	if err != nil {
 		return nil, err
@@ -97,7 +104,13 @@ func TestClient_AdaptAccount(t *testing.T) {
 	account, err := NewAccount(PublicTest, stockHash)
 	assert.Nil(t, err)
 
-	config, err := NewConfigWithReputation([]string{""}, MijinTest, &defaultRepConfig, DefaultWebsocketReconnectionTimeout, defaultHash)
+	config, err := NewConfigWithReputation(
+		[]string{""},
+		MijinTest,
+		&defaultRepConfig,
+		DefaultWebsocketReconnectionTimeout,
+		defaultHash, DefaultFeeCalculationStrategy,
+	)
 	assert.Nil(t, err)
 
 	client := NewClient(nil, config)
