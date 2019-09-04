@@ -1,10 +1,11 @@
 package subscribers
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 var cosignatureHandlerFunc1 = func(tx *sdk.SignerInfo) bool {

@@ -8,8 +8,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
+
+	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type BlockchainService service

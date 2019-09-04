@@ -1,11 +1,12 @@
 package subscribers
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 var statusHandlerFunc1 = func(tx *sdk.StatusInfo) bool {

@@ -1,14 +1,16 @@
 package handlers
 
 import (
-	"github.com/proximax-storage/go-xpx-catapult-sdk/mocks/mappers"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
 
-	mocksSubscribers "github.com/proximax-storage/go-xpx-catapult-sdk/mocks/subscribers"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/mocks/mappers"
+
+	mocksSubscribers "github.com/proximax-storage/go-xpx-chain-sdk/mocks/subscribers"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
 func Test_unconfirmedRemovedHandler_Handle(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"errors"
+
 	"github.com/proximax-storage/xpx-crypto-go"
 )
 

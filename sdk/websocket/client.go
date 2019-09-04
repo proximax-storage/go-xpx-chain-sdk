@@ -7,16 +7,17 @@ package websocket
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"io"
 	"net"
 	"net/url"
 	"time"
 
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	hdlrs "github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/handlers"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
+	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	hdlrs "github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
 const pathWS = "ws"
@@ -132,7 +133,7 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 			_, resp, e := c.conn.ReadMessage()
 			if e != nil {
 				if _, ok := e.(*net.OpError); ok {
-					//Stop ReadMessage goroutine if user called Close function for websocket client
+					// Stop ReadMessage goroutine if user called Close function for websocket client
 					return
 				}
 

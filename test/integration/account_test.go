@@ -5,10 +5,12 @@
 package integration
 
 import (
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
+	"testing"
+
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 func TestAddressService_GetAccountNames(t *testing.T) {

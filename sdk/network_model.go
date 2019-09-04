@@ -9,10 +9,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/str"
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
 type NetworkType uint8

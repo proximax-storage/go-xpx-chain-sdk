@@ -8,9 +8,10 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
 	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/xpx-crypto-go"
-	"strings"
 )
 
 const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"

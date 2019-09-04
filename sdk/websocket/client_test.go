@@ -7,15 +7,17 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	mocks2 "github.com/proximax-storage/go-xpx-catapult-sdk/mocks"
-	mocks "github.com/proximax-storage/go-xpx-catapult-sdk/mocks/subscribers"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk/websocket/subscribers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
+
+	mocks2 "github.com/proximax-storage/go-xpx-chain-sdk/mocks"
+	mocks "github.com/proximax-storage/go-xpx-chain-sdk/mocks/subscribers"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
 func TestCatapultWebsocketClientImpl_AddBlockHandlers(t *testing.T) {

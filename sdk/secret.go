@@ -5,9 +5,10 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/proximax-storage/xpx-crypto-go"
-	"strings"
 )
 
 type HashType uint8

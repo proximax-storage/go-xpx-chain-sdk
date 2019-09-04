@@ -6,10 +6,11 @@ package sdk
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 const (

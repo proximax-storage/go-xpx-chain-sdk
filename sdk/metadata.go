@@ -3,9 +3,10 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-utils/net"
-	"net/http"
 )
 
 type MetadataService service

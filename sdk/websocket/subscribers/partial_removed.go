@@ -1,9 +1,11 @@
 package subscribers
 
 import (
-	"github.com/pkg/errors"
-	"github.com/proximax-storage/go-xpx-catapult-sdk/sdk"
 	"sync"
+
+	"github.com/pkg/errors"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (

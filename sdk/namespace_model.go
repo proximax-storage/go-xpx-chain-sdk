@@ -8,10 +8,11 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/json-iterator/go"
-	"github.com/proximax-storage/go-xpx-utils/str"
 	"strings"
 	"unsafe"
+
+	"github.com/json-iterator/go"
+	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
 const NamespaceBit uint64 = 1 << 63

@@ -8,9 +8,10 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateNamespacePath_GeneratesCorrectWellKnownRootPath(t *testing.T) {

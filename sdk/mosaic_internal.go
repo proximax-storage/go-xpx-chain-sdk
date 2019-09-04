@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+
 	"golang.org/x/crypto/sha3"
 )
 

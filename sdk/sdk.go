@@ -9,13 +9,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/google/go-querystring/query"
-	"github.com/json-iterator/go"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"time"
+
+	"github.com/google/go-querystring/query"
+	"github.com/json-iterator/go"
 )
 
 const (

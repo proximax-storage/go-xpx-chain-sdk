@@ -7,9 +7,9 @@ Feel free to test out the component and report any issues. Our team will handle 
 
 ## PR / Code Contribution
 When contributing, please make sure you fork and clone the repository under your gopath on
-`github.com/proximax-storage/go-xpx-catapult-sdk`. This ensures you don't use any of your repository imports in the code base.
+`github.com/proximax-storage/go-xpx-chain-sdk`. This ensures you don't use any of your repository imports in the code base.
 
-+ Step 1: Fork Repository and clone under `github.com/proximax-storage/go-xpx-catapult-sdk`
++ Step 1: Fork Repository and clone under `github.com/proximax-storage/go-xpx-chain-sdk`
 + Step 2: Do your changes. Commit your changes along with the issue number on the message part of the commit.
 + Step 3: Raise PR from your branch to `development` branch
 + Step 4: Wait for Review. Set @alvin-reyes as reviewer.

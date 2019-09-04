@@ -8,11 +8,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/proximax-storage/go-xpx-utils/tests"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 const transactionId = "5B55E02EACCB7B00015DB6E1"
