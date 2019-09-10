@@ -1,6 +1,6 @@
 module github.com/proximax-storage/go-xpx-chain-sdk
 
-go 1.12
+go 1.13
 
 require (
 	github.com/google/flatbuffers v1.10.0
