@@ -3575,7 +3575,7 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 	case StorageFilePayment:
 		dto = &storageFileHashTransactionDTO{}
 	case StorageDriveVerification:
-		dto = nil // TODO clarify
+		dto = &storageDriveVerificationTransactionDTO{}
 	case StorageCreateDirectory:
 		dto = &storageDirectoryTransactionDTO{}
 	case StorageRemoveDirectory:

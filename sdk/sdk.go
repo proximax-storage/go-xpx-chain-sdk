@@ -693,6 +693,15 @@ func (c *Client) NewStorageCopyFileTransaction(deadline *Deadline, source *Stora
 	return tx, err
 }
 
+func (c *Client) NewStorageDriveVerificationTransaction(deadline *Deadline, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDriveVerificationTransaction(deadline, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {

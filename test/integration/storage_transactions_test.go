@@ -32,6 +32,21 @@ func TestStorageDrivePrepareTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
+func TestNewStorageDriveVerificationTransaction(t *testing.T) {
+	testAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+
+	fmt.Println(testAccount)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewStorageDriveVerificationTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.MijinTest,
+		)
+	}, testAccount)
+	assert.Nil(t, result.error)
+}
+
 func TestStorageDriveProlongationTransaction(t *testing.T) {
 	testAccount, err := client.NewAccount()
 	assert.Nil(t, err)

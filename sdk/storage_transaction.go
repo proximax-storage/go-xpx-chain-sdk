@@ -43,6 +43,7 @@ func NewStorageDriveProlongationTransaction(deadline *Deadline, duration Duratio
 		},
 	}, nil
 }
+
 func NewStorageFileDepositTransaction(deadline *Deadline, fileHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -56,6 +57,7 @@ func NewStorageFileDepositTransaction(deadline *Deadline, fileHash *Hash, networ
 		},
 	}, nil
 }
+
 func NewStorageDriveDepositTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -83,6 +85,7 @@ func NewStorageFileDepositReturnTransaction(deadline *Deadline, fileHash *Hash, 
 		},
 	}, nil
 }
+
 func NewStorageDriveDepositReturnTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -96,6 +99,7 @@ func NewStorageDriveDepositReturnTransaction(deadline *Deadline, directoryHash *
 		},
 	}, nil
 }
+
 func NewStorageFilePaymentTransaction(deadline *Deadline, fileHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -109,6 +113,7 @@ func NewStorageFilePaymentTransaction(deadline *Deadline, fileHash *Hash, networ
 		},
 	}, nil
 }
+
 func NewStorageDrivePaymentTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -122,6 +127,7 @@ func NewStorageDrivePaymentTransaction(deadline *Deadline, directoryHash *Hash, 
 		},
 	}, nil
 }
+
 func NewStorageCreateDirectoryTransaction(deadline *Deadline, directory *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -135,6 +141,7 @@ func NewStorageCreateDirectoryTransaction(deadline *Deadline, directory *Storage
 		},
 	}, nil
 }
+
 func NewStorageRemoveDirectoryTransaction(deadline *Deadline, directory *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -148,6 +155,7 @@ func NewStorageRemoveDirectoryTransaction(deadline *Deadline, directory *Storage
 		},
 	}, nil
 }
+
 func NewStorageUploadFileTransaction(deadline *Deadline, file *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -161,6 +169,7 @@ func NewStorageUploadFileTransaction(deadline *Deadline, file *StorageFile, netw
 		},
 	}, nil
 }
+
 func NewStorageDownloadFileTransaction(deadline *Deadline, file *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
 	return &StorageTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -217,7 +226,17 @@ func NewStorageCopyFileTransaction(deadline *Deadline, source *StorageFile, dest
 		},
 	}, nil
 }
-
+func NewStorageDriveVerificationTransaction(deadline *Deadline, networkType NetworkType) (*StorageTransaction, error) {
+	return &StorageTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     StorageVersion,
+			Deadline:    deadline,
+			Type:        StorageDriveVerification,
+			NetworkType: networkType,
+		},
+		Action: nil,
+	}, nil
+}
 func (tx *StorageTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }

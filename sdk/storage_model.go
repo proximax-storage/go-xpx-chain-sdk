@@ -329,6 +329,29 @@ func (dto *storageDirectoryTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
+type storageDriveVerificationTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *storageDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StorageTransaction{
+		AbstractTransaction: *atx,
+	}, nil
+}
+
 type storageFileTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
