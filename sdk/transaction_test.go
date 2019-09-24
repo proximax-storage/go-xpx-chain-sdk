@@ -974,3 +974,20 @@ func TestMapTransactions(t *testing.T) {
 	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
 	assert.True(t, len(txs) == 2)
 }
+
+func TestStoragePrepareDriveTransactionSerialization(t *testing.T) {
+	tx, err := NewStorageDrivePrepareTransaction(
+		fakeDeadline,
+		Duration(10000),
+		DriveSize(10000),
+		Replicas(10000),
+		MijinTest,
+	)
+
+	assert.Nilf(t, err, "NewStorageDrivePrepareTransaction returned error: %s", err)
+
+	b, err := tx.generateBytes()
+
+	assert.Nilf(t, err, "StoragePrepareDriveTransaction.generateBytes returned error: %s", err)
+	assert.Equal(t, registerRootNamespaceTransactionSerializationCorr, b)
+}

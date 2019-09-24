@@ -1,0 +1,57 @@
+namespace Catapult.Buffers;
+
+
+table DriveFileBuffer {
+    hash: [ubyte];
+    parentHash: [ubyte];
+    nameSize: ubyte;
+    name: string;
+}
+
+table StoragePrepareDriveBuffer {
+    duration:[uint];
+    driveSize:[uint];
+    replicas:[uint];
+}
+
+table StorageDriveProlongationBuffer {
+    duration:[uint];
+}
+
+//Same for drive and file deposit
+//Same for drive and file deposit return
+//Same for drive and file payment
+table StorageFileHashBuffer {
+    fileHash: [ubyte];
+}
+
+table StorageFileBuffer {
+    driveFile:DriveFileBuffer;
+}
+
+table StorageFileOperationBuffer {
+    source:DriveFileBuffer;
+    destination:DriveFileBuffer;
+}
+
+table StorageDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    action: [uint];
+}
+
+root_type DriveFileBuffer;
+
+root_type StoragePrepareDriveBuffer;
+
+root_type StorageDriveProlongationBuffer;
+
+root_type StorageFileHashBuffer;
+
+root_type StorageFileOperationBuffer;
+

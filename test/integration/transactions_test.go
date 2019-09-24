@@ -807,3 +807,21 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 	}, testAccount)
 	assert.Nil(t, result.error)
 }
+
+func TestStorageDriveTransaction(t *testing.T) {
+	testAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+
+	fmt.Println(testAccount)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewStoragePrepareDriveTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(100),
+			100,
+			2,
+			sdk.MijinTest,
+		)
+	}, testAccount)
+	assert.Nil(t, result.error)
+}

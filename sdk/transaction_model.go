@@ -3236,6 +3236,8 @@ const (
 	MaxFeeSize                               int = BaseInt64Size
 	DeadLineSize                             int = BaseInt64Size
 	DurationSize                             int = BaseInt64Size
+	ReplicasSize                             int = BaseInt64Size
+	DriveFieldSize                           int = BaseInt64Size
 	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
 	PropertyModificationTypeSize             int = 1
@@ -3277,6 +3279,11 @@ const (
 	MosaicsSizeSize                          int = 1
 	MessageSizeSize                          int = 2
 	TransferHeaderSize                       int = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+	FileNameSizeSize                         int = 1 // TODO
+	PrepareDriveSize                         int = DurationSize + DriveFieldSize + ReplicasSize
+	DriveProlongationSize                    int = DurationSize
+	FileHashSize                             int = Hash256                              // TODO
+	FileSize                                 int = Hash256 + Hash256 + FileNameSizeSize // TODO
 )
 
 type EntityType uint16
@@ -3306,6 +3313,22 @@ const (
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
 	Transfer                  EntityType = 0x4154
+	StoragePrepareDrive       EntityType = 0x1  // TODO clarify
+	StorageDriveProlongation  EntityType = 0x2  // TODO clarify
+	StorageDriveDeposit       EntityType = 0x3  // TODO clarify
+	StorageDriveDepositReturn EntityType = 0x4  // TODO clarify
+	StorageDrivePayment       EntityType = 0x5  // TODO clarify
+	StorageFileDeposit        EntityType = 0x6  // TODO clarify
+	StorageFileDepositReturn  EntityType = 0x7  // TODO clarify
+	StorageFilePayment        EntityType = 0x8  // TODO clarify
+	StorageDriveVerification  EntityType = 0x9  // TODO clarify
+	StorageCreateDirectory    EntityType = 0x10 // TODO clarify
+	StorageRemoveDirectory    EntityType = 0x11 // TODO clarify
+	StorageUploadFile         EntityType = 0x12 // TODO clarify
+	StorageDownloadFile       EntityType = 0x13 // TODO clarify
+	StorageDeleteFile         EntityType = 0x14 // TODO clarify
+	StorageMoveFile           EntityType = 0x15 // TODO clarify
+	StorageCopyFile           EntityType = 0x16 // TODO clarify
 )
 
 func (t EntityType) String() string {
@@ -3337,6 +3360,7 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
+	StorageVersion                   EntityVersion = 1 // TODO clarify
 )
 
 type AccountLinkAction uint8
@@ -3534,6 +3558,38 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &secretProofTransactionDTO{}
 	case Transfer:
 		dto = &transferTransactionDTO{}
+	case StoragePrepareDrive:
+		dto = &storagePrepareDriveTransactionDTO{}
+	case StorageDriveProlongation:
+		dto = &storageDriveProlongationTransactionDTO{}
+	case StorageDriveDeposit:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageDriveDepositReturn:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageDrivePayment:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageFileDeposit:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageFileDepositReturn:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageFilePayment:
+		dto = &storageFileHashTransactionDTO{}
+	case StorageDriveVerification:
+		dto = nil // TODO clarify
+	case StorageCreateDirectory:
+		dto = &storageDirectoryTransactionDTO{}
+	case StorageRemoveDirectory:
+		dto = &storageDirectoryTransactionDTO{}
+	case StorageUploadFile:
+		dto = &storageFileTransactionDTO{}
+	case StorageDownloadFile:
+		dto = &storageFileTransactionDTO{}
+	case StorageDeleteFile:
+		dto = &storageFileTransactionDTO{}
+	case StorageMoveFile:
+		dto = &storageFileOperationTransactionDTO{}
+	case StorageCopyFile:
+		dto = &storageFileOperationTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)

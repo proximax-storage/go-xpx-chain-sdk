@@ -86,6 +86,8 @@ type Amount = baseInt64
 type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
+type Replicas = baseInt64
+type DriveSize = baseInt64
 
 type BlockChainVersion uint64
 

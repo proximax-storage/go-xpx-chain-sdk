@@ -560,6 +560,138 @@ func (c *Client) NewSecretProofTransaction(deadline *Deadline, hashType HashType
 
 	return tx, err
 }
+func (c *Client) NewStoragePrepareDriveTransaction(deadline *Deadline, duration Duration, driveSize DriveSize, replicas Replicas, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDrivePrepareTransaction(deadline, duration, driveSize, replicas, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageDriveProlongationTransaction(deadline *Deadline, duration Duration, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDriveProlongationTransaction(deadline, duration, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageFileDepositTransaction(deadline *Deadline, fileHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageFileDepositTransaction(deadline, fileHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageDriveDepositTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDriveDepositTransaction(deadline, directoryHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageFileDepositReturnTransaction(deadline *Deadline, fileHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageFileDepositReturnTransaction(deadline, fileHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageDriveDepositReturnTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDriveDepositReturnTransaction(deadline, directoryHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageFilePaymentTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageFilePaymentTransaction(deadline, directoryHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageDrivePaymentTransaction(deadline *Deadline, directoryHash *Hash, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDrivePaymentTransaction(deadline, directoryHash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageCreateDirectoryTransaction(deadline *Deadline, directory *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageCreateDirectoryTransaction(deadline, directory, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageRemoveDirectoryTransaction(deadline *Deadline, directory *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageRemoveDirectoryTransaction(deadline, directory, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageUploadFileTransaction(deadline *Deadline, file *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageUploadFileTransaction(deadline, file, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageDownloadFileTransaction(deadline *Deadline, file *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDownloadFileTransaction(deadline, file, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+func (c *Client) NewStorageDeleteFileTransaction(deadline *Deadline, file *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageDeleteFileTransaction(deadline, file, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStorageMoveFileTransaction(deadline *Deadline, source *StorageFile, destination *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageMoveFileTransaction(deadline, source, destination, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+func (c *Client) NewStorageCopyFileTransaction(deadline *Deadline, source *StorageFile, destination *StorageFile, networkType NetworkType) (*StorageTransaction, error) {
+	tx, err := NewStorageCopyFileTransaction(deadline, source, destination, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
 
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
