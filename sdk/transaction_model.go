@@ -16,7 +16,7 @@ import (
 	"sync"
 
 	"github.com/google/flatbuffers/go"
-	"github.com/proximax-storage/go-xpx-utils"
+	"github.com/proximax-storage/nem2-sdk-go/utils"
 	"github.com/proximax-storage/xpx-crypto-go"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
@@ -3360,7 +3360,7 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
-	StorageVersion                   EntityVersion = 1 // TODO clarify
+	StorageVersion                   EntityVersion = 1
 )
 
 type AccountLinkAction uint8

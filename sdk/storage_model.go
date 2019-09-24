@@ -13,12 +13,6 @@ type StorageAction interface {
 	generateBytes() ([]byte, error)
 }
 
-type StorageDrivePrepareAction struct {
-	Duration  Duration
-	DriveSize DriveSize
-	Replicas  Replicas
-}
-
 type StorageFile struct {
 	Hash       *Hash
 	ParentHash *Hash
@@ -56,6 +50,12 @@ type driveTransactionDTO struct {
 	Hash       hashDto `json:"hash"`
 	ParentHash hashDto `json:"parentHash"`
 	Name       string  `json:"name"`
+}
+
+type StorageDrivePrepareAction struct {
+	Duration  Duration
+	DriveSize DriveSize
+	Replicas  Replicas
 }
 
 func (s *StorageDrivePrepareAction) String() string {
