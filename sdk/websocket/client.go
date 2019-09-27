@@ -63,10 +63,10 @@ type (
 		topicHandlers    TopicHandlersStorage
 		messagePublisher MessagePublisher
 
-		connectionStatusCh chan bool
-		listenCh           chan bool            // channel for manage current listen status for connection
-		reconnectCh        chan *websocket.Conn // channel for connection with we will close, and open new connection
-		connectionCh       chan *websocket.Conn // channel for new opened connection
+		// connectionStatusCh chan bool
+		listenCh     chan bool            // channel for manage current listen status for connection
+		reconnectCh  chan *websocket.Conn // channel for connection with we will close, and open new connection
+		connectionCh chan *websocket.Conn // channel for new opened connection
 
 		connectFn func(cfg *sdk.Config) (*websocket.Conn, string, error)
 	}
@@ -111,136 +111,25 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 
 		topicHandlers: make(topicHandlers),
 
-		connectionStatusCh: make(chan bool),
-		listenCh:           make(chan bool),
-		reconnectCh:        make(chan *websocket.Conn),
-		connectionCh:       make(chan *websocket.Conn),
+		listenCh:     make(chan bool),
+		reconnectCh:  make(chan *websocket.Conn),
+		connectionCh: make(chan *websocket.Conn),
+
+		connectFn: connect,
 	}
-	socketClient.connectFn = connect
+
 	go socketClient.handleSignal()
-	return socketClient, socketClient.initNewConnection()
-}
 
-func (c *CatapultWebsocketClientImpl) handleSignal() {
-	for {
-		select {
-		case conn := <-c.connectionCh:
-			c.conn = conn
-			c.connectionStatusCh <- true
-		case conn := <-c.reconnectCh:
-			c.closeConnection(conn)
-			go func() {
-				c.listenCh <- true
-			}()
-
-		case isListen := <-c.listenCh:
-			if !isListen {
-				break
-			}
-
-			if c.conn == nil {
-				err := c.initNewConnection()
-				if err != nil {
-					fmt.Println("websocket: connection is failed. Try again after wait period")
-					select {
-					case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-						go func() {
-							c.listenCh <- true
-						}()
-						continue
-					}
-				}
-			}
-
-			err := c.updateHandlers()
-			if err != nil {
-				fmt.Println("websocket: update handles is failed. Try again after wait period")
-				select {
-				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-					continue
-				}
-
-			}
-			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
-
-			go func() {
-
-			}()
-		}
-	}
-}
-
-func (c *CatapultWebsocketClientImpl) removeHandlers() {
-	c.blockSubscriber = nil
-	c.confirmedAddedSubscribers = nil
-	c.unconfirmedAddedSubscribers = nil
-	c.unconfirmedRemovedSubscribers = nil
-	c.partialAddedSubscribers = nil
-	c.partialRemovedSubscribers = nil
-	c.statusSubscribers = nil
-	c.cosignatureSubscribers = nil
-
-	c.topicHandlers = nil
-}
-
-func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
-	if conn != nil {
-		if err := conn.Close(); err != nil {
-			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
-		}
+	if err := socketClient.initNewConnection(); err != nil {
+		return socketClient, err
 	}
 
-}
-
-func (c *CatapultWebsocketClientImpl) startListener() {
-
-	for {
-		_, resp, e := c.conn.ReadMessage()
-		if e != nil {
-			if _, ok := e.(*net.OpError); ok {
-				// Stop ReadMessage if user called Close function for websocket client
-				return
-			}
-
-			if _, ok := e.(*websocket.CloseError); ok {
-				go func() {
-					c.reconnectCh <- c.conn
-				}()
-				break
-			}
-		}
-
-		go func() {
-			c.messageRouter.RouteMessage(resp)
-		}()
-	}
-}
-
-func (c *CatapultWebsocketClientImpl) initNewConnection() error {
-	conn, uid, err := c.connectFn(c.config)
-	if err != nil {
-		return err
-	}
-
-	topicHandlers := make(topicHandlers)
-	messagePublisher := newMessagePublisher(conn)
-	messageRouter := NewRouter(uid, messagePublisher, topicHandlers)
-
-	c.UID = uid
-	c.topicHandlers = topicHandlers
-	c.messageRouter = messageRouter
-	c.messagePublisher = messagePublisher
-	go func() {
-		c.connectionCh <- conn
-	}()
-	return nil
+	return socketClient, nil
 }
 
 func (c *CatapultWebsocketClientImpl) Listen() {
 
-	<-c.connectionStatusCh
-
-	go c.startListener()
+	c.listenCh <- true
 
 	select {
 	case <-c.ctx.Done():
@@ -459,9 +348,115 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
+func (c *CatapultWebsocketClientImpl) handleSignal() {
+	for {
+		select {
+		case conn := <-c.connectionCh:
+			c.conn = conn
+		case conn := <-c.reconnectCh:
+			c.closeConnection(conn)
+			go func() {
+				c.listenCh <- false
+			}()
+
+		case <-c.listenCh:
+
+			if c.conn == nil {
+				err := c.initNewConnection()
+				if err != nil {
+					fmt.Println("websocket: connection is failed. Try again after wait period")
+					select {
+					case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+						go func() {
+							c.listenCh <- true
+						}()
+						continue
+					}
+				}
+			}
+
+			err := c.updateHandlers()
+			if err != nil {
+				fmt.Println("websocket: update handles is failed. Try again after timeout period")
+				select {
+				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+					continue
+				}
+
+			}
+			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
+			c.startListener()
+		}
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) removeHandlers() {
+	c.blockSubscriber = nil
+	c.confirmedAddedSubscribers = nil
+	c.unconfirmedAddedSubscribers = nil
+	c.unconfirmedRemovedSubscribers = nil
+	c.partialAddedSubscribers = nil
+	c.partialRemovedSubscribers = nil
+	c.statusSubscribers = nil
+	c.cosignatureSubscribers = nil
+
+	c.topicHandlers = nil
+}
+
+func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
+	if conn != nil {
+		if err := conn.Close(); err != nil {
+			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
+		}
+	}
+	c.conn = nil
+}
+
+func (c *CatapultWebsocketClientImpl) startListener() {
+
+	for {
+		_, resp, e := c.conn.ReadMessage()
+		if e != nil {
+			if _, ok := e.(*net.OpError); ok {
+				// Stop ReadMessage if user called Close function for websocket client
+				return
+			}
+
+			if _, ok := e.(*websocket.CloseError); ok {
+				go func() {
+					c.reconnectCh <- c.conn
+				}()
+				return
+			}
+		}
+
+		go func() {
+			c.messageRouter.RouteMessage(resp)
+		}()
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) initNewConnection() error {
+	conn, uid, err := c.connectFn(c.config)
+	if err != nil {
+		return err
+	}
+
+	c.UID = uid
+	c.conn = conn
+
+	messagePublisher := newMessagePublisher(c.conn)
+	messageRouter := NewRouter(c.UID, messagePublisher, c.topicHandlers)
+
+	c.messageRouter = messageRouter
+	c.messagePublisher = messagePublisher
+
+	return nil
+}
+
 func (c *CatapultWebsocketClientImpl) updateHandlers() error {
 
-	if c.blockSubscriber.HasHandlers() {
+	if c.topicHandlers.HasHandler(pathBlock) {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s", pathBlock))); err != nil {
 			return err
 		}
