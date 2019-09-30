@@ -9,7 +9,8 @@ import (
 
 type StorageTransaction struct {
 	AbstractTransaction
-	Action StorageAction
+	ActionType DriveActionType
+	Action     StorageAction
 }
 
 // returns a StorageTransaction
@@ -18,9 +19,10 @@ func NewStorageDrivePrepareTransaction(deadline *Deadline, duration Duration, dr
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StoragePrepareDrive,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StoragePrepareDrive,
 		Action: &StorageDrivePrepareAction{
 			Replicas:  replicas,
 			DriveSize: driveSize,
@@ -35,9 +37,10 @@ func NewStorageDriveProlongationTransaction(deadline *Deadline, duration Duratio
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDriveProlongation,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDriveProlongation,
 		Action: &StorageDriveProlongationAction{
 			Duration: duration,
 		},
@@ -49,9 +52,10 @@ func NewStorageFileDepositTransaction(deadline *Deadline, fileHash *Hash, networ
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageFileDeposit,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageFileDeposit,
 		Action: &StorageFileHashAction{
 			FileHash: fileHash,
 		},
@@ -63,9 +67,10 @@ func NewStorageDriveDepositTransaction(deadline *Deadline, directoryHash *Hash, 
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDriveDeposit,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDriveDeposit,
 		Action: &StorageFileHashAction{
 			FileHash: directoryHash,
 		},
@@ -77,9 +82,10 @@ func NewStorageFileDepositReturnTransaction(deadline *Deadline, fileHash *Hash, 
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageFileDepositReturn,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageFileDepositReturn,
 		Action: &StorageFileHashAction{
 			FileHash: fileHash,
 		},
@@ -91,9 +97,10 @@ func NewStorageDriveDepositReturnTransaction(deadline *Deadline, directoryHash *
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDriveDepositReturn,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDriveDepositReturn,
 		Action: &StorageFileHashAction{
 			FileHash: directoryHash,
 		},
@@ -105,9 +112,10 @@ func NewStorageFilePaymentTransaction(deadline *Deadline, fileHash *Hash, networ
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageFilePayment,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageFilePayment,
 		Action: &StorageFileHashAction{
 			FileHash: fileHash,
 		},
@@ -119,9 +127,10 @@ func NewStorageDrivePaymentTransaction(deadline *Deadline, directoryHash *Hash, 
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDrivePayment,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDrivePayment,
 		Action: &StorageFileHashAction{
 			FileHash: directoryHash,
 		},
@@ -133,9 +142,10 @@ func NewStorageCreateDirectoryTransaction(deadline *Deadline, directory *Storage
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageCreateDirectory,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageCreateDirectory,
 		Action: &StorageFileAction{
 			File: directory,
 		},
@@ -147,9 +157,10 @@ func NewStorageRemoveDirectoryTransaction(deadline *Deadline, directory *Storage
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageRemoveDirectory,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageRemoveDirectory,
 		Action: &StorageFileAction{
 			File: directory,
 		},
@@ -161,9 +172,10 @@ func NewStorageUploadFileTransaction(deadline *Deadline, file *StorageFile, netw
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageUploadFile,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageUploadFile,
 		Action: &StorageFileAction{
 			File: file,
 		},
@@ -175,9 +187,10 @@ func NewStorageDownloadFileTransaction(deadline *Deadline, file *StorageFile, ne
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDownloadFile,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDownloadFile,
 		Action: &StorageFileAction{
 			File: file,
 		},
@@ -188,9 +201,10 @@ func NewStorageDeleteFileTransaction(deadline *Deadline, file *StorageFile, netw
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDeleteFile,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageDeleteFile,
 		Action: &StorageFileAction{
 			File: file,
 		},
@@ -202,9 +216,10 @@ func NewStorageMoveFileTransaction(deadline *Deadline, source *StorageFile, dest
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageMoveFile,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageMoveFile,
 		Action: &StorageOperationFileAction{
 			Source:      source,
 			Destination: destination,
@@ -217,9 +232,10 @@ func NewStorageCopyFileTransaction(deadline *Deadline, source *StorageFile, dest
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageCopyFile,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
+		ActionType: StorageCopyFile,
 		Action: &StorageOperationFileAction{
 			Source:      source,
 			Destination: destination,
@@ -231,10 +247,11 @@ func NewStorageDriveVerificationTransaction(deadline *Deadline, networkType Netw
 		AbstractTransaction: AbstractTransaction{
 			Version:     StorageVersion,
 			Deadline:    deadline,
-			Type:        StorageDriveVerification,
+			Type:        StorageDrive,
 			NetworkType: networkType,
 		},
-		Action: nil,
+		ActionType: StorageDriveVerification,
+		Action:     nil,
 	}, nil
 }
 func (tx *StorageTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -245,9 +262,11 @@ func (tx *StorageTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
+			"AbstractType": %d,
 			"Action: %s"
 		`,
 		tx.AbstractTransaction.String(),
+		tx.ActionType,
 		tx.Action.String(),
 	)
 }
@@ -269,6 +288,7 @@ func (tx *StorageTransaction) generateBytes() ([]byte, error) {
 	transactions.StorageDriveTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.StorageDriveTransactionBufferAddActionType(builder, uint8(tx.ActionType))
 	transactions.StorageDriveTransactionBufferAddAction(builder, dV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -277,5 +297,5 @@ func (tx *StorageTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *StorageTransaction) Size() int {
-	return TransactionHeaderSize + tx.Action.Size()
+	return StorageTransactionHeaderSize + tx.Action.Size()
 }

@@ -7,6 +7,27 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
+type DriveActionType uint16
+
+const (
+	StoragePrepareDrive DriveActionType = iota + 1
+	StorageDriveProlongation
+	StorageDriveDeposit
+	StorageDriveDepositReturn
+	StorageDrivePayment
+	StorageFileDeposit
+	StorageFileDepositReturn
+	StorageFilePayment
+	StorageDriveVerification
+	StorageCreateDirectory
+	StorageRemoveDirectory
+	StorageUploadFile
+	StorageDownloadFile
+	StorageDeleteFile
+	StorageMoveFile
+	StorageCopyFile
+)
+
 type StorageAction interface {
 	String() string
 	Size() int
@@ -87,11 +108,12 @@ func (s *StorageDrivePrepareAction) generateBytes() ([]byte, error) {
 type storagePrepareDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			Duration  uint64DTO `json:"duration"`
 			DriveSize uint64DTO `json:"size"`
 			Replicas  uint64DTO `json:"replicas"`
-		} `json:"actionInfo"`
+		} `json:"action"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -109,6 +131,7 @@ func (dto *storagePrepareDriveTransactionDTO) toStruct() (Transaction, error) {
 
 	return &StorageTransaction{
 		AbstractTransaction: *atx,
+		ActionType:          dto.Tx.ActionType,
 		Action: &StorageDrivePrepareAction{
 			Duration:  dto.Tx.ActionInfo.Duration.toStruct(),
 			DriveSize: dto.Tx.ActionInfo.Replicas.toStruct(),
@@ -146,6 +169,7 @@ func (s *StorageDriveProlongationAction) generateBytes() ([]byte, error) {
 type storageDriveProlongationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			Duration uint64DTO `json:"duration"`
 		} `json:"action"`
@@ -200,6 +224,7 @@ func (s *StorageFileHashAction) generateBytes() ([]byte, error) {
 type storageFileHashTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			FileHash hashDto `json:"fileHash"`
 		} `json:"action"`
@@ -292,6 +317,7 @@ func (s *StorageDirectoryAction) generateBytes() ([]byte, error) {
 type storageDirectoryTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			Directory driveTransactionDTO `json:"directory"`
 		} `json:"action"`
@@ -332,6 +358,7 @@ func (dto *storageDirectoryTransactionDTO) toStruct() (Transaction, error) {
 type storageDriveVerificationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -355,6 +382,7 @@ func (dto *storageDriveVerificationTransactionDTO) toStruct() (Transaction, erro
 type storageFileTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			Directory driveTransactionDTO `json:"file"`
 		} `json:"action"`
@@ -432,6 +460,7 @@ func (s *StorageOperationFileAction) generateBytes() ([]byte, error) {
 type storageFileOperationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		ActionType DriveActionType `json:"actionType"`
 		ActionInfo struct {
 			Source      driveTransactionDTO `json:"source"`
 			Destination driveTransactionDTO `json:"destination"`

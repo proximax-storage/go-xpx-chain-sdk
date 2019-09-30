@@ -10,6 +10,7 @@ func storageDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("actionType", IntSize),
 			newArrayAttribute("action", ByteSize),
 		},
 	}

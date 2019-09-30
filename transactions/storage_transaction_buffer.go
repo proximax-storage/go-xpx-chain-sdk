@@ -666,8 +666,20 @@ func (rcv *StorageDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	return false
 }
 
-func (rcv *StorageDriveTransactionBuffer) Action(j int) uint32 {
+func (rcv *StorageDriveTransactionBuffer) ActionType() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *StorageDriveTransactionBuffer) MutateActionType(n byte) bool {
+	return rcv._tab.MutateByteSlot(18, n)
+}
+
+func (rcv *StorageDriveTransactionBuffer) Action(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
@@ -676,7 +688,7 @@ func (rcv *StorageDriveTransactionBuffer) Action(j int) uint32 {
 }
 
 func (rcv *StorageDriveTransactionBuffer) ActionLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -684,7 +696,7 @@ func (rcv *StorageDriveTransactionBuffer) ActionLength() int {
 }
 
 func (rcv *StorageDriveTransactionBuffer) MutateAction(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
@@ -693,7 +705,7 @@ func (rcv *StorageDriveTransactionBuffer) MutateAction(j int, n uint32) bool {
 }
 
 func StorageDriveTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(8)
+	builder.StartObject(9)
 }
 func StorageDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -728,8 +740,11 @@ func StorageDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, dead
 func StorageDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func StorageDriveTransactionBufferAddActionType(builder *flatbuffers.Builder, actionType byte) {
+	builder.PrependByteSlot(7, actionType, 0)
+}
 func StorageDriveTransactionBufferAddAction(builder *flatbuffers.Builder, action flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(action), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(action), 0)
 }
 func StorageDriveTransactionBufferStartActionVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

@@ -42,6 +42,7 @@ table StorageDriveTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
+    actionType: ubyte;
     action: [uint];
 }
 
