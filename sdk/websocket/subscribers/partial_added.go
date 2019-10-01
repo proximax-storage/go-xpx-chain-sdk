@@ -1,53 +1,89 @@
 package subscribers
 
 import (
-	"sync"
-
-	"github.com/pkg/errors"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (
+	PartialAdded interface {
+		AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error
+		RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
+		HasHandlers(address *sdk.Address) bool
+		GetHandlers(address *sdk.Address) []*PartialAddedHandler
+		GetAddresses() []string
+	}
 	PartialAddedHandler func(*sdk.AggregateTransaction) bool
+
+	partialAddedImpl struct {
+		newSubscriberCh    chan *subscription
+		removeSubscriberCh chan *subscription
+		subscribers        map[string][]*PartialAddedHandler
+	}
+	subscription struct {
+		address  *sdk.Address
+		handlers []*PartialAddedHandler
+		resultCh chan bool
+	}
 )
 
 func NewPartialAdded() PartialAdded {
 
-	return &partialAddedImpl{
-		subscribers: make(map[string]map[*PartialAddedHandler]struct{}),
+	p := &partialAddedImpl{
+		subscribers:        make(map[string][]*PartialAddedHandler),
+		newSubscriberCh:    make(chan *subscription),
+		removeSubscriberCh: make(chan *subscription),
+	}
+	go p.handleNewSubscription()
+	return p
+}
+
+func (e *partialAddedImpl) handleNewSubscription() {
+	for {
+		select {
+		case s := <-e.newSubscriberCh:
+			e.addSubscription(s)
+		case s := <-e.removeSubscriberCh:
+			e.removeSubscription(s)
+		}
 	}
 }
 
-type PartialAdded interface {
-	AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error
-	RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
-	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) map[*PartialAddedHandler]struct{}
-	GetAddresses() []string
+func (e *partialAddedImpl) addSubscription(s *subscription) {
+
+	if _, ok := e.subscribers[s.address.Address]; !ok {
+		e.subscribers[s.address.Address] = make([]*PartialAddedHandler, 0)
+	}
+	for i := 0; i < len(s.handlers); i++ {
+		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+	}
 }
 
-type partialAddedImpl struct {
-	sync.RWMutex
-	subscribers map[string]map[*PartialAddedHandler]struct{}
+func (e *partialAddedImpl) removeSubscription(s *subscription) {
+
+	itemCount := len(e.subscribers[s.address.Address])
+	for _, removeHandler := range s.handlers {
+		for index, currentHandlers := range e.subscribers[s.address.Address] {
+			if removeHandler == currentHandlers {
+				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
+					e.subscribers[s.address.Address][index+1:]...)
+
+			}
+		}
+	}
+
+	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error {
+func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error {
+
 	if len(handlers) == 0 {
 		return nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if _, ok := e.subscribers[address.Address]; !ok {
-		e.subscribers[address.Address] = make(map[*PartialAddedHandler]struct{})
+	e.newSubscriberCh <- &subscription{
+		address:  address,
+		handlers: handlers,
 	}
-
-	for i := 0; i < len(handlers); i++ {
-		e.subscribers[address.Address][&handlers[i]] = struct{}{}
-	}
-
 	return nil
 }
 
@@ -56,27 +92,17 @@ func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*Par
 		return false, nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
+	resCh := make(chan bool)
+	e.removeSubscriberCh <- &subscription{
+		address:  address,
+		handlers: handlers,
+		resultCh: resCh,
 	}
 
-	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers[address.Address], handlers[i])
-	}
-
-	if len(e.subscribers[address.Address]) > 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return <-resCh, nil
 }
 
 func (e *partialAddedImpl) HasHandlers(address *sdk.Address) bool {
-	e.RLock()
-	defer e.RUnlock()
 
 	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
 		return true
@@ -85,9 +111,7 @@ func (e *partialAddedImpl) HasHandlers(address *sdk.Address) bool {
 	return false
 }
 
-func (e *partialAddedImpl) GetHandlers(address *sdk.Address) map[*PartialAddedHandler]struct{} {
-	e.RLock()
-	defer e.RUnlock()
+func (e *partialAddedImpl) GetHandlers(address *sdk.Address) []*PartialAddedHandler {
 
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
