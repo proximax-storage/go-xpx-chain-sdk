@@ -48,8 +48,8 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			name: "empty handlers arg",
 			e: &partialAddedImpl{
 				subscribers:        subscribers,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -61,14 +61,14 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			name: "nil handlers",
 			e: &partialAddedImpl{
 				subscribers:        subscribersNilHandlers,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
 				handlers: []*PartialAddedHandler{
-					&partialAddedHandlerFunc1Ptr,
-					&partialdAddedHandlerFunc2Ptr,
+					nil,
+					nil,
 				},
 			},
 			wantErr: false,
@@ -77,8 +77,8 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			name: "success",
 			e: &partialAddedImpl{
 				subscribers:        subscribers,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -94,7 +94,7 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
 			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
+			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
 }
@@ -135,8 +135,8 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 			name: "empty handlers arg",
 			e: &partialAddedImpl{
 				subscribers:        nil,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -149,8 +149,8 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 			name: "empty handlers storage for address",
 			e: &partialAddedImpl{
 				subscribers:        make(map[string][]*PartialAddedHandler),
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -159,14 +159,14 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 				},
 			},
 			want:    false,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "success return false result",
 			e: &partialAddedImpl{
 				subscribers:        hasSubscribersStorage,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -179,8 +179,8 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 			name: "success return true result",
 			e: &partialAddedImpl{
 				subscribers:        oneSubsctiberStorage,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -196,8 +196,8 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
 			got, err := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -271,8 +271,8 @@ func Test_partialAddedImpl_HasHandlers(t *testing.T) {
 			name: "true result",
 			e: &partialAddedImpl{
 				subscribers:        hasSubscribersStorage,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -283,8 +283,8 @@ func Test_partialAddedImpl_HasHandlers(t *testing.T) {
 			name: "false result",
 			e: &partialAddedImpl{
 				subscribers:        emptySubscribers,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -296,7 +296,7 @@ func Test_partialAddedImpl_HasHandlers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
 			got := tt.e.HasHandlers(tt.args.address)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -330,8 +330,8 @@ func Test_partialAddedImpl_GetHandlers(t *testing.T) {
 			name: "success",
 			e: &partialAddedImpl{
 				subscribers:        hasSubscribersStorage,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -342,8 +342,8 @@ func Test_partialAddedImpl_GetHandlers(t *testing.T) {
 			name: "nil result",
 			e: &partialAddedImpl{
 				subscribers:        nil,
-				newSubscriberCh:    make(chan *subscription),
-				removeSubscriberCh: make(chan *subscription),
+				newSubscriberCh:    make(chan *partialAddedSubscription),
+				removeSubscriberCh: make(chan *partialAddedSubscription),
 			},
 			args: args{
 				address: address,

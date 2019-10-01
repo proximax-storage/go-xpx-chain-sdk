@@ -1,6 +1,7 @@
 package subscribers
 
 import (
+	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
@@ -15,11 +16,11 @@ type (
 	PartialAddedHandler func(*sdk.AggregateTransaction) bool
 
 	partialAddedImpl struct {
-		newSubscriberCh    chan *subscription
-		removeSubscriberCh chan *subscription
+		newSubscriberCh    chan *partialAddedSubscription
+		removeSubscriberCh chan *partialAddedSubscription
 		subscribers        map[string][]*PartialAddedHandler
 	}
-	subscription struct {
+	partialAddedSubscription struct {
 		address  *sdk.Address
 		handlers []*PartialAddedHandler
 		resultCh chan bool
@@ -30,8 +31,8 @@ func NewPartialAdded() PartialAdded {
 
 	p := &partialAddedImpl{
 		subscribers:        make(map[string][]*PartialAddedHandler),
-		newSubscriberCh:    make(chan *subscription),
-		removeSubscriberCh: make(chan *subscription),
+		newSubscriberCh:    make(chan *partialAddedSubscription),
+		removeSubscriberCh: make(chan *partialAddedSubscription),
 	}
 	go p.handleNewSubscription()
 	return p
@@ -48,7 +49,7 @@ func (e *partialAddedImpl) handleNewSubscription() {
 	}
 }
 
-func (e *partialAddedImpl) addSubscription(s *subscription) {
+func (e *partialAddedImpl) addSubscription(s *partialAddedSubscription) {
 
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*PartialAddedHandler, 0)
@@ -58,7 +59,7 @@ func (e *partialAddedImpl) addSubscription(s *subscription) {
 	}
 }
 
-func (e *partialAddedImpl) removeSubscription(s *subscription) {
+func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
 
 	itemCount := len(e.subscribers[s.address.Address])
 	for _, removeHandler := range s.handlers {
@@ -80,7 +81,7 @@ func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...*Partia
 		return nil
 	}
 
-	e.newSubscriberCh <- &subscription{
+	e.newSubscriberCh <- &partialAddedSubscription{
 		address:  address,
 		handlers: handlers,
 	}
@@ -92,8 +93,12 @@ func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*Par
 		return false, nil
 	}
 
+	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
+		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
+	}
+
 	resCh := make(chan bool)
-	e.removeSubscriberCh <- &subscription{
+	e.removeSubscriberCh <- &partialAddedSubscription{
 		address:  address,
 		handlers: handlers,
 		resultCh: resCh,
