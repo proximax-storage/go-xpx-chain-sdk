@@ -1,52 +1,93 @@
 package subscribers
 
 import (
-	"sync"
-
-	"github.com/pkg/errors"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (
 	UnconfirmedRemovedHandler func(*sdk.UnconfirmedRemoved) bool
+
+	UnconfirmedRemoved interface {
+		AddHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) error
+		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) (bool, error)
+		HasHandlers(address *sdk.Address) bool
+		GetHandlers(address *sdk.Address) []*UnconfirmedRemovedHandler
+		GetAddresses() []string
+	}
+
+	unconfirmedRemovedImpl struct {
+		newSubscriberCh    chan *unconfirmedRemovedSubscription
+		removeSubscriberCh chan *unconfirmedRemovedSubscription
+		subscribers        map[string][]*UnconfirmedRemovedHandler
+	}
+	unconfirmedRemovedSubscription struct {
+		address  *sdk.Address
+		handlers []*UnconfirmedRemovedHandler
+		resultCh chan bool
+	}
 )
 
 func NewUnconfirmedRemoved() UnconfirmedRemoved {
-	return &unconfirmedRemovedImpl{
-		subscribers: make(map[string]map[*UnconfirmedRemovedHandler]struct{}),
+
+	p := &unconfirmedRemovedImpl{
+		subscribers:        make(map[string][]*UnconfirmedRemovedHandler),
+		newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+		removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
+	}
+	go p.handleNewSubscription()
+	return p
+}
+
+func (e *unconfirmedRemovedImpl) handleNewSubscription() {
+	for {
+		select {
+		case s := <-e.newSubscriberCh:
+			e.addSubscription(s)
+		case s := <-e.removeSubscriberCh:
+			e.removeSubscription(s)
+		}
 	}
 }
 
-type UnconfirmedRemoved interface {
-	AddHandlers(address *sdk.Address, handlers ...UnconfirmedRemovedHandler) error
-	RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) (bool, error)
-	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) map[*UnconfirmedRemovedHandler]struct{}
-	GetAddresses() []string
+func (e *unconfirmedRemovedImpl) addSubscription(s *unconfirmedRemovedSubscription) {
+
+	if _, ok := e.subscribers[s.address.Address]; !ok {
+		e.subscribers[s.address.Address] = make([]*UnconfirmedRemovedHandler, 0)
+	}
+	for i := 0; i < len(s.handlers); i++ {
+		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+	}
 }
 
-type unconfirmedRemovedImpl struct {
-	sync.RWMutex
-	subscribers map[string]map[*UnconfirmedRemovedHandler]struct{}
+func (e *unconfirmedRemovedImpl) removeSubscription(s *unconfirmedRemovedSubscription) {
+
+	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+		s.resultCh <- false
+	}
+
+	itemCount := len(e.subscribers[s.address.Address])
+	for _, removeHandler := range s.handlers {
+		for index, currentHandlers := range e.subscribers[s.address.Address] {
+			if removeHandler == currentHandlers {
+				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
+					e.subscribers[s.address.Address][index+1:]...)
+			}
+		}
+	}
+
+	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *unconfirmedRemovedImpl) AddHandlers(address *sdk.Address, handlers ...UnconfirmedRemovedHandler) error {
+func (e *unconfirmedRemovedImpl) AddHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) error {
+
 	if len(handlers) == 0 {
 		return nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if _, ok := e.subscribers[address.Address]; !ok {
-		e.subscribers[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
+	e.newSubscriberCh <- &unconfirmedRemovedSubscription{
+		address:  address,
+		handlers: handlers,
 	}
-
-	for i := 0; i < len(handlers); i++ {
-		e.subscribers[address.Address][&handlers[i]] = struct{}{}
-	}
-
 	return nil
 }
 
@@ -55,38 +96,21 @@ func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers .
 		return false, nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
+	resCh := make(chan bool)
+	e.removeSubscriberCh <- &unconfirmedRemovedSubscription{
+		address:  address,
+		handlers: handlers,
+		resultCh: resCh,
 	}
 
-	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers[address.Address], handlers[i])
-	}
-
-	if len(e.subscribers[address.Address]) > 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return <-resCh, nil
 }
 
 func (e *unconfirmedRemovedImpl) HasHandlers(address *sdk.Address) bool {
-	e.RLock()
-	defer e.RUnlock()
-
-	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
-		return true
-	}
-
-	return false
+	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
-func (e *unconfirmedRemovedImpl) GetHandlers(address *sdk.Address) map[*UnconfirmedRemovedHandler]struct{} {
-	e.RLock()
-	defer e.RUnlock()
+func (e *unconfirmedRemovedImpl) GetHandlers(address *sdk.Address) []*UnconfirmedRemovedHandler {
 
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res

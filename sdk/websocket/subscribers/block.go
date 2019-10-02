@@ -1,78 +1,105 @@
 package subscribers
 
 import (
-	"sync"
-
-	"github.com/pkg/errors"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (
 	BlockHandler func(*sdk.BlockInfo) bool
+
+	Block interface {
+		AddHandlers(handlers ...*BlockHandler) error
+		RemoveHandlers(handlers ...*BlockHandler) (bool, error)
+		HasHandlers() bool
+		GetHandlers() []*BlockHandler
+	}
+
+	blockSubscriberImpl struct {
+		newSubscriberCh    chan *blockSubscription
+		removeSubscriberCh chan *blockSubscription
+		handlers           []*BlockHandler
+	}
+
+	blockSubscription struct {
+		handlers []*BlockHandler
+		resultCh chan bool
+	}
 )
 
 func NewBlock() Block {
-	return &blockSubscriberImpl{
-		handlers: make(map[*BlockHandler]struct{}),
+	s := &blockSubscriberImpl{
+		handlers:           make([]*BlockHandler, 0),
+		newSubscriberCh:    make(chan *blockSubscription),
+		removeSubscriberCh: make(chan *blockSubscription),
+	}
+	go s.handleNewSubscription()
+	return s
+}
+
+func (s *blockSubscriberImpl) addSubscription(b *blockSubscription) {
+
+	for i := 0; i < len(b.handlers); i++ {
+		s.handlers = append(s.handlers, b.handlers[i])
 	}
 }
 
-type Block interface {
-	AddHandlers(handlers ...BlockHandler) error
-	RemoveHandlers(handlers ...*BlockHandler) (bool, error)
-	HasHandlers() bool
-	GetHandlers() map[*BlockHandler]struct{}
+func (s *blockSubscriberImpl) removeSubscription(b *blockSubscription) {
+
+	if s.handlers == nil || len(b.handlers) == 0 {
+		b.resultCh <- true
+	}
+
+	itemCount := len(s.handlers)
+	for _, removeHandler := range s.handlers {
+		for index, currentHandlers := range b.handlers {
+			if removeHandler == currentHandlers {
+				s.handlers = append(s.handlers[:index],
+					s.handlers[index+1:]...)
+			}
+		}
+	}
+
+	b.resultCh <- itemCount != len(s.handlers)
 }
 
-type blockSubscriberImpl struct {
-	sync.RWMutex
-	handlers map[*BlockHandler]struct{}
+func (s *blockSubscriberImpl) handleNewSubscription() {
+	for {
+		select {
+		case c := <-s.newSubscriberCh:
+			s.addSubscription(c)
+		case c := <-s.removeSubscriberCh:
+			s.removeSubscription(c)
+		}
+	}
 }
-
-func (s *blockSubscriberImpl) AddHandlers(handlers ...BlockHandler) error {
-	s.Lock()
-	defer s.Unlock()
+func (s *blockSubscriberImpl) AddHandlers(handlers ...*BlockHandler) error {
 
 	if s.handlers == nil || len(handlers) == 0 {
 		return nil
 	}
-
-	for i := 0; i < len(handlers); i++ {
-		s.handlers[&handlers[i]] = struct{}{}
+	s.newSubscriberCh <- &blockSubscription{
+		handlers: handlers,
 	}
 
 	return nil
 }
 
 func (s *blockSubscriberImpl) RemoveHandlers(handlers ...*BlockHandler) (bool, error) {
-	s.Lock()
-	defer s.Unlock()
 
-	if s.handlers == nil || len(handlers) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
+	resCh := make(chan bool)
+	s.removeSubscriberCh <- &blockSubscription{
+
+		handlers: handlers,
+		resultCh: resCh,
 	}
 
-	for i := 0; i < len(handlers); i++ {
-		delete(s.handlers, handlers[i])
-	}
-
-	if len(s.handlers) > 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return <-resCh, nil
 }
 
 func (s *blockSubscriberImpl) HasHandlers() bool {
-	s.RLock()
-	defer s.RUnlock()
 	return len(s.handlers) > 0
 }
 
-func (s *blockSubscriberImpl) GetHandlers() map[*BlockHandler]struct{} {
-	s.RLock()
-	defer s.RUnlock()
-
+func (s *blockSubscriberImpl) GetHandlers() []*BlockHandler {
 	return s.handlers
 }

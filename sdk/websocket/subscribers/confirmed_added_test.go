@@ -154,7 +154,7 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 				},
 			},
 			want:    false,
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "success return false result",

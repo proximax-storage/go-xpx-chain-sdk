@@ -20,16 +20,17 @@ var partialRemovedHandlerFunc2 = func(info *sdk.PartialRemovedInfo) bool {
 func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []PartialRemovedHandler
+		handlers []*PartialRemovedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
+	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
+	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc2)
+	subscribers := make(map[string][]*PartialRemovedHandler)
+	subscribers[address.Address] = make([]*PartialRemovedHandler, 0)
 
-	subscribers := make(map[string]map[*PartialRemovedHandler]struct{})
-	subscribers[address.Address] = make(map[*PartialRemovedHandler]struct{})
-
-	subscribersNilHandlers := make(map[string]map[*PartialRemovedHandler]struct{})
+	subscribersNilHandlers := make(map[string][]*PartialRemovedHandler)
 
 	tests := []struct {
 		name    string
@@ -40,24 +41,28 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &partialRemovedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address:  address,
-				handlers: []PartialRemovedHandler{},
+				handlers: []*PartialRemovedHandler{},
 			},
 			wantErr: false,
 		},
 		{
 			name: "nil handlers",
 			e: &partialRemovedImpl{
-				subscribers: subscribersNilHandlers,
+				subscribers:        subscribersNilHandlers,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
-				handlers: []PartialRemovedHandler{
-					partialRemovedHandlerFunc1,
-					partialRemovedHandlerFunc2,
+				handlers: []*PartialRemovedHandler{
+					&partialRemovedHandlerFunc1Ptr,
+					&partialRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -65,13 +70,15 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "success",
 			e: &partialRemovedImpl{
-				subscribers: subscribers,
+				subscribers:        subscribers,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
-				handlers: []PartialRemovedHandler{
-					partialRemovedHandlerFunc1,
-					partialRemovedHandlerFunc2,
+				handlers: []*PartialRemovedHandler{
+					&partialRemovedHandlerFunc1Ptr,
+					&partialRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -79,6 +86,7 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
@@ -94,20 +102,20 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	emptySubscribers := make(map[string]map[*PartialRemovedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*PartialRemovedHandler]struct{})
+	emptySubscribers := make(map[string][]*PartialRemovedHandler)
+	emptySubscribers[address.Address] = make([]*PartialRemovedHandler, 0)
 
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc2)
 
-	hasSubscribersStorage := make(map[string]map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*PartialRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*PartialRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &partialRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &partialRemovedHandlerFunc2Ptr
 
-	oneSubsctiberStorage := make(map[string]map[*PartialRemovedHandler]struct{})
-	oneSubsctiberStorage[address.Address] = make(map[*PartialRemovedHandler]struct{})
-	oneSubsctiberStorage[address.Address][&partialRemovedHandlerFunc1Ptr] = struct{}{}
+	oneSubsctiberStorage := make(map[string][]*PartialRemovedHandler)
+	oneSubsctiberStorage[address.Address] = make([]*PartialRemovedHandler, 1)
+	oneSubsctiberStorage[address.Address][0] = &partialRemovedHandlerFunc1Ptr
 
 	tests := []struct {
 		name    string
@@ -119,7 +127,9 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &partialRemovedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -131,21 +141,9 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers storage for address",
 			e: &partialRemovedImpl{
-				subscribers: emptySubscribers,
-			},
-			args: args{
-				address: address,
-				handlers: []*PartialRemovedHandler{
-					&partialRemovedHandlerFunc1Ptr,
-				},
-			},
-			want:    false,
-			wantErr: true,
-		},
-		{
-			name: "success return false result",
-			e: &partialRemovedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -157,9 +155,25 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "success return false result",
+			e: &partialRemovedImpl{
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
+			},
+			args: args{
+				address:  address,
+				handlers: []*PartialRemovedHandler{},
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
 			name: "success return true result",
 			e: &partialRemovedImpl{
-				subscribers: oneSubsctiberStorage,
+				subscribers:        oneSubsctiberStorage,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -173,6 +187,7 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got, err := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 			assert.Equal(t, got, tt.want)
@@ -191,13 +206,13 @@ func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc2)
 
-	emptySubscribers := make(map[string]map[*PartialRemovedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*PartialRemovedHandler]struct{})
+	emptySubscribers := make(map[string][]*PartialRemovedHandler)
+	emptySubscribers[address.Address] = make([]*PartialRemovedHandler, 0)
 
-	hasSubscribersStorage := make(map[string]map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*PartialRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*PartialRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &partialRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &partialRemovedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -208,7 +223,9 @@ func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "true result",
 			e: &partialRemovedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -218,7 +235,9 @@ func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "false result",
 			e: &partialRemovedImpl{
-				subscribers: emptySubscribers,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *partialRemovedSubscription),
+				removeSubscriberCh: make(chan *partialRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -228,6 +247,7 @@ func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got := tt.e.HasHandlers(tt.args.address)
 			assert.Equal(t, got, tt.want)
 		})
@@ -245,19 +265,19 @@ func Test_partialRemovedImpl_GetHandlers(t *testing.T) {
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 
-	nilSubscribers := make(map[string]map[*PartialRemovedHandler]struct{})
+	nilSubscribers := make(map[string][]*PartialRemovedHandler)
 	nilSubscribers[address.Address] = nil
 
-	hasSubscribersStorage := make(map[string]map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*PartialRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&partialRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*PartialRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*PartialRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &partialRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &partialRemovedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
 		e    *partialRemovedImpl
 		args args
-		want map[*PartialRemovedHandler]struct{}
+		want []*PartialRemovedHandler
 	}{
 		{
 			name: "success",
@@ -282,6 +302,7 @@ func Test_partialRemovedImpl_GetHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			if got := tt.e.GetHandlers(tt.args.address); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("partialRemovedImpl.GetHandlers() = %v, want %v", got, tt.want)
 			}

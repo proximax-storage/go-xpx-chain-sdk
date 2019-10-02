@@ -159,7 +159,7 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 				},
 			},
 			want:    false,
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "success return false result",
@@ -205,7 +205,7 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 func Test_partialAddedImpl_RemoveHandlers_Concurrency(t *testing.T) {
 
 	t.Run("concurrency remove", func(t *testing.T) {
-		iterations := 100
+		iterations := 10
 		address := &sdk.Address{}
 		address.Address = "test-address"
 		handler := NewPartialAdded()

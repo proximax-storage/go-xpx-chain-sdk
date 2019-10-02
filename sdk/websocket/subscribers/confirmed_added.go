@@ -1,7 +1,6 @@
 package subscribers
 
 import (
-	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
@@ -51,6 +50,10 @@ func (e *confirmedAddedImpl) addSubscription(s *confirmedAddedSubscription) {
 
 func (e *confirmedAddedImpl) removeSubscription(s *confirmedAddedSubscription) {
 
+	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+		s.resultCh <- false
+	}
+
 	itemCount := len(e.subscribers[s.address.Address])
 	for _, removeHandler := range s.handlers {
 		for index, currentHandlers := range e.subscribers[s.address.Address] {
@@ -89,13 +92,11 @@ func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...*Conf
 }
 
 func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error) {
+
 	if len(handlers) == 0 {
 		return false, nil
 	}
 
-	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
-	}
 	resCh := make(chan bool)
 	e.removeSubscriberCh <- &confirmedAddedSubscription{
 		address:  address,
@@ -107,16 +108,10 @@ func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*C
 }
 
 func (e *confirmedAddedImpl) HasHandlers(address *sdk.Address) bool {
-
-	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
-		return true
-	}
-
-	return false
+	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) []*ConfirmedAddedHandler {
-
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
