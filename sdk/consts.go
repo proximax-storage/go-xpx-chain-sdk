@@ -24,11 +24,11 @@ const (
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
-	accountTransactionsRoute      = "/transactions"
-	incomingTransactionsRoute     = "/transactions/incoming"
-	outgoingTransactionsRoute     = "/transactions/outgoing"
-	unconfirmedTransactionsRoute  = "/transactions/unconfirmed"
-	aggregateTransactionsRoute    = "/transactions/partial"
+	accountTransactionsRoute      = "transactions"
+	incomingTransactionsRoute     = "transactions/incoming"
+	outgoingTransactionsRoute     = "transactions/outgoing"
+	unconfirmedTransactionsRoute  = "transactions/unconfirmed"
+	aggregateTransactionsRoute    = "transactions/partial"
 )
 
 // routes for NamespaceService

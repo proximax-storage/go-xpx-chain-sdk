@@ -19,16 +19,19 @@ var confirmedAddedHandlerFunc2 = func(tx sdk.Transaction) bool {
 func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []ConfirmedAddedHandler
+		handlers []*ConfirmedAddedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	subscribers := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	subscribers[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
+	subscribers := make(map[string][]*ConfirmedAddedHandler)
+	subscribers[address.Address] = make([]*ConfirmedAddedHandler, 0)
 
-	subscribersNilHandlers := make(map[string]map[*ConfirmedAddedHandler]struct{})
+	subscribersNilHandlers := make(map[string][]*ConfirmedAddedHandler)
+
+	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
+	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
 
 	tests := []struct {
 		name    string
@@ -39,24 +42,28 @@ func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &confirmedAddedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address:  address,
-				handlers: []ConfirmedAddedHandler{},
+				handlers: []*ConfirmedAddedHandler{},
 			},
 			wantErr: false,
 		},
 		{
 			name: "nil handlers",
 			e: &confirmedAddedImpl{
-				subscribers: subscribersNilHandlers,
+				subscribers:        subscribersNilHandlers,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
-				handlers: []ConfirmedAddedHandler{
-					confirmedAddedHandlerFunc1,
-					confirmedAddedHandlerFunc2,
+				handlers: []*ConfirmedAddedHandler{
+					&confirmedAddedHandlerFunc1Ptr,
+					&confirmedAddedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -64,13 +71,15 @@ func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "success",
 			e: &confirmedAddedImpl{
-				subscribers: subscribers,
+				subscribers:        subscribers,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
-				handlers: []ConfirmedAddedHandler{
-					confirmedAddedHandlerFunc1,
-					confirmedAddedHandlerFunc2,
+				handlers: []*ConfirmedAddedHandler{
+					&confirmedAddedHandlerFunc1Ptr,
+					&confirmedAddedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -78,8 +87,9 @@ func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
+			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
 }
@@ -93,20 +103,21 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	emptySubscribers := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
+	emptySubscribers := make(map[string][]*ConfirmedAddedHandler)
+	emptySubscribers[address.Address] = make([]*ConfirmedAddedHandler, 0)
 
 	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
 	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
+	confirmedAddedHandlerFunc3Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
 
-	hasSubscribersStorage := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*ConfirmedAddedHandler)
+	hasSubscribersStorage[address.Address] = make([]*ConfirmedAddedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &confirmedAddedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &confirmedAddedHandlerFunc2Ptr
 
-	oneSubsctiberStorage := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	oneSubsctiberStorage[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
-	oneSubsctiberStorage[address.Address][&confirmedAddedHandlerFunc1Ptr] = struct{}{}
+	oneSubsctiberStorage := make(map[string][]*ConfirmedAddedHandler)
+	oneSubsctiberStorage[address.Address] = make([]*ConfirmedAddedHandler, 1)
+	oneSubsctiberStorage[address.Address][0] = &confirmedAddedHandlerFunc1Ptr
 
 	tests := []struct {
 		name    string
@@ -118,7 +129,9 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &confirmedAddedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -130,7 +143,9 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers storage for address",
 			e: &confirmedAddedImpl{
-				subscribers: emptySubscribers,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -144,12 +159,14 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "success return false result",
 			e: &confirmedAddedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
 				handlers: []*ConfirmedAddedHandler{
-					&confirmedAddedHandlerFunc1Ptr,
+					&confirmedAddedHandlerFunc3Ptr,
 				},
 			},
 			want:    false,
@@ -158,7 +175,9 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "success return true result",
 			e: &confirmedAddedImpl{
-				subscribers: oneSubsctiberStorage,
+				subscribers:        oneSubsctiberStorage,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -172,9 +191,10 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got, err := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -190,13 +210,13 @@ func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
 	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
 
-	emptySubscribers := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
+	emptySubscribers := make(map[string][]*ConfirmedAddedHandler)
+	emptySubscribers[address.Address] = make([]*ConfirmedAddedHandler, 0)
 
-	hasSubscribersStorage := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*ConfirmedAddedHandler)
+	hasSubscribersStorage[address.Address] = make([]*ConfirmedAddedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &confirmedAddedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &confirmedAddedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -207,7 +227,9 @@ func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "true result",
 			e: &confirmedAddedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -217,7 +239,9 @@ func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "false result",
 			e: &confirmedAddedImpl{
-				subscribers: emptySubscribers,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -227,8 +251,9 @@ func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got := tt.e.HasHandlers(tt.args.address)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -244,24 +269,26 @@ func Test_confirmedAddedImpl_GetHandlers(t *testing.T) {
 	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
 	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
 
-	nilSubscribers := make(map[string]map[*ConfirmedAddedHandler]struct{})
+	nilSubscribers := make(map[string][]*ConfirmedAddedHandler)
 	nilSubscribers[address.Address] = nil
 
-	hasSubscribersStorage := make(map[string]map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*ConfirmedAddedHandler]struct{})
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&confirmedAddedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*ConfirmedAddedHandler)
+	hasSubscribersStorage[address.Address] = make([]*ConfirmedAddedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &confirmedAddedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &confirmedAddedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
 		e    *confirmedAddedImpl
 		args args
-		want map[*ConfirmedAddedHandler]struct{}
+		want []*ConfirmedAddedHandler
 	}{
 		{
 			name: "success",
 			e: &confirmedAddedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -271,7 +298,9 @@ func Test_confirmedAddedImpl_GetHandlers(t *testing.T) {
 		{
 			name: "nil result",
 			e: &confirmedAddedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *confirmedAddedSubscription),
+				removeSubscriberCh: make(chan *confirmedAddedSubscription),
 			},
 			args: args{
 				address: address,
@@ -281,8 +310,9 @@ func Test_confirmedAddedImpl_GetHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got := tt.e.GetHandlers(tt.args.address)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
