@@ -1,6 +1,6 @@
 package sdk
 
-func storageDriveTransactionSchema() *schema {
+func modifyDriveTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -10,65 +10,91 @@ func storageDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newArrayAttribute("actionType", IntSize),
-			newArrayAttribute("action", ByteSize),
+			newScalarAttribute("priceDelta", IntSize),
+			newScalarAttribute("durationDelta", IntSize),
+			newScalarAttribute("sizeDelta", ByteSize),
+			newScalarAttribute("replicasDelta", IntSize),
+			newScalarAttribute("minReplicatorsDelta", IntSize),
+			newScalarAttribute("minApproversDelta", IntSize),
 		},
 	}
 }
 
-func storagePrepareDriveSchema() *schema {
+func driveFileSystemTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
-			newArrayAttribute("duration", IntSize),
-			newArrayAttribute("size", IntSize),
-			newArrayAttribute("replicas", IntSize),
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("rootHash", ByteSize),
+			newScalarAttribute("xorRootHash", ByteSize),
+			newScalarAttribute("addActionsCount", ByteSize),
+			newScalarAttribute("removeActionsCount", ByteSize),
+			newTableArrayAttribute("addActions", schema{
+				[]schemaAttribute{
+					newArrayAttribute("fileHash", ByteSize),
+					newScalarAttribute("fileSize", IntSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("removeActions", schema{
+				[]schemaAttribute{
+					newArrayAttribute("fileHash", ByteSize),
+				},
+			}.schemaDefinition),
 		},
 	}
 }
 
-func storageDriveProlongationSchema() *schema {
+func joinDriveTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
-			newArrayAttribute("duration", IntSize),
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("driveKey", ByteSize),
 		},
 	}
 }
 
-func storageFileDriveSchema() *schema {
+func filesDepositTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
-			newArrayAttribute("hash", ByteSize),
-			newArrayAttribute("parentHash", ByteSize),
-			newArrayAttribute("name", ByteSize),
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("driveKey", ByteSize),
+			newScalarAttribute("filesCount", ByteSize),
+			newTableArrayAttribute("files", schema{
+				[]schemaAttribute{
+					newArrayAttribute("fileHash", ByteSize),
+				},
+			}.schemaDefinition),
 		},
 	}
 }
-func storageFileSchema() *schema {
+
+func endDriveTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
-			newArrayAttribute("file", ByteSize),
-		},
-	}
-}
-func storageDirectorySchema() *schema {
-	return &schema{
-		[]schemaAttribute{
-			newArrayAttribute("directory", ByteSize),
-		},
-	}
-}
-func storageFileOperationSchema() *schema {
-	return &schema{
-		[]schemaAttribute{
-			newArrayAttribute("source", ByteSize),
-			newArrayAttribute("destination", ByteSize),
-		},
-	}
-}
-func storageFileHashSchema() *schema {
-	return &schema{
-		[]schemaAttribute{
-			newArrayAttribute("fileHash", ByteSize),
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
 		},
 	}
 }

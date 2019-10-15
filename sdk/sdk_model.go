@@ -86,8 +86,8 @@ type Amount = baseInt64
 type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
-type Replicas = baseInt64
-type DriveSize = baseInt64
+type SizeDelta = baseInt64
+type FileSize = baseInt64
 
 type BlockChainVersion uint64
 
@@ -163,7 +163,7 @@ func NewTimestamp(milliseconds int64) *Timestamp {
 }
 
 func (t *Timestamp) ToBlockchainTimestamp() *BlockchainTimestamp {
-	return NewBlockchainTimestamp((t.Time.UnixNano()/int64(time.Millisecond) - TimestampNemesisBlockMilliseconds))
+	return NewBlockchainTimestamp(t.Time.UnixNano()/int64(time.Millisecond) - TimestampNemesisBlockMilliseconds)
 }
 
 type Deadline struct {

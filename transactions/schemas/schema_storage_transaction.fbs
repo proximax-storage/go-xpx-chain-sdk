@@ -1,40 +1,19 @@
 namespace Catapult.Buffers;
 
-
-table DriveFileBuffer {
-    hash: [ubyte];
-    parentHash: [ubyte];
-    nameSize: ubyte;
-    name: string;
+table AddActionBuffer {
+    fileHash: [ubyte];
+    fileSize: [ubyte];
 }
 
-table StoragePrepareDriveBuffer {
-    duration:[uint];
-    driveSize:[uint];
-    replicas:[uint];
-}
-
-table StorageDriveProlongationBuffer {
-    duration:[uint];
-}
-
-//Same for drive and file deposit
-//Same for drive and file deposit return
-//Same for drive and file payment
-table StorageFileHashBuffer {
+table RemoveActionBuffer {
     fileHash: [ubyte];
 }
 
-table StorageFileBuffer {
-    driveFile:DriveFileBuffer;
+table FileBuffer {
+    fileHash: [ubyte];
 }
 
-table StorageFileOperationBuffer {
-    source:DriveFileBuffer;
-    destination:DriveFileBuffer;
-}
-
-table StorageDriveTransactionBuffer {
+table DriveFileSystemTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -42,17 +21,76 @@ table StorageDriveTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    actionType: ubyte;
-    action: [uint];
+    rootHash: [ubyte];
+    xorRootHash: [ubyte];
+    addActionsCount: ubyte;
+    removeActionsCount: ubyte;
+    addActions: [AddActionBuffer];
+    removeActions: [RemoveActionBuffer];
 }
 
-root_type DriveFileBuffer;
+table EndDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+}
 
-root_type StoragePrepareDriveBuffer;
+table FilesDepositTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey:[ubyte];
+    filesCount: ubyte;
+    files: [FileBuffer];
+}
 
-root_type StorageDriveProlongationBuffer;
+table JoinToDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey:[ubyte];
+}
 
-root_type StorageFileHashBuffer;
+table ModifyDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    priceDelta:[uint];
+    durationDelta:[uint];
+    sizeDelta:[uint];
+    replicasDelta:byte;
+    minReplicatorsDelta:byte;
+    minApproversDelta:byte;
+}
 
-root_type StorageFileOperationBuffer;
+root_type AddActionBuffer;
 
+root_type RemoveActionBuffer;
+
+root_type FileBuffer;
+
+root_type DriveFileSystemTransactionBuffer;
+
+root_type EndDriveTransactionBuffer;
+
+root_type FilesDepositTransactionBuffer;
+
+root_type JoinToDriveTransactionBuffer;
+
+root_type ModifyDriveTransactionBuffer;

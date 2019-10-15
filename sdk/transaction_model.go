@@ -3221,71 +3221,74 @@ type TransactionHashesDTO struct {
 const (
 	AddressSize                              int = 25
 	BaseInt64Size                            int = 8
-	AmountSize                               int = BaseInt64Size
+	AmountSize                                   = BaseInt64Size
 	KeySize                                  int = 32
 	Hash256                                  int = 32
-	MosaicIdSize                             int = BaseInt64Size
-	NamespaceSize                            int = BaseInt64Size
+	MosaicIdSize                                 = BaseInt64Size
+	NamespaceSize                                = BaseInt64Size
 	SizeSize                                 int = 4
 	MaxStringSize                            int = 2
-	SignerSize                               int = KeySize
+	SignerSize                                   = KeySize
 	SignatureSize                            int = 64
-	HalfOfSignature                          int = SignatureSize / 2
+	HalfOfSignature                              = SignatureSize / 2
 	VersionSize                              int = 4
 	TypeSize                                 int = 2
-	MaxFeeSize                               int = BaseInt64Size
-	DeadLineSize                             int = BaseInt64Size
-	DurationSize                             int = BaseInt64Size
-	ReplicasSize                             int = BaseInt64Size
-	DriveFieldSize                           int = BaseInt64Size
-	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
+	MaxFeeSize                                   = BaseInt64Size
+	DeadLineSize                                 = BaseInt64Size
+	DurationSize                                 = BaseInt64Size
+	SizeDeltaSize                                = BaseInt64Size
+	ReplicasDeltaSize                            = 1
+	MinReplicatorsDeltaSize                      = 1
+	MinApproversDeltaSize                        = 1
+	TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
 	PropertyModificationTypeSize             int = 1
-	AccountPropertiesAddressModificationSize int = PropertyModificationTypeSize + AddressSize
-	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicIdSize
-	AccountPropertiesEntityModificationSize  int = PropertyModificationTypeSize + TypeSize
-	AccountPropertyAddressHeader             int = TransactionHeaderSize + PropertyTypeSize
-	AccountPropertyMosaicHeader              int = TransactionHeaderSize + PropertyTypeSize
-	AccountPropertyEntityTypeHeader          int = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertiesAddressModificationSize     = PropertyModificationTypeSize + AddressSize
+	AccountPropertiesMosaicModificationSize      = PropertyModificationTypeSize + MosaicIdSize
+	AccountPropertiesEntityModificationSize      = PropertyModificationTypeSize + TypeSize
+	AccountPropertyAddressHeader                 = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyMosaicHeader                  = TransactionHeaderSize + PropertyTypeSize
+	AccountPropertyEntityTypeHeader              = TransactionHeaderSize + PropertyTypeSize
 	LinkActionSize                           int = 1
-	AccountLinkTransactionSize               int = TransactionHeaderSize + KeySize + LinkActionSize
+	AccountLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
 	AliasActionSize                          int = 1
-	AliasTransactionHeaderSize               int = TransactionHeaderSize + NamespaceSize + AliasActionSize
-	AggregateBondedHeaderSize                int = TransactionHeaderSize + SizeSize
-	NetworkConfigHeaderSize                  int = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
-	BlockchainUpgradeTransactionSize         int = TransactionHeaderSize + DurationSize + BaseInt64Size
+	AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
+	AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
+	NetworkConfigHeaderSize                      = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
+	BlockchainUpgradeTransactionSize             = TransactionHeaderSize + DurationSize + BaseInt64Size
 	HashTypeSize                             int = 1
-	LockSize                                 int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
+	LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
-	MetadataHeaderSize                       int = TransactionHeaderSize + MetadataTypeSize
+	MetadataHeaderSize                           = TransactionHeaderSize + MetadataTypeSize
 	ModificationsSizeSize                    int = 1
-	ModifyContractHeaderSize                 int = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
+	ModifyContractHeaderSize                     = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
 	MinApprovalSize                          int = 1
 	MinRemovalSize                           int = 1
-	ModifyMultisigHeaderSize                 int = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
+	ModifyMultisigHeaderSize                     = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
 	MosaicNonceSize                          int = 4
 	MosaicPropertiesHeaderSize               int = 3
 	MosaicPropertyIdSize                     int = 1
-	MosaicOptionalPropertySize               int = MosaicPropertyIdSize + BaseInt64Size
-	MosaicDefinitionTransactionHeaderSize    int = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
+	MosaicOptionalPropertySize                   = MosaicPropertyIdSize + BaseInt64Size
+	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
-	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
+	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
 	NamespaceTypeSize                        int = 1
 	NamespaceNameSizeSize                    int = 1
-	RegisterNamespaceHeaderSize              int = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
-	SecretLockSize                           int = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
+	RegisterNamespaceHeaderSize                  = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
+	SecretLockSize                               = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
 	ProofSizeSize                            int = 2
-	SecretProofHeaderSize                    int = TransactionHeaderSize + HashTypeSize + Hash256 + AddressSize + ProofSizeSize
+	SecretProofHeaderSize                        = TransactionHeaderSize + HashTypeSize + Hash256 + AddressSize + ProofSizeSize
 	MosaicsSizeSize                          int = 1
 	MessageSizeSize                          int = 2
-	TransferHeaderSize                       int = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
-	DriveActionTypeSize                      int = 1
-	StorageTransactionHeaderSize             int = TransactionHeaderSize + DriveActionTypeSize
-	FileNameSizeSize                         int = 1
-	PrepareDriveSize                         int = DurationSize + DriveFieldSize + ReplicasSize
-	DriveProlongationSize                    int = DurationSize
-	FileHashSize                             int = Hash256
-	FileSize                                 int = Hash256 + Hash256 + FileNameSizeSize
+	TransferHeaderSize                           = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+	ModifyDriveHeaderSize                        = TransactionHeaderSize + SizeDeltaSize + DurationSize + ReplicasDeltaSize + MinReplicatorsDeltaSize + MinApproversDeltaSize
+	JoinToDriveHeaderSize                        = TransactionHeaderSize + Hash256
+	AddActionsSize                               = 1
+	RemoveActionsSize                            = 1
+	DriveFileSystemHeaderSize                    = TransactionHeaderSize + Hash256 + Hash256 + AddActionsSize + RemoveActionsSize
+	FilesSize                                    = 1
+	FilesDepositHeaderSize                       = TransactionHeaderSize + Hash256 + FilesSize
+	EndDriveHeaderSize                           = TransactionHeaderSize
 )
 
 type EntityType uint16
@@ -3315,7 +3318,11 @@ const (
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
 	Transfer                  EntityType = 0x4154
-	StorageDrive              EntityType = 0x4151
+	ModifyDrive               EntityType = 0x5a01
+	JoinToDrive               EntityType = 0x5a02
+	DriveFileSystem           EntityType = 0x5a03
+	FilesDeposit              EntityType = 0x5a04
+	EndDrive                  EntityType = 0x5a05
 )
 
 func (t EntityType) String() string {
@@ -3347,7 +3354,11 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
-	StorageVersion                   EntityVersion = 1
+	ModifyDriveVersion               EntityVersion = 1
+	JoinToDriveVersion               EntityVersion = 1
+	DriveFileSystemVersion           EntityVersion = 1
+	FilesDepositVersion              EntityVersion = 1
+	EndDriveVersion                  EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3491,8 +3502,7 @@ func dtoToTransaction(b *bytes.Buffer, dto transactionDto) (Transaction, error) 
 func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 	rawT := struct {
 		Transaction struct {
-			Type       EntityType
-			ActionType DriveActionType
+			Type EntityType
 		}
 	}{}
 
@@ -3546,41 +3556,16 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &secretProofTransactionDTO{}
 	case Transfer:
 		dto = &transferTransactionDTO{}
-	case StorageDrive:
-		switch rawT.Transaction.ActionType {
-		case StoragePrepareDrive:
-			dto = &storagePrepareDriveTransactionDTO{}
-		case StorageDriveProlongation:
-			dto = &storageDriveProlongationTransactionDTO{}
-		case StorageDriveDeposit:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageDriveDepositReturn:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageDrivePayment:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageFileDeposit:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageFileDepositReturn:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageFilePayment:
-			dto = &storageFileHashTransactionDTO{}
-		case StorageDriveVerification:
-			dto = &storageDriveVerificationTransactionDTO{}
-		case StorageCreateDirectory:
-			dto = &storageDirectoryTransactionDTO{}
-		case StorageRemoveDirectory:
-			dto = &storageDirectoryTransactionDTO{}
-		case StorageUploadFile:
-			dto = &storageFileTransactionDTO{}
-		case StorageDownloadFile:
-			dto = &storageFileTransactionDTO{}
-		case StorageDeleteFile:
-			dto = &storageFileTransactionDTO{}
-		case StorageMoveFile:
-			dto = &storageFileOperationTransactionDTO{}
-		case StorageCopyFile:
-			dto = &storageFileOperationTransactionDTO{}
-		}
+	case ModifyDrive:
+		dto = &modifyDriveTransactionDTO{}
+	case JoinToDrive:
+		dto = &joinToDriveTransactionDTO{}
+	case DriveFileSystem:
+		dto = &driveFileSystemTransactionDTO{}
+	case FilesDeposit:
+		dto = &filesDepositTransactionDTO{}
+	case EndDrive:
+		dto = &endDriveTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)
