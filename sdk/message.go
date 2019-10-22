@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/proximax-storage/go-xpx-utils/str"
-	xpxcrypto "github.com/proximax-storage/xpx-crypto-go"
+	xpxcrypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
 type MessageType uint8

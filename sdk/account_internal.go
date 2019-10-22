@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/proximax-storage/xpx-crypto-go"
+	"github.com/proximax-storage/go-xpx-crypto"
 )
 
 var addressNet = map[uint8]NetworkType{

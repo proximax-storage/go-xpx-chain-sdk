@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/proximax-storage/xpx-crypto-go"
+	"github.com/proximax-storage/go-xpx-crypto"
 )
 
 type HashType uint8
