@@ -3,7 +3,7 @@ package sdk
 import (
 	"testing"
 
-	"github.com/proximax-storage/xpx-crypto-go"
+	"github.com/proximax-storage/go-xpx-crypto"
 	"github.com/stretchr/testify/assert"
 )
 
