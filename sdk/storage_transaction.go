@@ -1,9 +1,15 @@
 package sdk
 
 func NewModifyDriveTransaction(
-	deadline *Deadline, priceDelta Amount, durationDelta Duration,
-	sizeDelta SizeDelta, minReplicatorsDelta int8, minApproversDelta int8, replicasDelta int8,
-	networkType NetworkType) (*ModifyDriveTransaction, error) {
+	deadline *Deadline,
+	priceDelta Amount,
+	durationDelta Duration,
+	sizeDelta SizeDelta,
+	minReplicatorsDelta int8,
+	minApproversDelta int8,
+	replicasDelta int8,
+	networkType NetworkType,
+) (*ModifyDriveTransaction, error) {
 
 	mctx := ModifyDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -23,7 +29,11 @@ func NewModifyDriveTransaction(
 	return &mctx, nil
 }
 
-func NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicAccount, networkType NetworkType) (*JoinToDriveTransaction, error) {
+func NewJoinToDriveTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	networkType NetworkType,
+) (*JoinToDriveTransaction, error) {
 
 	tx := JoinToDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -39,7 +49,13 @@ func NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicAccount, netw
 }
 
 func NewDriveFileSystemTransaction(
-	deadline *Deadline, rootHash *Hash, xorRootHash *Hash, addActions []*AddAction, removeActions []*RemoveAction, networkType NetworkType) (*DriveFileSystemTransaction, error) {
+	deadline *Deadline,
+	rootHash *Hash,
+	xorRootHash *Hash,
+	addActions []*AddAction,
+	removeActions []*RemoveAction,
+	networkType NetworkType,
+) (*DriveFileSystemTransaction, error) {
 
 	tx := DriveFileSystemTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -58,7 +74,11 @@ func NewDriveFileSystemTransaction(
 }
 
 func NewFilesDepositTransaction(
-	deadline *Deadline, driveKey *PublicAccount, files []*File, networkType NetworkType) (*FilesDepositTransaction, error) {
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	files []*File,
+	networkType NetworkType,
+) (*FilesDepositTransaction, error) {
 
 	tx := FilesDepositTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -75,7 +95,9 @@ func NewFilesDepositTransaction(
 }
 
 func NewEndDriveTransaction(
-	deadline *Deadline, networkType NetworkType) (*EndDriveTransaction, error) {
+	deadline *Deadline,
+	networkType NetworkType,
+) (*EndDriveTransaction, error) {
 
 	tx := EndDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
