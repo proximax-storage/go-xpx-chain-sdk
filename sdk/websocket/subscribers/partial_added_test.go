@@ -21,7 +21,7 @@ var partialAddedHandlerFunc2 = func(atx *sdk.AggregateTransaction) bool {
 func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*PartialAddedHandler
+		handlers []PartialAddedHandler
 	}
 
 	address := &sdk.Address{}
@@ -53,7 +53,7 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*PartialAddedHandler{},
+				handlers: []PartialAddedHandler{},
 			},
 			wantErr: false,
 		},
@@ -66,7 +66,7 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*PartialAddedHandler{
+				handlers: []PartialAddedHandler{
 					nil,
 					nil,
 				},
@@ -82,9 +82,9 @@ func Test_partialAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*PartialAddedHandler{
-					&partialAddedHandlerFunc1Ptr,
-					&partialdAddedHandlerFunc2Ptr,
+				handlers: []PartialAddedHandler{
+					partialAddedHandlerFunc1Ptr,
+					partialdAddedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -159,7 +159,7 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 				},
 			},
 			want:    false,
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "success return false result",
@@ -205,7 +205,7 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 func Test_partialAddedImpl_RemoveHandlers_Concurrency(t *testing.T) {
 
 	t.Run("concurrency remove", func(t *testing.T) {
-		iterations := 100
+		iterations := 10
 		address := &sdk.Address{}
 		address.Address = "test-address"
 		handler := NewPartialAdded()
@@ -225,14 +225,20 @@ func Test_partialAddedImpl_RemoveHandlers_Concurrency(t *testing.T) {
 				partialAddedHandlerFunc1Ptr := PartialAddedHandler(handlerFunc1)
 				partialdAddedHandlerFunc2Ptr := PartialAddedHandler(handlerFunc2)
 
-				handlers := []*PartialAddedHandler{
-					&partialAddedHandlerFunc1Ptr,
-					&partialdAddedHandlerFunc2Ptr,
+				handlers := []PartialAddedHandler{
+					partialAddedHandlerFunc1Ptr,
+					partialdAddedHandlerFunc2Ptr,
 				}
 
 				err := handler.AddHandlers(address, handlers...)
 				assert.Nil(t, err)
-				removes, err := handler.RemoveHandlers(address, handlers...)
+
+				refHandlers := make([]*PartialAddedHandler, len(handlers))
+				for i, h := range handlers {
+					refHandlers[i] = &h
+				}
+
+				removes, err := handler.RemoveHandlers(address, refHandlers...)
 				assert.Nil(t, err)
 				assert.True(t, removes)
 				wg.Done()

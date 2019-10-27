@@ -1,53 +1,98 @@
 package subscribers
 
 import (
-	"sync"
-
-	"github.com/pkg/errors"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (
 	PartialRemovedHandler func(*sdk.PartialRemovedInfo) bool
+
+	PartialRemoved interface {
+		AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
+		RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
+		HasHandlers(address *sdk.Address) bool
+		GetHandlers(address *sdk.Address) []*PartialRemovedHandler
+		GetAddresses() []string
+	}
+
+	partialRemovedImpl struct {
+		newSubscriberCh    chan *partialRemovedSubscription
+		removeSubscriberCh chan *partialRemovedSubscription
+		subscribers        map[string][]*PartialRemovedHandler
+	}
+	partialRemovedSubscription struct {
+		address  *sdk.Address
+		handlers []*PartialRemovedHandler
+		resultCh chan bool
+	}
 )
 
 func NewPartialRemoved() PartialRemoved {
 
-	return &partialRemovedImpl{
-		subscribers: make(map[string]map[*PartialRemovedHandler]struct{}),
+	p := &partialRemovedImpl{
+		subscribers:        make(map[string][]*PartialRemovedHandler),
+		newSubscriberCh:    make(chan *partialRemovedSubscription),
+		removeSubscriberCh: make(chan *partialRemovedSubscription),
+	}
+	go p.handleNewSubscription()
+	return p
+}
+
+func (e *partialRemovedImpl) handleNewSubscription() {
+	for {
+		select {
+		case s := <-e.newSubscriberCh:
+			e.addSubscription(s)
+		case s := <-e.removeSubscriberCh:
+			e.removeSubscription(s)
+		}
 	}
 }
 
-type PartialRemoved interface {
-	AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
-	RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
-	HasHandlers(address *sdk.Address) bool
-	GetHandlers(address *sdk.Address) map[*PartialRemovedHandler]struct{}
-	GetAddresses() []string
+func (e *partialRemovedImpl) addSubscription(s *partialRemovedSubscription) {
+
+	if _, ok := e.subscribers[s.address.Address]; !ok {
+		e.subscribers[s.address.Address] = make([]*PartialRemovedHandler, 0)
+	}
+	for i := 0; i < len(s.handlers); i++ {
+		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+	}
 }
 
-type partialRemovedImpl struct {
-	sync.RWMutex
-	subscribers map[string]map[*PartialRemovedHandler]struct{}
+func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
+
+	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+		s.resultCh <- false
+	}
+
+	itemCount := len(e.subscribers[s.address.Address])
+	for _, removeHandler := range s.handlers {
+		for index, currentHandlers := range e.subscribers[s.address.Address] {
+			if removeHandler == currentHandlers {
+				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
+					e.subscribers[s.address.Address][index+1:]...)
+			}
+		}
+	}
+
+	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
 func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error {
+
 	if len(handlers) == 0 {
 		return nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if _, ok := e.subscribers[address.Address]; !ok {
-		e.subscribers[address.Address] = make(map[*PartialRemovedHandler]struct{})
+	refHandlers := make([]*PartialRemovedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
 	}
 
-	for i := 0; i < len(handlers); i++ {
-		e.subscribers[address.Address][&handlers[i]] = struct{}{}
+	e.newSubscriberCh <- &partialRemovedSubscription{
+		address:  address,
+		handlers: refHandlers,
 	}
-
 	return nil
 }
 
@@ -56,38 +101,21 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 		return false, nil
 	}
 
-	e.Lock()
-	defer e.Unlock()
-
-	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
+	resCh := make(chan bool)
+	e.removeSubscriberCh <- &partialRemovedSubscription{
+		address:  address,
+		handlers: handlers,
+		resultCh: resCh,
 	}
 
-	for i := 0; i < len(handlers); i++ {
-		delete(e.subscribers[address.Address], handlers[i])
-	}
-
-	if len(e.subscribers[address.Address]) > 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return <-resCh, nil
 }
 
 func (e *partialRemovedImpl) HasHandlers(address *sdk.Address) bool {
-	e.RLock()
-	defer e.RUnlock()
-
-	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
-		return true
-	}
-
-	return false
+	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
-func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) map[*PartialRemovedHandler]struct{} {
-	e.RLock()
-	defer e.RUnlock()
+func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) []*PartialRemovedHandler {
 
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res

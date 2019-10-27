@@ -20,6 +20,7 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		handlers []BlockHandler
 	}
+	bh := BlockHandler(blockHandlerFunc1)
 	tests := []struct {
 		name    string
 		s       *blockSubscriberImpl
@@ -29,7 +30,9 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 		{
 			name: "empty handlers",
 			s: &blockSubscriberImpl{
-				handlers: nil,
+				handlers:           nil,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
 				handlers: []BlockHandler{},
@@ -39,11 +42,13 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 		{
 			name: "success",
 			s: &blockSubscriberImpl{
-				handlers: map[*BlockHandler]struct{}{},
+				handlers:           []*BlockHandler{},
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
 				handlers: []BlockHandler{
-					blockHandlerFunc1,
+					bh,
 				},
 			},
 			wantErr: false,
@@ -51,9 +56,10 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.s.handleNewSubscription()
 			err := tt.s.AddHandlers(tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
-			assert.Equal(t, len(tt.s.handlers), len(tt.args.handlers))
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, len(tt.args.handlers), len(tt.s.handlers))
 		})
 	}
 }
@@ -63,17 +69,17 @@ func Test_blockSubscriberImpl_RemoveHandlers(t *testing.T) {
 		handlers []*BlockHandler
 	}
 
-	emptyStorage := make(map[*BlockHandler]struct{})
+	emptyStorage := make([]*BlockHandler, 0)
 
 	blockHandlerPtr1 := BlockHandler(blockHandlerFunc1)
 	blockHandlerPtr2 := BlockHandler(blockHandlerFunc2)
 
-	oneHandlerStorage := make(map[*BlockHandler]struct{})
-	oneHandlerStorage[&blockHandlerPtr1] = struct{}{}
+	oneHandlerStorage := make([]*BlockHandler, 1)
+	oneHandlerStorage[0] = &blockHandlerPtr1
 
-	twoHandlersStorage := make(map[*BlockHandler]struct{})
-	twoHandlersStorage[&blockHandlerPtr1] = struct{}{}
-	twoHandlersStorage[&blockHandlerPtr2] = struct{}{}
+	twoHandlersStorage := make([]*BlockHandler, 2)
+	twoHandlersStorage[0] = &blockHandlerPtr1
+	twoHandlersStorage[1] = &blockHandlerPtr2
 
 	tests := []struct {
 		name    string
@@ -85,18 +91,22 @@ func Test_blockSubscriberImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "handler not found",
 			s: &blockSubscriberImpl{
-				handlers: emptyStorage,
+				handlers:           emptyStorage,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
 				handlers: []*BlockHandler{},
 			},
-			want:    false,
-			wantErr: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "after removal there are no handlers left",
 			s: &blockSubscriberImpl{
-				handlers: oneHandlerStorage,
+				handlers:           oneHandlerStorage,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
 				handlers: []*BlockHandler{
@@ -109,36 +119,39 @@ func Test_blockSubscriberImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "after removal handlers left",
 			s: &blockSubscriberImpl{
-				handlers: twoHandlersStorage,
+				handlers:           twoHandlersStorage,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
 				handlers: []*BlockHandler{
 					&blockHandlerPtr1,
 				},
 			},
-			want:    false,
+			want:    true,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.s.handleNewSubscription()
 			got, err := tt.s.RemoveHandlers(tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
 func Test_blockSubscriberImpl_HasHandlers(t *testing.T) {
-	emptyStorage := make(map[*BlockHandler]struct{})
+	emptyStorage := make([]*BlockHandler, 0)
 
-	twoHandlersStorage := make(map[*BlockHandler]struct{})
+	twoHandlersStorage := make([]*BlockHandler, 2)
 
 	blockHandlerPtr1 := BlockHandler(blockHandlerFunc1)
 	blockHandlerPtr2 := BlockHandler(blockHandlerFunc2)
 
-	twoHandlersStorage[&blockHandlerPtr1] = struct{}{}
-	twoHandlersStorage[&blockHandlerPtr2] = struct{}{}
+	twoHandlersStorage[0] = &blockHandlerPtr1
+	twoHandlersStorage[1] = &blockHandlerPtr2
 
 	tests := []struct {
 		name string
@@ -148,39 +161,44 @@ func Test_blockSubscriberImpl_HasHandlers(t *testing.T) {
 		{
 			name: "has handlers",
 			s: &blockSubscriberImpl{
-				handlers: twoHandlersStorage,
+				handlers:           twoHandlersStorage,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			want: true,
 		},
 		{
 			name: "empty handlers",
 			s: &blockSubscriberImpl{
-				handlers: emptyStorage,
+				handlers:           emptyStorage,
+				newSubscriberCh:    make(chan *blockSubscription),
+				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.s.handleNewSubscription()
 			got := tt.s.HasHandlers()
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
 func Test_blockSubscriberImpl_GetHandlers(t *testing.T) {
-	twoHandlersStorage := make(map[*BlockHandler]struct{})
+	twoHandlersStorage := make([]*BlockHandler, 2)
 
 	blockHandlerPtr1 := BlockHandler(blockHandlerFunc1)
 	blockHandlerPtr2 := BlockHandler(blockHandlerFunc2)
 
-	twoHandlersStorage[&blockHandlerPtr1] = struct{}{}
-	twoHandlersStorage[&blockHandlerPtr2] = struct{}{}
+	twoHandlersStorage[0] = &blockHandlerPtr1
+	twoHandlersStorage[1] = &blockHandlerPtr2
 
 	tests := []struct {
 		name string
 		s    *blockSubscriberImpl
-		want map[*BlockHandler]struct{}
+		want []*BlockHandler
 	}{
 		{
 			name: "success",
@@ -192,8 +210,9 @@ func Test_blockSubscriberImpl_GetHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.s.handleNewSubscription()
 			got := tt.s.GetHandlers()
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

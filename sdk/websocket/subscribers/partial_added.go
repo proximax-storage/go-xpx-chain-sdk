@@ -1,13 +1,12 @@
 package subscribers
 
 import (
-	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type (
 	PartialAdded interface {
-		AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error
+		AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*PartialAddedHandler
@@ -61,13 +60,16 @@ func (e *partialAddedImpl) addSubscription(s *partialAddedSubscription) {
 
 func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
 
+	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+		s.resultCh <- false
+	}
+
 	itemCount := len(e.subscribers[s.address.Address])
 	for _, removeHandler := range s.handlers {
 		for index, currentHandlers := range e.subscribers[s.address.Address] {
 			if removeHandler == currentHandlers {
 				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
 					e.subscribers[s.address.Address][index+1:]...)
-
 			}
 		}
 	}
@@ -75,15 +77,20 @@ func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error {
+func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*PartialAddedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &partialAddedSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }
@@ -91,10 +98,6 @@ func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...*Partia
 func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error) {
 	if len(handlers) == 0 {
 		return false, nil
-	}
-
-	if external, ok := e.subscribers[address.Address]; !ok || len(external) == 0 {
-		return false, errors.Wrap(handlersNotFound, "handlers not found in handlers storage")
 	}
 
 	resCh := make(chan bool)
@@ -108,12 +111,7 @@ func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*Par
 }
 
 func (e *partialAddedImpl) HasHandlers(address *sdk.Address) bool {
-
-	if len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil {
-		return true
-	}
-
-	return false
+	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *partialAddedImpl) GetHandlers(address *sdk.Address) []*PartialAddedHandler {

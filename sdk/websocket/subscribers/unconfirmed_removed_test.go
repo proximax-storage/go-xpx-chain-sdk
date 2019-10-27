@@ -25,10 +25,13 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	subscribers := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	subscribers[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
+	subscribers := make(map[string][]*UnconfirmedRemovedHandler)
+	subscribers[address.Address] = make([]*UnconfirmedRemovedHandler, 0)
 
-	subscribersNilHandlers := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
+	subscribersNilHandlers := make(map[string][]*UnconfirmedRemovedHandler)
+
+	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
+	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc2)
 
 	tests := []struct {
 		name    string
@@ -39,7 +42,9 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &unconfirmedRemovedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -50,13 +55,15 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "nil handlers",
 			e: &unconfirmedRemovedImpl{
-				subscribers: subscribersNilHandlers,
+				subscribers:        subscribersNilHandlers,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
 				handlers: []UnconfirmedRemovedHandler{
-					unconfirmedRemovedHandlerFunc1,
-					unconfirmedRemovedHandlerFunc2,
+					unconfirmedRemovedHandlerFunc1Ptr,
+					unconfirmedRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -64,13 +71,15 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 		{
 			name: "success",
 			e: &unconfirmedRemovedImpl{
-				subscribers: subscribers,
+				subscribers:        subscribers,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
 				handlers: []UnconfirmedRemovedHandler{
-					unconfirmedRemovedHandlerFunc1,
-					unconfirmedRemovedHandlerFunc1,
+					unconfirmedRemovedHandlerFunc1Ptr,
+					unconfirmedRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -78,6 +87,7 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
@@ -93,20 +103,20 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	emptySubscribers := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
+	emptySubscribers := make(map[string][]*UnconfirmedRemovedHandler)
+	emptySubscribers[address.Address] = make([]*UnconfirmedRemovedHandler, 0)
 
 	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc2)
 
-	hasSubscribersStorage := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*UnconfirmedRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*UnconfirmedRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &unconfirmedRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &unconfirmedRemovedHandlerFunc2Ptr
 
-	oneSubsctiberStorage := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	oneSubsctiberStorage[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
-	oneSubsctiberStorage[address.Address][&unconfirmedRemovedHandlerFunc1Ptr] = struct{}{}
+	oneSubsctiberStorage := make(map[string][]*UnconfirmedRemovedHandler)
+	oneSubsctiberStorage[address.Address] = make([]*UnconfirmedRemovedHandler, 1)
+	oneSubsctiberStorage[address.Address][0] = &unconfirmedRemovedHandlerFunc1Ptr
 
 	tests := []struct {
 		name    string
@@ -118,7 +128,9 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers arg",
 			e: &unconfirmedRemovedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address:  address,
@@ -130,21 +142,9 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 		{
 			name: "empty handlers storage for address",
 			e: &unconfirmedRemovedImpl{
-				subscribers: emptySubscribers,
-			},
-			args: args{
-				address: address,
-				handlers: []*UnconfirmedRemovedHandler{
-					&unconfirmedRemovedHandlerFunc1Ptr,
-				},
-			},
-			want:    false,
-			wantErr: true,
-		},
-		{
-			name: "success return false result",
-			e: &unconfirmedRemovedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -156,9 +156,25 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "success return false result",
+			e: &unconfirmedRemovedImpl{
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
+			},
+			args: args{
+				address:  address,
+				handlers: []*UnconfirmedRemovedHandler{},
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
 			name: "success return true result",
 			e: &unconfirmedRemovedImpl{
-				subscribers: oneSubsctiberStorage,
+				subscribers:        oneSubsctiberStorage,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -172,6 +188,7 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got, err := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 			assert.Equal(t, got, tt.want)
@@ -190,13 +207,13 @@ func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 
-	emptySubscribers := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	emptySubscribers[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
+	emptySubscribers := make(map[string][]*UnconfirmedRemovedHandler)
+	emptySubscribers[address.Address] = make([]*UnconfirmedRemovedHandler, 0)
 
-	hasSubscribersStorage := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*UnconfirmedRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*UnconfirmedRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &unconfirmedRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &unconfirmedRemovedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -207,7 +224,9 @@ func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "true result",
 			e: &unconfirmedRemovedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -217,7 +236,9 @@ func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 		{
 			name: "false result",
 			e: &unconfirmedRemovedImpl{
-				subscribers: emptySubscribers,
+				subscribers:        emptySubscribers,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -227,6 +248,7 @@ func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got := tt.e.HasHandlers(tt.args.address)
 			assert.Equal(t, got, tt.want)
 		})
@@ -244,24 +266,26 @@ func Test_unconfirmedRemovedImpl_GetHandlers(t *testing.T) {
 	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc2)
 
-	nilSubscribers := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
+	nilSubscribers := make(map[string][]*UnconfirmedRemovedHandler)
 	nilSubscribers[address.Address] = nil
 
-	hasSubscribersStorage := make(map[string]map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address] = make(map[*UnconfirmedRemovedHandler]struct{})
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc1Ptr] = struct{}{}
-	hasSubscribersStorage[address.Address][&unconfirmedRemovedHandlerFunc2Ptr] = struct{}{}
+	hasSubscribersStorage := make(map[string][]*UnconfirmedRemovedHandler)
+	hasSubscribersStorage[address.Address] = make([]*UnconfirmedRemovedHandler, 2)
+	hasSubscribersStorage[address.Address][0] = &unconfirmedRemovedHandlerFunc1Ptr
+	hasSubscribersStorage[address.Address][1] = &unconfirmedRemovedHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
 		e    *unconfirmedRemovedImpl
 		args args
-		want map[*UnconfirmedRemovedHandler]struct{}
+		want []*UnconfirmedRemovedHandler
 	}{
 		{
 			name: "success",
 			e: &unconfirmedRemovedImpl{
-				subscribers: hasSubscribersStorage,
+				subscribers:        hasSubscribersStorage,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -271,7 +295,9 @@ func Test_unconfirmedRemovedImpl_GetHandlers(t *testing.T) {
 		{
 			name: "nil result",
 			e: &unconfirmedRemovedImpl{
-				subscribers: nil,
+				subscribers:        nil,
+				newSubscriberCh:    make(chan *unconfirmedRemovedSubscription),
+				removeSubscriberCh: make(chan *unconfirmedRemovedSubscription),
 			},
 			args: args{
 				address: address,
@@ -281,6 +307,7 @@ func Test_unconfirmedRemovedImpl_GetHandlers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go tt.e.handleNewSubscription()
 			got := tt.e.GetHandlers(tt.args.address)
 			assert.Equal(t, got, tt.want)
 		})
