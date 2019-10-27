@@ -34,7 +34,7 @@ func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 	var wg sync.WaitGroup
 
-	for f := range handlers {
+	for _, f := range handlers {
 		wg.Add(1)
 		go func(f *subscribers.BlockHandler) {
 			defer wg.Done()

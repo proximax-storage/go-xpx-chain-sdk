@@ -8,7 +8,7 @@ type (
 	ConfirmedAddedHandler func(sdk.Transaction) bool
 
 	ConfirmedAdded interface {
-		AddHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) error
+		AddHandlers(address *sdk.Address, handlers ...ConfirmedAddedHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*ConfirmedAddedHandler
@@ -78,15 +78,20 @@ func (e *confirmedAddedImpl) handleNewSubscription() {
 	}
 }
 
-func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) error {
+func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...ConfirmedAddedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*ConfirmedAddedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &confirmedAddedSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }

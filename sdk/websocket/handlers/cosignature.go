@@ -38,7 +38,7 @@ func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
 
 	var wg sync.WaitGroup
 
-	for f := range handlers {
+	for _, f := range handlers {
 		wg.Add(1)
 		go func(f *subscribers.CosignatureHandler) {
 			defer wg.Done()

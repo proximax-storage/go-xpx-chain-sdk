@@ -20,7 +20,7 @@ var statusHandlerFunc2 = func(tx *sdk.StatusInfo) bool {
 func Test_statusImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*StatusHandler
+		handlers []StatusHandler
 	}
 
 	address := &sdk.Address{}
@@ -45,7 +45,7 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*StatusHandler{},
+				handlers: []StatusHandler{},
 			},
 			wantErr: false,
 		},
@@ -58,9 +58,9 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*StatusHandler{
-					&statusHandlerFunc1Ptr,
-					&statusHandlerFunc2Ptr,
+				handlers: []StatusHandler{
+					statusHandlerFunc1Ptr,
+					statusHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -74,9 +74,9 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*StatusHandler{
-					&statusHandlerFunc1Ptr,
-					&statusHandlerFunc2Ptr,
+				handlers: []StatusHandler{
+					statusHandlerFunc1Ptr,
+					statusHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,

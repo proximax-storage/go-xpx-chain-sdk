@@ -19,7 +19,7 @@ var unconfirmedRemovedHandlerFunc2 = func(*sdk.UnconfirmedRemoved) bool {
 func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*UnconfirmedRemovedHandler
+		handlers []UnconfirmedRemovedHandler
 	}
 
 	address := &sdk.Address{}
@@ -48,7 +48,7 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*UnconfirmedRemovedHandler{},
+				handlers: []UnconfirmedRemovedHandler{},
 			},
 			wantErr: false,
 		},
@@ -61,9 +61,9 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*UnconfirmedRemovedHandler{
-					&unconfirmedRemovedHandlerFunc1Ptr,
-					&unconfirmedRemovedHandlerFunc2Ptr,
+				handlers: []UnconfirmedRemovedHandler{
+					unconfirmedRemovedHandlerFunc1Ptr,
+					unconfirmedRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -77,9 +77,9 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*UnconfirmedRemovedHandler{
-					&unconfirmedRemovedHandlerFunc1Ptr,
-					&unconfirmedRemovedHandlerFunc2Ptr,
+				handlers: []UnconfirmedRemovedHandler{
+					unconfirmedRemovedHandlerFunc1Ptr,
+					unconfirmedRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,

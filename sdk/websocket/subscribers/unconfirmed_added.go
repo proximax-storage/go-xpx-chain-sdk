@@ -7,7 +7,7 @@ import (
 type (
 	UnconfirmedAddedHandler func(sdk.Transaction) bool
 	UnconfirmedAdded        interface {
-		AddHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) error
+		AddHandlers(address *sdk.Address, handlers ...UnconfirmedAddedHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*UnconfirmedAddedHandler
@@ -77,15 +77,20 @@ func (e *unconfirmedAddedImpl) removeSubscription(s *unconfirmedAddedSubscriptio
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *unconfirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) error {
+func (e *unconfirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...UnconfirmedAddedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*UnconfirmedAddedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &unconfirmedAddedSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }

@@ -18,7 +18,7 @@ var blockHandlerFunc2 = func(blockInfo *sdk.BlockInfo) bool {
 
 func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handlers []*BlockHandler
+		handlers []BlockHandler
 	}
 	bh := BlockHandler(blockHandlerFunc1)
 	tests := []struct {
@@ -35,7 +35,7 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
-				handlers: []*BlockHandler{},
+				handlers: []BlockHandler{},
 			},
 			wantErr: false,
 		},
@@ -47,8 +47,8 @@ func Test_blockSubscriberImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *blockSubscription),
 			},
 			args: args{
-				handlers: []*BlockHandler{
-					&bh,
+				handlers: []BlockHandler{
+					bh,
 				},
 			},
 			wantErr: false,

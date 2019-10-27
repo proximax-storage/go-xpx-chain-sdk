@@ -8,7 +8,7 @@ type (
 	PartialRemovedHandler func(*sdk.PartialRemovedInfo) bool
 
 	PartialRemoved interface {
-		AddHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) error
+		AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*PartialRemovedHandler
@@ -78,15 +78,20 @@ func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) error {
+func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*PartialRemovedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &partialRemovedSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }

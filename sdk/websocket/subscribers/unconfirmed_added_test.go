@@ -19,7 +19,7 @@ var unconfirmedAddedHandlerFunc2 = func(tx sdk.Transaction) bool {
 func Test_unconfirmedAddedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*UnconfirmedAddedHandler
+		handlers []UnconfirmedAddedHandler
 	}
 
 	address := &sdk.Address{}
@@ -46,7 +46,7 @@ func Test_unconfirmedAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*UnconfirmedAddedHandler{},
+				handlers: []UnconfirmedAddedHandler{},
 			},
 			wantErr: false,
 		},
@@ -59,9 +59,9 @@ func Test_unconfirmedAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*UnconfirmedAddedHandler{
-					&unconfirmedAddedHandlerFunc1Ptr,
-					&unconfirmedAddedHandlerFunc2Ptr,
+				handlers: []UnconfirmedAddedHandler{
+					unconfirmedAddedHandlerFunc1Ptr,
+					unconfirmedAddedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -75,9 +75,9 @@ func Test_unconfirmedAddedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*UnconfirmedAddedHandler{
-					&unconfirmedAddedHandlerFunc1Ptr,
-					&unconfirmedAddedHandlerFunc2Ptr,
+				handlers: []UnconfirmedAddedHandler{
+					unconfirmedAddedHandlerFunc1Ptr,
+					unconfirmedAddedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,

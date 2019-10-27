@@ -8,7 +8,7 @@ import (
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/mocks/mappers"
 
-	mocksSubscribers "github.com/proximax-storage/go-xpx-chain-sdk/mocks/subscribers"
+	mocksSubscribers "github.com/proximax-storage/go-xpx-chain-sdk/mocks/websocket/subscribers"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )

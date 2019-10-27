@@ -8,7 +8,7 @@ type (
 	StatusHandler func(*sdk.StatusInfo) bool
 
 	Status interface {
-		AddHandlers(address *sdk.Address, handlers ...*StatusHandler) error
+		AddHandlers(address *sdk.Address, handlers ...StatusHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*StatusHandler
@@ -78,15 +78,20 @@ func (e *statusImpl) removeSubscription(s *statusSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...*StatusHandler) error {
+func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*StatusHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &statusSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }

@@ -19,7 +19,7 @@ var cosignatureHandlerFunc2 = func(tx *sdk.SignerInfo) bool {
 func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*CosignatureHandler
+		handlers []CosignatureHandler
 	}
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
@@ -46,7 +46,7 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*CosignatureHandler{},
+				handlers: []CosignatureHandler{},
 			},
 			wantErr: false,
 		},
@@ -59,9 +59,9 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*CosignatureHandler{
-					&cosignatureHandlerFunc1Ptr,
-					&cosignatureHandlerFunc2Ptr,
+				handlers: []CosignatureHandler{
+					cosignatureHandlerFunc1Ptr,
+					cosignatureHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -75,9 +75,9 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*CosignatureHandler{
-					&cosignatureHandlerFunc1Ptr,
-					&cosignatureHandlerFunc2Ptr,
+				handlers: []CosignatureHandler{
+					cosignatureHandlerFunc1Ptr,
+					cosignatureHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,

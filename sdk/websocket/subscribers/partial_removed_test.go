@@ -20,7 +20,7 @@ var partialRemovedHandlerFunc2 = func(info *sdk.PartialRemovedInfo) bool {
 func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 	type args struct {
 		address  *sdk.Address
-		handlers []*PartialRemovedHandler
+		handlers []PartialRemovedHandler
 	}
 
 	address := &sdk.Address{}
@@ -47,7 +47,7 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address:  address,
-				handlers: []*PartialRemovedHandler{},
+				handlers: []PartialRemovedHandler{},
 			},
 			wantErr: false,
 		},
@@ -60,9 +60,9 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*PartialRemovedHandler{
-					&partialRemovedHandlerFunc1Ptr,
-					&partialRemovedHandlerFunc2Ptr,
+				handlers: []PartialRemovedHandler{
+					partialRemovedHandlerFunc1Ptr,
+					partialRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,
@@ -76,9 +76,9 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 			},
 			args: args{
 				address: address,
-				handlers: []*PartialRemovedHandler{
-					&partialRemovedHandlerFunc1Ptr,
-					&partialRemovedHandlerFunc2Ptr,
+				handlers: []PartialRemovedHandler{
+					partialRemovedHandlerFunc1Ptr,
+					partialRemovedHandlerFunc2Ptr,
 				},
 			},
 			wantErr: false,

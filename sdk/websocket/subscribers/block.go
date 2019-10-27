@@ -8,7 +8,7 @@ type (
 	BlockHandler func(*sdk.BlockInfo) bool
 
 	Block interface {
-		AddHandlers(handlers ...*BlockHandler) error
+		AddHandlers(handlers ...BlockHandler) error
 		RemoveHandlers(handlers ...*BlockHandler) (bool, error)
 		HasHandlers() bool
 		GetHandlers() []*BlockHandler
@@ -72,13 +72,18 @@ func (s *blockSubscriberImpl) handleNewSubscription() {
 		}
 	}
 }
-func (s *blockSubscriberImpl) AddHandlers(handlers ...*BlockHandler) error {
+func (s *blockSubscriberImpl) AddHandlers(handlers ...BlockHandler) error {
 
 	if s.handlers == nil || len(handlers) == 0 {
 		return nil
 	}
+
+	refHandlers := make([]*BlockHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
 	s.newSubscriberCh <- &blockSubscription{
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 
 	return nil

@@ -10,7 +10,7 @@ type (
 	CosignatureHandler func(*sdk.SignerInfo) bool
 
 	Cosignature interface {
-		AddHandlers(address *sdk.Address, handlers ...*CosignatureHandler) error
+		AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*CosignatureHandler
@@ -80,15 +80,20 @@ func (e *cosignatureImpl) handleNewSubscription() {
 	}
 }
 
-func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...*CosignatureHandler) error {
+func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*CosignatureHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &cosignatureSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }

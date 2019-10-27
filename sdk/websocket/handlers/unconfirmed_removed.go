@@ -34,7 +34,7 @@ func (h *unconfirmedRemovedHandler) Handle(address *sdk.Address, resp []byte) bo
 
 	var wg sync.WaitGroup
 
-	for f := range handlers {
+	for _, f := range handlers {
 		wg.Add(1)
 		go func(f *subscribers.UnconfirmedRemovedHandler) {
 			defer wg.Done()

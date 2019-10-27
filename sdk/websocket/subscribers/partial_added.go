@@ -6,7 +6,7 @@ import (
 
 type (
 	PartialAdded interface {
-		AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error
+		AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error
 		RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*PartialAddedHandler
@@ -77,15 +77,20 @@ func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) error {
+func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
+	refHandlers := make([]*PartialAddedHandler, len(handlers))
+	for i, h := range handlers {
+		refHandlers[i] = &h
+	}
+
 	e.newSubscriberCh <- &partialAddedSubscription{
 		address:  address,
-		handlers: handlers,
+		handlers: refHandlers,
 	}
 	return nil
 }
