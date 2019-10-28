@@ -1,5 +1,34 @@
 namespace Catapult.Buffers;
 
+table PrepareDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    owner:[ubyte];
+    duration:[uint];
+    billingPeriod:[uint];
+    billingPrice:[uint];
+    driveSize:[uint];
+    replicas:ushort;
+    minReplicators:ushort;
+    percentApprovers:ubyte;
+}
+
+table JoinToDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey:[ubyte];
+}
+
 table AddActionBuffer {
     fileHash: [ubyte];
     fileSize: [ubyte];
@@ -21,22 +50,13 @@ table DriveFileSystemTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
+    driveKey: [ubyte];
     rootHash: [ubyte];
     xorRootHash: [ubyte];
-    addActionsCount: ubyte;
-    removeActionsCount: ubyte;
+    addActionsCount: ushort;
+    removeActionsCount: ushort;
     addActions: [AddActionBuffer];
     removeActions: [RemoveActionBuffer];
-}
-
-table EndDriveTransactionBuffer {
-    size: uint;
-    signature: [ubyte];
-    signer: [ubyte];
-    version: uint;
-    type: ushort;
-    maxFee: [uint];
-    deadline:[uint];
 }
 
 table FilesDepositTransactionBuffer {
@@ -48,11 +68,11 @@ table FilesDepositTransactionBuffer {
     maxFee: [uint];
     deadline:[uint];
     driveKey:[ubyte];
-    filesCount: ubyte;
+    filesCount: ushort;
     files: [FileBuffer];
 }
 
-table JoinToDriveTransactionBuffer {
+table EndDriveTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -60,23 +80,7 @@ table JoinToDriveTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    driveKey:[ubyte];
-}
-
-table ModifyDriveTransactionBuffer {
-    size: uint;
-    signature: [ubyte];
-    signer: [ubyte];
-    version: uint;
-    type: ushort;
-    maxFee: [uint];
-    deadline:[uint];
-    priceDelta:[uint];
-    durationDelta:[uint];
-    sizeDelta:[uint];
-    replicasDelta:byte;
-    minReplicatorsDelta:byte;
-    minApproversDelta:byte;
+    driveKey: [ubyte];
 }
 
 root_type AddActionBuffer;
@@ -93,4 +97,4 @@ root_type FilesDepositTransactionBuffer;
 
 root_type JoinToDriveTransactionBuffer;
 
-root_type ModifyDriveTransactionBuffer;
+root_type PrepareDriveTransactionBuffer;

@@ -1,6 +1,6 @@
 package sdk
 
-func modifyDriveTransactionSchema() *schema {
+func prepareDriveTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -10,12 +10,14 @@ func modifyDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newScalarAttribute("priceDelta", IntSize),
-			newScalarAttribute("durationDelta", IntSize),
-			newScalarAttribute("sizeDelta", ByteSize),
-			newScalarAttribute("replicasDelta", IntSize),
-			newScalarAttribute("minReplicatorsDelta", IntSize),
-			newScalarAttribute("minApproversDelta", IntSize),
+			newArrayAttribute("owner", ByteSize),
+			newScalarAttribute("duration", IntSize),
+			newScalarAttribute("billingPeriod", IntSize),
+			newScalarAttribute("billingPrice", IntSize),
+			newScalarAttribute("driveSize", ByteSize),
+			newScalarAttribute("replicas", ShortSize),
+			newScalarAttribute("minReplicators", ShortSize),
+			newScalarAttribute("percentApprovers", ByteSize),
 		},
 	}
 }
@@ -30,14 +32,15 @@ func driveFileSystemTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newScalarAttribute("rootHash", ByteSize),
-			newScalarAttribute("xorRootHash", ByteSize),
-			newScalarAttribute("addActionsCount", ByteSize),
-			newScalarAttribute("removeActionsCount", ByteSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("rootHash", ByteSize),
+			newArrayAttribute("xorRootHash", ByteSize),
+			newScalarAttribute("addActionsCount", ShortSize),
+			newScalarAttribute("removeActionsCount", ShortSize),
 			newTableArrayAttribute("addActions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("fileHash", ByteSize),
-					newScalarAttribute("fileSize", IntSize),
+					newArrayAttribute("fileSize", IntSize),
 				},
 			}.schemaDefinition),
 			newTableArrayAttribute("removeActions", schema{
@@ -59,7 +62,7 @@ func joinDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newScalarAttribute("driveKey", ByteSize),
+			newArrayAttribute("driveKey", ByteSize),
 		},
 	}
 }
@@ -74,8 +77,8 @@ func filesDepositTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newScalarAttribute("driveKey", ByteSize),
-			newScalarAttribute("filesCount", ByteSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newScalarAttribute("filesCount", ShortSize),
 			newTableArrayAttribute("files", schema{
 				[]schemaAttribute{
 					newArrayAttribute("fileHash", ByteSize),
@@ -95,6 +98,7 @@ func endDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
 		},
 	}
 }

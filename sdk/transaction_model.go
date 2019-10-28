@@ -3236,10 +3236,7 @@ const (
 	MaxFeeSize                                   = BaseInt64Size
 	DeadLineSize                                 = BaseInt64Size
 	DurationSize                                 = BaseInt64Size
-	SizeDeltaSize                                = BaseInt64Size
-	ReplicasDeltaSize                            = 1
-	MinReplicatorsDeltaSize                      = 1
-	MinApproversDeltaSize                        = 1
+	StorageSizeSize                              = BaseInt64Size
 	TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
 	PropertyModificationTypeSize             int = 1
@@ -3281,14 +3278,17 @@ const (
 	MosaicsSizeSize                          int = 1
 	MessageSizeSize                          int = 2
 	TransferHeaderSize                           = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
-	ModifyDriveHeaderSize                        = TransactionHeaderSize + SizeDeltaSize + DurationSize + ReplicasDeltaSize + MinReplicatorsDeltaSize + MinApproversDeltaSize
-	JoinToDriveHeaderSize                        = TransactionHeaderSize + Hash256
-	AddActionsSize                               = 1
-	RemoveActionsSize                            = 1
-	DriveFileSystemHeaderSize                    = TransactionHeaderSize + Hash256 + Hash256 + AddActionsSize + RemoveActionsSize
-	FilesSize                                    = 1
-	FilesDepositHeaderSize                       = TransactionHeaderSize + Hash256 + FilesSize
-	EndDriveHeaderSize                           = TransactionHeaderSize
+	ReplicasSize                                 = 2
+	MinReplicatorsSize                           = 2
+	PercentApproversSize                         = 1
+	PrepareDriveHeaderSize                       = TransactionHeaderSize + KeySize + DurationSize + DurationSize + AmountSize + StorageSizeSize + ReplicasSize + MinReplicatorsSize + PercentApproversSize
+	JoinToDriveHeaderSize                        = TransactionHeaderSize + KeySize
+	AddActionsSize                               = 2
+	RemoveActionsSize                            = 2
+	DriveFileSystemHeaderSize                    = TransactionHeaderSize + KeySize + Hash256 + Hash256 + AddActionsSize + RemoveActionsSize
+	FilesSizeSize                                = 2
+	FilesDepositHeaderSize                       = TransactionHeaderSize + KeySize + FilesSizeSize
+	EndDriveHeaderSize                           = TransactionHeaderSize + KeySize
 )
 
 type EntityType uint16
@@ -3318,7 +3318,7 @@ const (
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
 	Transfer                  EntityType = 0x4154
-	ModifyDrive               EntityType = 0x5a01
+	PrepareDrive              EntityType = 0x5a01
 	JoinToDrive               EntityType = 0x5a02
 	DriveFileSystem           EntityType = 0x5a03
 	FilesDeposit              EntityType = 0x5a04
@@ -3354,7 +3354,7 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
-	ModifyDriveVersion               EntityVersion = 1
+	PrepareDriveVersion              EntityVersion = 1
 	JoinToDriveVersion               EntityVersion = 1
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1
@@ -3556,8 +3556,8 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &secretProofTransactionDTO{}
 	case Transfer:
 		dto = &transferTransactionDTO{}
-	case ModifyDrive:
-		dto = &modifyDriveTransactionDTO{}
+	case PrepareDrive:
+		dto = &prepareDriveTransactionDTO{}
 	case JoinToDrive:
 		dto = &joinToDriveTransactionDTO{}
 	case DriveFileSystem:

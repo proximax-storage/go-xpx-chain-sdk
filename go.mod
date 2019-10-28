@@ -11,7 +11,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
-	github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63
 	github.com/proximax-storage/xpx-crypto-go v0.0.0-20190523083438-1d0f3ef4b6e1
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f

@@ -6,6 +6,691 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
+type PrepareDriveTransactionBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPrepareDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *PrepareDriveTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &PrepareDriveTransactionBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Size() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Signature(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) SignatureLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) SignatureBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Signer(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) SignerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) SignerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Version() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Type() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateType(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(12, n)
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MaxFee(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MaxFeeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Deadline(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) DeadlineLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Owner(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) OwnerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) OwnerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateOwner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Duration(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) DurationLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateDuration(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) BillingPeriod(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) BillingPeriodLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateBillingPeriod(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) BillingPrice(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) BillingPriceLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateBillingPrice(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) DriveSize(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) DriveSizeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateDriveSize(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareDriveTransactionBuffer) Replicas() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateReplicas(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(28, n)
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MinReplicators() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutateMinReplicators(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(30, n)
+}
+
+func (rcv *PrepareDriveTransactionBuffer) PercentApprovers() uint8 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	if o != 0 {
+		return rcv._tab.GetUint8(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PrepareDriveTransactionBuffer) MutatePercentApprovers(n uint8) bool {
+	return rcv._tab.MutateUint8Slot(32, n)
+}
+
+func PrepareDriveTransactionBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(15)
+}
+func PrepareDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func PrepareDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func PrepareDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func PrepareDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func PrepareDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func PrepareDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
+}
+func PrepareDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func PrepareDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
+}
+func PrepareDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func PrepareDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddOwner(builder *flatbuffers.Builder, owner flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(owner), 0)
+}
+func PrepareDriveTransactionBufferStartOwnerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func PrepareDriveTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(duration), 0)
+}
+func PrepareDriveTransactionBufferStartDurationVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddBillingPeriod(builder *flatbuffers.Builder, billingPeriod flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(billingPeriod), 0)
+}
+func PrepareDriveTransactionBufferStartBillingPeriodVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddBillingPrice(builder *flatbuffers.Builder, billingPrice flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(billingPrice), 0)
+}
+func PrepareDriveTransactionBufferStartBillingPriceVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddDriveSize(builder *flatbuffers.Builder, driveSize flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(driveSize), 0)
+}
+func PrepareDriveTransactionBufferStartDriveSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PrepareDriveTransactionBufferAddReplicas(builder *flatbuffers.Builder, replicas uint16) {
+	builder.PrependUint16Slot(12, replicas, 0)
+}
+func PrepareDriveTransactionBufferAddMinReplicators(builder *flatbuffers.Builder, minReplicators uint16) {
+	builder.PrependUint16Slot(13, minReplicators, 0)
+}
+func PrepareDriveTransactionBufferAddPercentApprovers(builder *flatbuffers.Builder, percentApprovers uint8) {
+	builder.PrependUint8Slot(14, percentApprovers, 0)
+}
+func PrepareDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type JoinToDriveTransactionBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsJoinToDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *JoinToDriveTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &JoinToDriveTransactionBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Size() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Signature(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) SignatureLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) SignatureBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Signer(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) SignerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) SignerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Version() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Type() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateType(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(12, n)
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MaxFee(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MaxFeeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *JoinToDriveTransactionBuffer) Deadline(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) DeadlineLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *JoinToDriveTransactionBuffer) DriveKey(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) DriveKeyLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *JoinToDriveTransactionBuffer) DriveKeyBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *JoinToDriveTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func JoinToDriveTransactionBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(8)
+}
+func JoinToDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func JoinToDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func JoinToDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func JoinToDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func JoinToDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func JoinToDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
+}
+func JoinToDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func JoinToDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
+}
+func JoinToDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func JoinToDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func JoinToDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func JoinToDriveTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
+}
+func JoinToDriveTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func JoinToDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type AddActionBuffer struct {
 	_tab flatbuffers.Table
 }
@@ -423,8 +1108,42 @@ func (rcv *DriveFileSystemTransactionBuffer) MutateDeadline(j int, n uint32) boo
 	return false
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) RootHash(j int) byte {
+func (rcv *DriveFileSystemTransactionBuffer) DriveKey(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) DriveKeyLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) DriveKeyBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) RootHash(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -433,7 +1152,7 @@ func (rcv *DriveFileSystemTransactionBuffer) RootHash(j int) byte {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) RootHashLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -441,7 +1160,7 @@ func (rcv *DriveFileSystemTransactionBuffer) RootHashLength() int {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) RootHashBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -449,7 +1168,7 @@ func (rcv *DriveFileSystemTransactionBuffer) RootHashBytes() []byte {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) MutateRootHash(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -458,7 +1177,7 @@ func (rcv *DriveFileSystemTransactionBuffer) MutateRootHash(j int, n byte) bool 
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) XorRootHash(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -467,7 +1186,7 @@ func (rcv *DriveFileSystemTransactionBuffer) XorRootHash(j int) byte {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) XorRootHashLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -475,7 +1194,7 @@ func (rcv *DriveFileSystemTransactionBuffer) XorRootHashLength() int {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) XorRootHashBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -483,7 +1202,7 @@ func (rcv *DriveFileSystemTransactionBuffer) XorRootHashBytes() []byte {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) MutateXorRootHash(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -491,32 +1210,32 @@ func (rcv *DriveFileSystemTransactionBuffer) MutateXorRootHash(j int, n byte) bo
 	return false
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) AddActionsCount() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *DriveFileSystemTransactionBuffer) MutateAddActionsCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(22, n)
-}
-
-func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCount() byte {
+func (rcv *DriveFileSystemTransactionBuffer) AddActionsCount() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) MutateRemoveActionsCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(24, n)
+func (rcv *DriveFileSystemTransactionBuffer) MutateAddActionsCount(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(24, n)
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCount() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) MutateRemoveActionsCount(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(26, n)
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) AddActions(obj *AddActionBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -528,7 +1247,7 @@ func (rcv *DriveFileSystemTransactionBuffer) AddActions(obj *AddActionBuffer, j 
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) AddActionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -536,7 +1255,7 @@ func (rcv *DriveFileSystemTransactionBuffer) AddActionsLength() int {
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) RemoveActions(obj *RemoveActionBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -548,7 +1267,7 @@ func (rcv *DriveFileSystemTransactionBuffer) RemoveActions(obj *RemoveActionBuff
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -556,7 +1275,7 @@ func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsLength() int {
 }
 
 func DriveFileSystemTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(13)
+	builder.StartObject(14)
 }
 func DriveFileSystemTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -591,253 +1310,43 @@ func DriveFileSystemTransactionBufferAddDeadline(builder *flatbuffers.Builder, d
 func DriveFileSystemTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func DriveFileSystemTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
+}
+func DriveFileSystemTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func DriveFileSystemTransactionBufferAddRootHash(builder *flatbuffers.Builder, rootHash flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(rootHash), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(rootHash), 0)
 }
 func DriveFileSystemTransactionBufferStartRootHashVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func DriveFileSystemTransactionBufferAddXorRootHash(builder *flatbuffers.Builder, xorRootHash flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(xorRootHash), 0)
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(xorRootHash), 0)
 }
 func DriveFileSystemTransactionBufferStartXorRootHashVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func DriveFileSystemTransactionBufferAddAddActionsCount(builder *flatbuffers.Builder, addActionsCount byte) {
-	builder.PrependByteSlot(9, addActionsCount, 0)
+func DriveFileSystemTransactionBufferAddAddActionsCount(builder *flatbuffers.Builder, addActionsCount uint16) {
+	builder.PrependUint16Slot(10, addActionsCount, 0)
 }
-func DriveFileSystemTransactionBufferAddRemoveActionsCount(builder *flatbuffers.Builder, removeActionsCount byte) {
-	builder.PrependByteSlot(10, removeActionsCount, 0)
+func DriveFileSystemTransactionBufferAddRemoveActionsCount(builder *flatbuffers.Builder, removeActionsCount uint16) {
+	builder.PrependUint16Slot(11, removeActionsCount, 0)
 }
 func DriveFileSystemTransactionBufferAddAddActions(builder *flatbuffers.Builder, addActions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(addActions), 0)
+	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(addActions), 0)
 }
 func DriveFileSystemTransactionBufferStartAddActionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func DriveFileSystemTransactionBufferAddRemoveActions(builder *flatbuffers.Builder, removeActions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(removeActions), 0)
+	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(removeActions), 0)
 }
 func DriveFileSystemTransactionBufferStartRemoveActionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func DriveFileSystemTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
-	return builder.EndObject()
-}
-
-type EndDriveTransactionBuffer struct {
-	_tab flatbuffers.Table
-}
-
-func GetRootAsEndDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *EndDriveTransactionBuffer {
-	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &EndDriveTransactionBuffer{}
-	x.Init(buf, n+offset)
-	return x
-}
-
-func (rcv *EndDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
-	rcv._tab.Bytes = buf
-	rcv._tab.Pos = i
-}
-
-func (rcv *EndDriveTransactionBuffer) Table() flatbuffers.Table {
-	return rcv._tab
-}
-
-func (rcv *EndDriveTransactionBuffer) Size() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateSize(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(4, n)
-}
-
-func (rcv *EndDriveTransactionBuffer) Signature(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) SignatureLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) SignatureBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *EndDriveTransactionBuffer) Signer(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) SignerLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) SignerBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *EndDriveTransactionBuffer) Version() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateVersion(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(10, n)
-}
-
-func (rcv *EndDriveTransactionBuffer) Type() uint16 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateType(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(12, n)
-}
-
-func (rcv *EndDriveTransactionBuffer) MaxFee(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MaxFeeLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *EndDriveTransactionBuffer) Deadline(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) DeadlineLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func EndDriveTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(7)
-}
-func EndDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
-	builder.PrependUint32Slot(0, size, 0)
-}
-func EndDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
-}
-func EndDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
-func EndDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
-}
-func EndDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
-func EndDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
-	builder.PrependUint32Slot(3, version, 0)
-}
-func EndDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
-	builder.PrependUint16Slot(4, type_, 0)
-}
-func EndDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
-}
-func EndDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func EndDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
-}
-func EndDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func EndDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
@@ -1051,16 +1560,16 @@ func (rcv *FilesDepositTransactionBuffer) MutateDriveKey(j int, n byte) bool {
 	return false
 }
 
-func (rcv *FilesDepositTransactionBuffer) FilesCount() byte {
+func (rcv *FilesDepositTransactionBuffer) FilesCount() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *FilesDepositTransactionBuffer) MutateFilesCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(20, n)
+func (rcv *FilesDepositTransactionBuffer) MutateFilesCount(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(20, n)
 }
 
 func (rcv *FilesDepositTransactionBuffer) Files(obj *FileBuffer, j int) bool {
@@ -1125,8 +1634,8 @@ func FilesDepositTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driv
 func FilesDepositTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func FilesDepositTransactionBufferAddFilesCount(builder *flatbuffers.Builder, filesCount byte) {
-	builder.PrependByteSlot(8, filesCount, 0)
+func FilesDepositTransactionBufferAddFilesCount(builder *flatbuffers.Builder, filesCount uint16) {
+	builder.PrependUint16Slot(8, filesCount, 0)
 }
 func FilesDepositTransactionBufferAddFiles(builder *flatbuffers.Builder, files flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(files), 0)
@@ -1138,27 +1647,27 @@ func FilesDepositTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.
 	return builder.EndObject()
 }
 
-type JoinToDriveTransactionBuffer struct {
+type EndDriveTransactionBuffer struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsJoinToDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *JoinToDriveTransactionBuffer {
+func GetRootAsEndDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *EndDriveTransactionBuffer {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &JoinToDriveTransactionBuffer{}
+	x := &EndDriveTransactionBuffer{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *EndDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Table() flatbuffers.Table {
+func (rcv *EndDriveTransactionBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Size() uint32 {
+func (rcv *EndDriveTransactionBuffer) Size() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetUint32(o + rcv._tab.Pos)
@@ -1166,11 +1675,11 @@ func (rcv *JoinToDriveTransactionBuffer) Size() uint32 {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateSize(n uint32) bool {
+func (rcv *EndDriveTransactionBuffer) MutateSize(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(4, n)
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Signature(j int) byte {
+func (rcv *EndDriveTransactionBuffer) Signature(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1179,7 +1688,7 @@ func (rcv *JoinToDriveTransactionBuffer) Signature(j int) byte {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) SignatureLength() int {
+func (rcv *EndDriveTransactionBuffer) SignatureLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1187,7 +1696,7 @@ func (rcv *JoinToDriveTransactionBuffer) SignatureLength() int {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) SignatureBytes() []byte {
+func (rcv *EndDriveTransactionBuffer) SignatureBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1195,7 +1704,7 @@ func (rcv *JoinToDriveTransactionBuffer) SignatureBytes() []byte {
 	return nil
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
+func (rcv *EndDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1204,7 +1713,7 @@ func (rcv *JoinToDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
 	return false
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Signer(j int) byte {
+func (rcv *EndDriveTransactionBuffer) Signer(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1213,7 +1722,7 @@ func (rcv *JoinToDriveTransactionBuffer) Signer(j int) byte {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) SignerLength() int {
+func (rcv *EndDriveTransactionBuffer) SignerLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1221,7 +1730,7 @@ func (rcv *JoinToDriveTransactionBuffer) SignerLength() int {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) SignerBytes() []byte {
+func (rcv *EndDriveTransactionBuffer) SignerBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1229,7 +1738,7 @@ func (rcv *JoinToDriveTransactionBuffer) SignerBytes() []byte {
 	return nil
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
+func (rcv *EndDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1238,7 +1747,7 @@ func (rcv *JoinToDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
 	return false
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Version() uint32 {
+func (rcv *EndDriveTransactionBuffer) Version() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		return rcv._tab.GetUint32(o + rcv._tab.Pos)
@@ -1246,11 +1755,11 @@ func (rcv *JoinToDriveTransactionBuffer) Version() uint32 {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateVersion(n uint32) bool {
+func (rcv *EndDriveTransactionBuffer) MutateVersion(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(10, n)
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Type() uint16 {
+func (rcv *EndDriveTransactionBuffer) Type() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.GetUint16(o + rcv._tab.Pos)
@@ -1258,11 +1767,11 @@ func (rcv *JoinToDriveTransactionBuffer) Type() uint16 {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateType(n uint16) bool {
+func (rcv *EndDriveTransactionBuffer) MutateType(n uint16) bool {
 	return rcv._tab.MutateUint16Slot(12, n)
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MaxFee(j int) uint32 {
+func (rcv *EndDriveTransactionBuffer) MaxFee(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1271,7 +1780,7 @@ func (rcv *JoinToDriveTransactionBuffer) MaxFee(j int) uint32 {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MaxFeeLength() int {
+func (rcv *EndDriveTransactionBuffer) MaxFeeLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1279,7 +1788,7 @@ func (rcv *JoinToDriveTransactionBuffer) MaxFeeLength() int {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+func (rcv *EndDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1288,7 +1797,7 @@ func (rcv *JoinToDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
 	return false
 }
 
-func (rcv *JoinToDriveTransactionBuffer) Deadline(j int) uint32 {
+func (rcv *EndDriveTransactionBuffer) Deadline(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1297,7 +1806,7 @@ func (rcv *JoinToDriveTransactionBuffer) Deadline(j int) uint32 {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) DeadlineLength() int {
+func (rcv *EndDriveTransactionBuffer) DeadlineLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1305,7 +1814,7 @@ func (rcv *JoinToDriveTransactionBuffer) DeadlineLength() int {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+func (rcv *EndDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1314,7 +1823,7 @@ func (rcv *JoinToDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	return false
 }
 
-func (rcv *JoinToDriveTransactionBuffer) DriveKey(j int) byte {
+func (rcv *EndDriveTransactionBuffer) DriveKey(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1323,7 +1832,7 @@ func (rcv *JoinToDriveTransactionBuffer) DriveKey(j int) byte {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) DriveKeyLength() int {
+func (rcv *EndDriveTransactionBuffer) DriveKeyLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1331,7 +1840,7 @@ func (rcv *JoinToDriveTransactionBuffer) DriveKeyLength() int {
 	return 0
 }
 
-func (rcv *JoinToDriveTransactionBuffer) DriveKeyBytes() []byte {
+func (rcv *EndDriveTransactionBuffer) DriveKeyBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1339,7 +1848,7 @@ func (rcv *JoinToDriveTransactionBuffer) DriveKeyBytes() []byte {
 	return nil
 }
 
-func (rcv *JoinToDriveTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+func (rcv *EndDriveTransactionBuffer) MutateDriveKey(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1348,405 +1857,48 @@ func (rcv *JoinToDriveTransactionBuffer) MutateDriveKey(j int, n byte) bool {
 	return false
 }
 
-func JoinToDriveTransactionBufferStart(builder *flatbuffers.Builder) {
+func EndDriveTransactionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(8)
 }
-func JoinToDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+func EndDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
 }
-func JoinToDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+func EndDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
 }
-func JoinToDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func JoinToDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+func EndDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
 }
-func JoinToDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func JoinToDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+func EndDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
 	builder.PrependUint32Slot(3, version, 0)
 }
-func JoinToDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+func EndDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
 	builder.PrependUint16Slot(4, type_, 0)
 }
-func JoinToDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+func EndDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
 }
-func JoinToDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func JoinToDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+func EndDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
 }
-func JoinToDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func JoinToDriveTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
+func EndDriveTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
 }
-func JoinToDriveTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func JoinToDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
-	return builder.EndObject()
-}
-
-type ModifyDriveTransactionBuffer struct {
-	_tab flatbuffers.Table
-}
-
-func GetRootAsModifyDriveTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *ModifyDriveTransactionBuffer {
-	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &ModifyDriveTransactionBuffer{}
-	x.Init(buf, n+offset)
-	return x
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
-	rcv._tab.Bytes = buf
-	rcv._tab.Pos = i
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Table() flatbuffers.Table {
-	return rcv._tab
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Size() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateSize(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(4, n)
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Signature(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SignatureLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SignatureBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateSignature(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Signer(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SignerLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SignerBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateSigner(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Version() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateVersion(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(10, n)
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Type() uint16 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateType(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(12, n)
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MaxFee(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MaxFeeLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) Deadline(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) DeadlineLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) PriceDelta(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) PriceDeltaLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutatePriceDelta(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) DurationDelta(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) DurationDeltaLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateDurationDelta(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SizeDelta(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) SizeDeltaLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateSizeDelta(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
-func (rcv *ModifyDriveTransactionBuffer) ReplicasDelta() int8 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateReplicasDelta(n int8) bool {
-	return rcv._tab.MutateInt8Slot(24, n)
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MinReplicatorsDelta() int8 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
-	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateMinReplicatorsDelta(n int8) bool {
-	return rcv._tab.MutateInt8Slot(26, n)
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MinApproversDelta() int8 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
-	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyDriveTransactionBuffer) MutateMinApproversDelta(n int8) bool {
-	return rcv._tab.MutateInt8Slot(28, n)
-}
-
-func ModifyDriveTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(13)
-}
-func ModifyDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
-	builder.PrependUint32Slot(0, size, 0)
-}
-func ModifyDriveTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
-}
-func ModifyDriveTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
-func ModifyDriveTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
-}
-func ModifyDriveTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
-func ModifyDriveTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
-	builder.PrependUint32Slot(3, version, 0)
-}
-func ModifyDriveTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
-	builder.PrependUint16Slot(4, type_, 0)
-}
-func ModifyDriveTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
-}
-func ModifyDriveTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func ModifyDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
-}
-func ModifyDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func ModifyDriveTransactionBufferAddPriceDelta(builder *flatbuffers.Builder, priceDelta flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(priceDelta), 0)
-}
-func ModifyDriveTransactionBufferStartPriceDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func ModifyDriveTransactionBufferAddDurationDelta(builder *flatbuffers.Builder, durationDelta flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(durationDelta), 0)
-}
-func ModifyDriveTransactionBufferStartDurationDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func ModifyDriveTransactionBufferAddSizeDelta(builder *flatbuffers.Builder, sizeDelta flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(sizeDelta), 0)
-}
-func ModifyDriveTransactionBufferStartSizeDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
-func ModifyDriveTransactionBufferAddReplicasDelta(builder *flatbuffers.Builder, replicasDelta int8) {
-	builder.PrependInt8Slot(10, replicasDelta, 0)
-}
-func ModifyDriveTransactionBufferAddMinReplicatorsDelta(builder *flatbuffers.Builder, minReplicatorsDelta int8) {
-	builder.PrependInt8Slot(11, minReplicatorsDelta, 0)
-}
-func ModifyDriveTransactionBufferAddMinApproversDelta(builder *flatbuffers.Builder, minApproversDelta int8) {
-	builder.PrependInt8Slot(12, minApproversDelta, 0)
-}
-func ModifyDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func EndDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

@@ -78,6 +78,7 @@ func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) Result {
 	tx, err := createTransaction()
+	println(tx.Size())
 	assert.Nil(t, err)
 
 	signTx, err := account.Sign(tx)

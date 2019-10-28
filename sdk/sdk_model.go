@@ -32,6 +32,16 @@ func (h Hash) Equal(other *Hash) bool {
 	return bytes.Compare(h[:], other[:]) == 0
 }
 
+func (h Hash) Xor(other *Hash) *Hash {
+	temp := Hash{}
+
+	for i, _ := range other {
+		temp[i] = other[i] ^ h[i]
+	}
+
+	return &temp
+}
+
 type blockchainInt64 interface {
 	toArray() [2]uint32
 	toLittleEndian() []byte
@@ -86,8 +96,7 @@ type Amount = baseInt64
 type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
-type SizeDelta = baseInt64
-type FileSize = baseInt64
+type StorageSize = baseInt64
 
 type BlockChainVersion uint64
 

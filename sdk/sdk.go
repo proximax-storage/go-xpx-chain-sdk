@@ -158,6 +158,7 @@ type Client struct {
 	Transaction *TransactionService
 	Resolve     *ResolverService
 	Account     *AccountService
+	Storage     *StorageService
 	Contract    *ContractService
 	Metadata    *MetadataService
 }
@@ -182,6 +183,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Account = (*AccountService)(&c.common)
+	c.Storage = (*StorageService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 
@@ -560,9 +562,11 @@ func (c *Client) NewSecretProofTransaction(deadline *Deadline, hashType HashType
 
 	return tx, err
 }
-func (c *Client) NewModifyDriveTransaction(deadline *Deadline, priceDelta Amount, durationDelta Duration,
-	sizeDelta SizeDelta, minReplicatorsDelta int8, minApproversDelta int8, replicasDelta int8) (*ModifyDriveTransaction, error) {
-	tx, err := NewModifyDriveTransaction(deadline, priceDelta, durationDelta, sizeDelta, minReplicatorsDelta, minApproversDelta, replicasDelta, c.config.NetworkType)
+func (c *Client) NewPrepareDriveTransaction(deadline *Deadline, owner *PublicAccount,
+	duration Duration, billingPeriod Duration, billingPrice Amount, driveSize StorageSize,
+	replicas uint16, minReplicators uint16, percentApprovers uint8) (*PrepareDriveTransaction, error) {
+
+	tx, err := NewPrepareDriveTransaction(deadline, owner, duration, billingPeriod, billingPrice, driveSize, replicas, minReplicators, percentApprovers, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -579,8 +583,8 @@ func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicA
 	return tx, err
 }
 
-func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, rootHash *Hash, xorRootHash *Hash, addActions []*AddAction, removeActions []*RemoveAction) (*DriveFileSystemTransaction, error) {
-	tx, err := NewDriveFileSystemTransaction(deadline, rootHash, xorRootHash, addActions, removeActions, c.config.NetworkType)
+func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*AddAction, removeActions []*RemoveAction) (*DriveFileSystemTransaction, error) {
+	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -597,8 +601,8 @@ func (c *Client) NewFilesDepositTransaction(deadline *Deadline, driveKey *Public
 	return tx, err
 }
 
-func (c *Client) NewEndDriveTransaction(deadline *Deadline) (*EndDriveTransaction, error) {
-	tx, err := NewEndDriveTransaction(deadline, c.config.NetworkType)
+func (c *Client) NewEndDriveTransaction(deadline *Deadline, driveKey *PublicAccount) (*EndDriveTransaction, error) {
+	tx, err := NewEndDriveTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
