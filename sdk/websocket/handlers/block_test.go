@@ -38,10 +38,7 @@ func Test_blockHandler_Handle(t *testing.T) {
 	blockHandler1 := subscribers.BlockHandler(handlerFunc1)
 	blockHandler2 := subscribers.BlockHandler(handlerFunc2)
 
-	blockHandlers := map[*subscribers.BlockHandler]struct{}{
-		&blockHandler1: {},
-		&blockHandler2: {},
-	}
+	blockHandlers := []*subscribers.BlockHandler{&blockHandler1, &blockHandler2}
 
 	blockHandlersMock := new(mocksSubscribers.Block)
 	blockHandlersMock.On("GetHandlers").Return(nil).Once().
