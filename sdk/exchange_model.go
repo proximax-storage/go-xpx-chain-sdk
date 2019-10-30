@@ -1,0 +1,119 @@
+// Copyright 2019 ProximaX Limited. All rights reserved.
+// Use of this source code is governed by the Apache 2.0
+// license that can be found in the LICENSE file.
+
+package sdk
+
+import (
+	"github.com/pkg/errors"
+	"math"
+)
+
+type OfferType uint8
+
+const (
+	SellOffer OfferType = iota
+	BuyOffer
+	UnknownType
+)
+func(o OfferType) CounterOffer() OfferType {
+	switch o {
+	case SellOffer:
+		return BuyOffer
+	case BuyOffer:
+		return SellOffer
+	default:
+		return UnknownType
+	}
+}
+//
+//type UserExchangeInfo struct {
+//	Owner	*PublicAccount
+//	// We can split offers to BuyOffers and SellOffers
+//	Offers	[]*OfferInfo
+//}
+//
+//type UserExchangeInfo struct {
+//	Owner	*PublicAccount
+//	BuyOffers	map[MosaicId]OfferInfo
+//	SellOffers	map[MosaicId]OfferInfo
+//}
+
+type UserExchangeInfo struct {
+	Owner	*PublicAccount
+	Offers	map[OfferType]map[MosaicId]OfferInfo
+}
+
+type OfferInfo struct {
+	Type 				OfferType
+	Owner				*PublicAccount
+	Mosaic				Mosaic
+	PriceNumerator 		Amount
+	PriceDenominator 	Amount
+}
+
+func(o *OfferInfo) Cost(amount Amount) (Amount, error) {
+	if o.Mosaic.Amount < amount {
+		return 0, errors.New("You can't get more mosaics when in offer")
+	}
+
+	switch o.Type {
+	case SellOffer:
+		// If user want to buy mosaic, we round the cost towards the seller(because we buy part of mosaics)
+		return Amount(math.Ceil(float64(o.PriceNumerator * amount) / float64(o.PriceDenominator))), nil
+	case BuyOffer:
+		// If user want to sell mosaic, we round the cost towards the buyer(because we sell part of mosaics)
+		return Amount(math.Floor(float64(o.PriceNumerator * amount) / float64(o.PriceDenominator))), nil
+	default:
+		return 0, errors.New("Unknown offer type")
+	}
+}
+
+func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
+	cost, err := o.Cost(amount)
+	if err != nil {
+		return nil, err
+	}
+
+	confirmation := &ExchangeConfirmation{
+		AddOffer{
+			Type:		o.Type.CounterOffer(),
+			AssetId:	o.Mosaic.AssetId,
+			Amount:		amount,
+			Cost:		cost,
+		},
+		o.Owner,
+	}
+
+	return confirmation, nil
+}
+
+type AddOffer struct {
+	Type 		OfferType
+	AssetId		AssetId
+	Amount 		Amount
+	Cost 		Amount
+}
+
+// Add Exchange Offer Transaction
+type AddExchangeOfferTransaction struct {
+	AbstractTransaction
+	Offers					[]*AddOffer
+}
+
+type ExchangeConfirmation struct {
+	AddOffer
+	Owner		*PublicAccount
+}
+
+// Exchange Transaction
+type ExchangeOfferTransaction struct {
+	AbstractTransaction
+	Confirmations		[]*ExchangeConfirmation
+}
+
+// Remove Exchange Offer Transaction
+type RemoveExchangeOfferTransaction struct {
+	AbstractTransaction
+	MosaicIds				[]*AssetId
+}
