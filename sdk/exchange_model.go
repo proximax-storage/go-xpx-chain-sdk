@@ -80,8 +80,7 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 	confirmation := &ExchangeConfirmation{
 		Offer{
 			Type:		o.Type.CounterOffer(),
-			AssetId:	o.Mosaic.AssetId,
-			Amount:		amount,
+			Mosaic:		newMosaicPanic(o.Mosaic.AssetId, amount ),
 			Cost:		cost,
 		},
 		o.Owner,
@@ -92,13 +91,12 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 
 type Offer struct {
 	Type 		OfferType
-	AssetId		AssetId
-	Amount 		Amount
+	Mosaic		*Mosaic
 	Cost 		Amount
 }
 
 type AddOffer struct {
-	AddOffer
+	Offer
 	Duration	Duration
 }
 

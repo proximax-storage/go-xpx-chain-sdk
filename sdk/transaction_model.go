@@ -3300,9 +3300,9 @@ const (
 	AddressAlias              EntityType = 0x424e
 	AggregateBonded           EntityType = 0x4241
 	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = -1
-	ExchangeOffer             EntityType = -1
-	RemoveExchangeOffer       EntityType = -1
+	AddExchangeOffer          EntityType = 0
+	ExchangeOffer             EntityType = 0
+	RemoveExchangeOffer       EntityType = 0
 	Block                     EntityType = 0x8143
 	NemesisBlock              EntityType = 0x8043
 	NetworkConfigEntityType   EntityType = 0x4159
