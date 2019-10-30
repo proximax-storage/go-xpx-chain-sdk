@@ -151,17 +151,17 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain  *BlockchainService
-	Exchange	 *ExchangeService
-	Mosaic      *MosaicService
-	Namespace   *NamespaceService
-	Network     *NetworkService
-	Transaction *TransactionService
-	Resolve     *ResolverService
-	Account     *AccountService
-	Storage     *StorageService
-	Contract    *ContractService
-	Metadata    *MetadataService
+	Blockchain	*BlockchainService
+	Exchange	*ExchangeService
+	Mosaic		*MosaicService
+	Namespace	*NamespaceService
+	Network		*NetworkService
+	Transaction	*TransactionService
+	Resolve		*ResolverService
+	Account		*AccountService
+	Storage		*StorageService
+	Contract	*ContractService
+	Metadata	*MetadataService
 }
 
 type service struct {
@@ -392,6 +392,33 @@ func (c *Client) NewAccountPropertiesMosaicTransaction(deadline *Deadline, prope
 
 func (c *Client) NewAccountPropertiesEntityTypeTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesEntityTypeModification) (*AccountPropertiesEntityTypeTransaction, error) {
 	tx, err := NewAccountPropertiesEntityTypeTransaction(deadline, propertyType, modifications, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAddExchangeOfferTransaction(deadline *Deadline, addOffers []*AddOffer) (*AddExchangeOfferTransaction, error) {
+	tx, err := NewAddExchangeOfferTransaction(deadline, addOffers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewExchangeOfferTransaction(deadline *Deadline, confirmations []*ExchangeConfirmation) (*ExchangeOfferTransaction, error) {
+	tx, err := NewExchangeOfferTransaction(deadline, confirmations, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewRemoveExchangeOfferTransaction(deadline *Deadline, removeOffers []*RemoveOffer) (*RemoveExchangeOfferTransaction, error) {
+	tx, err := NewRemoveExchangeOfferTransaction(deadline, removeOffers, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

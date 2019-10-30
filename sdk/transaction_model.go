@@ -3300,6 +3300,9 @@ const (
 	AddressAlias              EntityType = 0x424e
 	AggregateBonded           EntityType = 0x4241
 	AggregateCompleted        EntityType = 0x4141
+	AddExchangeOffer          EntityType = -1
+	ExchangeOffer             EntityType = -1
+	RemoveExchangeOffer       EntityType = -1
 	Block                     EntityType = 0x8143
 	NemesisBlock              EntityType = 0x8043
 	NetworkConfigEntityType   EntityType = 0x4159
@@ -3338,6 +3341,9 @@ const (
 	AddressAliasVersion              EntityVersion = 1
 	AggregateBondedVersion           EntityVersion = 2
 	AggregateCompletedVersion        EntityVersion = 2
+	AddExchangeOfferVersion          EntityVersion = 1
+	ExchangeOfferVersion             EntityVersion = 1
+	RemoveExchangeOfferVersion       EntityVersion = 1
 	NetworkConfigVersion             EntityVersion = 1
 	BlockchainUpgradeVersion         EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2

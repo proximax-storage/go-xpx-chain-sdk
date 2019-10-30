@@ -16,6 +16,7 @@ const (
 	BuyOffer
 	UnknownType
 )
+
 func(o OfferType) CounterOffer() OfferType {
 	switch o {
 	case SellOffer:
@@ -45,11 +46,12 @@ type UserExchangeInfo struct {
 }
 
 type OfferInfo struct {
-	Type 				OfferType
+	Type				OfferType
 	Owner				*PublicAccount
 	Mosaic				Mosaic
-	PriceNumerator 		Amount
-	PriceDenominator 	Amount
+	PriceNumerator		Amount
+	PriceDenominator	Amount
+	Dealine				Height
 }
 
 func(o *OfferInfo) Cost(amount Amount) (Amount, error) {
@@ -76,7 +78,7 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 	}
 
 	confirmation := &ExchangeConfirmation{
-		AddOffer{
+		Offer{
 			Type:		o.Type.CounterOffer(),
 			AssetId:	o.Mosaic.AssetId,
 			Amount:		amount,
@@ -88,22 +90,27 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 	return confirmation, nil
 }
 
-type AddOffer struct {
+type Offer struct {
 	Type 		OfferType
 	AssetId		AssetId
 	Amount 		Amount
 	Cost 		Amount
 }
 
+type AddOffer struct {
+	AddOffer
+	Duration	Duration
+}
+
 // Add Exchange Offer Transaction
 type AddExchangeOfferTransaction struct {
 	AbstractTransaction
-	Offers					[]*AddOffer
+	Offers				[]*AddOffer
 }
 
 type ExchangeConfirmation struct {
-	AddOffer
-	Owner		*PublicAccount
+	Offer
+	Owner				*PublicAccount
 }
 
 // Exchange Transaction
@@ -112,8 +119,13 @@ type ExchangeOfferTransaction struct {
 	Confirmations		[]*ExchangeConfirmation
 }
 
+type RemoveOffer struct {
+	Type		OfferType
+	AssetId		AssetId
+}
+
 // Remove Exchange Offer Transaction
 type RemoveExchangeOfferTransaction struct {
 	AbstractTransaction
-	MosaicIds				[]*AssetId
+	Offers			[]*RemoveOffer
 }
