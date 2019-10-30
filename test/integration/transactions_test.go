@@ -76,12 +76,19 @@ func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 	}
 }
 
-func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account) Result {
+func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
 	println(tx.Size())
 	assert.Nil(t, err)
 
-	signTx, err := account.Sign(tx)
+	var signTx *sdk.SignedTransaction
+
+	switch v := tx.(type) {
+	case *sdk.AggregateTransaction:
+		signTx, err = account.SignWithCosignatures(v, cosignatories)
+	default:
+		signTx, err = account.Sign(v)
+	}
 	assert.Nil(t, err)
 
 	assert.Nil(t, err)

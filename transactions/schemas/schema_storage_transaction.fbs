@@ -53,8 +53,10 @@ table DriveFileSystemTransactionBuffer {
     driveKey: [ubyte];
     rootHash: [ubyte];
     xorRootHash: [ubyte];
-    addActionsCount: ushort;
-    removeActionsCount: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    addActionsCount: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    removeActionsCount: [ubyte];
     addActions: [AddActionBuffer];
     removeActions: [RemoveActionBuffer];
 }

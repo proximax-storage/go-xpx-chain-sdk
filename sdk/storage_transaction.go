@@ -1,7 +1,13 @@
+// Copyright 2019 ProximaX Limited. All rights reserved.
+// Use of this source code is governed by the Apache 2.0
+// license that can be found in the LICENSE file.
+
 package sdk
 
 import (
+	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/google/flatbuffers/go"
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
@@ -19,6 +25,42 @@ func NewPrepareDriveTransaction(
 	percentApprovers uint8,
 	networkType NetworkType,
 ) (*PrepareDriveTransaction, error) {
+
+	if owner == nil {
+		return nil, ErrNilAccount
+	}
+
+	if duration == 0 {
+		return nil, errors.New("duration should be positive")
+	}
+
+	if billingPeriod == 0 {
+		return nil, errors.New("billingPeriod should be positive")
+	}
+
+	if (duration % billingPeriod) != 0 {
+		return nil, errors.New("billingPeriod should be multiples of duration")
+	}
+
+	if billingPrice == 0 {
+		return nil, errors.New("billingPrice should be positive")
+	}
+
+	if driveSize == 0 {
+		return nil, errors.New("driveSize should be positive")
+	}
+
+	if replicas == 0 {
+		return nil, errors.New("replicas should be positive")
+	}
+
+	if minReplicators == 0 {
+		return nil, errors.New("minReplicators should be positive")
+	}
+
+	if percentApprovers == 0 || percentApprovers > 100 {
+		return nil, errors.New("percentApprovers should be in range 1-100")
+	}
 
 	mctx := PrepareDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -161,6 +203,10 @@ func NewJoinToDriveTransaction(
 	networkType NetworkType,
 ) (*JoinToDriveTransaction, error) {
 
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
 	tx := JoinToDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     JoinToDriveVersion,
@@ -260,6 +306,18 @@ func NewDriveFileSystemTransaction(
 	networkType NetworkType,
 ) (*DriveFileSystemTransaction, error) {
 
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if newRootHash == nil || oldRootHash == nil {
+		return nil, errors.New("rootHash should not be nil")
+	}
+
+	if newRootHash.Equal(oldRootHash) {
+		return nil, ErrNoChanges
+	}
+
 	tx := DriveFileSystemTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     DriveFileSystemVersion,
@@ -356,6 +414,14 @@ func (tx *DriveFileSystemTransaction) generateBytes() ([]byte, error) {
 		return nil, err
 	}
 
+	addActionsCountB := make([]byte, AddActionsSize)
+	binary.LittleEndian.PutUint16(addActionsCountB, uint16(len(tx.AddActions)))
+	addActionsCountV := transactions.TransactionBufferCreateByteVector(builder, addActionsCountB)
+
+	removeActionsCountB := make([]byte, RemoveActionsSize)
+	binary.LittleEndian.PutUint16(removeActionsCountB, uint16(len(tx.RemoveActions)))
+	removeActionsCountV := transactions.TransactionBufferCreateByteVector(builder, removeActionsCountB)
+
 	transactions.DriveFileSystemTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
@@ -364,8 +430,8 @@ func (tx *DriveFileSystemTransaction) generateBytes() ([]byte, error) {
 	transactions.DriveFileSystemTransactionBufferAddRootHash(builder, rhV)
 	transactions.DriveFileSystemTransactionBufferAddXorRootHash(builder, xhV)
 
-	transactions.DriveFileSystemTransactionBufferAddAddActionsCount(builder, uint16(len(tx.AddActions)))
-	transactions.DriveFileSystemTransactionBufferAddRemoveActionsCount(builder, uint16(len(tx.RemoveActions)))
+	transactions.DriveFileSystemTransactionBufferAddAddActionsCount(builder, addActionsCountV)
+	transactions.DriveFileSystemTransactionBufferAddRemoveActionsCount(builder, removeActionsCountV)
 
 	transactions.DriveFileSystemTransactionBufferAddAddActions(builder, addActionsV)
 	transactions.DriveFileSystemTransactionBufferAddRemoveActions(builder, removeActionsV)
@@ -377,7 +443,7 @@ func (tx *DriveFileSystemTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *DriveFileSystemTransaction) Size() int {
-	return DriveFileSystemHeaderSize + len(tx.AddActions) + len(tx.RemoveActions)
+	return DriveFileSystemHeaderSize + len(tx.AddActions) * (Hash256 + StorageSizeSize) + len(tx.RemoveActions) * Hash256
 }
 
 type driveFileSystemAddActionDTO struct {
@@ -460,10 +526,8 @@ func addActionsDTOArrayToStruct(addAction []*driveFileSystemAddActionDTO) ([]*Ad
 		s := m.FileSize.toUint64()
 
 		acts[i] = &AddAction{
-			File{
-				FileHash: h,
-			},
-			StorageSize(s),
+			FileHash: h,
+			FileSize: StorageSize(s),
 		}
 
 	}
@@ -480,11 +544,8 @@ func removeActionsDTOArrayToStruct(removeAction []*driveFileSystemRemoveActionDT
 			return nil, err
 		}
 		removes[i] = &RemoveAction{
-			File{
-				FileHash: h,
-			},
+			FileHash: h,
 		}
-
 	}
 
 	return removes, err
@@ -496,6 +557,14 @@ func NewFilesDepositTransaction(
 	files []*File,
 	networkType NetworkType,
 ) (*FilesDepositTransaction, error) {
+
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if len(files) == 0 {
+		return nil, ErrNoChanges
+	}
 
 	tx := FilesDepositTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -577,10 +646,10 @@ func (tx *FilesDepositTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *FilesDepositTransaction) Size() int {
-	return FilesDepositHeaderSize + len(tx.Files)
+	return FilesDepositHeaderSize + len(tx.Files) * Hash256
 }
 
-type fileDTO struct {
+type fileDepositDTO struct {
 	FileHash hashDto `json:"fileHash"`
 }
 
@@ -589,7 +658,7 @@ type filesDepositTransactionDTO struct {
 		abstractTransactionDTO
 		DriveKey   string     `json:"driveKey"`
 		FilesCount uint16     `json:"filesCount"`
-		Files      []*fileDTO `json:"files"`
+		Files      []*fileDepositDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -622,7 +691,7 @@ func (dto *filesDepositTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-func filesDTOArrayToStruct(files []*fileDTO) ([]*File, error) {
+func filesDTOArrayToStruct(files []*fileDepositDTO) ([]*File, error) {
 	filesResult := make([]*File, len(files))
 	var err error = nil
 	for i, m := range files {
@@ -644,6 +713,10 @@ func NewEndDriveTransaction(
 	driveKey *PublicAccount,
 	networkType NetworkType,
 ) (*EndDriveTransaction, error) {
+
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
 
 	tx := EndDriveTransaction{
 		AbstractTransaction: AbstractTransaction{

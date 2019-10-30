@@ -3318,11 +3318,11 @@ const (
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
 	Transfer                  EntityType = 0x4154
-	PrepareDrive              EntityType = 0x5a01
-	JoinToDrive               EntityType = 0x5a02
-	DriveFileSystem           EntityType = 0x5a03
-	FilesDeposit              EntityType = 0x5a04
-	EndDrive                  EntityType = 0x5a05
+	PrepareDrive              EntityType = 0x415A
+	JoinToDrive               EntityType = 0x425A
+	DriveFileSystem           EntityType = 0x435A
+	FilesDeposit              EntityType = 0x445A
+	EndDrive                  EntityType = 0x455A
 )
 
 func (t EntityType) String() string {

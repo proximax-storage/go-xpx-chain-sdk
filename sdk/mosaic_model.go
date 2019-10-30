@@ -222,3 +222,13 @@ func XemRelative(amount uint64) *Mosaic {
 func XpxRelative(amount uint64) *Mosaic {
 	return Xpx(1000000 * amount)
 }
+
+// returns storage mosaic with passed amount
+func Storage(amount uint64) *Mosaic {
+	return newMosaicPanic(StorageNamespaceId, Amount(amount))
+}
+
+// returns streaming with actual passed amount
+func Streaming(amount uint64) *Mosaic {
+	return newMosaicPanic(StreamingNamespaceId, Amount(amount))
+}

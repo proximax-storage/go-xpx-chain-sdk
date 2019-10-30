@@ -1,3 +1,7 @@
+// Copyright 2019 ProximaX Limited. All rights reserved.
+// Use of this source code is governed by the Apache 2.0
+// license that can be found in the LICENSE file.
+
 package sdk
 
 import "fmt"
@@ -30,13 +34,27 @@ type ReplicatorInfo struct {
 	FilesWithoutDeposit map[Hash]uint16
 }
 
+type FileActionType uint8
+
+const (
+	AddFile FileActionType = iota
+	RemoveFile
+)
+
+type FileAction struct {
+	Type 	FileActionType
+	Height 	Height
+}
+
 type FileInfo struct {
-	FileSize StorageSize
-	Deposit  Amount
-	Payments []*PaymentInformation
+	FileSize 	StorageSize
+	Deposit  	Amount
+	Payments 	[]*PaymentInformation
+	Actions 	[]*FileAction
 }
 
 type Drive struct {
+	DriveKey         *PublicAccount
 	State            DriveState
 	Owner            *PublicAccount
 	RootHash         *Hash
@@ -47,7 +65,7 @@ type Drive struct {
 	Replicas         uint16
 	MinReplicators   uint16
 	PercentApprovers uint8
-	BillingHistory   []BillingDescription
+	BillingHistory   []*BillingDescription
 	Files            map[Hash]*FileInfo
 	Replicators      map[PublicAccount]*ReplicatorInfo
 }
@@ -87,7 +105,7 @@ func (file *File) String() string {
 }
 
 type AddAction struct {
-	File
+	FileHash *Hash
 	FileSize StorageSize
 }
 
@@ -102,9 +120,7 @@ func (action *AddAction) String() string {
 	)
 }
 
-type RemoveAction struct {
-	File
-}
+type RemoveAction = File
 
 type DriveFileSystemTransaction struct {
 	AbstractTransaction

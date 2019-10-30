@@ -14,6 +14,12 @@ var XemNamespaceId, _ = NewNamespaceIdFromName("nem.xem")
 // namespace id for XPX mosaic
 var XpxNamespaceId, _ = NewNamespaceIdFromName("prx.xpx")
 
+// namespace id for storage mosaic
+var StorageNamespaceId, _ = NewNamespaceIdFromName("prx.storage")
+
+// namespace id for streaming mosaic
+var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.streaming")
+
 // routes for AccountService
 const (
 	accountsRoute                 = "/account"
@@ -76,6 +82,12 @@ const (
 	networkRoute = "/network"
 	configRoute  = "/config/%s"
 	upgradeRoute = "/upgrade/%s"
+)
+
+// routes for StorageService
+const (
+	driveRoute				= "/drive/%s"
+	drivesOfAccountRoute	= "/account/%s/drive%s"
 )
 
 // routes for TransactionService

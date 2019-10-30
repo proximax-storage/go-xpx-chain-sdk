@@ -1210,28 +1210,72 @@ func (rcv *DriveFileSystemTransactionBuffer) MutateXorRootHash(j int, n byte) bo
 	return false
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) AddActionsCount() uint16 {
+func (rcv *DriveFileSystemTransactionBuffer) AddActionsCount(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) MutateAddActionsCount(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(24, n)
+func (rcv *DriveFileSystemTransactionBuffer) AddActionsCountLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCount() uint16 {
+func (rcv *DriveFileSystemTransactionBuffer) AddActionsCountBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) MutateAddActionsCount(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCount(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *DriveFileSystemTransactionBuffer) MutateRemoveActionsCount(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(26, n)
+func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCountLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) RemoveActionsCountBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *DriveFileSystemTransactionBuffer) MutateRemoveActionsCount(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *DriveFileSystemTransactionBuffer) AddActions(obj *AddActionBuffer, j int) bool {
@@ -1328,11 +1372,17 @@ func DriveFileSystemTransactionBufferAddXorRootHash(builder *flatbuffers.Builder
 func DriveFileSystemTransactionBufferStartXorRootHashVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func DriveFileSystemTransactionBufferAddAddActionsCount(builder *flatbuffers.Builder, addActionsCount uint16) {
-	builder.PrependUint16Slot(10, addActionsCount, 0)
+func DriveFileSystemTransactionBufferAddAddActionsCount(builder *flatbuffers.Builder, addActionsCount flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(addActionsCount), 0)
 }
-func DriveFileSystemTransactionBufferAddRemoveActionsCount(builder *flatbuffers.Builder, removeActionsCount uint16) {
-	builder.PrependUint16Slot(11, removeActionsCount, 0)
+func DriveFileSystemTransactionBufferStartAddActionsCountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func DriveFileSystemTransactionBufferAddRemoveActionsCount(builder *flatbuffers.Builder, removeActionsCount flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(removeActionsCount), 0)
+}
+func DriveFileSystemTransactionBufferStartRemoveActionsCountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func DriveFileSystemTransactionBufferAddAddActions(builder *flatbuffers.Builder, addActions flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(addActions), 0)
