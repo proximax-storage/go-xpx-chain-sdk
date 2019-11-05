@@ -13,6 +13,27 @@ import (
 )
 
 func TestDriveFlowTransaction(t *testing.T) {
+	exchangeAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+	fmt.Println(exchangeAccount)
+	var exchangeAmount uint64 = 1000000
+
+	config, err := client.Network.GetNetworkConfig(ctx)
+	assert.Nil(t, err)
+
+	config.NetworkConfig.Sections["plugin:catapult.plugins.exchange"].Fields["longOfferKey"].Value = exchangeAccount.PublicAccount.PublicKey
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewNetworkConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(1),
+			config.NetworkConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+
+	time.Sleep(time.Minute)
+
 	driveAccount, err := client.NewAccount()
 	assert.Nil(t, err)
 	fmt.Println(driveAccount)
@@ -22,13 +43,14 @@ func TestDriveFlowTransaction(t *testing.T) {
 	fmt.Println(replicatorAccount)
 
 	var storageSize uint64 = 10000
+	var billingPrice uint64 = 50
 
 	driveTx, err := client.NewPrepareDriveTransaction(
 		sdk.NewDeadline(time.Hour),
 		defaultAccount.PublicAccount,
 		sdk.Duration(100),
-		sdk.Duration(50),
-		sdk.Amount(50),
+		sdk.Duration(1),
+		sdk.Amount(billingPrice),
 		sdk.StorageSize(storageSize),
 		1,
 		1,
@@ -46,10 +68,28 @@ func TestDriveFlowTransaction(t *testing.T) {
 	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
+	transferXpxToReplicator, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveAccount.Address,
+		[]*sdk.Mosaic{sdk.Xpx(10000000)},
+		sdk.NewPlainMessage(""),
+	);
+	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	transferXpxToExchange, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		exchangeAccount.Address,
+		[]*sdk.Mosaic{sdk.Storage(exchangeAmount)},
+		sdk.NewPlainMessage(""),
+	);
+	transferXpxToExchange.ToAggregate(defaultAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{driveTx, transferStorageToReplicator},
+			[]sdk.Transaction{driveTx, transferStorageToReplicator, transferXpxToReplicator, transferXpxToExchange},
 		)
 	}, defaultAccount, driveAccount)
 	assert.Nil(t, result.error)
@@ -69,7 +109,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	fsTx, err := client.NewDriveFileSystemTransaction(
 		sdk.NewDeadline(time.Hour),
 		driveAccount.PublicAccount,
-		&sdk.Hash{},
+		&sdk.Hash{1},
 		&sdk.Hash{},
 		[]*sdk.AddAction{
 			{
@@ -117,7 +157,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			driveAccount.PublicAccount,
 			&sdk.Hash{},
-			&sdk.Hash{},
+			&sdk.Hash{1},
 			[]*sdk.AddAction{},
 			[]*sdk.RemoveAction{
 				{
@@ -128,7 +168,64 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
+	fmt.Println(defaultAccount)
 	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
 	assert.Nil(t, err)
 	fmt.Println(drives)
+
+	drive, err := client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	fmt.Println(drive)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewAddExchangeOfferTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]*sdk.AddOffer{
+				{
+					sdk.Offer{
+						sdk.SellOffer,
+						sdk.Storage(exchangeAmount),
+						sdk.Amount(exchangeAmount),
+					},
+					sdk.Duration(10000000),
+				},
+			},
+		)
+	}, exchangeAccount)
+	assert.Nil(t, result.error)
+
+	// TODO: Get OfferInfo
+	//infos, err := client.Exchange.GetExchangeOfferByAssetId(ctx, sdk.StorageNamespaceId, sdk.SellOffer)
+	//info := infos[0]
+	info := sdk.OfferInfo{
+		sdk.SellOffer,
+		exchangeAccount.PublicAccount,
+		sdk.Storage(exchangeAmount),
+		sdk.Amount(exchangeAmount),
+		sdk.Amount(exchangeAmount),
+		sdk.Height(0),
+	}
+	confirmation, err := info.ConfirmOffer(sdk.Amount(billingPrice))
+	assert.Nil(t, err)
+
+	exchangeOfferTransaction, err := client.NewExchangeOfferTransaction(
+		sdk.NewDeadline(time.Hour),
+		[]*sdk.ExchangeConfirmation{
+			confirmation,
+		},
+	)
+	exchangeOfferTransaction.ToAggregate(driveAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{exchangeOfferTransaction},
+		)
+	}, replicatorAccount)
+	assert.Nil(t, result.error)
+
+	drive, err = client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	fmt.Println(drive)
 }

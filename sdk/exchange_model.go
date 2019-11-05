@@ -5,6 +5,7 @@
 package sdk
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"math"
 )
@@ -27,18 +28,6 @@ func(o OfferType) CounterOffer() OfferType {
 		return UnknownType
 	}
 }
-//
-//type UserExchangeInfo struct {
-//	Owner	*PublicAccount
-//	// We can split offers to BuyOffers and SellOffers
-//	Offers	[]*OfferInfo
-//}
-//
-//type UserExchangeInfo struct {
-//	Owner	*PublicAccount
-//	BuyOffers	map[MosaicId]OfferInfo
-//	SellOffers	map[MosaicId]OfferInfo
-//}
 
 type UserExchangeInfo struct {
 	Owner	*PublicAccount
@@ -48,7 +37,7 @@ type UserExchangeInfo struct {
 type OfferInfo struct {
 	Type				OfferType
 	Owner				*PublicAccount
-	Mosaic				Mosaic
+	Mosaic				*Mosaic
 	PriceNumerator		Amount
 	PriceDenominator	Amount
 	Dealine				Height
@@ -79,7 +68,7 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 
 	confirmation := &ExchangeConfirmation{
 		Offer{
-			Type:		o.Type.CounterOffer(),
+			Type:		o.Type,
 			Mosaic:		newMosaicPanic(o.Mosaic.AssetId, amount ),
 			Cost:		cost,
 		},
@@ -100,6 +89,23 @@ type AddOffer struct {
 	Duration	Duration
 }
 
+func (offer *AddOffer) String() string {
+	return fmt.Sprintf(
+		`
+			"Type": %d,
+			"AssetId": %s,
+			"Amount": %s,
+			"Cost": %s,
+			"Duration": %s,
+		`,
+		offer.Type,
+		offer.Mosaic.AssetId,
+		offer.Mosaic.Amount,
+		offer.Cost,
+		offer.Duration,
+	)
+}
+
 // Add Exchange Offer Transaction
 type AddExchangeOfferTransaction struct {
 	AbstractTransaction
@@ -111,6 +117,23 @@ type ExchangeConfirmation struct {
 	Owner				*PublicAccount
 }
 
+func (offer *ExchangeConfirmation) String() string {
+	return fmt.Sprintf(
+		`
+			"Type": %d,
+			"AssetId": %s,
+			"Amount": %s,
+			"Cost": %s,
+			"Owner": %s,
+		`,
+		offer.Type,
+		offer.Mosaic.AssetId,
+		offer.Mosaic.Amount,
+		offer.Cost,
+		offer.Owner,
+	)
+}
+
 // Exchange Transaction
 type ExchangeOfferTransaction struct {
 	AbstractTransaction
@@ -120,6 +143,17 @@ type ExchangeOfferTransaction struct {
 type RemoveOffer struct {
 	Type		OfferType
 	AssetId		AssetId
+}
+
+func (offer *RemoveOffer) String() string {
+	return fmt.Sprintf(
+		`
+			"Type": %d,
+			"AssetId": %s,
+		`,
+		offer.Type,
+		offer.AssetId,
+	)
 }
 
 // Remove Exchange Offer Transaction

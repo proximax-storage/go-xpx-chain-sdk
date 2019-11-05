@@ -3289,6 +3289,14 @@ const (
 	FilesSizeSize                                = 2
 	FilesDepositHeaderSize                       = TransactionHeaderSize + KeySize + FilesSizeSize
 	EndDriveHeaderSize                           = TransactionHeaderSize + KeySize
+	OfferTypeSize                                = 1
+	OffersCountSize                              = 1
+	AddExchangeOfferSize                         = MosaicIdSize + DurationSize + 2 * AmountSize + OfferTypeSize
+	AddExchangeOfferHeaderSize                   = TransactionHeaderSize + OffersCountSize
+	ExchangeOfferSize                            = DurationSize + 2 * AmountSize + OfferTypeSize + KeySize
+	ExchangeOfferHeaderSize                      = TransactionHeaderSize + OffersCountSize
+	RemoveExchangeOfferSize                      = OfferTypeSize + MosaicIdSize
+	RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
 )
 
 type EntityType uint16
@@ -3300,9 +3308,9 @@ const (
 	AddressAlias              EntityType = 0x424e
 	AggregateBonded           EntityType = 0x4241
 	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = 0
-	ExchangeOffer             EntityType = 0
-	RemoveExchangeOffer       EntityType = 0
+	AddExchangeOffer          EntityType = 0x415D
+	ExchangeOffer             EntityType = 0x425D
+	RemoveExchangeOffer       EntityType = 0x435D
 	Block                     EntityType = 0x8143
 	NemesisBlock              EntityType = 0x8043
 	NetworkConfigEntityType   EntityType = 0x4159
@@ -3530,6 +3538,12 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &addressAliasTransactionDTO{}
 	case AggregateBonded, AggregateCompleted:
 		dto = &aggregateTransactionDTO{}
+	case AddExchangeOffer:
+		dto = &addExchangeOfferTransactionDTO{}
+	case ExchangeOffer:
+		dto = &exchangeOfferTransactionDTO{}
+	case RemoveExchangeOffer:
+		dto = &removeExchangeOfferTransactionDTO{}
 	case NetworkConfigEntityType:
 		dto = &networkConfigTransactionDTO{}
 	case BlockchainUpgrade:

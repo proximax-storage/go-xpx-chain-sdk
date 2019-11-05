@@ -90,7 +90,6 @@ type JoinToDriveTransaction struct {
 	DriveKey *PublicAccount
 }
 
-// Drive File System Transaction
 type File struct {
 	FileHash *Hash
 }

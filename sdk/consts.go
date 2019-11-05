@@ -86,8 +86,8 @@ const (
 
 // routes for StorageService
 const (
-	driveRoute				= "/drive/%s"
-	drivesOfAccountRoute	= "/account/%s/drive%s"
+	driveRoute              = "/drive/%s"
+	drivesOfAccountRoute    = "/account/%s/drive%s"
 )
 
 // routes for TransactionService
