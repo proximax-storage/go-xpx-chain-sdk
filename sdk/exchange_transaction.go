@@ -24,7 +24,7 @@ func NewAddExchangeOfferTransaction(deadline *Deadline, addOffers []*AddOffer, n
 			Type:        AddExchangeOffer,
 			NetworkType: networkType,
 		},
-		Offers:	addOffers,
+		Offers: addOffers,
 	}
 
 	return &tx, nil
@@ -46,7 +46,7 @@ func (tx *AddExchangeOfferTransaction) String() string {
 }
 
 func (tx *AddExchangeOfferTransaction) Size() int {
-	return AddExchangeOfferHeaderSize + len(tx.Offers) * AddExchangeOfferSize
+	return AddExchangeOfferHeaderSize + len(tx.Offers)*AddExchangeOfferSize
 }
 
 func addExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*AddOffer) flatbuffers.UOffsetT {
@@ -70,7 +70,7 @@ func addExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*Add
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb)
 }
 
-func (tx *AddExchangeOfferTransaction) generateBytes() ([]byte, error) {
+func (tx *AddExchangeOfferTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -92,10 +92,10 @@ func (tx *AddExchangeOfferTransaction) generateBytes() ([]byte, error) {
 }
 
 type offerDTO struct {
-	AssetId     assetIdDTO      `json:"mosaicId"`
-	Amount      uint64DTO       `json:"mosaicAmount"`
-	Cost        uint64DTO       `json:"cost"`
-	Type        OfferType       `json:"type"`
+	AssetId assetIdDTO `json:"mosaicId"`
+	Amount  uint64DTO  `json:"mosaicAmount"`
+	Cost    uint64DTO  `json:"cost"`
+	Type    OfferType  `json:"type"`
 }
 
 func (dto *offerDTO) toStruct() (*Offer, error) {
@@ -112,8 +112,8 @@ func (dto *offerDTO) toStruct() (*Offer, error) {
 }
 
 type addOfferDTO struct {
-	Offer       offerDTO        `json:"offer"`
-	Duration    uint64DTO       `json:"duration"`
+	Offer    offerDTO  `json:"offer"`
+	Duration uint64DTO `json:"duration"`
 }
 
 func addOfferDTOArrayToStruct(offers []*addOfferDTO) ([]*AddOffer, error) {
@@ -126,8 +126,8 @@ func addOfferDTOArrayToStruct(offers []*addOfferDTO) ([]*AddOffer, error) {
 		}
 
 		offersResult[i] = &AddOffer{
-			Offer: *o,
-			Duration:       offer.Duration.toStruct(),
+			Offer:    *o,
+			Duration: offer.Duration.toStruct(),
 		}
 
 	}
@@ -177,7 +177,7 @@ func NewExchangeOfferTransaction(deadline *Deadline, confirmations []*ExchangeCo
 			Type:        ExchangeOffer,
 			NetworkType: networkType,
 		},
-		Confirmations:	confirmations,
+		Confirmations: confirmations,
 	}
 
 	return &tx, nil
@@ -199,7 +199,7 @@ func (tx *ExchangeOfferTransaction) String() string {
 }
 
 func (tx *ExchangeOfferTransaction) Size() int {
-	return ExchangeOfferHeaderSize + len(tx.Confirmations) * ExchangeOfferSize
+	return ExchangeOfferHeaderSize + len(tx.Confirmations)*ExchangeOfferSize
 }
 
 func exchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*ExchangeConfirmation) (flatbuffers.UOffsetT, error) {
@@ -229,7 +229,7 @@ func exchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*Exchan
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
 }
 
-func (tx *ExchangeOfferTransaction) generateBytes() ([]byte, error) {
+func (tx *ExchangeOfferTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -254,8 +254,8 @@ func (tx *ExchangeOfferTransaction) generateBytes() ([]byte, error) {
 }
 
 type confirmationOfferDTO struct {
-	Offer       offerDTO        `json:"offer"`
-	Owner       string          `json:"owner"`
+	Offer offerDTO `json:"offer"`
+	Owner string   `json:"owner"`
 }
 
 func confirmationOfferDTOArrayToStruct(offers []*confirmationOfferDTO, networkType NetworkType) ([]*ExchangeConfirmation, error) {
@@ -273,8 +273,8 @@ func confirmationOfferDTOArrayToStruct(offers []*confirmationOfferDTO, networkTy
 		}
 
 		offersResult[i] = &ExchangeConfirmation{
-			Offer:  *o,
-			Owner:  a,
+			Offer: *o,
+			Owner: a,
 		}
 
 	}
@@ -324,7 +324,7 @@ func NewRemoveExchangeOfferTransaction(deadline *Deadline, removeOffers []*Remov
 			Type:        RemoveExchangeOffer,
 			NetworkType: networkType,
 		},
-		Offers:	removeOffers,
+		Offers: removeOffers,
 	}
 
 	return &tx, nil
@@ -346,7 +346,7 @@ func (tx *RemoveExchangeOfferTransaction) String() string {
 }
 
 func (tx *RemoveExchangeOfferTransaction) Size() int {
-	return RemoveExchangeOfferHeaderSize + len(tx.Offers) * RemoveExchangeOfferSize
+	return RemoveExchangeOfferHeaderSize + len(tx.Offers)*RemoveExchangeOfferSize
 }
 
 func removeExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*RemoveOffer) flatbuffers.UOffsetT {
@@ -363,7 +363,7 @@ func removeExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb)
 }
 
-func (tx *RemoveExchangeOfferTransaction) generateBytes() ([]byte, error) {
+func (tx *RemoveExchangeOfferTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -385,8 +385,8 @@ func (tx *RemoveExchangeOfferTransaction) generateBytes() ([]byte, error) {
 }
 
 type removeOfferDTO struct {
-	AssetId assetIdDTO   `json:"mosaicId"`
-	Type    OfferType   `json:"type"`
+	AssetId assetIdDTO `json:"mosaicId"`
+	Type    OfferType  `json:"type"`
 }
 
 func removeOfferDTOArrayToStruct(offers []*removeOfferDTO) ([]*RemoveOffer, error) {

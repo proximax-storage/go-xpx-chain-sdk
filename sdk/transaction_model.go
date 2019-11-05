@@ -27,7 +27,7 @@ type Transaction interface {
 	String() string
 	// number of bytes of serialized transaction
 	Size() int
-	generateBytes() ([]byte, error)
+	Bytes() ([]byte, error)
 }
 
 type transactionDto interface {
@@ -279,7 +279,7 @@ func (tx *AccountPropertiesAddressTransaction) String() string {
 	)
 }
 
-func (tx *AccountPropertiesAddressTransaction) generateBytes() ([]byte, error) {
+func (tx *AccountPropertiesAddressTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
@@ -437,7 +437,7 @@ func (tx *AccountPropertiesMosaicTransaction) String() string {
 	)
 }
 
-func (tx *AccountPropertiesMosaicTransaction) generateBytes() ([]byte, error) {
+func (tx *AccountPropertiesMosaicTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
@@ -592,7 +592,7 @@ func (tx *AccountPropertiesEntityTypeTransaction) String() string {
 	)
 }
 
-func (tx *AccountPropertiesEntityTypeTransaction) generateBytes() ([]byte, error) {
+func (tx *AccountPropertiesEntityTypeTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
@@ -792,7 +792,7 @@ func (tx *AddressAliasTransaction) String() string {
 	)
 }
 
-func (tx *AddressAliasTransaction) generateBytes() ([]byte, error) {
+func (tx *AddressAliasTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	a, err := base32.StdEncoding.DecodeString(tx.Address.Address)
 	if err != nil {
@@ -881,7 +881,7 @@ func (tx *MosaicAliasTransaction) String() string {
 	)
 }
 
-func (tx *MosaicAliasTransaction) generateBytes() ([]byte, error) {
+func (tx *MosaicAliasTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	mosaicB := make([]byte, MosaicIdSize)
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
@@ -964,7 +964,7 @@ func (tx *AccountLinkTransaction) String() string {
 	)
 }
 
-func (tx *AccountLinkTransaction) generateBytes() ([]byte, error) {
+func (tx *AccountLinkTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	b, err := utils.HexDecodeStringOdd(tx.RemoteAccount.PublicKey)
@@ -1073,7 +1073,7 @@ func (tx *NetworkConfigTransaction) String() string {
 	)
 }
 
-func (tx *NetworkConfigTransaction) generateBytes() ([]byte, error) {
+func (tx *NetworkConfigTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -1195,7 +1195,7 @@ func (tx *BlockchainUpgradeTransaction) String() string {
 	)
 }
 
-func (tx *BlockchainUpgradeTransaction) generateBytes() ([]byte, error) {
+func (tx *BlockchainUpgradeTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -1307,7 +1307,7 @@ func (tx *AggregateTransaction) String() string {
 	)
 }
 
-func (tx *AggregateTransaction) generateBytes() ([]byte, error) {
+func (tx *AggregateTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	var txsb []byte
@@ -1519,7 +1519,7 @@ func (tx *ModifyMetadataAddressTransaction) String() string {
 	)
 }
 
-func (tx *ModifyMetadataAddressTransaction) generateBytes() ([]byte, error) {
+func (tx *ModifyMetadataAddressTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	a, err := base32.StdEncoding.DecodeString(tx.Address.Address)
 	if err != nil {
@@ -1604,7 +1604,7 @@ func (tx *ModifyMetadataMosaicTransaction) String() string {
 	)
 }
 
-func (tx *ModifyMetadataMosaicTransaction) generateBytes() ([]byte, error) {
+func (tx *ModifyMetadataMosaicTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	mosaicB := make([]byte, MosaicIdSize)
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
@@ -1686,7 +1686,7 @@ func (tx *ModifyMetadataNamespaceTransaction) String() string {
 	)
 }
 
-func (tx *ModifyMetadataNamespaceTransaction) generateBytes() ([]byte, error) {
+func (tx *ModifyMetadataNamespaceTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	namespaceB := make([]byte, NamespaceSize)
 	binary.LittleEndian.PutUint64(namespaceB, tx.NamespaceId.Id())
@@ -1784,7 +1784,7 @@ func (tx *MosaicDefinitionTransaction) String() string {
 	)
 }
 
-func (tx *MosaicDefinitionTransaction) generateBytes() ([]byte, error) {
+func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 	var f uint8 = 0
 	if tx.MosaicProperties.SupplyMutable {
@@ -1909,7 +1909,7 @@ func (tx *MosaicSupplyChangeTransaction) String() string {
 	)
 }
 
-func (tx *MosaicSupplyChangeTransaction) generateBytes() ([]byte, error) {
+func (tx *MosaicSupplyChangeTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.AssetId.toArray())
@@ -2051,7 +2051,7 @@ func (tx *TransferTransaction) String() string {
 	)
 }
 
-func (tx *TransferTransaction) generateBytes() ([]byte, error) {
+func (tx *TransferTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	ml := len(tx.Mosaics)
@@ -2204,7 +2204,7 @@ func (tx *ModifyMultisigAccountTransaction) String() string {
 	)
 }
 
-func (tx *ModifyMultisigAccountTransaction) generateBytes() ([]byte, error) {
+func (tx *ModifyMultisigAccountTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	mV, err := cosignatoryModificationArrayToBuffer(builder, tx.Modifications)
@@ -2335,7 +2335,7 @@ func (tx *ModifyContractTransaction) String() string {
 	)
 }
 
-func (tx *ModifyContractTransaction) generateBytes() ([]byte, error) {
+func (tx *ModifyContractTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -2519,7 +2519,7 @@ func (tx *RegisterNamespaceTransaction) String() string {
 	)
 }
 
-func (tx *RegisterNamespaceTransaction) generateBytes() ([]byte, error) {
+func (tx *RegisterNamespaceTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.toArray())
@@ -2657,7 +2657,7 @@ func (tx *LockFundsTransaction) String() string {
 	)
 }
 
-func (tx *LockFundsTransaction) generateBytes() ([]byte, error) {
+func (tx *LockFundsTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	mv := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.AssetId.toArray())
@@ -2789,7 +2789,7 @@ func (tx *SecretLockTransaction) String() string {
 	)
 }
 
-func (tx *SecretLockTransaction) generateBytes() ([]byte, error) {
+func (tx *SecretLockTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Mosaic.AssetId.toArray())
@@ -2929,7 +2929,7 @@ func (tx *SecretProofTransaction) String() string {
 	)
 }
 
-func (tx *SecretProofTransaction) generateBytes() ([]byte, error) {
+func (tx *SecretProofTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	secret, err := tx.Proof.Secret(tx.HashType)
@@ -3291,9 +3291,9 @@ const (
 	EndDriveHeaderSize                           = TransactionHeaderSize + KeySize
 	OfferTypeSize                                = 1
 	OffersCountSize                              = 1
-	AddExchangeOfferSize                         = MosaicIdSize + DurationSize + 2 * AmountSize + OfferTypeSize
+	AddExchangeOfferSize                         = MosaicIdSize + DurationSize + 2*AmountSize + OfferTypeSize
 	AddExchangeOfferHeaderSize                   = TransactionHeaderSize + OffersCountSize
-	ExchangeOfferSize                            = DurationSize + 2 * AmountSize + OfferTypeSize + KeySize
+	ExchangeOfferSize                            = DurationSize + 2*AmountSize + OfferTypeSize + KeySize
 	ExchangeOfferHeaderSize                      = TransactionHeaderSize + OffersCountSize
 	RemoveExchangeOfferSize                      = OfferTypeSize + MosaicIdSize
 	RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
@@ -3628,7 +3628,7 @@ func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -3651,7 +3651,7 @@ func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
 
 func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error) {
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 	if err != nil {
 		return nil, err
 	}
