@@ -31,6 +31,7 @@ type ReplicatorInfo struct {
 	Start               Height
 	End                 Height
 	Deposit             Amount
+	Index               int
 	FilesWithoutDeposit map[Hash]uint16
 }
 

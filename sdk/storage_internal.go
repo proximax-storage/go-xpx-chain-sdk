@@ -109,7 +109,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 		replicators = make(map[PublicAccount]*ReplicatorInfo)
 	)
 
-	for _, dto := range dtos {
+	for i, dto := range dtos {
 		replicator, err := NewAccountFromPublicKey(dto.Replicator, networkType)
 		if err != nil {
 			return nil, err
@@ -123,6 +123,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 		info := ReplicatorInfo{
 			Start:					dto.Start.toStruct(),
 			End:					dto.End.toStruct(),
+			Index:                  i,
 			Deposit:				dto.Deposit.toStruct(),
 			FilesWithoutDeposit:	filesWithoutDeposit,
 		}
