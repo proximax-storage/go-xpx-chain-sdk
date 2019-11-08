@@ -259,9 +259,9 @@ func TestAggregateTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewCompleteAggregateTransaction returned error: %s", err)
 
-	b, err := atx.generateBytes()
+	b, err := atx.Bytes()
 
-	assert.Nilf(t, err, "AggregateTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "AggregateTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, aggregateTransactionSerializationCorr, b)
 }
 
@@ -351,9 +351,9 @@ func TestModifyAddressMetadataTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewModifyMetadataAddressTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewModifyMetadataAddressTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewModifyMetadataAddressTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, modifyAddressTransactionSerializationCorr, b)
 }
 
@@ -379,9 +379,9 @@ func TestAccountPropertiesAddressTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountPropertiesAddressTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewAccountPropertiesAddressTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountPropertiesAddressTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, accountPropertiesAddressTransactionSerializationCorr, b)
 }
 
@@ -405,9 +405,9 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountPropertiesMosaicTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewAccountPropertiesMosaicTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountPropertiesMosaicTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, accountPropertiesMosaicTransactionSerializationCorr, b)
 }
 
@@ -430,9 +430,9 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountPropertiesEntityTypeTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewAccountPropertiesEntityTypeTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountPropertiesEntityTypeTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, accountPropertiesEntityTypeTransactionSerializationCorr, b)
 }
 
@@ -450,9 +450,9 @@ func TestAddressAliasTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAddressAliasTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewAddressAliasTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewAddressAliasTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, addressAliasTransactionSerializationCorr, b)
 }
 
@@ -470,9 +470,9 @@ func TestMosaicAliasTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewMosaicAliasTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewMosaicAliasTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewMosaicAliasTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, mosaicAliasTransactionSerializationCorr, b)
 }
 
@@ -489,9 +489,9 @@ func TestAccountLinkTransaction(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountLinkTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewAccountLinkTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewAccountLinkTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, accountLinkTransactionSerializationCorr, b)
 }
 
@@ -517,9 +517,9 @@ func TestModifyMosaicMetadataTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewModifyMetadataMosaicTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewModifyMetadataMosaicTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewModifyMetadataMosaicTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, modifyMosaicTransactionSerializationCorr, b)
 }
 
@@ -545,9 +545,9 @@ func TestModifyNamespaceMetadataTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewModifyMetadataNamespaceTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "NewModifyMetadataNamespaceTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "NewModifyMetadataNamespaceTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, modifyNamespaceTransactionSerializationCorr, b)
 }
 
@@ -567,9 +567,9 @@ func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewMosaicDefinitionTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "MosaicDefinitionTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "MosaicDefinitionTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, mosaicDefinitionTransactionSerializationCorr, b)
 }
 
@@ -579,9 +579,9 @@ func TestMosaicSupplyChangeTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewMosaicSupplyChangeTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "MosaicSupplyChangeTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "MosaicSupplyChangeTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, mosaicSupplyChangeTransactionSerializationCorr, b)
 }
 
@@ -596,9 +596,9 @@ func TestTransferTransactionSerialization(t *testing.T) {
 		MijinTest,
 	)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "TransferTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "TransferTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, transferTransactionSerializationCorr, b)
 }
 
@@ -674,9 +674,9 @@ func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewModifyMultisigAccountTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "ModifyMultisigAccountTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "ModifyMultisigAccountTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, modifyMultisigAccountTransactionSerializationCorr, b)
 }
 
@@ -728,9 +728,9 @@ func TestModifyContractTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewModifyContractTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "ModifyContractTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "ModifyContractTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, modifyContractTransactionSerializationCorr, b)
 }
 
@@ -744,9 +744,9 @@ func TestRegisterRootNamespaceTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewRegisterRootNamespaceTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "RegisterNamespaceTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "RegisterNamespaceTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, registerRootNamespaceTransactionSerializationCorr, b)
 }
 
@@ -760,9 +760,9 @@ func TestRegisterSubNamespaceTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewRegisterSubNamespaceTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "RegisterNamespaceTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "RegisterNamespaceTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, registerSubNamespaceTransactionSerializationCorr, b)
 }
 
@@ -777,9 +777,9 @@ func TestLockFundsTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewLockFundsTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "LockFundsTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "LockFundsTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, lockFundsTransactionSerializationCorr, b)
 }
 
@@ -840,9 +840,9 @@ func TestSecretLockTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewSecretLockTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "SecretLockTransaction.generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "SecretLockTransaction.Bytes returned error: %s", err)
 	assert.Equal(t, secretLockTransactionSerializationCorr, b)
 }
 
@@ -902,9 +902,9 @@ func TestSecretProofTransactionSerialization(t *testing.T) {
 
 	assert.Nilf(t, err, "NewSecretProofTransaction returned error: %s", err)
 
-	b, err := tx.generateBytes()
+	b, err := tx.Bytes()
 
-	assert.Nilf(t, err, "generateBytes returned error: %s", err)
+	assert.Nilf(t, err, "Bytes returned error: %s", err)
 	assert.Equal(t, secretProofTransactionSerializationCorr, b)
 }
 

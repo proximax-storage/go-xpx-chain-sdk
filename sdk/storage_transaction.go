@@ -111,7 +111,7 @@ func (tx *PrepareDriveTransaction) String() string {
 	)
 }
 
-func (tx *PrepareDriveTransaction) generateBytes() ([]byte, error) {
+func (tx *PrepareDriveTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -235,7 +235,7 @@ func (tx *JoinToDriveTransaction) String() string {
 	)
 }
 
-func (tx *JoinToDriveTransaction) generateBytes() ([]byte, error) {
+func (tx *JoinToDriveTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -385,7 +385,7 @@ func removeActionsToArrayToBuffer(builder *flatbuffers.Builder, removeActions []
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
 }
 
-func (tx *DriveFileSystemTransaction) generateBytes() ([]byte, error) {
+func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -443,7 +443,7 @@ func (tx *DriveFileSystemTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *DriveFileSystemTransaction) Size() int {
-	return DriveFileSystemHeaderSize + len(tx.AddActions) * (Hash256 + StorageSizeSize) + len(tx.RemoveActions) * Hash256
+	return DriveFileSystemHeaderSize + len(tx.AddActions)*(Hash256+StorageSizeSize) + len(tx.RemoveActions)*Hash256
 }
 
 type driveFileSystemAddActionDTO struct {
@@ -610,7 +610,7 @@ func fileToArrayToBuffer(builder *flatbuffers.Builder, addActions []*File) (flat
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
 }
 
-func (tx *FilesDepositTransaction) generateBytes() ([]byte, error) {
+func (tx *FilesDepositTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -646,7 +646,7 @@ func (tx *FilesDepositTransaction) generateBytes() ([]byte, error) {
 }
 
 func (tx *FilesDepositTransaction) Size() int {
-	return FilesDepositHeaderSize + len(tx.Files) * Hash256
+	return FilesDepositHeaderSize + len(tx.Files)*Hash256
 }
 
 type fileDepositDTO struct {
@@ -656,8 +656,8 @@ type fileDepositDTO struct {
 type filesDepositTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey   string     `json:"driveKey"`
-		FilesCount uint16     `json:"filesCount"`
+		DriveKey   string            `json:"driveKey"`
+		FilesCount uint16            `json:"filesCount"`
 		Files      []*fileDepositDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -746,7 +746,7 @@ func (tx *EndDriveTransaction) String() string {
 	)
 }
 
-func (tx *EndDriveTransaction) generateBytes() ([]byte, error) {
+func (tx *EndDriveTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
