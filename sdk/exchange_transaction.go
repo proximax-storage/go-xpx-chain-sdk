@@ -357,6 +357,7 @@ func removeExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*
 
 		transactions.RemoveExchangeOfferBufferStart(builder)
 		transactions.RemoveExchangeOfferBufferAddMosaicId(builder, mV)
+		transactions.RemoveExchangeOfferBufferAddType(builder, byte(offer.Type))
 		msb[i] = transactions.RemoveExchangeOfferBufferEnd(builder)
 	}
 
