@@ -639,6 +639,15 @@ func (c *Client) NewEndDriveTransaction(deadline *Deadline, driveKey *PublicAcco
 	return tx, err
 }
 
+func (c *Client) NewDeleteRewardTransaction(deadline *Deadline, deletedFiles []*DeletedFile) (*DeleteRewardTransaction, error) {
+	tx, err := NewDeleteRewardTransaction(deadline, deletedFiles, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {

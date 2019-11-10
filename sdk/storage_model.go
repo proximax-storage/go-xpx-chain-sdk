@@ -144,3 +144,20 @@ type EndDriveTransaction struct {
 	AbstractTransaction
 	DriveKey *PublicAccount
 }
+
+type UploadInfo struct {
+	Participant     *PublicAccount
+	UploadedSize    Amount
+}
+
+type DeletedFile struct {
+	File
+	UploadInfos []*UploadInfo
+}
+
+// Delete Reward Transaction
+
+type DeleteRewardTransaction struct {
+	AbstractTransaction
+	DeletedFiles []*DeletedFile
+}

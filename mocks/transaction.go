@@ -56,8 +56,8 @@ func (_m *Transaction) String() string {
 	return r0
 }
 
-// generateBytes provides a mock function with given fields:
-func (_m *Transaction) generateBytes() ([]byte, error) {
+// Bytes provides a mock function with given fields:
+func (_m *Transaction) Bytes() ([]byte, error) {
 	ret := _m.Called()
 
 	var r0 []byte

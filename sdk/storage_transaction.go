@@ -754,9 +754,17 @@ func (tx *EndDriveTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := transactions.TransactionBufferCreateByteVector(builder, b)
+
 	transactions.EndDriveTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.EndDriveTransactionBufferAddDriveKey(builder, hV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -794,5 +802,200 @@ func (dto *endDriveTransactionDTO) toStruct() (Transaction, error) {
 	return &EndDriveTransaction{
 		*atx,
 		driveKey,
+	}, nil
+}
+
+func (f *DeletedFile) Size() int {
+	return SizeSize + Hash256 + len(f.UploadInfos) * (Hash256 + StorageSizeSize)
+}
+
+func NewDeleteRewardTransaction(
+	deadline *Deadline,
+	files []*DeletedFile,
+	networkType NetworkType,
+) (*DeleteRewardTransaction, error) {
+
+	if len(files) == 0 {
+		return nil, ErrNoChanges
+	}
+	
+	for _, file := range files {
+		if len(file.UploadInfos) == 0 {
+			return nil, ErrNoChanges
+		}
+	}
+
+	tx := DeleteRewardTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DeleteRewardVersion,
+			Deadline:    deadline,
+			Type:        DeleteReward,
+			NetworkType: networkType,
+		},
+		DeletedFiles: files,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DeleteRewardTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DeleteRewardTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DeletedFiles": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DeletedFiles,
+	)
+}
+
+func deletedFilesToArrayToBuffer(builder *flatbuffers.Builder, files []*DeletedFile) (flatbuffers.UOffsetT, error) {
+	filesb := make([]flatbuffers.UOffsetT, len(files))
+	for i, f := range files {
+		infosb := make([]flatbuffers.UOffsetT, len(f.UploadInfos))
+		for j, info := range f.UploadInfos {
+			rb, err := hex.DecodeString(info.Participant.PublicKey)
+			if err != nil {
+				return 0, err
+			}
+
+			rV := transactions.TransactionBufferCreateByteVector(builder, rb)
+			uV := transactions.TransactionBufferCreateUint32Vector(builder, info.UploadedSize.toArray())
+
+			transactions.UploadInfoBufferStart(builder)
+			transactions.UploadInfoBufferAddReplicator(builder, rV)
+			transactions.UploadInfoBufferAddUploaded(builder, uV)
+			infosb[j] = transactions.UploadInfoBufferEnd(builder)
+		}
+		infosV := transactions.TransactionBufferCreateUOffsetVector(builder, infosb)
+
+		hV := transactions.TransactionBufferCreateByteVector(builder, f.FileHash[:])
+		transactions.DeletedFileBufferStart(builder)
+		transactions.DeletedFileBufferAddFileHash(builder, hV)
+		transactions.DeletedFileBufferAddSize(builder, uint32(f.Size()))
+		transactions.DeletedFileBufferAddUploadInfos(builder, infosV)
+		filesb[i] = transactions.DeletedFileBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, filesb), nil
+}
+
+func (tx *DeleteRewardTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	filesV, err := deletedFilesToArrayToBuffer(builder, tx.DeletedFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.DeleteRewardTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.DeleteRewardTransactionBufferAddDeletedFiles(builder, filesV)
+	t := transactions.DeleteRewardTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return deleteRewardTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *DeleteRewardTransaction) Size() int {
+	size := 0
+	for _, f := range tx.DeletedFiles {
+		size += f.Size()
+	}
+
+	return TransactionHeaderSize + size
+}
+
+type uploadInfoDTO struct {
+	Participant     string      `json:"participant"`
+	Uploaded        uint64DTO   `json:"uploaded"`
+}
+
+func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error) {
+	acc, err := NewAccountFromPublicKey(dto.Participant, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UploadInfo{
+		acc,
+		dto.Uploaded.toStruct(),
+	}, nil
+}
+
+type deletedFileDTO struct {
+	FileHash        hashDto             `json:"fileHash"`
+	Size            uint32              `json:"size"`
+	UploadInfos     []*uploadInfoDTO    `json:"uploadInfos"`
+}
+
+func (dto *deletedFileDTO) toStruct(networkType NetworkType) (*DeletedFile, error) {
+	hash, err := dto.FileHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	uploadInfos := make([]*UploadInfo, len(dto.UploadInfos))
+
+	for i, u := range dto.UploadInfos {
+		info, err := u.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		uploadInfos[i] = info
+	}
+
+	return &DeletedFile{
+		File{
+			hash,
+		},
+		uploadInfos,
+	}, nil
+}
+
+type deleteRewardTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DeletedFiles    []*deletedFileDTO   `json:"deletedFiles"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *deleteRewardTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	deletedFiles := make([]*DeletedFile, len(dto.Tx.DeletedFiles))
+
+	for i, d := range dto.Tx.DeletedFiles {
+		file, err := d.toStruct(atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+
+		deletedFiles[i] = file
+	}
+
+	return &DeleteRewardTransaction{
+		*atx,
+		deletedFiles,
 	}, nil
 }

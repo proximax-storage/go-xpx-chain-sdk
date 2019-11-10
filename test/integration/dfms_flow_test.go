@@ -48,7 +48,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	driveTx, err := client.NewPrepareDriveTransaction(
 		sdk.NewDeadline(time.Hour),
 		defaultAccount.PublicAccount,
-		sdk.Duration(100),
+		sdk.Duration(1),
 		sdk.Duration(1),
 		sdk.Amount(billingPrice),
 		sdk.StorageSize(storageSize),
@@ -185,7 +185,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 					sdk.Offer{
 						sdk.SellOffer,
 						sdk.Storage(exchangeAmount),
-						sdk.Amount(exchangeAmount),
+						sdk.Amount(exchangeAmount / 2),
 					},
 					sdk.Duration(10000000),
 				},
@@ -194,17 +194,14 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, exchangeAccount)
 	assert.Nil(t, result.error)
 
-	// TODO: Get OfferInfo
-	//infos, err := client.Exchange.GetExchangeOfferByAssetId(ctx, sdk.StorageNamespaceId, sdk.SellOffer)
-	//info := infos[0]
-	info := sdk.OfferInfo{
-		sdk.SellOffer,
-		exchangeAccount.PublicAccount,
-		sdk.Storage(exchangeAmount),
-		sdk.Amount(exchangeAmount),
-		sdk.Amount(exchangeAmount),
-		sdk.Height(0),
-	}
+	exchangeInfo, err := client.Exchange.GetAccountExchangeInfo(ctx, exchangeAccount.PublicAccount)
+	assert.Nil(t, err)
+	fmt.Println(exchangeInfo)
+
+
+	infos, err := client.Exchange.GetExchangeOfferByAssetId(ctx, sdk.StorageNamespaceId, sdk.SellOffer)
+	assert.Nil(t, err)
+	info := infos[0]
 	confirmation, err := info.ConfirmOffer(sdk.Amount(billingPrice))
 	assert.Nil(t, err)
 
@@ -221,6 +218,28 @@ func TestDriveFlowTransaction(t *testing.T) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{exchangeOfferTransaction},
+		)
+	}, replicatorAccount)
+	assert.Nil(t, result.error)
+
+	drive, err = client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	fmt.Println(drive)
+
+	time.Sleep(time.Minute)
+
+
+	endDriveTx, err := client.NewEndDriveTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveAccount.PublicAccount,
+	)
+	endDriveTx.ToAggregate(driveAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{endDriveTx},
 		)
 	}, replicatorAccount)
 	assert.Nil(t, result.error)

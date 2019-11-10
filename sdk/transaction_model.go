@@ -695,7 +695,7 @@ func (tx *AliasTransaction) String() string {
 	)
 }
 
-func (tx *AliasTransaction) generateBytes(builder *flatbuffers.Builder, aliasV flatbuffers.UOffsetT, sizeOfAlias int) ([]byte, error) {
+func (tx *AliasTransaction) Bytes(builder *flatbuffers.Builder, aliasV flatbuffers.UOffsetT, sizeOfAlias int) ([]byte, error) {
 	nV := transactions.TransactionBufferCreateUint32Vector(builder, tx.NamespaceId.toArray())
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -801,7 +801,7 @@ func (tx *AddressAliasTransaction) Bytes() ([]byte, error) {
 
 	aV := transactions.TransactionBufferCreateByteVector(builder, a)
 
-	return tx.AliasTransaction.generateBytes(builder, aV, AddressSize)
+	return tx.AliasTransaction.Bytes(builder, aV, AddressSize)
 }
 
 func (tx *AddressAliasTransaction) Size() int {
@@ -887,7 +887,7 @@ func (tx *MosaicAliasTransaction) Bytes() ([]byte, error) {
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.AliasTransaction.generateBytes(builder, mV, MosaicIdSize)
+	return tx.AliasTransaction.Bytes(builder, mV, MosaicIdSize)
 }
 
 func (tx *MosaicAliasTransaction) Size() int {
@@ -1418,7 +1418,7 @@ func (tx *ModifyMetadataTransaction) String() string {
 	)
 }
 
-func (tx *ModifyMetadataTransaction) generateBytes(builder *flatbuffers.Builder, metadataV flatbuffers.UOffsetT, sizeOfMetadata int) ([]byte, error) {
+func (tx *ModifyMetadataTransaction) Bytes(builder *flatbuffers.Builder, metadataV flatbuffers.UOffsetT, sizeOfMetadata int) ([]byte, error) {
 
 	mV, err := metadataModificationArrayToBuffer(builder, tx.Modifications)
 	if err != nil {
@@ -1528,7 +1528,7 @@ func (tx *ModifyMetadataAddressTransaction) Bytes() ([]byte, error) {
 
 	aV := transactions.TransactionBufferCreateByteVector(builder, a)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, aV, AddressSize)
+	return tx.ModifyMetadataTransaction.Bytes(builder, aV, AddressSize)
 }
 
 func (tx *ModifyMetadataAddressTransaction) Size() int {
@@ -1610,7 +1610,7 @@ func (tx *ModifyMetadataMosaicTransaction) Bytes() ([]byte, error) {
 	binary.LittleEndian.PutUint64(mosaicB, tx.MosaicId.Id())
 	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, MosaicIdSize)
+	return tx.ModifyMetadataTransaction.Bytes(builder, mV, MosaicIdSize)
 }
 
 func (tx *ModifyMetadataMosaicTransaction) Size() int {
@@ -1692,7 +1692,7 @@ func (tx *ModifyMetadataNamespaceTransaction) Bytes() ([]byte, error) {
 	binary.LittleEndian.PutUint64(namespaceB, tx.NamespaceId.Id())
 	mV := transactions.TransactionBufferCreateByteVector(builder, namespaceB)
 
-	return tx.ModifyMetadataTransaction.generateBytes(builder, mV, NamespaceSize)
+	return tx.ModifyMetadataTransaction.Bytes(builder, mV, NamespaceSize)
 }
 
 func (tx *ModifyMetadataNamespaceTransaction) Size() int {
@@ -3334,6 +3334,7 @@ const (
 	DriveFileSystem           EntityType = 0x435A
 	FilesDeposit              EntityType = 0x445A
 	EndDrive                  EntityType = 0x455A
+	DeleteReward              EntityType = 0x465A
 )
 
 func (t EntityType) String() string {
@@ -3373,6 +3374,7 @@ const (
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1
 	EndDriveVersion                  EntityVersion = 1
+	DeleteRewardVersion              EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3586,6 +3588,8 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &filesDepositTransactionDTO{}
 	case EndDrive:
 		dto = &endDriveTransactionDTO{}
+	case DeleteReward:
+		dto = &deleteRewardTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)

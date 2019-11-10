@@ -90,6 +90,12 @@ const (
 	drivesOfAccountRoute    = "/account/%s/drive%s"
 )
 
+// routes for ExchangeService
+const (
+	exchangeRoute           = "/account/%s/exchange"
+	offersByMosaicRoute     = "/exchange/%s/%s"
+)
+
 // routes for TransactionService
 const (
 	transactionsRoute                 = "/transaction"

@@ -6,6 +6,9 @@ package sdk
 
 import (
 	"context"
+	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/net"
+	"net/http"
 )
 
 type ExchangeService struct {
@@ -17,43 +20,43 @@ func (e *ExchangeService) GetAccountExchangeInfo(ctx context.Context, account *P
 	if account == nil {
 		return nil, ErrNilAddress
 	}
-	//
-	//url := net.NewUrl(fmt.Sprintf(driveRoute, driveKey.PublicKey))
-	//
-	//dto := &driveDTO{}
-	//
-	//resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-	//	return nil, err
-	//}
 
-	return nil, nil
-}
+	url := net.NewUrl(fmt.Sprintf(exchangeRoute, account.PublicKey))
 
-// Return offers with same operation typr and mosaic id.
-// Example: If you want to buy Storage units, you need to call GetExchangeOfferByAssetId(StorageMosaicId, SellOffer)
-func (e *ExchangeService) GetExchangeOfferByAssetId(ctx context.Context, assetId AssetId, offerType OfferType) ([]*OfferInfo, error) {
-	_, err := e.ResolveService.GetMosaicInfoByAssetId(ctx, assetId)
+	dto := &exchangeDTO{}
+
+	resp, err := e.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
 		return nil, err
 	}
 
-	//url := net.NewUrl(fmt.Sprintf(drivesOfAccountRoute, driveKey.PublicKey, filter))
-	//
-	//dto := &driveDTOs{}
-	//
-	//resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-	//	return nil, err
-	//}
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	return dto.toStruct(e.client.NetworkType())
+}
+
+// Return offers with same operation type and mosaic id.
+// Example: If you want to buy Storage units, you need to call GetExchangeOfferByAssetId(StorageMosaicId, SellOffer)
+func (e *ExchangeService) GetExchangeOfferByAssetId(ctx context.Context, assetId AssetId, offerType OfferType) ([]*OfferInfo, error) {
+	mosaicInfo, err := e.ResolveService.GetMosaicInfoByAssetId(ctx, assetId)
+	if err != nil {
+		return nil, err
+	}
+
+	url := net.NewUrl(fmt.Sprintf(offersByMosaicRoute, offerType.String(), mosaicInfo.MosaicId.toHexString()))
+
+	dto := &offerInfoDTOs{}
+
+	resp, err := e.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(e.client.NetworkType())
 }

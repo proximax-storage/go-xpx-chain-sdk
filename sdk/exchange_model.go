@@ -18,6 +18,17 @@ const (
 	UnknownType
 )
 
+func(o OfferType) String()string {
+	switch o {
+	case SellOffer:
+		return "sell"
+	case BuyOffer:
+		return "buy"
+	default:
+		return "unknown"
+	}
+}
+
 func(o OfferType) CounterOffer() OfferType {
 	switch o {
 	case SellOffer:
@@ -31,7 +42,7 @@ func(o OfferType) CounterOffer() OfferType {
 
 type UserExchangeInfo struct {
 	Owner	*PublicAccount
-	Offers	map[OfferType]map[MosaicId]OfferInfo
+	Offers	map[OfferType]map[MosaicId]*OfferInfo
 }
 
 type OfferInfo struct {
@@ -40,7 +51,7 @@ type OfferInfo struct {
 	Mosaic				*Mosaic
 	PriceNumerator		Amount
 	PriceDenominator	Amount
-	Dealine				Height
+	Deadline			Height
 }
 
 func(o *OfferInfo) Cost(amount Amount) (Amount, error) {

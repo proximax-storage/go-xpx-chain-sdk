@@ -106,3 +106,29 @@ func endDriveTransactionSchema() *schema {
 		},
 	}
 }
+
+func deleteRewardTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newTableArrayAttribute("deletedFiles", schema{
+				[]schemaAttribute{
+					newArrayAttribute("fileHash", ByteSize),
+					newScalarAttribute("size", IntSize),
+					newTableArrayAttribute("uploadInfos", schema{
+						[]schemaAttribute{
+							newArrayAttribute("replicator", ByteSize),
+							newArrayAttribute("uploaded", IntSize),
+						},
+					}.schemaDefinition),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
