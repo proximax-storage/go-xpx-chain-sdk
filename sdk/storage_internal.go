@@ -4,16 +4,18 @@
 
 package sdk
 
+import "fmt"
+
 type filesWithoutDepositDTO struct {
-	FileHash	hashDto    	`json:"fileHash"`
-	Count		uint16 		`json:"count"`
+	FileHash hashDto `json:"fileHash"`
+	Count    uint16  `json:"count"`
 }
 
 type filesWithoutDepositDTOs []*filesWithoutDepositDTO
 
 func (ref *filesWithoutDepositDTOs) toStruct() (map[Hash]uint16, error) {
 	var (
-		dtos  = *ref
+		dtos     = *ref
 		deposits = make(map[Hash]uint16)
 	)
 
@@ -30,9 +32,9 @@ func (ref *filesWithoutDepositDTOs) toStruct() (map[Hash]uint16, error) {
 }
 
 type paymentDTO struct {
-	Receiver	string        	`json:"receiver"`
-	Amount		uint64DTO 		`json:"amount"`
-	Height		uint64DTO 		`json:"height"`
+	Receiver string    `json:"receiver"`
+	Amount   uint64DTO `json:"amount"`
+	Height   uint64DTO `json:"height"`
 }
 
 func (ref *paymentDTO) toStruct(networkType NetworkType) (*PaymentInformation, error) {
@@ -42,9 +44,9 @@ func (ref *paymentDTO) toStruct(networkType NetworkType) (*PaymentInformation, e
 	}
 
 	return &PaymentInformation{
-		Receiver: 		receiver,
-		Amount: 		ref.Amount.toStruct(),
-		Height: 		ref.Height.toStruct(),
+		Receiver: receiver,
+		Amount:   ref.Amount.toStruct(),
+		Height:   ref.Height.toStruct(),
 	}, nil
 }
 
@@ -52,7 +54,7 @@ type paymentsDTOs []*paymentDTO
 
 func (ref *paymentsDTOs) toStruct(networkType NetworkType) ([]*PaymentInformation, error) {
 	var (
-		dtos  = *ref
+		dtos     = *ref
 		payments = make([]*PaymentInformation, 0, len(dtos))
 	)
 
@@ -69,22 +71,22 @@ func (ref *paymentsDTOs) toStruct(networkType NetworkType) ([]*PaymentInformatio
 }
 
 type actionDTO struct {
-	Type			FileActionType        		`json:"type"`
-	Height			uint64DTO        			`json:"height"`
+	Type   FileActionType `json:"type"`
+	Height uint64DTO      `json:"height"`
 }
 
 type actionsDTOs []*actionDTO
 
 func (ref *actionsDTOs) toStruct() ([]*FileAction, error) {
 	var (
-		dtos  = *ref
+		dtos    = *ref
 		actions = make([]*FileAction, 0, len(dtos))
 	)
 
 	for _, dto := range dtos {
 		info := FileAction{
-			Type:	 	dto.Type,
-			Height: 	dto.Height.toStruct(),
+			Type:   dto.Type,
+			Height: dto.Height.toStruct(),
 		}
 
 		actions = append(actions, &info)
@@ -94,18 +96,18 @@ func (ref *actionsDTOs) toStruct() ([]*FileAction, error) {
 }
 
 type replicatorDTO struct {
-	Replicator			string        			`json:"replicator"`
-	Start				uint64DTO 				`json:"start"`
-	End					uint64DTO 				`json:"end"`
-	Deposit				uint64DTO				`json:"deposit"`
-	FilesWithoutDeposit	filesWithoutDepositDTOs	`json:"filesWithoutDeposit"`
+	Replicator          string                  `json:"replicator"`
+	Start               uint64DTO               `json:"start"`
+	End                 uint64DTO               `json:"end"`
+	Deposit             uint64DTO               `json:"deposit"`
+	FilesWithoutDeposit filesWithoutDepositDTOs `json:"filesWithoutDeposit"`
 }
 
 type replicatorsDTOs []*replicatorDTO
 
 func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount]*ReplicatorInfo, error) {
 	var (
-		dtos  = *ref
+		dtos        = *ref
 		replicators = make(map[PublicAccount]*ReplicatorInfo)
 	)
 
@@ -121,11 +123,11 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 		}
 
 		info := ReplicatorInfo{
-			Start:					dto.Start.toStruct(),
-			End:					dto.End.toStruct(),
-			Index:                  i,
-			Deposit:				dto.Deposit.toStruct(),
-			FilesWithoutDeposit:	filesWithoutDeposit,
+			Start:               dto.Start.toStruct(),
+			End:                 dto.End.toStruct(),
+			Index:               i,
+			Deposit:             dto.Deposit.toStruct(),
+			FilesWithoutDeposit: filesWithoutDeposit,
 		}
 
 		replicators[*replicator] = &info
@@ -135,11 +137,11 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 }
 
 type fileDTO struct {
-	FileHash	hashDto        	`json:"fileHash"`
-	Deposit		uint64DTO 		`json:"deposit"`
-	FileSize	uint64DTO 		`json:"size"`
-	Payments	paymentsDTOs	`json:"payments"`
-	Actions		actionsDTOs		`json:"actions"`
+	FileHash hashDto      `json:"fileHash"`
+	Deposit  uint64DTO    `json:"deposit"`
+	FileSize uint64DTO    `json:"size"`
+	Payments paymentsDTOs `json:"payments"`
+	Actions  actionsDTOs  `json:"actions"`
 }
 
 type filesDTOs []*fileDTO
@@ -167,10 +169,10 @@ func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]*FileInfo, err
 		}
 
 		info := FileInfo{
-			Deposit:	dto.Deposit.toStruct(),
-			FileSize:	dto.FileSize.toStruct(),
-			Payments:	payments,
-			Actions:	actions,
+			Deposit:  dto.Deposit.toStruct(),
+			FileSize: dto.FileSize.toStruct(),
+			Payments: payments,
+			Actions:  actions,
 		}
 
 		files[*fileHash] = &info
@@ -179,11 +181,10 @@ func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]*FileInfo, err
 	return files, nil
 }
 
-
 type billingDescriptionDTO struct {
-	Start 		uint64DTO		`json:"start"`
-	End       	uint64DTO 		`json:"end"`
-	Payments  	paymentsDTOs 	`json:"payments"`
+	Start    uint64DTO    `json:"start"`
+	End      uint64DTO    `json:"end"`
+	Payments paymentsDTOs `json:"payments"`
 }
 
 func (ref *billingDescriptionDTO) toStruct(networkType NetworkType) (*BillingDescription, error) {
@@ -193,9 +194,9 @@ func (ref *billingDescriptionDTO) toStruct(networkType NetworkType) (*BillingDes
 	}
 
 	return &BillingDescription{
-		Start: 		ref.Start.toStruct(),
-		End: 		ref.End.toStruct(),
-		Payments: 	payments,
+		Start:    ref.Start.toStruct(),
+		End:      ref.End.toStruct(),
+		Payments: payments,
 	}, nil
 }
 
@@ -203,7 +204,7 @@ type billingHistoryDTOs []*billingDescriptionDTO
 
 func (ref *billingHistoryDTOs) toStruct(networkType NetworkType) ([]*BillingDescription, error) {
 	var (
-		dtos  = *ref
+		dtos    = *ref
 		history = make([]*BillingDescription, 0, len(dtos))
 	)
 
@@ -221,20 +222,20 @@ func (ref *billingHistoryDTOs) toStruct(networkType NetworkType) ([]*BillingDesc
 
 type driveDTO struct {
 	Drive struct {
-		DriveKey 			string   	     	`json:"multisig"`
-		State       		DriveState 			`json:"state"`
-		Owner       		string 				`json:"owner"`
-		RootHash      		hashDto 			`json:"rootHash"`
-		Duration       		uint64DTO 			`json:"duration"`
-		BillingPeriod		uint64DTO 			`json:"billingPeriod"`
-		BillingPrice		uint64DTO 			`json:"billingPrice"`
-		DriveSize       	uint64DTO 			`json:"size"`
-		Replicas       		uint16 				`json:"replicas"`
-		MinReplicators		uint16 				`json:"minReplicators"`
-		PercentApprovers	uint8 				`json:"percentApprovers"`
-		BillingHistory		billingHistoryDTOs	`json:"billingHistory"`
-		Files       		filesDTOs			`json:"files"`
-		Replicators       	replicatorsDTOs		`json:"replicators"`
+		DriveKey         string             `json:"multisig"`
+		State            DriveState         `json:"state"`
+		Owner            string             `json:"owner"`
+		RootHash         hashDto            `json:"rootHash"`
+		Duration         uint64DTO          `json:"duration"`
+		BillingPeriod    uint64DTO          `json:"billingPeriod"`
+		BillingPrice     uint64DTO          `json:"billingPrice"`
+		DriveSize        uint64DTO          `json:"size"`
+		Replicas         uint16             `json:"replicas"`
+		MinReplicators   uint16             `json:"minReplicators"`
+		PercentApprovers uint8              `json:"percentApprovers"`
+		BillingHistory   billingHistoryDTOs `json:"billingHistory"`
+		Files            filesDTOs          `json:"files"`
+		Replicators      replicatorsDTOs    `json:"replicators"`
 	}
 }
 
@@ -253,7 +254,7 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 
 	rootHash, err := ref.Drive.RootHash.Hash()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.RootHash.Hash: %v", err)
 	}
 
 	drive.DriveKey = driveKey
@@ -270,21 +271,21 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 
 	billingHistory, err := ref.Drive.BillingHistory.toStruct(networkType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.BillingHistory.toStruct: %v", err)
 	}
 
 	drive.BillingHistory = billingHistory
 
 	files, err := ref.Drive.Files.toStruct(networkType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.Files.toStruct: %v", err)
 	}
 
 	drive.Files = files
 
 	replicators, err := ref.Drive.Replicators.toStruct(networkType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.Replicators.toStruct: %v", err)
 	}
 
 	drive.Replicators = replicators
@@ -296,7 +297,7 @@ type driveDTOs []*driveDTO
 
 func (ref *driveDTOs) toStruct(networkType NetworkType) ([]*Drive, error) {
 	var (
-		dtos  = *ref
+		dtos   = *ref
 		drives = make([]*Drive, 0, len(dtos))
 	)
 

@@ -250,7 +250,7 @@ func NewAddressFromRaw(address string) (*Address, error) {
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error) {
 	ad, err := generateEncodedAddress(pKey, networkType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.NewAddressFromPublicKey.generateEncodedAddress: %v", err)
 	}
 
 	return NewAddress(ad, networkType), nil
