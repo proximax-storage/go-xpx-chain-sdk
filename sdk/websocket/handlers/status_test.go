@@ -40,9 +40,9 @@ func Test_statusHandler_Handle(t *testing.T) {
 	handler1 := subscribers.StatusHandler(handlerFunc1)
 	handler2 := subscribers.StatusHandler(handlerFunc2)
 
-	handlers := map[*subscribers.StatusHandler]struct{}{
-		&handler1: {},
-		&handler2: {},
+	handlers := []*subscribers.StatusHandler{
+		&handler1,
+		&handler2,
 	}
 
 	HandlersMock := new(mocksSubscribers.Status)

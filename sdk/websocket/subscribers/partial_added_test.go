@@ -2,7 +2,6 @@ package subscribers
 
 import (
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -200,52 +199,6 @@ func Test_partialAddedImpl_RemoveHandlers(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-}
-
-func Test_partialAddedImpl_RemoveHandlers_Concurrency(t *testing.T) {
-
-	t.Run("concurrency remove", func(t *testing.T) {
-		iterations := 10
-		address := &sdk.Address{}
-		address.Address = "test-address"
-		handler := NewPartialAdded()
-
-		wg := sync.WaitGroup{}
-		wg.Add(iterations)
-
-		for i := 0; i < iterations; i++ {
-			go func() {
-				var handlerFunc1 = func(atx *sdk.AggregateTransaction) bool {
-					return false
-				}
-
-				var handlerFunc2 = func(atx *sdk.AggregateTransaction) bool {
-					return false
-				}
-				partialAddedHandlerFunc1Ptr := PartialAddedHandler(handlerFunc1)
-				partialdAddedHandlerFunc2Ptr := PartialAddedHandler(handlerFunc2)
-
-				handlers := []PartialAddedHandler{
-					partialAddedHandlerFunc1Ptr,
-					partialdAddedHandlerFunc2Ptr,
-				}
-
-				err := handler.AddHandlers(address, handlers...)
-				assert.Nil(t, err)
-
-				refHandlers := make([]*PartialAddedHandler, len(handlers))
-				for i, h := range handlers {
-					refHandlers[i] = &h
-				}
-
-				removes, err := handler.RemoveHandlers(address, refHandlers...)
-				assert.Nil(t, err)
-				assert.True(t, removes)
-				wg.Done()
-			}()
-		}
-		wg.Wait()
-	})
 }
 
 func Test_partialAddedImpl_HasHandlers(t *testing.T) {
