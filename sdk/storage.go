@@ -57,7 +57,10 @@ func (s *StorageService) GetAccountDrives(ctx context.Context, driveKey *PublicA
 	}
 
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-		return nil, err
+		// Skip ErrResourceNotFound
+		if resp.StatusCode != 404 {
+			return nil, err
+		}
 	}
 
 	return dto.toStruct(s.client.NetworkType())
