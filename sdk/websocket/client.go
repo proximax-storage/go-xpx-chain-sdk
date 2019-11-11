@@ -56,6 +56,7 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 		conn:       conn,
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
+		connectFn:  connect,
 		UID:        uid,
 
 		blockSubscriber:               subscribers.NewBlock(),

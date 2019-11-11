@@ -310,57 +310,6 @@ func TestModifyMultisigTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestModifyContracTransaction(t *testing.T) {
-	acc1, err := client.NewAccount()
-	assert.Nil(t, err)
-	acc2, err := client.NewAccount()
-	assert.Nil(t, err)
-	hash, err := sdk.StringToHash("cf893ffcc47c33e7f68ab1db56365c156b0736824a0c1e273f9e00b8df8f01eb")
-	assert.Nil(t, err)
-
-	contractAccount, err := client.NewAccount()
-	fmt.Println(contractAccount)
-
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewModifyContractTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.Duration(2),
-			hash,
-			[]*sdk.MultisigCosignatoryModification{
-				{
-					sdk.Add,
-					acc1.PublicAccount,
-				},
-				{
-					sdk.Add,
-					acc2.PublicAccount,
-				},
-			},
-			[]*sdk.MultisigCosignatoryModification{
-				{
-					sdk.Add,
-					acc1.PublicAccount,
-				},
-				{
-					sdk.Add,
-					acc2.PublicAccount,
-				},
-			},
-			[]*sdk.MultisigCosignatoryModification{
-				{
-					sdk.Add,
-					acc1.PublicAccount,
-				},
-				{
-					sdk.Add,
-					acc2.PublicAccount,
-				},
-			},
-		)
-	}, contractAccount)
-	assert.Nil(t, result.error)
-}
-
 func TestRegisterRootNamespaceTransaction(t *testing.T) {
 	name := make([]byte, 5)
 

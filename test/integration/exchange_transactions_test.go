@@ -22,7 +22,7 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 						sdk.Storage(10000000),
 						sdk.Amount(10000000),
 					},
-					sdk.Duration(100000),
+					sdk.Duration(100),
 				},
 			},
 		)
