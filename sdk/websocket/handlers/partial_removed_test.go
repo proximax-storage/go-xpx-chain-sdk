@@ -40,9 +40,9 @@ func Test_partialRemovedHandler_Handle(t *testing.T) {
 	handler1 := subscribers.PartialRemovedHandler(handlerFunc1)
 	handler2 := subscribers.PartialRemovedHandler(handlerFunc2)
 
-	blockHandlers := map[*subscribers.PartialRemovedHandler]struct{}{
-		&handler1: {},
-		&handler2: {},
+	blockHandlers := []*subscribers.PartialRemovedHandler{
+		&handler1,
+		&handler2,
 	}
 
 	HandlersMock := new(mocksSubscribers.PartialRemoved)

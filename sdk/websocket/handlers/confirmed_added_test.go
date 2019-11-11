@@ -40,9 +40,9 @@ func Test_confirmedAddedHandler_Handle(t *testing.T) {
 	blockHandler1 := subscribers.ConfirmedAddedHandler(handlerFunc1)
 	blockHandler2 := subscribers.ConfirmedAddedHandler(handlerFunc2)
 
-	blockHandlers := map[*subscribers.ConfirmedAddedHandler]struct{}{
-		&blockHandler1: {},
-		&blockHandler2: {},
+	blockHandlers := []*subscribers.ConfirmedAddedHandler{
+		&blockHandler1,
+		&blockHandler2,
 	}
 
 	blockHandlersMock := new(mocksSubscribers.ConfirmedAdded)
