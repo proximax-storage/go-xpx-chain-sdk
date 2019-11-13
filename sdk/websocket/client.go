@@ -20,11 +20,9 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
-const pathWS = "ws"
-
-type Path string
-
 const (
+	pathWS = "ws"
+
 	pathBlock              Path = "block"
 	pathConfirmedAdded     Path = "confirmedAdded"
 	pathUnconfirmedAdded   Path = "unconfirmedAdded"
@@ -39,139 +37,111 @@ var (
 	ErrUnsupportedMessageType = errors.New("unsupported message type")
 )
 
+type (
+	// Subscribe path
+	Path string
+
+	CatapultWebsocketClientImpl struct {
+		ctx        context.Context
+		cancelFunc context.CancelFunc
+
+		UID    string
+		config *sdk.Config
+
+		conn *websocket.Conn
+
+		blockSubscriber               subscribers.Block
+		statusSubscribers             subscribers.Status
+		cosignatureSubscribers        subscribers.Cosignature
+		partialAddedSubscribers       subscribers.PartialAdded
+		partialRemovedSubscribers     subscribers.PartialRemoved
+		confirmedAddedSubscribers     subscribers.ConfirmedAdded
+		unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
+		unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
+
+		messageRouter    Router
+		topicHandlers    TopicHandlersStorage
+		messagePublisher MessagePublisher
+
+		// connectionStatusCh chan bool
+		listenCh     chan bool            // channel for manage current listen status for connection
+		reconnectCh  chan *websocket.Conn // channel for connection with we will close, and open new connection
+		connectionCh chan *websocket.Conn // channel for new opened connection
+
+		connectFn func(cfg *sdk.Config) (*websocket.Conn, string, error)
+	}
+
+	Client interface {
+		io.Closer
+
+		Listen()
+	}
+
+	CatapultClient interface {
+		Client
+
+		AddBlockHandlers(handlers ...subscribers.BlockHandler) error
+		AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
+		AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error
+		AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error
+		AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error
+		AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
+		AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
+		AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
+	}
+)
+
 func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 	ctx, cancelFunc := context.WithCancel(ctx)
 
-	conn, uid, err := connect(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	topicHandlers := make(topicHandlers)
-	messagePublisher := newMessagePublisher(conn)
-	messageRouter := NewRouter(uid, messagePublisher, topicHandlers)
-
-	return &CatapultWebsocketClientImpl{
-		config:     cfg,
-		conn:       conn,
+	socketClient := &CatapultWebsocketClientImpl{
 		ctx:        ctx,
 		cancelFunc: cancelFunc,
-		connectFn:  connect,
-		UID:        uid,
+
+		config: cfg,
 
 		blockSubscriber:               subscribers.NewBlock(),
+		statusSubscribers:             subscribers.NewStatus(),
+		cosignatureSubscribers:        subscribers.NewCosignature(),
+		partialAddedSubscribers:       subscribers.NewPartialAdded(),
+		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
 		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
 		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
-		partialAddedSubscribers:       subscribers.NewPartialAdded(),
-		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
-		statusSubscribers:             subscribers.NewStatus(),
-		cosignatureSubscribers:        subscribers.NewCosignature(),
 
-		topicHandlers:    topicHandlers,
-		messageRouter:    messageRouter,
-		messagePublisher: messagePublisher,
-	}, nil
-}
+		topicHandlers: make(topicHandlers),
 
-type Client interface {
-	io.Closer
+		listenCh:     make(chan bool),
+		reconnectCh:  make(chan *websocket.Conn),
+		connectionCh: make(chan *websocket.Conn),
 
-	Listen()
-}
+		connectFn: connect,
+	}
 
-type CatapultClient interface {
-	Client
+	go socketClient.handleSignal()
 
-	AddBlockHandlers(handlers ...subscribers.BlockHandler) error
-	AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
-	AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error
-	AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error
-	AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error
-	AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
-	AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
-	AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
-}
+	if err := socketClient.initNewConnection(); err != nil {
+		return socketClient, err
+	}
 
-type CatapultWebsocketClientImpl struct {
-	config     *sdk.Config
-	conn       *websocket.Conn
-	ctx        context.Context
-	cancelFunc context.CancelFunc
-	UID        string
-
-	blockSubscriber               subscribers.Block
-	confirmedAddedSubscribers     subscribers.ConfirmedAdded
-	unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
-	unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
-	partialAddedSubscribers       subscribers.PartialAdded
-	partialRemovedSubscribers     subscribers.PartialRemoved
-	statusSubscribers             subscribers.Status
-	cosignatureSubscribers        subscribers.Cosignature
-
-	topicHandlers    TopicHandlersStorage
-	messageRouter    Router
-	messagePublisher MessagePublisher
-
-	connectFn        func(cfg *sdk.Config) (*websocket.Conn, string, error)
-	alreadyListening bool
+	return socketClient, nil
 }
 
 func (c *CatapultWebsocketClientImpl) Listen() {
-	if c.alreadyListening {
-		return
-	}
 
-	c.alreadyListening = true
+	c.listenCh <- true
 
-	messagesChan := make(chan []byte)
-
-	go func() {
-		defer c.cancelFunc()
-
-	ReadMessageLoop:
-		for {
-			_, resp, e := c.conn.ReadMessage()
-			if e != nil {
-				if _, ok := e.(*net.OpError); ok {
-					// Stop ReadMessage goroutine if user called Close function for websocket client
-					return
-				}
-
-				if _, ok := e.(*websocket.CloseError); ok {
-					// Start websocket reconnect processing if connection was closed
-					for range time.NewTicker(c.config.WsReconnectionTimeout).C {
-						if err := c.reconnect(); err != nil {
-							continue
-						}
-
-						continue ReadMessageLoop
-					}
-				}
-
-				return
-			}
-
-			messagesChan <- resp
-		}
-	}()
-
-	for {
-		select {
-		case <-c.ctx.Done():
-			if c.conn != nil {
-				if err := c.conn.Close(); err != nil {
-					panic(err)
-				}
-				c.conn = nil
-			}
-			return
-		case msg := <-messagesChan:
-			go c.messageRouter.RouteMessage(msg)
-		}
+	select {
+	case <-c.ctx.Done():
+		c.closeConnection(c.conn)
+		c.removeHandlers()
 	}
 }
 
+func (c *CatapultWebsocketClientImpl) Close() error {
+	c.cancelFunc()
+	return nil
+}
 func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.BlockHandler) error {
 	if len(handlers) == 0 {
 		return nil
@@ -378,20 +348,115 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) reconnect() error {
+func (c *CatapultWebsocketClientImpl) handleSignal() {
+	for {
+		select {
+		case conn := <-c.connectionCh:
+			c.conn = conn
+		case conn := <-c.reconnectCh:
+			c.closeConnection(conn)
+			go func() {
+				c.listenCh <- false
+			}()
 
+		case <-c.listenCh:
+
+			if c.conn == nil {
+				err := c.initNewConnection()
+				if err != nil {
+					fmt.Println("websocket: connection is failed. Try again after wait period")
+					select {
+					case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+						go func() {
+							c.listenCh <- true
+						}()
+						continue
+					}
+				}
+			}
+
+			err := c.updateHandlers()
+			if err != nil {
+				fmt.Println("websocket: update handles is failed. Try again after timeout period")
+				select {
+				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+					continue
+				}
+
+			}
+			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
+			c.startListener()
+		}
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) removeHandlers() {
+	c.blockSubscriber = nil
+	c.confirmedAddedSubscribers = nil
+	c.unconfirmedAddedSubscribers = nil
+	c.unconfirmedRemovedSubscribers = nil
+	c.partialAddedSubscribers = nil
+	c.partialRemovedSubscribers = nil
+	c.statusSubscribers = nil
+	c.cosignatureSubscribers = nil
+
+	c.topicHandlers = nil
+}
+
+func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
+	if conn != nil {
+		if err := conn.Close(); err != nil {
+			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
+		}
+	}
+	c.conn = nil
+}
+
+func (c *CatapultWebsocketClientImpl) startListener() {
+
+	for {
+		_, resp, e := c.conn.ReadMessage()
+		if e != nil {
+			if _, ok := e.(*net.OpError); ok {
+				// Stop ReadMessage if user called Close function for websocket client
+				return
+			}
+
+			if _, ok := e.(*websocket.CloseError); ok {
+				go func() {
+					c.reconnectCh <- c.conn
+				}()
+				return
+			}
+		}
+
+		go func() {
+			c.messageRouter.RouteMessage(resp)
+		}()
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) initNewConnection() error {
 	conn, uid, err := c.connectFn(c.config)
 	if err != nil {
 		return err
 	}
 
-	c.conn = conn
 	c.UID = uid
+	c.conn = conn
 
-	c.messagePublisher.SetConn(conn)
-	c.messageRouter.SetUid(uid)
+	messagePublisher := newMessagePublisher(c.conn)
+	messageRouter := NewRouter(c.UID, messagePublisher, c.topicHandlers)
 
-	if c.blockSubscriber.HasHandlers() {
+	c.messageRouter = messageRouter
+	c.messagePublisher = messagePublisher
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) updateHandlers() error {
+
+	if c.topicHandlers.HasHandler(pathBlock) {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s", pathBlock))); err != nil {
 			return err
 		}
@@ -438,33 +503,6 @@ func (c *CatapultWebsocketClientImpl) reconnect() error {
 			return err
 		}
 	}
-
-	return nil
-}
-
-func (c *CatapultWebsocketClientImpl) Close() error {
-	if c.conn != nil {
-		if err := c.conn.Close(); err != nil {
-			return err
-		}
-
-		c.conn = nil
-	}
-
-	c.cancelFunc()
-
-	c.alreadyListening = false
-
-	c.blockSubscriber = nil
-	c.confirmedAddedSubscribers = nil
-	c.unconfirmedAddedSubscribers = nil
-	c.unconfirmedRemovedSubscribers = nil
-	c.partialAddedSubscribers = nil
-	c.partialRemovedSubscribers = nil
-	c.statusSubscribers = nil
-	c.cosignatureSubscribers = nil
-
-	c.topicHandlers = nil
 
 	return nil
 }
