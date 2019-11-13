@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
+	mocks "github.com/proximax-storage/go-xpx-chain-sdk/mocks/websocket/subscribers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-		mocks "github.com/proximax-storage/go-xpx-chain-sdk/mocks/subscribers"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
