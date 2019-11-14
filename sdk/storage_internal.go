@@ -224,6 +224,7 @@ type driveDTO struct {
 	Drive struct {
 		DriveKey         string             `json:"multisig"`
 		State            DriveState         `json:"state"`
+		Start            uint64DTO          `json:"start"`
 		Owner            string             `json:"owner"`
 		RootHash         hashDto            `json:"rootHash"`
 		Duration         uint64DTO          `json:"duration"`
@@ -259,6 +260,7 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 
 	drive.DriveKey = driveKey
 	drive.State = ref.Drive.State
+	drive.Start = ref.Drive.Start.toStruct()
 	drive.Owner = owner
 	drive.RootHash = rootHash
 	drive.Duration = ref.Drive.Duration.toStruct()

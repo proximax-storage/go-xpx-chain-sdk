@@ -56,6 +56,7 @@ type FileInfo struct {
 
 type Drive struct {
 	DriveKey         *PublicAccount
+	Start            Height
 	State            DriveState
 	Owner            *PublicAccount
 	RootHash         *Hash
