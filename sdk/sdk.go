@@ -232,9 +232,9 @@ func (c *Client) doNewRequest(ctx context.Context, method string, path string, b
 				return resp, nil
 			}
 
-			return nil, fmt.Errorf("sdk.doNewRequest do: %v", err)
+			return nil, err
 		default:
-			return nil, fmt.Errorf("sdk.doNewRequest do: %v", err)
+			return nil, err
 		}
 	}
 
@@ -265,7 +265,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		b := &bytes.Buffer{}
 		b.ReadFrom(resp.Body)
 		httpError := HttpError{
-			errors.New(b.String()),
+			fmt.Errorf("sdk do request: %s", b.String()),
 			resp.StatusCode,
 		}
 		return nil, &httpError
