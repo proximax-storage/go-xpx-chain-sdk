@@ -33,6 +33,7 @@ const (
 	pathPartialAdded       Path = "partialAdded"
 	pathPartialRemoved     Path = "partialRemoved"
 	pathCosignature        Path = "cosignature"
+	driveState             Path = "driveState"
 )
 
 var (
@@ -67,6 +68,7 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
 		statusSubscribers:             subscribers.NewStatus(),
 		cosignatureSubscribers:        subscribers.NewCosignature(),
+		driveStateSubscribers:         subscribers.NewDriveState(),
 
 		topicHandlers:    topicHandlers,
 		messageRouter:    messageRouter,
@@ -91,6 +93,7 @@ type CatapultClient interface {
 	AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
 	AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
 	AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
+	AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error
 }
 
 type CatapultWebsocketClientImpl struct {
@@ -108,6 +111,7 @@ type CatapultWebsocketClientImpl struct {
 	partialRemovedSubscribers     subscribers.PartialRemoved
 	statusSubscribers             subscribers.Status
 	cosignatureSubscribers        subscribers.Cosignature
+	driveStateSubscribers         subscribers.DriveState
 
 	topicHandlers    TopicHandlersStorage
 	messageRouter    Router
@@ -372,6 +376,32 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	}
 
 	if err := c.cosignatureSubscribers.AddHandlers(address, handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
+	}
+
+	return nil
+}
+
+
+func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	if !c.topicHandlers.HasHandler(driveState) {
+		c.topicHandlers.SetTopicHandler(driveState, &TopicHandler{
+			Handler: hdlrs.NewDriveStateHandler(sdk.DriveStateMapperFn(sdk.MapDriveState), c.driveStateSubscribers),
+			Topic:   topicFormatFn(formatPlainTopic),
+		})
+	}
+
+	if !c.driveStateSubscribers.HasHandlers(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", driveState, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
+		}
+	}
+
+	if err := c.driveStateSubscribers.AddHandlers(address, handlers...); err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 

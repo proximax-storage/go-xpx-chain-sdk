@@ -94,6 +94,16 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount, driveAccount)
 	assert.Nil(t, result.error)
 
+	if err := wsc.AddDriveStateHandlers(driveAccount.Address, func(info *sdk.DriveStateInfo) bool {
+		if info.DriveKey != driveAccount.PublicAccount.PublicKey {
+			return false
+		}
+		fmt.Printf("Got drive state: %v \n", info)
+		return true
+	}); err != nil {
+		panic(err)
+	}
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewJoinToDriveTransaction(
 			sdk.NewDeadline(time.Hour),

@@ -60,7 +60,7 @@ type AssetId interface {
 	fmt.Stringer
 	Type() AssetIdType
 	Id() uint64
-	Equals(AssetId) bool
+	Equals(AssetId) (bool, error)
 }
 
 type TransactionOrder string
