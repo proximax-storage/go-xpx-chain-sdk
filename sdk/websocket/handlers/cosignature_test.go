@@ -40,9 +40,9 @@ func Test_cosignatureHandler_Handle(t *testing.T) {
 	blockHandler1 := subscribers.CosignatureHandler(handlerFunc1)
 	blockHandler2 := subscribers.CosignatureHandler(handlerFunc2)
 
-	blockHandlers := map[*subscribers.CosignatureHandler]struct{}{
-		&blockHandler1: {},
-		&blockHandler2: {},
+	blockHandlers := []*subscribers.CosignatureHandler{
+		&blockHandler1,
+		&blockHandler2,
 	}
 
 	blockHandlersMock := new(mocksSubscribers.Cosignature)

@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -151,17 +152,17 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain	*BlockchainService
-	Exchange	*ExchangeService
-	Mosaic		*MosaicService
-	Namespace	*NamespaceService
-	Network		*NetworkService
-	Transaction	*TransactionService
-	Resolve		*ResolverService
-	Account		*AccountService
-	Storage		*StorageService
-	Contract	*ContractService
-	Metadata	*MetadataService
+	Blockchain  *BlockchainService
+	Exchange    *ExchangeService
+	Mosaic      *MosaicService
+	Namespace   *NamespaceService
+	Network     *NetworkService
+	Transaction *TransactionService
+	Resolve     *ResolverService
+	Account     *AccountService
+	Storage     *StorageService
+	Contract    *ContractService
+	Metadata    *MetadataService
 }
 
 type service struct {
@@ -231,9 +232,9 @@ func (c *Client) doNewRequest(ctx context.Context, method string, path string, b
 				return resp, nil
 			}
 
-			return nil, err
+			return nil, fmt.Errorf("sdk.doNewRequest do: %v", err)
 		default:
-			return nil, err
+			return nil, fmt.Errorf("sdk.doNewRequest do: %v", err)
 		}
 	}
 
@@ -289,7 +290,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*htt
 func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
 	u, err := c.config.UsedBaseUrl.Parse(urlStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.newRequest config.UsedBaseUrl.Parse: %v", err)
 	}
 
 	var buf io.ReadWriter
@@ -299,13 +300,13 @@ func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Requ
 		enc.SetEscapeHTML(false)
 		err := enc.Encode(body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("sdk.newRequest io.ReadWriter.Encode: %v", err)
 		}
 	}
 
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.newRequest http.NewRequest: %v", err)
 	}
 
 	if body != nil {

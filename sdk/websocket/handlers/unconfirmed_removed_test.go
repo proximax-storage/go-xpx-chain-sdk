@@ -40,9 +40,9 @@ func Test_unconfirmedRemovedHandler_Handle(t *testing.T) {
 	handler1 := subscribers.UnconfirmedRemovedHandler(handlerFunc1)
 	handler2 := subscribers.UnconfirmedRemovedHandler(handlerFunc2)
 
-	handlers := map[*subscribers.UnconfirmedRemovedHandler]struct{}{
-		&handler1: {},
-		&handler2: {},
+	handlers := []*subscribers.UnconfirmedRemovedHandler{
+		&handler1,
+		&handler2,
 	}
 
 	HandlersMock := new(mocksSubscribers.UnconfirmedRemoved)

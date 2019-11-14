@@ -53,7 +53,9 @@ func (s *StorageService) GetAccountDrives(ctx context.Context, driveKey *PublicA
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
-		return nil, err
+		// Skip ErrResourceNotFound
+		// not return err
+		return nil, nil
 	}
 
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {

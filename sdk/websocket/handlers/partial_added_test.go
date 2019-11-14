@@ -40,9 +40,9 @@ func Test_partialAddedHandler_Handle(t *testing.T) {
 	blockHandler1 := subscribers.PartialAddedHandler(handlerFunc1)
 	blockHandler2 := subscribers.PartialAddedHandler(handlerFunc2)
 
-	blockHandlers := map[*subscribers.PartialAddedHandler]struct{}{
-		&blockHandler1: {},
-		&blockHandler2: {},
+	blockHandlers := []*subscribers.PartialAddedHandler{
+		&blockHandler1,
+		&blockHandler2,
 	}
 
 	HandlersMock := new(mocksSubscribers.PartialAdded)

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/proximax-storage/go-xpx-utils/str"
-	"github.com/proximax-storage/xpx-crypto-go"
+	"github.com/proximax-storage/go-xpx-crypto"
 )
 
 const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -250,7 +250,7 @@ func NewAddressFromRaw(address string) (*Address, error) {
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error) {
 	ad, err := generateEncodedAddress(pKey, networkType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk.NewAddressFromPublicKey.generateEncodedAddress: %v", err)
 	}
 
 	return NewAddress(ad, networkType), nil
