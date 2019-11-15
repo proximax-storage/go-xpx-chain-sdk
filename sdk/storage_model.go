@@ -151,9 +151,31 @@ type UploadInfo struct {
 	UploadedSize    Amount
 }
 
+func (info *UploadInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Participant": %s,
+			"UploadedSize": %s,
+		`,
+		info.Participant,
+		info.UploadedSize,
+	)
+}
+
 type DeletedFile struct {
 	File
 	UploadInfos []*UploadInfo
+}
+
+func (file *DeletedFile) String() string {
+	return fmt.Sprintf(
+		`
+			"FileHash": %s,
+			"UploadInfos": %s,
+		`,
+		file.FileHash,
+		file.UploadInfos,
+	)
 }
 
 // Delete Reward Transaction
