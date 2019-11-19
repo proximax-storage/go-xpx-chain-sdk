@@ -12,7 +12,23 @@ import (
 )
 
 func TestAddExchangeOfferTransaction(t *testing.T) {
+	config, err := client.Network.GetNetworkConfig(ctx)
+	assert.Nil(t, err)
+
+	config.NetworkConfig.Sections["plugin:catapult.plugins.exchange"].Fields["longOfferKey"].Value = defaultAccount.PublicAccount.PublicKey
+
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewNetworkConfigTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.Duration(1),
+			config.NetworkConfig,
+			config.SupportedEntityVersions)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+
+	time.Sleep(time.Minute)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewAddExchangeOfferTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]*sdk.AddOffer{
@@ -22,7 +38,7 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 						sdk.Storage(10000000),
 						sdk.Amount(10000000),
 					},
-					sdk.Duration(100),
+					sdk.Duration(10000000),
 				},
 			},
 		)
