@@ -461,9 +461,9 @@ func (c *CatapultWebsocketClientImpl) startListener() {
 			}
 		}
 
-		go func() {
-			c.messageRouter.RouteMessage(resp)
-		}()
+		go func(response []byte) {
+			c.messageRouter.RouteMessage(response)
+		}(resp)
 	}
 }
 
