@@ -41,7 +41,8 @@ func NewCosignature() Cosignature {
 }
 
 func (e *cosignatureImpl) addSubscription(s *cosignatureSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*CosignatureHandler, 0)
 	}
@@ -51,7 +52,8 @@ func (e *cosignatureImpl) addSubscription(s *cosignatureSubscription) {
 }
 
 func (e *cosignatureImpl) removeSubscription(s *cosignatureSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -116,10 +118,14 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 }
 
 func (e *cosignatureImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *cosignatureImpl) GetHandlers(address *sdk.Address) []*CosignatureHandler {
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -128,6 +134,8 @@ func (e *cosignatureImpl) GetHandlers(address *sdk.Address) []*CosignatureHandle
 }
 
 func (e *cosignatureImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)

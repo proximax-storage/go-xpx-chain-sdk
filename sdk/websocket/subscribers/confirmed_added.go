@@ -2,6 +2,7 @@ package subscribers
 
 import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"sync"
 )
 
 type (
@@ -22,6 +23,7 @@ type (
 	}
 
 	confirmedAddedImpl struct {
+		sync.Mutex
 		newSubscriberCh    chan *confirmedAddedSubscription
 		removeSubscriberCh chan *confirmedAddedSubscription
 		subscribers        map[string][]*ConfirmedAddedHandler
@@ -39,7 +41,8 @@ func NewConfirmedAdded() ConfirmedAdded {
 }
 
 func (e *confirmedAddedImpl) addSubscription(s *confirmedAddedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*ConfirmedAddedHandler, 0)
 	}
@@ -49,7 +52,8 @@ func (e *confirmedAddedImpl) addSubscription(s *confirmedAddedSubscription) {
 }
 
 func (e *confirmedAddedImpl) removeSubscription(s *confirmedAddedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -113,10 +117,14 @@ func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*C
 }
 
 func (e *confirmedAddedImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) []*ConfirmedAddedHandler {
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -125,6 +133,8 @@ func (e *confirmedAddedImpl) GetHandlers(address *sdk.Address) []*ConfirmedAdded
 }
 
 func (e *confirmedAddedImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)

@@ -41,7 +41,8 @@ func NewDriveState() DriveState {
 }
 
 func (e *driveStateImpl) addSubscription(s *driveStateSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*DriveStateHandler, 0)
 	}
@@ -51,7 +52,8 @@ func (e *driveStateImpl) addSubscription(s *driveStateSubscription) {
 }
 
 func (e *driveStateImpl) removeSubscription(s *driveStateSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -116,10 +118,14 @@ func (e *driveStateImpl) RemoveHandlers(address *sdk.Address, handlers ...*Drive
 }
 
 func (e *driveStateImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *driveStateImpl) GetHandlers(address *sdk.Address) []*DriveStateHandler {
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -128,6 +134,8 @@ func (e *driveStateImpl) GetHandlers(address *sdk.Address) []*DriveStateHandler 
 }
 
 func (e *driveStateImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)
