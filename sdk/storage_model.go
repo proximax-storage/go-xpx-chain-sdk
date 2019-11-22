@@ -72,6 +72,21 @@ type Drive struct {
 	Replicators      map[PublicAccount]*ReplicatorInfo
 }
 
+func (drive *Drive) String () string {
+	return fmt.Sprintf(`
+			RootHash: %s
+			Address: %+v
+			PublicKey: "%s"
+			Owner:
+				Address: %+v
+				PublicKey: "%s"`,
+		drive.RootHash,
+		drive.DriveKey.Address,
+		drive.DriveKey.PublicKey,
+		drive.Owner.Address,
+		drive.Owner.PublicKey)
+}
+
 // Prepare Drive Transaction
 type PrepareDriveTransaction struct {
 	AbstractTransaction
