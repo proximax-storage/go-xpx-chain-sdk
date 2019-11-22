@@ -40,6 +40,14 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 					},
 					sdk.Duration(10000000),
 				},
+				{
+					sdk.Offer{
+						sdk.SellOffer,
+						sdk.Streaming(10000000),
+						sdk.Amount(10000000),
+					},
+					sdk.Duration(10000000),
+				},
 			},
 		)
 	}, defaultAccount)
