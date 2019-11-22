@@ -4,7 +4,10 @@
 
 package sdk
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/str"
+)
 
 type DriveState uint8
 
@@ -73,18 +76,24 @@ type Drive struct {
 }
 
 func (drive *Drive) String () string {
-	return fmt.Sprintf(`
-			RootHash: %s
-			Address: %+v
-			PublicKey: "%s"
-			Owner:
-				Address: %+v
-				PublicKey: "%s"`,
-		drive.RootHash,
-		drive.DriveKey.Address,
-		drive.DriveKey.PublicKey,
-		drive.Owner.Address,
-		drive.Owner.PublicKey)
+	return str.StructToString(
+		"Drive",
+		str.NewField("DriveKey", str.StringPattern, drive.DriveKey),
+		str.NewField("Start", str.StringPattern, drive.Start),
+		str.NewField("State", str.StringPattern, drive.State),
+		str.NewField("Owner", str.StringPattern, drive.Owner),
+		str.NewField("RootHash", str.StringPattern, drive.RootHash),
+		str.NewField("Duration", str.StringPattern, drive.Duration),
+		str.NewField("BillingPeriod", str.StringPattern, drive.BillingPeriod),
+		str.NewField("BillingPrice", str.StringPattern, drive.BillingPrice),
+		str.NewField("DriveSize", str.StringPattern, drive.DriveSize),
+		str.NewField("Replicas", str.StringPattern, drive.Replicas),
+		str.NewField("MinReplicators", str.StringPattern, drive.MinReplicators),
+		str.NewField("PercentApprovers", str.StringPattern, drive.PercentApprovers),
+		str.NewField("BillingHistory", str.StringPattern, drive.BillingHistory),
+		str.NewField("Files", str.StringPattern, drive.Files),
+		str.NewField("Replicators", str.StringPattern, drive.Replicators),
+	)
 }
 
 // Prepare Drive Transaction
