@@ -113,7 +113,7 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
 		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
 
-		topicHandlers: topicHandlers{h: make(topicHandlersMap)},
+		topicHandlers: &topicHandlers{h: make(topicHandlersMap)},
 
 		listenCh:     make(chan bool),
 		reconnectCh:  make(chan *websocket.Conn),

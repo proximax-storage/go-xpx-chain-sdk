@@ -92,14 +92,14 @@ type topicHandlers struct {
 	h topicHandlersMap
 }
 
-func (h topicHandlers) HasHandler(path Path) bool {
+func (h *topicHandlers) HasHandler(path Path) bool {
 	h.Lock()
 	defer h.Unlock()
 	_, ok := h.h[path]
 	return ok
 }
 
-func (h topicHandlers) GetHandler(path Path) *TopicHandler {
+func (h *topicHandlers) GetHandler(path Path) *TopicHandler {
 	h.Lock()
 	defer h.Unlock()
 	val, ok := h.h[path]
@@ -110,7 +110,7 @@ func (h topicHandlers) GetHandler(path Path) *TopicHandler {
 	return val
 }
 
-func (h topicHandlers) SetTopicHandler(path Path, handler *TopicHandler) {
+func (h *topicHandlers) SetTopicHandler(path Path, handler *TopicHandler) {
 	h.Lock()
 	defer h.Unlock()
 	h.h[path] = handler

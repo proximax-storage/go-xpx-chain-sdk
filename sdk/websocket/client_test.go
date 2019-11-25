@@ -42,7 +42,7 @@ func TestCatapultWebsocketClientImpl_AddBlockHandlers(t *testing.T) {
 		handler2,
 	}
 
-	emptyTopicHandler := topicHandlers{h: make(topicHandlersMap)}
+	emptyTopicHandler := &topicHandlers{h: make(topicHandlersMap)}
 
 	publishSubscribeMessageError := errors.New("PublishSubscribeMessage error")
 	messagePublisherErrorObj := new(MockMessagePublisher)
