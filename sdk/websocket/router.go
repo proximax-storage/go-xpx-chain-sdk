@@ -3,8 +3,8 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/pkg/errors"
+	"sync"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
@@ -85,15 +85,24 @@ type TopicHandlersStorage interface {
 	SetTopicHandler(path Path, handler *TopicHandler)
 }
 
-type topicHandlers map[Path]*TopicHandler
+type topicHandlersMap map[Path]*TopicHandler
+
+type topicHandlers struct {
+	sync.Mutex
+	h topicHandlersMap
+}
 
 func (h topicHandlers) HasHandler(path Path) bool {
-	_, ok := h[path]
+	h.Lock()
+	defer h.Unlock()
+	_, ok := h.h[path]
 	return ok
 }
 
 func (h topicHandlers) GetHandler(path Path) *TopicHandler {
-	val, ok := h[path]
+	h.Lock()
+	defer h.Unlock()
+	val, ok := h.h[path]
 	if !ok {
 		return nil
 	}
@@ -102,7 +111,9 @@ func (h topicHandlers) GetHandler(path Path) *TopicHandler {
 }
 
 func (h topicHandlers) SetTopicHandler(path Path, handler *TopicHandler) {
-	h[path] = handler
+	h.Lock()
+	defer h.Unlock()
+	h.h[path] = handler
 }
 
 type Topic interface {

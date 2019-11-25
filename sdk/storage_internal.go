@@ -105,10 +105,10 @@ type replicatorDTO struct {
 
 type replicatorsDTOs []*replicatorDTO
 
-func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount]*ReplicatorInfo, error) {
+func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*ReplicatorInfo, error) {
 	var (
 		dtos        = *ref
-		replicators = make(map[PublicAccount]*ReplicatorInfo)
+		replicators = make(map[string]*ReplicatorInfo)
 	)
 
 	for i, dto := range dtos {
@@ -123,6 +123,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 		}
 
 		info := ReplicatorInfo{
+			Account:             replicator,
 			Start:               dto.Start.toStruct(),
 			End:                 dto.End.toStruct(),
 			Index:               i,
@@ -130,7 +131,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 			FilesWithoutDeposit: filesWithoutDeposit,
 		}
 
-		replicators[*replicator] = &info
+		replicators[replicator.PublicKey] = &info
 	}
 
 	return replicators, nil

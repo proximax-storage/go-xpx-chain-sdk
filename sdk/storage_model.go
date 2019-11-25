@@ -31,6 +31,7 @@ type BillingDescription struct {
 }
 
 type ReplicatorInfo struct {
+	Account             *PublicAccount
 	Start               Height
 	End                 Height
 	Deposit             Amount
@@ -72,7 +73,7 @@ type Drive struct {
 	PercentApprovers uint8
 	BillingHistory   []*BillingDescription
 	Files            map[Hash]*FileInfo
-	Replicators      map[PublicAccount]*ReplicatorInfo
+	Replicators      map[string]*ReplicatorInfo
 }
 
 func (drive *Drive) String () string {
