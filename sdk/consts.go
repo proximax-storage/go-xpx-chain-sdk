@@ -68,6 +68,15 @@ const (
 	contractsByAccountRoute = "/account/%s/contracts"
 )
 
+// routes for LockService
+const (
+	hashLocksRoute              = "/account/%s/lock/hash"
+	secretLocksByAccountRoute   = "/account/%s/lock/secret"
+	hashLockRoute               = "/lock/hash/%s"
+	secretLockRoute             = "/lock/compositeHash/%s"
+	secretLocksBySecretRoute    = "/lock/secret/%s"
+)
+
 // routes for MetadataService
 const (
 	metadatasInfoRoute       = "/metadata"

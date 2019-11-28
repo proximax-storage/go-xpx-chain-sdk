@@ -7,11 +7,15 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 )
 
-type StorageService service
+type StorageService struct {
+	*service
+	LockService *LockService
+}
 
 func (s *StorageService) GetDrive(ctx context.Context, driveKey *PublicAccount) (*Drive, error) {
 	if driveKey == nil {
@@ -63,4 +67,43 @@ func (s *StorageService) GetAccountDrives(ctx context.Context, driveKey *PublicA
 	}
 
 	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *PublicAccount) (*VerificationStatus, error) {
+	if driveKey == nil {
+		return nil, ErrNilAddress
+	}
+
+	compositeHash, err := CalculateCompositeHash(&Hash{}, driveKey.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	lockInfo, err := s.LockService.GetSecretLockInfo(ctx, compositeHash)
+	if err != nil {
+		switch e := err.(type) {
+		case *HttpError:
+			if e.StatusCode == 404 {
+				return &VerificationStatus{
+					Active:     false,
+					Available:  true,
+				}, nil
+			} else {
+				return nil, err
+			}
+		default:
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	if lockInfo.HashAlgorithm != Internal_Hash_Type {
+		return nil, errors.New("wrong type of drive secret lock")
+	}
+
+	return  &VerificationStatus{
+		Active:     lockInfo.Status == Unused,
+		Available: false,
+	}, nil
 }

@@ -185,3 +185,38 @@ type DeleteRewardTransaction struct {
 	AbstractTransaction
 	DeletedFiles []*DeletedFile
 }
+
+// Start Drive Verification Transaction
+
+type StartDriveVerificationTransaction struct {
+	AbstractTransaction
+	DriveKey    *PublicAccount
+}
+
+type FailureVerification struct {
+	Replicator  *PublicAccount
+	BlochHash   *Hash
+}
+
+func (fail *FailureVerification) String() string {
+	return fmt.Sprintf(
+		`
+			"Replicator": %s,
+			"BlochHash": %s,
+		`,
+		fail.Replicator,
+		fail.BlochHash,
+	)
+}
+
+// End Drive Verification Transaction
+
+type EndDriveVerificationTransaction struct {
+	AbstractTransaction
+	Failures []*FailureVerification
+}
+
+type VerificationStatus struct {
+	Active      bool
+	Available   bool
+}

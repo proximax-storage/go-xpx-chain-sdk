@@ -145,6 +145,14 @@ func (ad *Address) Pretty() string {
 	return res
 }
 
+func (ad *Address) Encode() ([]byte, error) {
+	return hex.DecodeString(ad.Address)
+}
+
+func (ad *Address) Decode() ([]byte, error) {
+	return base32.StdEncoding.DecodeString(ad.Address)
+}
+
 type MultisigAccountInfo struct {
 	Account          PublicAccount
 	MinApproval      int32

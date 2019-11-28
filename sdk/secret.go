@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -26,6 +25,8 @@ const (
 	HASH_160
 	/// Input is hashed twice with SHA-256.
 	SHA_256
+	/// Internal type inside of blockchain
+	Internal_Hash_Type
 )
 
 type Secret struct {
@@ -197,7 +198,7 @@ func CalculateSecretLockInfoHash(secret *Secret, recipient *Address) (*Hash, err
 		return nil, ErrNilAddress
 	}
 
-	addr, err := base32.StdEncoding.DecodeString(recipient.Address)
+	addr, err := recipient.Decode()
 	if err != nil {
 		return nil, err
 	}

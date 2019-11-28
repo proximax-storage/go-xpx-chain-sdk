@@ -107,6 +107,42 @@ func endDriveTransactionSchema() *schema {
 	}
 }
 
+func startDriveVerificationTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+		},
+	}
+}
+
+func endDriveVerificationTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("failureCount", ByteSize),
+			newTableArrayAttribute("failures", schema{
+				[]schemaAttribute{
+					newArrayAttribute("replicator", ByteSize),
+					newArrayAttribute("blockHash", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
 func deleteRewardTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{

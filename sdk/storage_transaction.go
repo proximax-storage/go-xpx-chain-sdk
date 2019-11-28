@@ -999,3 +999,244 @@ func (dto *deleteRewardTransactionDTO) toStruct() (Transaction, error) {
 		deletedFiles,
 	}, nil
 }
+
+func NewStartDriveVerificationTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	networkType NetworkType,
+) (*StartDriveVerificationTransaction, error) {
+
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	tx := StartDriveVerificationTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     StartDriveVerificationVersion,
+			Deadline:    deadline,
+			Type:        StartDriveVerification,
+			NetworkType: networkType,
+		},
+		DriveKey: driveKey,
+	}
+
+	return &tx, nil
+}
+
+func (tx *StartDriveVerificationTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *StartDriveVerificationTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey,
+	)
+}
+
+func (tx *StartDriveVerificationTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	transactions.StartDriveVerificationTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.StartDriveVerificationTransactionBufferAddDriveKey(builder, hV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return startDriveVerificationTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *StartDriveVerificationTransaction) Size() int {
+	return StartDriveVerificationHeaderSize
+}
+
+type startDriveVerificationTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey string `json:"driveKey"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *startDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StartDriveVerificationTransaction{
+		*atx,
+		driveKey,
+	}, nil
+}
+
+func NewEndDriveVerificationTransaction(
+	deadline *Deadline,
+	failures []*FailureVerification,
+	networkType NetworkType,
+) (*EndDriveVerificationTransaction, error) {
+
+	tx := EndDriveVerificationTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     EndDriveVerificationVersion,
+			Deadline:    deadline,
+			Type:        EndDriveVerification,
+			NetworkType: networkType,
+		},
+		Failures: failures,
+	}
+
+	return &tx, nil
+}
+
+func (tx *EndDriveVerificationTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *EndDriveVerificationTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"Failures": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.Failures,
+	)
+}
+
+func failureVerificationsToArrayToBuffer(builder *flatbuffers.Builder, failures []*FailureVerification) (flatbuffers.UOffsetT, error) {
+	failuresb := make([]flatbuffers.UOffsetT, len(failures))
+	for i, f := range failures {
+		rb, err := hex.DecodeString(f.Replicator.PublicKey)
+		if err != nil {
+			return 0, err
+		}
+
+		rV := transactions.TransactionBufferCreateByteVector(builder, rb)
+		hV := hashToBuffer(builder, f.BlochHash)
+
+		transactions.VerificationFailureBufferStart(builder)
+		transactions.VerificationFailureBufferAddReplicator(builder, rV)
+		transactions.VerificationFailureBufferAddBlockHash(builder, hV)
+		failuresb[i] = transactions.VerificationFailureBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, failuresb), nil
+}
+
+func (tx *EndDriveVerificationTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	failuresV, err := failureVerificationsToArrayToBuffer(builder, tx.Failures)
+	if err != nil {
+		return nil, err
+	}
+
+	failureCountB := make([]byte, 2)
+	binary.LittleEndian.PutUint16(failureCountB, uint16(len(tx.Failures)))
+	failureCountV := transactions.TransactionBufferCreateByteVector(builder, failureCountB)
+
+	transactions.EndDriveVerificationTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.EndDriveVerificationTransactionBufferAddFailureCount(builder, failureCountV)
+	transactions.EndDriveVerificationTransactionBufferAddFailures(builder, failuresV)
+	t := transactions.EndDriveVerificationTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return endDriveVerificationTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *EndDriveVerificationTransaction) Size() int {
+	return TransactionHeaderSize + 2 + len(tx.Failures) * (KeySize + Hash256)
+}
+
+type failureVerificationDTO struct {
+	Replicator     string       `json:"replicator"`
+	BlockHash      hashDto      `json:"blockHash"`
+}
+
+func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVerification, error) {
+	acc, err := NewAccountFromPublicKey(dto.Replicator, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := dto.BlockHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &FailureVerification{
+		acc,
+		hash,
+	}, nil
+}
+
+type endDriveVerificationTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Failures    []*failureVerificationDTO   `json:"verificationFailures"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *endDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	failures := make([]*FailureVerification, len(dto.Tx.Failures))
+
+	for i, f := range dto.Tx.Failures {
+		failure, err := f.toStruct(atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+
+		failures[i] = failure
+	}
+
+	return &EndDriveVerificationTransaction{
+		*atx,
+		failures,
+	}, nil
+}

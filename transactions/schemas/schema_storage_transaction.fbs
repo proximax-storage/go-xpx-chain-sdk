@@ -107,6 +107,35 @@ table DeleteRewardTransactionBuffer {
     deletedFiles: [DeletedFileBuffer];
 }
 
+table StartDriveVerificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey: [ubyte];
+}
+
+table VerificationFailureBuffer {
+    replicator: [ubyte];
+    blockHash: [ubyte];
+}
+
+table EndDriveVerificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    /// 2 bytes
+    failureCount: [ubyte];
+    failures: [VerificationFailureBuffer];
+}
+
 root_type AddActionBuffer;
 
 root_type RemoveActionBuffer;
@@ -128,3 +157,9 @@ root_type FilesDepositTransactionBuffer;
 root_type JoinToDriveTransactionBuffer;
 
 root_type PrepareDriveTransactionBuffer;
+
+root_type StartDriveVerificationTransactionBuffer;
+
+root_type VerificationFailureBuffer;
+
+root_type EndDriveVerificationTransactionBuffer;
