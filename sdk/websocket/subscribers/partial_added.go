@@ -2,6 +2,7 @@ package subscribers
 
 import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"sync"
 )
 
 type (
@@ -15,6 +16,7 @@ type (
 	PartialAddedHandler func(*sdk.AggregateTransaction) bool
 
 	partialAddedImpl struct {
+		sync.Mutex
 		newSubscriberCh    chan *partialAddedSubscription
 		removeSubscriberCh chan *partialAddedSubscription
 		subscribers        map[string][]*PartialAddedHandler
@@ -49,7 +51,8 @@ func (e *partialAddedImpl) handleNewSubscription() {
 }
 
 func (e *partialAddedImpl) addSubscription(s *partialAddedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*PartialAddedHandler, 0)
 	}
@@ -59,7 +62,8 @@ func (e *partialAddedImpl) addSubscription(s *partialAddedSubscription) {
 }
 
 func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -111,11 +115,14 @@ func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*Par
 }
 
 func (e *partialAddedImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *partialAddedImpl) GetHandlers(address *sdk.Address) []*PartialAddedHandler {
-
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -124,6 +131,8 @@ func (e *partialAddedImpl) GetHandlers(address *sdk.Address) []*PartialAddedHand
 }
 
 func (e *partialAddedImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)

@@ -31,6 +31,7 @@ const (
 	pathPartialAdded       Path = "partialAdded"
 	pathPartialRemoved     Path = "partialRemoved"
 	pathCosignature        Path = "cosignature"
+	driveState             Path = "driveState"
 )
 
 var (
@@ -53,6 +54,7 @@ type (
 		blockSubscriber               subscribers.Block
 		statusSubscribers             subscribers.Status
 		cosignatureSubscribers        subscribers.Cosignature
+		driveStateSubscribers         subscribers.DriveState
 		partialAddedSubscribers       subscribers.PartialAdded
 		partialRemovedSubscribers     subscribers.PartialRemoved
 		confirmedAddedSubscribers     subscribers.ConfirmedAdded
@@ -88,6 +90,7 @@ type (
 		AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
 		AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
 		AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
+		AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error
 	}
 )
 
@@ -103,13 +106,14 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 		blockSubscriber:               subscribers.NewBlock(),
 		statusSubscribers:             subscribers.NewStatus(),
 		cosignatureSubscribers:        subscribers.NewCosignature(),
+		driveStateSubscribers:         subscribers.NewDriveState(),
 		partialAddedSubscribers:       subscribers.NewPartialAdded(),
 		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
 		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
 		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
 		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
 
-		topicHandlers: make(topicHandlers),
+		topicHandlers: &topicHandlers{h: make(topicHandlersMap)},
 
 		listenCh:     make(chan bool),
 		reconnectCh:  make(chan *websocket.Conn),
@@ -348,6 +352,32 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
+
+func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	if !c.topicHandlers.HasHandler(driveState) {
+		c.topicHandlers.SetTopicHandler(driveState, &TopicHandler{
+			Handler: hdlrs.NewDriveStateHandler(sdk.DriveStateMapperFn(sdk.MapDriveState), c.driveStateSubscribers),
+			Topic:   topicFormatFn(formatPlainTopic),
+		})
+	}
+
+	if !c.driveStateSubscribers.HasHandlers(address) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", driveState, address.Address))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
+		}
+	}
+
+	if err := c.driveStateSubscribers.AddHandlers(address, handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
+	}
+
+	return nil
+}
+
 func (c *CatapultWebsocketClientImpl) handleSignal() {
 	for {
 		select {
@@ -399,6 +429,7 @@ func (c *CatapultWebsocketClientImpl) removeHandlers() {
 	c.partialRemovedSubscribers = nil
 	c.statusSubscribers = nil
 	c.cosignatureSubscribers = nil
+	c.driveStateSubscribers = nil
 
 	c.topicHandlers = nil
 }
@@ -430,9 +461,9 @@ func (c *CatapultWebsocketClientImpl) startListener() {
 			}
 		}
 
-		go func() {
-			c.messageRouter.RouteMessage(resp)
-		}()
+		go func(response []byte) {
+			c.messageRouter.RouteMessage(response)
+		}(resp)
 	}
 }
 

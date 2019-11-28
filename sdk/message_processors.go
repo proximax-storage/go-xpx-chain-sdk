@@ -206,3 +206,24 @@ type CosignatureMapperFn func(m []byte) (*SignerInfo, error)
 func (p CosignatureMapperFn) MapCosignature(m []byte) (*SignerInfo, error) {
 	return p(m)
 }
+
+//======================================================================================================================
+
+func MapDriveState(m []byte) (*DriveStateInfo, error) {
+	driveStateDto := &driveStateDto{}
+	if err := json.Unmarshal(m, driveStateDto); err != nil {
+		return nil, err
+	}
+
+	return driveStateDto.toStruct()
+}
+
+type DriveStateMapper interface {
+	MapDriveState(m []byte) (*DriveStateInfo, error)
+}
+
+type DriveStateMapperFn func(m []byte) (*DriveStateInfo, error)
+
+func (p DriveStateMapperFn) MapDriveState(m []byte) (*DriveStateInfo, error) {
+	return p(m)
+}

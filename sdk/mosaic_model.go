@@ -6,6 +6,7 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/proximax-storage/go-xpx-utils/str"
 )
@@ -43,8 +44,11 @@ func (m *MosaicId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *MosaicId) Equals(id AssetId) bool {
-	return m.Id() == id.Id()
+func (m *MosaicId) Equals(id AssetId) (bool, error) {
+	if id.Type() != m.Type() {
+		return false, errors.New("Mismatch asset types")
+	}
+	return m.Id() == id.Id(), nil
 }
 
 // returns MosaicId for passed nonce and public key of mosaic owner

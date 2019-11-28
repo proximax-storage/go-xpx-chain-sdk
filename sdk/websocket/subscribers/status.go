@@ -2,6 +2,7 @@ package subscribers
 
 import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"sync"
 )
 
 type (
@@ -16,6 +17,7 @@ type (
 	}
 
 	statusImpl struct {
+		sync.Mutex
 		newSubscriberCh    chan *statusSubscription
 		removeSubscriberCh chan *statusSubscription
 		subscribers        map[string][]*StatusHandler
@@ -50,7 +52,8 @@ func (e *statusImpl) handleNewSubscription() {
 }
 
 func (e *statusImpl) addSubscription(s *statusSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*StatusHandler, 0)
 	}
@@ -60,7 +63,8 @@ func (e *statusImpl) addSubscription(s *statusSubscription) {
 }
 
 func (e *statusImpl) removeSubscription(s *statusSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -112,11 +116,14 @@ func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHan
 }
 
 func (e *statusImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *statusImpl) GetHandlers(address *sdk.Address) []*StatusHandler {
-
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -125,6 +132,8 @@ func (e *statusImpl) GetHandlers(address *sdk.Address) []*StatusHandler {
 }
 
 func (e *statusImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)

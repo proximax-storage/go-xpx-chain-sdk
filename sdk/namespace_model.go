@@ -7,6 +7,7 @@ package sdk
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"github.com/pkg/errors"
 	"fmt"
 	"strings"
 	"unsafe"
@@ -53,8 +54,11 @@ func (m *NamespaceId) toHexString() string {
 	return uint64ToHex(m.Id())
 }
 
-func (m *NamespaceId) Equals(id AssetId) bool {
-	return m.Id() == id.Id()
+func (m *NamespaceId) Equals(id AssetId) (bool, error) {
+	if id.Type() != m.Type() {
+		return false, errors.New("Mismatch asset types")
+	}
+	return m.Id() == id.Id(), nil
 }
 
 // returns namespace id from passed namespace name

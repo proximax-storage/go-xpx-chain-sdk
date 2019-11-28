@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
@@ -27,17 +26,9 @@ func TestAddConfirmedAddedHandlers(t *testing.T) {
 
 	fmt.Println(testAccount)
 
-	cfg, err := sdk.NewConfig(ctx, []string{baseUrl})
-	assert.Nil(t, err)
-
-	webSock, err := websocket.NewClient(ctx, cfg)
-	assert.Nil(t, err)
-
 	wg.Add(1)
 
-	go webSock.Listen()
-
-	err = webSock.AddConfirmedAddedHandlers(testAccount.Address, func(transaction sdk.Transaction) bool {
+	err = wsc.AddConfirmedAddedHandlers(testAccount.Address, func(transaction sdk.Transaction) bool {
 		wg.Done()
 		return true
 	})
@@ -67,17 +58,9 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 	acc2, err := client.NewAccount()
 	assert.Nil(t, err)
 
-	cfg, err := sdk.NewConfig(ctx, []string{baseUrl})
-	assert.Nil(t, err)
-
-	webSock, err := websocket.NewClient(ctx, cfg)
-	assert.Nil(t, err)
-
 	wg.Add(1)
 
-	go webSock.Listen()
-
-	err = webSock.AddPartialAddedHandlers(acc1.Address, func(transaction *sdk.AggregateTransaction) bool {
+	err = wsc.AddPartialAddedHandlers(acc1.Address, func(transaction *sdk.AggregateTransaction) bool {
 		wg.Done()
 		return false
 	})
@@ -132,17 +115,9 @@ func TestAddCosignatureHandlers(t *testing.T) {
 	acc2, err := client.NewAccount()
 	assert.Nil(t, err)
 
-	cfg, err := sdk.NewConfig(ctx, []string{baseUrl})
-	assert.Nil(t, err)
-
-	webSock, err := websocket.NewClient(ctx, cfg)
-	assert.Nil(t, err)
-
 	wg.Add(1)
 
-	go webSock.Listen()
-
-	err = webSock.AddCosignatureHandlers(acc2.Address, func(info *sdk.SignerInfo) bool {
+	err = wsc.AddCosignatureHandlers(acc2.Address, func(info *sdk.SignerInfo) bool {
 		wg.Done()
 		return true
 	})

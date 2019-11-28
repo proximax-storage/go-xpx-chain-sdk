@@ -105,10 +105,10 @@ type replicatorDTO struct {
 
 type replicatorsDTOs []*replicatorDTO
 
-func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount]*ReplicatorInfo, error) {
+func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*ReplicatorInfo, error) {
 	var (
 		dtos        = *ref
-		replicators = make(map[PublicAccount]*ReplicatorInfo)
+		replicators = make(map[string]*ReplicatorInfo)
 	)
 
 	for i, dto := range dtos {
@@ -123,6 +123,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 		}
 
 		info := ReplicatorInfo{
+			Account:             replicator,
 			Start:               dto.Start.toStruct(),
 			End:                 dto.End.toStruct(),
 			Index:               i,
@@ -130,7 +131,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[PublicAccount
 			FilesWithoutDeposit: filesWithoutDeposit,
 		}
 
-		replicators[*replicator] = &info
+		replicators[replicator.PublicKey] = &info
 	}
 
 	return replicators, nil
@@ -224,6 +225,7 @@ type driveDTO struct {
 	Drive struct {
 		DriveKey         string             `json:"multisig"`
 		State            DriveState         `json:"state"`
+		Start            uint64DTO          `json:"start"`
 		Owner            string             `json:"owner"`
 		RootHash         hashDto            `json:"rootHash"`
 		Duration         uint64DTO          `json:"duration"`
@@ -259,6 +261,7 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 
 	drive.DriveKey = driveKey
 	drive.State = ref.Drive.State
+	drive.Start = ref.Drive.Start.toStruct()
 	drive.Owner = owner
 	drive.RootHash = rootHash
 	drive.Duration = ref.Drive.Duration.toStruct()

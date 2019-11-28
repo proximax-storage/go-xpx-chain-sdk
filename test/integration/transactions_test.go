@@ -176,21 +176,21 @@ func TestNetworkConfigTransaction(t *testing.T) {
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
-
-// This test will break blockchain, so only for local testing
-func TestBlockchainUpgradeTransaction(t *testing.T) {
-	network, err := client.Network.GetNetworkVersion(ctx)
-	assert.Nil(t, err)
-	version := network.BlockChainVersion + 1
-
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewBlockchainUpgradeTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.Duration(361),
-			version)
-	}, nemesisAccount)
-	assert.Nil(t, result.error)
-}
+//
+//// This test will break blockchain, so only for local testing
+//func TestBlockchainUpgradeTransaction(t *testing.T) {
+//	network, err := client.Network.GetNetworkVersion(ctx)
+//	assert.Nil(t, err)
+//	version := network.BlockChainVersion + 1
+//
+//	result := sendTransaction(t, func() (sdk.Transaction, error) {
+//		return client.NewBlockchainUpgradeTransaction(
+//			sdk.NewDeadline(time.Hour),
+//			sdk.Duration(361),
+//			version)
+//	}, nemesisAccount)
+//	assert.Nil(t, result.error)
+//}
 
 func TestMosaicDefinitionTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))

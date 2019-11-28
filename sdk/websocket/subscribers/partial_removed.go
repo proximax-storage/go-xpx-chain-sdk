@@ -2,6 +2,7 @@ package subscribers
 
 import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"sync"
 )
 
 type (
@@ -16,6 +17,7 @@ type (
 	}
 
 	partialRemovedImpl struct {
+		sync.Mutex
 		newSubscriberCh    chan *partialRemovedSubscription
 		removeSubscriberCh chan *partialRemovedSubscription
 		subscribers        map[string][]*PartialRemovedHandler
@@ -50,7 +52,8 @@ func (e *partialRemovedImpl) handleNewSubscription() {
 }
 
 func (e *partialRemovedImpl) addSubscription(s *partialRemovedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
 		e.subscribers[s.address.Address] = make([]*PartialRemovedHandler, 0)
 	}
@@ -60,7 +63,8 @@ func (e *partialRemovedImpl) addSubscription(s *partialRemovedSubscription) {
 }
 
 func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
-
+	e.Lock()
+	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
@@ -79,7 +83,8 @@ func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
 }
 
 func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error {
-
+	e.Lock()
+	defer e.Unlock()
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -112,11 +117,14 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 }
 
 func (e *partialRemovedImpl) HasHandlers(address *sdk.Address) bool {
+	e.Lock()
+	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
 func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) []*PartialRemovedHandler {
-
+	e.Lock()
+	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
 		return res
 	}
@@ -125,6 +133,8 @@ func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) []*PartialRemoved
 }
 
 func (e *partialRemovedImpl) GetAddresses() []string {
+	e.Lock()
+	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
 		addresses = append(addresses, addr)

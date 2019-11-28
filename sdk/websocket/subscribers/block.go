@@ -2,6 +2,7 @@ package subscribers
 
 import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"sync"
 )
 
 type (
@@ -15,6 +16,7 @@ type (
 	}
 
 	blockSubscriberImpl struct {
+		sync.Mutex
 		newSubscriberCh    chan *blockSubscription
 		removeSubscriberCh chan *blockSubscription
 		handlers           []*BlockHandler
@@ -37,14 +39,16 @@ func NewBlock() Block {
 }
 
 func (s *blockSubscriberImpl) addSubscription(b *blockSubscription) {
-
+	s.Lock()
+	defer s.Unlock()
 	for i := 0; i < len(b.handlers); i++ {
 		s.handlers = append(s.handlers, b.handlers[i])
 	}
 }
 
 func (s *blockSubscriberImpl) removeSubscription(b *blockSubscription) {
-
+	s.Lock()
+	defer s.Unlock()
 	if s.handlers == nil || len(b.handlers) == 0 {
 		b.resultCh <- true
 	}
@@ -102,9 +106,13 @@ func (s *blockSubscriberImpl) RemoveHandlers(handlers ...*BlockHandler) (bool, e
 }
 
 func (s *blockSubscriberImpl) HasHandlers() bool {
+	s.Lock()
+	defer s.Unlock()
 	return len(s.handlers) > 0
 }
 
 func (s *blockSubscriberImpl) GetHandlers() []*BlockHandler {
+	s.Lock()
+	defer s.Unlock()
 	return s.handlers
 }

@@ -50,7 +50,7 @@ func (ref *ResolverService) GetMosaicInfosByAssetIds(ctx context.Context, assetI
 
 	var err error = nil
 
-	mosaicInfos := make([]*MosaicInfo, len(assetIds))
+	mosaicInfos := make([]*MosaicInfo, 0)
 	namespaceIds := make([]*NamespaceId, 0)
 	mosaicIds := make([]*MosaicId, 0)
 

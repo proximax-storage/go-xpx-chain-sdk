@@ -94,6 +94,16 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount, driveAccount)
 	assert.Nil(t, result.error)
 
+	if err := wsc.AddDriveStateHandlers(driveAccount.Address, func(info *sdk.DriveStateInfo) bool {
+		if info.DriveKey != driveAccount.PublicAccount.PublicKey {
+			return false
+		}
+		fmt.Printf("Got drive state: %v \n", info)
+		return true
+	}); err != nil {
+		panic(err)
+	}
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewJoinToDriveTransaction(
 			sdk.NewDeadline(time.Hour),
@@ -103,7 +113,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	var fileSize uint64 = 50
-	fileHash, err := sdk.StringToHash("AA2d2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093")
+	fileHash, err := sdk.StringToHash("AA2D2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093")
 	assert.Nil(t, err)
 
 	fsTx, err := client.NewDriveFileSystemTransaction(
@@ -139,6 +149,8 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
+	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewFilesDepositTransaction(
 			sdk.NewDeadline(time.Hour),
@@ -168,8 +180,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	fmt.Println(defaultAccount)
-	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
+	drives, err = client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
 	assert.Nil(t, err)
 	fmt.Println(drives)
 
@@ -197,7 +208,6 @@ func TestDriveFlowTransaction(t *testing.T) {
 	exchangeInfo, err := client.Exchange.GetAccountExchangeInfo(ctx, exchangeAccount.PublicAccount)
 	assert.Nil(t, err)
 	fmt.Println(exchangeInfo)
-
 
 	infos, err := client.Exchange.GetExchangeOfferByAssetId(ctx, sdk.StorageNamespaceId, sdk.SellOffer)
 	assert.Nil(t, err)
@@ -228,7 +238,6 @@ func TestDriveFlowTransaction(t *testing.T) {
 
 	time.Sleep(time.Minute)
 
-
 	endDriveTx, err := client.NewEndDriveTransaction(
 		sdk.NewDeadline(time.Hour),
 		driveAccount.PublicAccount,
@@ -240,6 +249,37 @@ func TestDriveFlowTransaction(t *testing.T) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{endDriveTx},
+		)
+	}, replicatorAccount)
+	assert.Nil(t, result.error)
+
+	drive, err = client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	fmt.Println(drive)
+
+	deleteRewardTx, err := client.NewDeleteRewardTransaction(
+		sdk.NewDeadline(time.Hour),
+		[]*sdk.DeletedFile{
+			{
+				File: sdk.File{
+					FileHash: fileHash,
+				},
+				UploadInfos: []*sdk.UploadInfo{
+					{
+						Participant: replicatorAccount.PublicAccount,
+						UploadedSize: 100,
+					},
+				},
+			},
+		},
+	)
+	deleteRewardTx.ToAggregate(driveAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{deleteRewardTx},
 		)
 	}, replicatorAccount)
 	assert.Nil(t, result.error)

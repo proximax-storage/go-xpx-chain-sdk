@@ -1386,9 +1386,7 @@ func (dto *aggregateTransactionDTO) toStruct() (Transaction, error) {
 		iatx.Deadline = atx.Deadline
 		iatx.Signature = atx.Signature
 		iatx.MaxFee = atx.MaxFee
-		if iatx.TransactionInfo == nil {
-			iatx.TransactionInfo = atx.TransactionInfo
-		}
+		iatx.TransactionInfo = atx.TransactionInfo
 	}
 
 	return &AggregateTransaction{

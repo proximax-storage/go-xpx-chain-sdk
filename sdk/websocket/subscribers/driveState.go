@@ -7,51 +7,51 @@ import (
 )
 
 type (
-	CosignatureHandler func(*sdk.SignerInfo) bool
+	DriveStateHandler func(*sdk.DriveStateInfo) bool
 
-	Cosignature interface {
-		AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error)
+	DriveState interface {
+		AddHandlers(address *sdk.Address, handlers ...DriveStateHandler) error
+		RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) (bool, error)
 		HasHandlers(address *sdk.Address) bool
-		GetHandlers(address *sdk.Address) []*CosignatureHandler
+		GetHandlers(address *sdk.Address) []*DriveStateHandler
 		GetAddresses() []string
 	}
-	cosignatureSubscription struct {
+	driveStateSubscription struct {
 		address  *sdk.Address
-		handlers []*CosignatureHandler
+		handlers []*DriveStateHandler
 		resultCh chan bool
 	}
-	cosignatureImpl struct {
+	driveStateImpl struct {
 		sync.RWMutex
-		subscribers        map[string][]*CosignatureHandler
-		newSubscriberCh    chan *cosignatureSubscription
-		removeSubscriberCh chan *cosignatureSubscription
+		subscribers        map[string][]*DriveStateHandler
+		newSubscriberCh    chan *driveStateSubscription
+		removeSubscriberCh chan *driveStateSubscription
 	}
 )
 
-func NewCosignature() Cosignature {
+func NewDriveState() DriveState {
 
-	p := &cosignatureImpl{
-		subscribers:        make(map[string][]*CosignatureHandler),
-		newSubscriberCh:    make(chan *cosignatureSubscription),
-		removeSubscriberCh: make(chan *cosignatureSubscription),
+	p := &driveStateImpl{
+		subscribers:        make(map[string][]*DriveStateHandler),
+		newSubscriberCh:    make(chan *driveStateSubscription),
+		removeSubscriberCh: make(chan *driveStateSubscription),
 	}
 	go p.handleNewSubscription()
 	return p
 }
 
-func (e *cosignatureImpl) addSubscription(s *cosignatureSubscription) {
+func (e *driveStateImpl) addSubscription(s *driveStateSubscription) {
 	e.Lock()
 	defer e.Unlock()
 	if _, ok := e.subscribers[s.address.Address]; !ok {
-		e.subscribers[s.address.Address] = make([]*CosignatureHandler, 0)
+		e.subscribers[s.address.Address] = make([]*DriveStateHandler, 0)
 	}
 	for i := 0; i < len(s.handlers); i++ {
 		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
 	}
 }
 
-func (e *cosignatureImpl) removeSubscription(s *cosignatureSubscription) {
+func (e *driveStateImpl) removeSubscription(s *driveStateSubscription) {
 	e.Lock()
 	defer e.Unlock()
 	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
@@ -71,7 +71,7 @@ func (e *cosignatureImpl) removeSubscription(s *cosignatureSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
 }
 
-func (e *cosignatureImpl) handleNewSubscription() {
+func (e *driveStateImpl) handleNewSubscription() {
 	for {
 		select {
 		case s := <-e.newSubscriberCh:
@@ -82,25 +82,25 @@ func (e *cosignatureImpl) handleNewSubscription() {
 	}
 }
 
-func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error {
+func (e *driveStateImpl) AddHandlers(address *sdk.Address, handlers ...DriveStateHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
 	}
 
-	refHandlers := make([]*CosignatureHandler, len(handlers))
+	refHandlers := make([]*DriveStateHandler, len(handlers))
 	for i, h := range handlers {
 		refHandlers[i] = &h
 	}
 
-	e.newSubscriberCh <- &cosignatureSubscription{
+	e.newSubscriberCh <- &driveStateSubscription{
 		address:  address,
 		handlers: refHandlers,
 	}
 	return nil
 }
 
-func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error) {
+func (e *driveStateImpl) RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) (bool, error) {
 
 	if len(handlers) == 0 {
 		return false, nil
@@ -108,7 +108,7 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 
 	resCh := make(chan bool)
 
-	e.removeSubscriberCh <- &cosignatureSubscription{
+	e.removeSubscriberCh <- &driveStateSubscription{
 		address:  address,
 		handlers: handlers,
 		resultCh: resCh,
@@ -117,13 +117,13 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 	return <-resCh, nil
 }
 
-func (e *cosignatureImpl) HasHandlers(address *sdk.Address) bool {
+func (e *driveStateImpl) HasHandlers(address *sdk.Address) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
 }
 
-func (e *cosignatureImpl) GetHandlers(address *sdk.Address) []*CosignatureHandler {
+func (e *driveStateImpl) GetHandlers(address *sdk.Address) []*DriveStateHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[address.Address]; ok && res != nil {
@@ -133,7 +133,7 @@ func (e *cosignatureImpl) GetHandlers(address *sdk.Address) []*CosignatureHandle
 	return nil
 }
 
-func (e *cosignatureImpl) GetAddresses() []string {
+func (e *driveStateImpl) GetAddresses() []string {
 	e.Lock()
 	defer e.Unlock()
 	addresses := make([]string, 0, len(e.subscribers))

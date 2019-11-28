@@ -28,6 +28,7 @@ type BillingDescription struct {
 }
 
 type ReplicatorInfo struct {
+	Account             *PublicAccount
 	Start               Height
 	End                 Height
 	Deposit             Amount
@@ -56,6 +57,7 @@ type FileInfo struct {
 
 type Drive struct {
 	DriveKey         *PublicAccount
+	Start            Height
 	State            DriveState
 	Owner            *PublicAccount
 	RootHash         *Hash
@@ -68,7 +70,7 @@ type Drive struct {
 	PercentApprovers uint8
 	BillingHistory   []*BillingDescription
 	Files            map[Hash]*FileInfo
-	Replicators      map[PublicAccount]*ReplicatorInfo
+	Replicators      map[string]*ReplicatorInfo
 }
 
 // Prepare Drive Transaction
@@ -150,9 +152,31 @@ type UploadInfo struct {
 	UploadedSize    Amount
 }
 
+func (info *UploadInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Participant": %s,
+			"UploadedSize": %s,
+		`,
+		info.Participant,
+		info.UploadedSize,
+	)
+}
+
 type DeletedFile struct {
 	File
 	UploadInfos []*UploadInfo
+}
+
+func (file *DeletedFile) String() string {
+	return fmt.Sprintf(
+		`
+			"FileHash": %s,
+			"UploadInfos": %s,
+		`,
+		file.FileHash,
+		file.UploadInfos,
+	)
 }
 
 // Delete Reward Transaction
