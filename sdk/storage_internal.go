@@ -112,10 +112,10 @@ type fileDTO struct {
 
 type filesDTOs []*fileDTO
 
-func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]*FileInfo, error) {
+func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]StorageSize, error) {
 	var (
 		dtos  = *ref
-		files = make(map[Hash]*FileInfo)
+		files = make(map[Hash]StorageSize)
 	)
 
 	for _, dto := range dtos {
@@ -124,11 +124,7 @@ func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]*FileInfo, err
 			return nil, err
 		}
 
-		info := FileInfo{
-			FileSize: dto.FileSize.toStruct(),
-		}
-
-		files[*fileHash] = &info
+		files[*fileHash] = dto.FileSize.toStruct()
 	}
 
 	return files, nil
@@ -197,12 +193,12 @@ type driveDTO struct {
 func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 	drive := Drive{}
 
-	driveKey, err := NewAccountFromPublicKey(ref.Drive.DriveKey, networkType)
+	driveAccount, err := NewAccountFromPublicKey(ref.Drive.DriveKey, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	owner, err := NewAccountFromPublicKey(ref.Drive.Owner, networkType)
+	ownerAccount, err := NewAccountFromPublicKey(ref.Drive.Owner, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -212,10 +208,10 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.RootHash.Hash: %v", err)
 	}
 
-	drive.DriveKey = driveKey
+	drive.DriveAccount = driveAccount
 	drive.State = ref.Drive.State
 	drive.Start = ref.Drive.Start.toStruct()
-	drive.Owner = owner
+	drive.OwnerAccount = ownerAccount
 	drive.RootHash = rootHash
 	drive.Duration = ref.Drive.Duration.toStruct()
 	drive.BillingPeriod = ref.Drive.BillingPeriod.toStruct()

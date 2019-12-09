@@ -4,7 +4,9 @@
 
 package sdk
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type DriveState uint8
 
@@ -21,10 +23,32 @@ type PaymentInformation struct {
 	Height   Height
 }
 
+func (info *PaymentInformation) String() string {
+	return fmt.Sprintf(
+		`{ "Receiver": %s, "Amount": %s, "Height": %s }`,
+		info.Receiver,
+		info.Amount,
+		info.Height,
+	)
+}
+
 type BillingDescription struct {
 	Start    Height
 	End      Height
 	Payments []*PaymentInformation
+}
+
+func (desc *BillingDescription) String() string {
+	return fmt.Sprintf(
+		`
+			"Start": %s,
+			"End": %s,
+			"Payments": %s,
+		`,
+		desc.Start,
+		desc.End,
+		desc.Payments,
+	)
 }
 
 type ReplicatorInfo struct {
@@ -35,15 +59,28 @@ type ReplicatorInfo struct {
 	ActiveFilesWithoutDeposit   map[Hash]bool
 }
 
-type FileInfo struct {
-	FileSize 	StorageSize
+func (info *ReplicatorInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Account": %s,
+			"Start": %s,
+			"End": %s,
+			"Index": %d,
+			"ActiveFilesWithoutDeposit": %s,
+		`,
+		info.Account,
+		info.Start,
+		info.End,
+		info.Index,
+		info.ActiveFilesWithoutDeposit,
+	)
 }
 
 type Drive struct {
-	DriveKey         *PublicAccount
+	DriveAccount     *PublicAccount
 	Start            Height
 	State            DriveState
-	Owner            *PublicAccount
+	OwnerAccount     *PublicAccount
 	RootHash         *Hash
 	Duration         Duration
 	BillingPeriod    Duration
@@ -53,9 +90,48 @@ type Drive struct {
 	MinReplicators   uint16
 	PercentApprovers uint8
 	BillingHistory   []*BillingDescription
-	Files            map[Hash]*FileInfo
+	Files            map[Hash]StorageSize
 	Replicators      map[string]*ReplicatorInfo
 	UploadPayments   []*PaymentInformation
+}
+
+func (drive *Drive) String() string {
+	return fmt.Sprintf(
+		`
+			"DriveAccount": %s,
+			"Start": %s,
+			"State": %d,
+			"OwnerAccount": %s,
+			"RootHash": %s,
+			"Duration": %d,
+			"BillingPeriod": %d,
+			"BillingPrice": %d,
+			"DriveSize": %d,
+			"Replicas": %d,
+			"MinReplicators": %d,
+			"PercentApprovers": %d,
+			"BillingHistory": %s,
+			"Files": %s,
+			"Replicators": %s,
+			"UploadPayments": %s,
+		`,
+		drive.DriveAccount,
+		drive.Start,
+		drive.State,
+		drive.OwnerAccount,
+		drive.RootHash,
+		drive.Duration,
+		drive.BillingPeriod,
+		drive.BillingPrice,
+		drive.DriveSize,
+		drive.Replicas,
+		drive.MinReplicators,
+		drive.PercentApprovers,
+		drive.BillingHistory,
+		drive.Files,
+		drive.Replicators,
+		drive.UploadPayments,
+	)
 }
 
 // Prepare Drive Transaction
