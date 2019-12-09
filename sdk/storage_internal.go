@@ -6,26 +6,21 @@ package sdk
 
 import "fmt"
 
-type filesWithoutDepositDTO struct {
-	FileHash hashDto `json:"fileHash"`
-	Count    uint16  `json:"count"`
-}
+type activeFilesWithoutDepositDTOs []*hashDto
 
-type filesWithoutDepositDTOs []*filesWithoutDepositDTO
-
-func (ref *filesWithoutDepositDTOs) toStruct() (map[Hash]uint16, error) {
+func (ref *activeFilesWithoutDepositDTOs) toStruct() (map[Hash]bool, error) {
 	var (
 		dtos     = *ref
-		deposits = make(map[Hash]uint16)
+		deposits = make(map[Hash]bool)
 	)
 
 	for _, dto := range dtos {
-		fileHash, err := dto.FileHash.Hash()
+		fileHash, err := dto.Hash()
 		if err != nil {
 			return nil, err
 		}
 
-		deposits[*fileHash] = dto.Count
+		deposits[*fileHash] = true
 	}
 
 	return deposits, nil
@@ -70,37 +65,11 @@ func (ref *paymentsDTOs) toStruct(networkType NetworkType) ([]*PaymentInformatio
 	return payments, nil
 }
 
-type actionDTO struct {
-	Type   FileActionType `json:"type"`
-	Height uint64DTO      `json:"height"`
-}
-
-type actionsDTOs []*actionDTO
-
-func (ref *actionsDTOs) toStruct() ([]*FileAction, error) {
-	var (
-		dtos    = *ref
-		actions = make([]*FileAction, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info := FileAction{
-			Type:   dto.Type,
-			Height: dto.Height.toStruct(),
-		}
-
-		actions = append(actions, &info)
-	}
-
-	return actions, nil
-}
-
 type replicatorDTO struct {
-	Replicator          string                  `json:"replicator"`
-	Start               uint64DTO               `json:"start"`
-	End                 uint64DTO               `json:"end"`
-	Deposit             uint64DTO               `json:"deposit"`
-	FilesWithoutDeposit filesWithoutDepositDTOs `json:"filesWithoutDeposit"`
+	Replicator                  string                          `json:"replicator"`
+	Start                       uint64DTO                       `json:"start"`
+	End                         uint64DTO                       `json:"end"`
+	ActiveFilesWithoutDeposit   activeFilesWithoutDepositDTOs   `json:"activeFilesWithoutDeposit"`
 }
 
 type replicatorsDTOs []*replicatorDTO
@@ -117,7 +86,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*Repli
 			return nil, err
 		}
 
-		filesWithoutDeposit, err := dto.FilesWithoutDeposit.toStruct()
+		activeFilesWithoutDeposit, err := dto.ActiveFilesWithoutDeposit.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -127,8 +96,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*Repli
 			Start:               dto.Start.toStruct(),
 			End:                 dto.End.toStruct(),
 			Index:               i,
-			Deposit:             dto.Deposit.toStruct(),
-			FilesWithoutDeposit: filesWithoutDeposit,
+			ActiveFilesWithoutDeposit: activeFilesWithoutDeposit,
 		}
 
 		replicators[replicator.PublicKey] = &info
@@ -139,10 +107,7 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*Repli
 
 type fileDTO struct {
 	FileHash hashDto      `json:"fileHash"`
-	Deposit  uint64DTO    `json:"deposit"`
 	FileSize uint64DTO    `json:"size"`
-	Payments paymentsDTOs `json:"payments"`
-	Actions  actionsDTOs  `json:"actions"`
 }
 
 type filesDTOs []*fileDTO
@@ -159,21 +124,8 @@ func (ref *filesDTOs) toStruct(networkType NetworkType) (map[Hash]*FileInfo, err
 			return nil, err
 		}
 
-		payments, err := dto.Payments.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		actions, err := dto.Actions.toStruct()
-		if err != nil {
-			return nil, err
-		}
-
 		info := FileInfo{
-			Deposit:  dto.Deposit.toStruct(),
 			FileSize: dto.FileSize.toStruct(),
-			Payments: payments,
-			Actions:  actions,
 		}
 
 		files[*fileHash] = &info
@@ -238,6 +190,7 @@ type driveDTO struct {
 		BillingHistory   billingHistoryDTOs `json:"billingHistory"`
 		Files            filesDTOs          `json:"files"`
 		Replicators      replicatorsDTOs    `json:"replicators"`
+		UploadPayments   paymentsDTOs       `json:"uploadPayments"`
 	}
 }
 
@@ -292,6 +245,13 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 	}
 
 	drive.Replicators = replicators
+
+	uploadPayments, err := ref.Drive.UploadPayments.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.UploadPayments.toStruct: %v", err)
+	}
+
+	drive.UploadPayments = uploadPayments
 
 	return &drive, nil
 }

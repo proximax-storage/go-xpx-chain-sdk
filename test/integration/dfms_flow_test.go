@@ -123,13 +123,13 @@ func TestDriveFlowTransaction(t *testing.T) {
 		driveAccount.PublicAccount,
 		&sdk.Hash{1},
 		&sdk.Hash{},
-		[]*sdk.AddAction{
+		[]*sdk.Action{
 			{
 				FileHash: fileHash,
 				FileSize: sdk.StorageSize(fileSize),
 			},
 		},
-		[]*sdk.RemoveAction{},
+		[]*sdk.Action{},
 	)
 	fsTx.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t,err)
@@ -172,10 +172,11 @@ func TestDriveFlowTransaction(t *testing.T) {
 			driveAccount.PublicAccount,
 			&sdk.Hash{},
 			&sdk.Hash{1},
-			[]*sdk.AddAction{},
-			[]*sdk.RemoveAction{
+			[]*sdk.Action{},
+			[]*sdk.Action{
 				{
 					FileHash: fileHash,
+					FileSize: sdk.StorageSize(fileSize),
 				},
 			},
 		)
@@ -297,29 +298,22 @@ func TestDriveFlowTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(drive)
 
-	deleteRewardTx, err := client.NewDeleteRewardTransaction(
+	driveFilesRewardTx, err := client.NewDriveFilesRewardTransaction(
 		sdk.NewDeadline(time.Hour),
-		[]*sdk.DeletedFile{
+		[]*sdk.UploadInfo{
 			{
-				File: sdk.File{
-					FileHash: fileHash,
-				},
-				UploadInfos: []*sdk.UploadInfo{
-					{
-						Participant: replicatorAccount.PublicAccount,
-						UploadedSize: 100,
-					},
-				},
+				Participant: replicatorAccount.PublicAccount,
+				UploadedSize: 100,
 			},
 		},
 	)
-	deleteRewardTx.ToAggregate(driveAccount.PublicAccount)
+	driveFilesRewardTx.ToAggregate(driveAccount.PublicAccount)
 	assert.Nil(t, err)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{deleteRewardTx},
+			[]sdk.Transaction{driveFilesRewardTx},
 		)
 	}, replicatorAccount)
 	assert.Nil(t, result.error)

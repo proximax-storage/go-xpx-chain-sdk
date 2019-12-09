@@ -301,8 +301,8 @@ func NewDriveFileSystemTransaction(
 	driveKey *PublicAccount,
 	newRootHash *Hash,
 	oldRootHash *Hash,
-	addActions []*AddAction,
-	removeActions []*RemoveAction,
+	addActions []*Action,
+	removeActions []*Action,
 	networkType NetworkType,
 ) (*DriveFileSystemTransaction, error) {
 
@@ -358,7 +358,7 @@ func (tx *DriveFileSystemTransaction) String() string {
 	)
 }
 
-func addActionsToArrayToBuffer(builder *flatbuffers.Builder, addActions []*AddAction) (flatbuffers.UOffsetT, error) {
+func actionsToArrayToBuffer(builder *flatbuffers.Builder, addActions []*Action) (flatbuffers.UOffsetT, error) {
 	msb := make([]flatbuffers.UOffsetT, len(addActions))
 	for i, m := range addActions {
 
@@ -370,18 +370,6 @@ func addActionsToArrayToBuffer(builder *flatbuffers.Builder, addActions []*AddAc
 		msb[i] = transactions.TransactionBufferEnd(builder)
 	}
 
-	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
-}
-
-func removeActionsToArrayToBuffer(builder *flatbuffers.Builder, removeActions []*RemoveAction) (flatbuffers.UOffsetT, error) {
-	msb := make([]flatbuffers.UOffsetT, len(removeActions))
-	for i, m := range removeActions {
-
-		rhV := transactions.TransactionBufferCreateByteVector(builder, m.FileHash[:])
-		transactions.RemoveActionBufferStart(builder)
-		transactions.RemoveActionBufferAddFileHash(builder, rhV)
-		msb[i] = transactions.TransactionBufferEnd(builder)
-	}
 	return transactions.TransactionBufferCreateUOffsetVector(builder, msb), nil
 }
 
@@ -404,12 +392,12 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 	xorRootHash := tx.NewRootHash.Xor(tx.OldRootHash)
 	xhV := transactions.TransactionBufferCreateByteVector(builder, xorRootHash[:])
 
-	addActionsV, err := addActionsToArrayToBuffer(builder, tx.AddActions)
+	addActionsV, err := actionsToArrayToBuffer(builder, tx.AddActions)
 	if err != nil {
 		return nil, err
 	}
 
-	removeActionsV, err := removeActionsToArrayToBuffer(builder, tx.RemoveActions)
+	removeActionsV, err := actionsToArrayToBuffer(builder, tx.RemoveActions)
 	if err != nil {
 		return nil, err
 	}
@@ -443,16 +431,12 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DriveFileSystemTransaction) Size() int {
-	return DriveFileSystemHeaderSize + len(tx.AddActions)*(Hash256+StorageSizeSize) + len(tx.RemoveActions)*Hash256
+	return DriveFileSystemHeaderSize + (len(tx.AddActions) + len(tx.RemoveActions))*(Hash256+StorageSizeSize)
 }
 
 type driveFileSystemAddActionDTO struct {
 	FileHash hashDto   `json:"fileHash"`
 	FileSize uint64DTO `json:"fileSize"`
-}
-
-type driveFileSystemRemoveActionDTO struct {
-	FileHash hashDto `json:"fileHash"`
 }
 
 type driveFileSystemTransactionDTO struct {
@@ -464,7 +448,7 @@ type driveFileSystemTransactionDTO struct {
 		AddActionsCount    uint16                            `json:"addActionsCount"`
 		RemoveActionsCount uint16                            `json:"removeActionsCount"`
 		AddActions         []*driveFileSystemAddActionDTO    `json:"addActions"`
-		RemoveActions      []*driveFileSystemRemoveActionDTO `json:"removeActions"`
+		RemoveActions      []*driveFileSystemAddActionDTO `json:"removeActions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -494,12 +478,12 @@ func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	addActs, err := addActionsDTOArrayToStruct(dto.Tx.AddActions)
+	addActs, err := actionsDTOArrayToStruct(dto.Tx.AddActions)
 	if err != nil {
 		return nil, err
 	}
 
-	removeActs, err := removeActionsDTOArrayToStruct(dto.Tx.RemoveActions)
+	removeActs, err := actionsDTOArrayToStruct(dto.Tx.RemoveActions)
 	if err != nil {
 		return nil, err
 	}
@@ -514,10 +498,10 @@ func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-func addActionsDTOArrayToStruct(addAction []*driveFileSystemAddActionDTO) ([]*AddAction, error) {
-	acts := make([]*AddAction, len(addAction))
+func actionsDTOArrayToStruct(actions []*driveFileSystemAddActionDTO) ([]*Action, error) {
+	acts := make([]*Action, len(actions))
 	var err error = nil
-	for i, m := range addAction {
+	for i, m := range actions {
 		h, err := m.FileHash.Hash()
 		if err != nil {
 			return nil, err
@@ -525,7 +509,7 @@ func addActionsDTOArrayToStruct(addAction []*driveFileSystemAddActionDTO) ([]*Ad
 
 		s := m.FileSize.toUint64()
 
-		acts[i] = &AddAction{
+		acts[i] = &Action{
 			FileHash: h,
 			FileSize: StorageSize(s),
 		}
@@ -533,22 +517,6 @@ func addActionsDTOArrayToStruct(addAction []*driveFileSystemAddActionDTO) ([]*Ad
 	}
 
 	return acts, err
-}
-
-func removeActionsDTOArrayToStruct(removeAction []*driveFileSystemRemoveActionDTO) ([]*RemoveAction, error) {
-	removes := make([]*RemoveAction, len(removeAction))
-	var err error = nil
-	for i, m := range removeAction {
-		h, err := m.FileHash.Hash()
-		if err != nil {
-			return nil, err
-		}
-		removes[i] = &RemoveAction{
-			FileHash: h,
-		}
-	}
-
-	return removes, err
 }
 
 func NewFilesDepositTransaction(
@@ -805,86 +773,65 @@ func (dto *endDriveTransactionDTO) toStruct() (Transaction, error) {
 	}, nil
 }
 
-func (f *DeletedFile) Size() int {
-	return SizeSize + Hash256 + len(f.UploadInfos) * (Hash256 + StorageSizeSize)
-}
-
-func NewDeleteRewardTransaction(
+func NewDriveFilesRewardTransaction(
 	deadline *Deadline,
-	files []*DeletedFile,
+	infos []*UploadInfo,
 	networkType NetworkType,
-) (*DeleteRewardTransaction, error) {
+) (*DriveFilesRewardTransaction, error) {
 
-	if len(files) == 0 {
+	if len(infos) == 0 {
 		return nil, ErrNoChanges
 	}
-	
-	for _, file := range files {
-		if len(file.UploadInfos) == 0 {
-			return nil, ErrNoChanges
-		}
-	}
 
-	tx := DeleteRewardTransaction{
+	tx := DriveFilesRewardTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     DeleteRewardVersion,
+			Version:     DriveFilesRewardVersion,
 			Deadline:    deadline,
-			Type:        DeleteReward,
+			Type:        DriveFilesReward,
 			NetworkType: networkType,
 		},
-		DeletedFiles: files,
+		UploadInfos: infos,
 	}
 
 	return &tx, nil
 }
 
-func (tx *DeleteRewardTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *DriveFilesRewardTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *DeleteRewardTransaction) String() string {
+func (tx *DriveFilesRewardTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DeletedFiles": %s,
+			"UploadInfos": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.DeletedFiles,
+		tx.UploadInfos,
 	)
 }
 
-func deletedFilesToArrayToBuffer(builder *flatbuffers.Builder, files []*DeletedFile) (flatbuffers.UOffsetT, error) {
-	filesb := make([]flatbuffers.UOffsetT, len(files))
-	for i, f := range files {
-		infosb := make([]flatbuffers.UOffsetT, len(f.UploadInfos))
-		for j, info := range f.UploadInfos {
-			rb, err := hex.DecodeString(info.Participant.PublicKey)
-			if err != nil {
-				return 0, err
-			}
-
-			rV := transactions.TransactionBufferCreateByteVector(builder, rb)
-			uV := transactions.TransactionBufferCreateUint32Vector(builder, info.UploadedSize.toArray())
-
-			transactions.UploadInfoBufferStart(builder)
-			transactions.UploadInfoBufferAddReplicator(builder, rV)
-			transactions.UploadInfoBufferAddUploaded(builder, uV)
-			infosb[j] = transactions.UploadInfoBufferEnd(builder)
+func uploadInfosToArrayToBuffer(builder *flatbuffers.Builder, infos []*UploadInfo) (flatbuffers.UOffsetT, error) {
+	infosb := make([]flatbuffers.UOffsetT, len(infos))
+	for j, info := range infos {
+		rb, err := hex.DecodeString(info.Participant.PublicKey)
+		if err != nil {
+			return 0, err
 		}
-		infosV := transactions.TransactionBufferCreateUOffsetVector(builder, infosb)
 
-		hV := transactions.TransactionBufferCreateByteVector(builder, f.FileHash[:])
-		transactions.DeletedFileBufferStart(builder)
-		transactions.DeletedFileBufferAddFileHash(builder, hV)
-		transactions.DeletedFileBufferAddSize(builder, uint32(f.Size()))
-		transactions.DeletedFileBufferAddUploadInfos(builder, infosV)
-		filesb[i] = transactions.DeletedFileBufferEnd(builder)
+		rV := transactions.TransactionBufferCreateByteVector(builder, rb)
+		uV := transactions.TransactionBufferCreateUint32Vector(builder, info.UploadedSize.toArray())
+
+		transactions.UploadInfoBufferStart(builder)
+		transactions.UploadInfoBufferAddReplicator(builder, rV)
+		transactions.UploadInfoBufferAddUploaded(builder, uV)
+		infosb[j] = transactions.UploadInfoBufferEnd(builder)
 	}
 
-	return transactions.TransactionBufferCreateUOffsetVector(builder, filesb), nil
+	return transactions.TransactionBufferCreateUOffsetVector(builder, infosb), nil
 }
 
-func (tx *DeleteRewardTransaction) Bytes() ([]byte, error) {
+func (tx *DriveFilesRewardTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -892,28 +839,24 @@ func (tx *DeleteRewardTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	filesV, err := deletedFilesToArrayToBuffer(builder, tx.DeletedFiles)
+	infosV, err := uploadInfosToArrayToBuffer(builder, tx.UploadInfos)
 	if err != nil {
 		return nil, err
 	}
 
-	transactions.DeleteRewardTransactionBufferStart(builder)
+	transactions.DriveFilesRewardTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.DeleteRewardTransactionBufferAddDeletedFiles(builder, filesV)
-	t := transactions.DeleteRewardTransactionBufferEnd(builder)
+	transactions.DriveFilesRewardTransactionBufferAddUploadInfosCount(builder, uint16(len(tx.UploadInfos)))
+	transactions.DriveFilesRewardTransactionBufferAddUploadInfos(builder, infosV)
+	t := transactions.DriveFilesRewardTransactionBufferEnd(builder)
 	builder.Finish(t)
 
-	return deleteRewardTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return driveFilesRewardTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func (tx *DeleteRewardTransaction) Size() int {
-	size := 0
-	for _, f := range tx.DeletedFiles {
-		size += f.Size()
-	}
-
-	return TransactionHeaderSize + size
+func (tx *DriveFilesRewardTransaction) Size() int {
+	return TransactionHeaderSize + 2 + len(tx.UploadInfos) * (Hash256 + StorageSizeSize)
 }
 
 type uploadInfoDTO struct {
@@ -933,46 +876,15 @@ func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error)
 	}, nil
 }
 
-type deletedFileDTO struct {
-	FileHash        hashDto             `json:"fileHash"`
-	Size            uint32              `json:"size"`
-	UploadInfos     []*uploadInfoDTO    `json:"uploadInfos"`
-}
-
-func (dto *deletedFileDTO) toStruct(networkType NetworkType) (*DeletedFile, error) {
-	hash, err := dto.FileHash.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	uploadInfos := make([]*UploadInfo, len(dto.UploadInfos))
-
-	for i, u := range dto.UploadInfos {
-		info, err := u.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		uploadInfos[i] = info
-	}
-
-	return &DeletedFile{
-		File{
-			hash,
-		},
-		uploadInfos,
-	}, nil
-}
-
-type deleteRewardTransactionDTO struct {
+type driveFilesRewardTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DeletedFiles    []*deletedFileDTO   `json:"deletedFiles"`
+		UploadInfos     []*uploadInfoDTO    `json:"uploadInfos"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *deleteRewardTransactionDTO) toStruct() (Transaction, error) {
+func (dto *driveFilesRewardTransactionDTO) toStruct() (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -983,20 +895,20 @@ func (dto *deleteRewardTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	deletedFiles := make([]*DeletedFile, len(dto.Tx.DeletedFiles))
+	uploadInfos := make([]*UploadInfo, len(dto.Tx.UploadInfos))
 
-	for i, d := range dto.Tx.DeletedFiles {
-		file, err := d.toStruct(atx.NetworkType)
+	for i, u := range dto.Tx.UploadInfos {
+		info, err := u.toStruct(atx.NetworkType)
 		if err != nil {
 			return nil, err
 		}
 
-		deletedFiles[i] = file
+		uploadInfos[i] = info
 	}
 
-	return &DeleteRewardTransaction{
+	return &DriveFilesRewardTransaction{
 		*atx,
-		deletedFiles,
+		uploadInfos,
 	}, nil
 }
 

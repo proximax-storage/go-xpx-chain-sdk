@@ -28,31 +28,15 @@ type BillingDescription struct {
 }
 
 type ReplicatorInfo struct {
-	Account             *PublicAccount
-	Start               Height
-	End                 Height
-	Deposit             Amount
-	Index               int
-	FilesWithoutDeposit map[Hash]uint16
-}
-
-type FileActionType uint8
-
-const (
-	AddFile FileActionType = iota
-	RemoveFile
-)
-
-type FileAction struct {
-	Type 	FileActionType
-	Height 	Height
+	Account                     *PublicAccount
+	Start                       Height
+	End                         Height
+	Index                       int
+	ActiveFilesWithoutDeposit   map[Hash]bool
 }
 
 type FileInfo struct {
 	FileSize 	StorageSize
-	Deposit  	Amount
-	Payments 	[]*PaymentInformation
-	Actions 	[]*FileAction
 }
 
 type Drive struct {
@@ -71,6 +55,7 @@ type Drive struct {
 	BillingHistory   []*BillingDescription
 	Files            map[Hash]*FileInfo
 	Replicators      map[string]*ReplicatorInfo
+	UploadPayments   []*PaymentInformation
 }
 
 // Prepare Drive Transaction
@@ -106,12 +91,12 @@ func (file *File) String() string {
 	)
 }
 
-type AddAction struct {
+type Action struct {
 	FileHash *Hash
 	FileSize StorageSize
 }
 
-func (action *AddAction) String() string {
+func (action *Action) String() string {
 	return fmt.Sprintf(
 		`
 			"FileHash": %s,
@@ -122,15 +107,13 @@ func (action *AddAction) String() string {
 	)
 }
 
-type RemoveAction = File
-
 type DriveFileSystemTransaction struct {
 	AbstractTransaction
 	DriveKey      *PublicAccount
 	NewRootHash   *Hash
 	OldRootHash   *Hash
-	AddActions    []*AddAction
-	RemoveActions []*RemoveAction
+	AddActions    []*Action
+	RemoveActions []*Action
 }
 
 // Files Deposit Transaction
@@ -163,27 +146,11 @@ func (info *UploadInfo) String() string {
 	)
 }
 
-type DeletedFile struct {
-	File
-	UploadInfos []*UploadInfo
-}
+// Drive Files Reward Transaction
 
-func (file *DeletedFile) String() string {
-	return fmt.Sprintf(
-		`
-			"FileHash": %s,
-			"UploadInfos": %s,
-		`,
-		file.FileHash,
-		file.UploadInfos,
-	)
-}
-
-// Delete Reward Transaction
-
-type DeleteRewardTransaction struct {
+type DriveFilesRewardTransaction struct {
 	AbstractTransaction
-	DeletedFiles []*DeletedFile
+	UploadInfos []*UploadInfo
 }
 
 // Start Drive Verification Transaction

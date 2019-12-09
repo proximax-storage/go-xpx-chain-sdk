@@ -50,6 +50,7 @@ func driveFileSystemTransactionSchema() *schema {
 			newTableArrayAttribute("removeActions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("fileHash", ByteSize),
+					newArrayAttribute("fileSize", IntSize),
 				},
 			}.schemaDefinition),
 		},
@@ -143,7 +144,7 @@ func endDriveVerificationTransactionSchema() *schema {
 	}
 }
 
-func deleteRewardTransactionSchema() *schema {
+func driveFilesRewardTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -153,16 +154,11 @@ func deleteRewardTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newTableArrayAttribute("deletedFiles", schema{
+			newScalarAttribute("uploadInfosCount", ShortSize),
+			newTableArrayAttribute("uploadInfos", schema{
 				[]schemaAttribute{
-					newArrayAttribute("fileHash", ByteSize),
-					newScalarAttribute("size", IntSize),
-					newTableArrayAttribute("uploadInfos", schema{
-						[]schemaAttribute{
-							newArrayAttribute("replicator", ByteSize),
-							newArrayAttribute("uploaded", IntSize),
-						},
-					}.schemaDefinition),
+					newArrayAttribute("replicator", ByteSize),
+					newArrayAttribute("uploaded", IntSize),
 				},
 			}.schemaDefinition),
 		},
