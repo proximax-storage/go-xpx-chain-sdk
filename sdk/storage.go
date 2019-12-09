@@ -102,7 +102,7 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 		return nil, errors.New("wrong type of drive secret lock")
 	}
 
-	return  &VerificationStatus{
+	return &VerificationStatus{
 		Active:     lockInfo.Status == Unused,
 		Available: false,
 	}, nil
