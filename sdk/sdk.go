@@ -626,7 +626,7 @@ func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicA
 	return tx, err
 }
 
-func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*AddAction, removeActions []*RemoveAction) (*DriveFileSystemTransaction, error) {
+func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
 	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -653,8 +653,8 @@ func (c *Client) NewEndDriveTransaction(deadline *Deadline, driveKey *PublicAcco
 	return tx, err
 }
 
-func (c *Client) NewDeleteRewardTransaction(deadline *Deadline, deletedFiles []*DeletedFile) (*DeleteRewardTransaction, error) {
-	tx, err := NewDeleteRewardTransaction(deadline, deletedFiles, c.config.NetworkType)
+func (c *Client) NewDriveFilesRewardTransaction(deadline *Deadline, uploadInfos []*UploadInfo) (*DriveFilesRewardTransaction, error) {
+	tx, err := NewDriveFilesRewardTransaction(deadline, uploadInfos, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

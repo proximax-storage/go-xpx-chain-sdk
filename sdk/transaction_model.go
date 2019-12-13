@@ -3331,7 +3331,7 @@ const (
 	DriveFileSystem           EntityType = 0x435A
 	FilesDeposit              EntityType = 0x445A
 	EndDrive                  EntityType = 0x455A
-	DeleteReward              EntityType = 0x465A
+	DriveFilesReward              EntityType = 0x465A
 	StartDriveVerification    EntityType = 0x475A
 	EndDriveVerification      EntityType = 0x485A
 )
@@ -3373,7 +3373,7 @@ const (
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1
 	EndDriveVersion                  EntityVersion = 1
-	DeleteRewardVersion              EntityVersion = 1
+	DriveFilesRewardVersion              EntityVersion = 1
 	StartDriveVerificationVersion    EntityVersion = 1
 	EndDriveVerificationVersion      EntityVersion = 1
 )
@@ -3589,8 +3589,8 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &filesDepositTransactionDTO{}
 	case EndDrive:
 		dto = &endDriveTransactionDTO{}
-	case DeleteReward:
-		dto = &deleteRewardTransactionDTO{}
+	case DriveFilesReward:
+		dto = &driveFilesRewardTransactionDTO{}
 	case StartDriveVerification:
 		dto = &startDriveVerificationTransactionDTO{}
 	case EndDriveVerification:
