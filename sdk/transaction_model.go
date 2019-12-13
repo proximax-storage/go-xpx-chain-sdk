@@ -6,7 +6,6 @@ package sdk
 
 import (
 	"bytes"
-	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
 	jsonLib "encoding/json"
@@ -16,9 +15,9 @@ import (
 	"sync"
 
 	"github.com/google/flatbuffers/go"
-	"github.com/proximax-storage/go-xpx-utils"
-	"github.com/proximax-storage/go-xpx-crypto"
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
+	"github.com/proximax-storage/go-xpx-crypto"
+	"github.com/proximax-storage/go-xpx-utils"
 )
 
 type Transaction interface {
@@ -283,7 +282,7 @@ func (tx *AccountPropertiesAddressTransaction) Bytes() ([]byte, error) {
 
 	msb := make([]flatbuffers.UOffsetT, len(tx.Modifications))
 	for i, m := range tx.Modifications {
-		a, err := base32.StdEncoding.DecodeString(m.Address.Address)
+		a, err := m.Address.Decode()
 		if err != nil {
 			return nil, err
 		}
@@ -793,7 +792,7 @@ func (tx *AddressAliasTransaction) String() string {
 
 func (tx *AddressAliasTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	a, err := base32.StdEncoding.DecodeString(tx.Address.Address)
+	a, err := tx.Address.Decode()
 	if err != nil {
 		return nil, err
 	}
@@ -1518,7 +1517,7 @@ func (tx *ModifyMetadataAddressTransaction) String() string {
 
 func (tx *ModifyMetadataAddressTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
-	a, err := base32.StdEncoding.DecodeString(tx.Address.Address)
+	a, err := tx.Address.Decode()
 	if err != nil {
 		return nil, err
 	}
@@ -2068,7 +2067,7 @@ func (tx *TransferTransaction) Bytes() ([]byte, error) {
 	transactions.MessageBufferAddPayload(builder, mp)
 	m := transactions.TransactionBufferEnd(builder)
 
-	r, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
+	r, err := tx.Recipient.Decode()
 	if err != nil {
 		return nil, err
 	}
@@ -2795,7 +2794,7 @@ func (tx *SecretLockTransaction) Bytes() ([]byte, error) {
 
 	sV := transactions.TransactionBufferCreateByteVector(builder, tx.Secret.Hash[:])
 
-	addr, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
+	addr, err := tx.Recipient.Decode()
 	if err != nil {
 		return nil, err
 	}
@@ -2941,7 +2940,7 @@ func (tx *SecretProofTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	addr, err := base32.StdEncoding.DecodeString(tx.Recipient.Address)
+	addr, err := tx.Recipient.Decode()
 	if err != nil {
 		return nil, err
 	}
@@ -3286,6 +3285,7 @@ const (
 	FilesSizeSize                                = 2
 	FilesDepositHeaderSize                       = TransactionHeaderSize + KeySize + FilesSizeSize
 	EndDriveHeaderSize                           = TransactionHeaderSize + KeySize
+	StartDriveVerificationHeaderSize             = TransactionHeaderSize + KeySize
 	OfferTypeSize                                = 1
 	OffersCountSize                              = 1
 	AddExchangeOfferSize                         = MosaicIdSize + DurationSize + 2*AmountSize + OfferTypeSize
@@ -3331,7 +3331,9 @@ const (
 	DriveFileSystem           EntityType = 0x435A
 	FilesDeposit              EntityType = 0x445A
 	EndDrive                  EntityType = 0x455A
-	DeleteReward              EntityType = 0x465A
+	DriveFilesReward              EntityType = 0x465A
+	StartDriveVerification    EntityType = 0x475A
+	EndDriveVerification      EntityType = 0x485A
 )
 
 func (t EntityType) String() string {
@@ -3371,7 +3373,9 @@ const (
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1
 	EndDriveVersion                  EntityVersion = 1
-	DeleteRewardVersion              EntityVersion = 1
+	DriveFilesRewardVersion              EntityVersion = 1
+	StartDriveVerificationVersion    EntityVersion = 1
+	EndDriveVerificationVersion      EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3585,8 +3589,12 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &filesDepositTransactionDTO{}
 	case EndDrive:
 		dto = &endDriveTransactionDTO{}
-	case DeleteReward:
-		dto = &deleteRewardTransactionDTO{}
+	case DriveFilesReward:
+		dto = &driveFilesRewardTransactionDTO{}
+	case StartDriveVerification:
+		dto = &startDriveVerificationTransactionDTO{}
+	case EndDriveVerification:
+		dto = &endDriveVerificationTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)

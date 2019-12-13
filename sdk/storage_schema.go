@@ -50,6 +50,7 @@ func driveFileSystemTransactionSchema() *schema {
 			newTableArrayAttribute("removeActions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("fileHash", ByteSize),
+					newArrayAttribute("fileSize", IntSize),
 				},
 			}.schemaDefinition),
 		},
@@ -107,7 +108,7 @@ func endDriveTransactionSchema() *schema {
 	}
 }
 
-func deleteRewardTransactionSchema() *schema {
+func startDriveVerificationTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -117,16 +118,47 @@ func deleteRewardTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newTableArrayAttribute("deletedFiles", schema{
+			newArrayAttribute("driveKey", ByteSize),
+		},
+	}
+}
+
+func endDriveVerificationTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("failureCount", ByteSize),
+			newTableArrayAttribute("failures", schema{
 				[]schemaAttribute{
-					newArrayAttribute("fileHash", ByteSize),
-					newScalarAttribute("size", IntSize),
-					newTableArrayAttribute("uploadInfos", schema{
-						[]schemaAttribute{
-							newArrayAttribute("replicator", ByteSize),
-							newArrayAttribute("uploaded", IntSize),
-						},
-					}.schemaDefinition),
+					newArrayAttribute("replicator", ByteSize),
+					newArrayAttribute("blockHash", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func driveFilesRewardTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("uploadInfosCount", ShortSize),
+			newTableArrayAttribute("uploadInfos", schema{
+				[]schemaAttribute{
+					newArrayAttribute("replicator", ByteSize),
+					newArrayAttribute("uploaded", IntSize),
 				},
 			}.schemaDefinition),
 		},

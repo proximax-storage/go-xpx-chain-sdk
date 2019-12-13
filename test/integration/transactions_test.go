@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	math "math/rand"
+	"sync"
 	"testing"
 	"time"
 
@@ -64,6 +65,36 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash) <-chan Re
 	}
 
 	return out
+}
+
+func waitForBlocksCount(t *testing.T, duration int) {
+	fmt.Println("Starting to wait for", duration, "blocks to harvest...")
+
+	count := duration
+
+	out := make(chan Result)
+	m := sync.Mutex{}
+
+	innerCounter := 0
+	err := wsc.AddBlockHandlers(func(*sdk.BlockInfo) bool {
+		m.Lock()
+		defer m.Unlock()
+		innerCounter++
+		fmt.Println("Harvested", innerCounter, "block...")
+
+		if innerCounter == count {
+			out <- Result{nil, nil}
+			return true
+		}
+		return false
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	waitTimeout(t, out, time.Minute*time.Duration(count))
+	fmt.Println("Finish waiting for harvesting")
 }
 
 func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {

@@ -36,6 +36,7 @@ table AddActionBuffer {
 
 table RemoveActionBuffer {
     fileHash: [ubyte];
+    fileSize: [ubyte];
 }
 
 table FileBuffer {
@@ -45,12 +46,6 @@ table FileBuffer {
 table UploadInfoBuffer {
     replicator: [ubyte];
     uploaded: [uint];
-}
-
-table DeletedFileBuffer {
-    fileHash: [ubyte];
-    size: uint;
-    uploadInfos: [UploadInfoBuffer];
 }
 
 table DriveFileSystemTransactionBuffer {
@@ -96,7 +91,7 @@ table EndDriveTransactionBuffer {
     driveKey: [ubyte];
 }
 
-table DeleteRewardTransactionBuffer {
+table DriveFilesRewardTransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -104,7 +99,37 @@ table DeleteRewardTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    deletedFiles: [DeletedFileBuffer];
+    uploadInfosCount: ushort;
+    uploadInfos: [UploadInfoBuffer];
+}
+
+table StartDriveVerificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey: [ubyte];
+}
+
+table VerificationFailureBuffer {
+    replicator: [ubyte];
+    blockHash: [ubyte];
+}
+
+table EndDriveVerificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    /// 2 bytes
+    failureCount: [ubyte];
+    failures: [VerificationFailureBuffer];
 }
 
 root_type AddActionBuffer;
@@ -115,16 +140,20 @@ root_type FileBuffer;
 
 root_type UploadInfoBuffer;
 
-root_type DeletedFileBuffer;
-
 root_type DriveFileSystemTransactionBuffer;
 
 root_type EndDriveTransactionBuffer;
 
-root_type DeleteRewardTransactionBuffer;
+root_type DriveFilesRewardTransactionBuffer;
 
 root_type FilesDepositTransactionBuffer;
 
 root_type JoinToDriveTransactionBuffer;
 
 root_type PrepareDriveTransactionBuffer;
+
+root_type StartDriveVerificationTransactionBuffer;
+
+root_type VerificationFailureBuffer;
+
+root_type EndDriveVerificationTransactionBuffer;

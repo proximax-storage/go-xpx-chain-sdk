@@ -45,6 +45,17 @@ type UserExchangeInfo struct {
 	Offers	map[OfferType]map[MosaicId]*OfferInfo
 }
 
+func (info *UserExchangeInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Owner": %s,
+			"Offers": %+v,
+		`,
+		info.Owner,
+		info.Offers,
+	)
+}
+
 type OfferInfo struct {
 	Type				OfferType
 	Owner				*PublicAccount
@@ -52,6 +63,25 @@ type OfferInfo struct {
 	PriceNumerator		Amount
 	PriceDenominator	Amount
 	Deadline			Height
+}
+
+func (info *OfferInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Owner": %s,
+			"Type": %d,
+			"Mosaic": %s,
+			"PriceNumerator": %d,
+			"PriceNumerator": %d,
+			"Deadline": %d,
+		`,
+		info.Owner,
+		info.Type,
+		info.Mosaic,
+		info.PriceNumerator,
+		info.PriceDenominator,
+		info.Deadline,
+	)
 }
 
 func(o *OfferInfo) Cost(amount Amount) (Amount, error) {
@@ -80,7 +110,7 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 	confirmation := &ExchangeConfirmation{
 		Offer{
 			Type:		o.Type,
-			Mosaic:		newMosaicPanic(o.Mosaic.AssetId, amount ),
+			Mosaic:		newMosaicPanic(o.Mosaic.AssetId, amount),
 			Cost:		cost,
 		},
 		o.Owner,

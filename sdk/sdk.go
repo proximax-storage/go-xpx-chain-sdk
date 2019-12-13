@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -161,6 +162,7 @@ type Client struct {
 	Resolve     *ResolverService
 	Account     *AccountService
 	Storage     *StorageService
+	Lock        *LockService
 	Contract    *ContractService
 	Metadata    *MetadataService
 }
@@ -173,7 +175,17 @@ type service struct {
 // if passed client is nil, http.DefaultClient will be used
 func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		var netTransport = &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout: 5 * time.Second,
+			}).DialContext,
+			TLSHandshakeTimeout: 5 * time.Second,
+		}
+
+		httpClient = &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: netTransport,
+		}
 	}
 
 	c := &Client{client: httpClient, config: conf}
@@ -186,7 +198,8 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Exchange = &ExchangeService{&c.common, c.Resolve}
 	c.Account = (*AccountService)(&c.common)
-	c.Storage = (*StorageService)(&c.common)
+	c.Lock = (*LockService)(&c.common)
+	c.Storage = &StorageService{&c.common, c.Lock}
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 
@@ -613,7 +626,7 @@ func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicA
 	return tx, err
 }
 
-func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*AddAction, removeActions []*RemoveAction) (*DriveFileSystemTransaction, error) {
+func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
 	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -640,8 +653,26 @@ func (c *Client) NewEndDriveTransaction(deadline *Deadline, driveKey *PublicAcco
 	return tx, err
 }
 
-func (c *Client) NewDeleteRewardTransaction(deadline *Deadline, deletedFiles []*DeletedFile) (*DeleteRewardTransaction, error) {
-	tx, err := NewDeleteRewardTransaction(deadline, deletedFiles, c.config.NetworkType)
+func (c *Client) NewDriveFilesRewardTransaction(deadline *Deadline, uploadInfos []*UploadInfo) (*DriveFilesRewardTransaction, error) {
+	tx, err := NewDriveFilesRewardTransaction(deadline, uploadInfos, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStartDriveVerificationTransaction(deadline *Deadline, driveKey *PublicAccount) (*StartDriveVerificationTransaction, error) {
+	tx, err := NewStartDriveVerificationTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures []*FailureVerification) (*EndDriveVerificationTransaction, error) {
+	tx, err := NewEndDriveVerificationTransaction(deadline, failures, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

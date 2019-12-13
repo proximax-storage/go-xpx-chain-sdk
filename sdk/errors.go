@@ -80,6 +80,7 @@ var (
 var (
 	ErrEmptyAddressesIds = errors.New("list of addresses should not be empty")
 	ErrNilAddress        = errors.New("address is nil")
+	ErrNilHash           = errors.New("hash is nil")
 	ErrBlankAddress      = errors.New("address is blank")
 	ErrNilAccount        = errors.New("account should not be nil")
 	ErrInvalidAddress    = errors.New("wrong address")
