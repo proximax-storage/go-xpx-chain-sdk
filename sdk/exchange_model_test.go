@@ -19,7 +19,7 @@ func TestCounterOffer(t *testing.T) {
 }
 
 func TestCost_SellOffer(t *testing.T) {
-	offer = &OfferInfo{
+	offer := &OfferInfo{
 		Owner: exchangeAccount,
 		Type: SellOffer,
 		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
@@ -50,7 +50,7 @@ func TestCost_SellOffer(t *testing.T) {
 }
 
 func TestCost_BuyOffer(t *testing.T) {
-	offer = &OfferInfo{
+	offer := &OfferInfo{
 		Owner: exchangeAccount,
 		Type: BuyOffer,
 		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
@@ -81,7 +81,7 @@ func TestCost_BuyOffer(t *testing.T) {
 }
 
 func TestCost_Not_Enough_Amount(t *testing.T) {
-	offer = &OfferInfo{
+	offer := &OfferInfo{
 		Owner: exchangeAccount,
 		Type: BuyOffer,
 		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
@@ -95,7 +95,7 @@ func TestCost_Not_Enough_Amount(t *testing.T) {
 }
 
 func TestCost_Unknown_Type(t *testing.T) {
-	offer = &OfferInfo{
+	offer := &OfferInfo{
 		Owner: exchangeAccount,
 		Type: 3,
 		Mosaic: newMosaicPanic(exchangeMosaicId, uint64DTO{ 100, 0 }.toStruct()),
@@ -107,7 +107,7 @@ func TestCost_Unknown_Type(t *testing.T) {
 }
 
 func TestConfirmOffer(t *testing.T) {
-	offer = &OfferInfo{
+	offer := &OfferInfo{
 		Owner: exchangeAccount,
 		Type: SellOffer,
 		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),

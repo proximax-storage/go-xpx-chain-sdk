@@ -77,7 +77,7 @@ var testExchangeAccount, _ = NewAccountFromPublicKey("ED7A848FDEB2321EE97CE8AF26
 
 var (
 	testExchangeMosaicId, _    = NewMosaicId(0x26514E2A1EF33824)
-	offer = &OfferInfo{
+	testOfferInfo = &OfferInfo{
 		Owner: testExchangeAccount,
 		Type: SellOffer,
 		Mosaic: newMosaicPanic(testExchangeMosaicId, uint64DTO{ 997650, 0 }.toStruct()),
@@ -90,7 +90,7 @@ var (
 		Owner:  testExchangeAccount,
 		Offers: map[OfferType]map[MosaicId]*OfferInfo{
 			SellOffer: map[MosaicId]*OfferInfo{
-				*testExchangeMosaicId: offer,
+				*testExchangeMosaicId: testOfferInfo,
 			},
 			BuyOffer: make(map[MosaicId]*OfferInfo),
 		},
@@ -129,5 +129,5 @@ func TestExchangeService_GetExchangeOfferByAssetId(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, offers)
 	assert.Equal(t, len(offers), 2)
-	assert.Equal(t, []*OfferInfo{ offer, offer }, offers)
+	assert.Equal(t, []*OfferInfo{ testOfferInfo, testOfferInfo }, offers)
 }
