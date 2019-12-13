@@ -66,7 +66,7 @@ func (info *ReplicatorInfo) String() string {
 			"Start": %s,
 			"End": %s,
 			"Index": %d,
-			"ActiveFilesWithoutDeposit": %s,
+			"ActiveFilesWithoutDeposit": %+v,
 		`,
 		info.Account,
 		info.Start,

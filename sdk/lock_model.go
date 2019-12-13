@@ -36,7 +36,7 @@ type SecretLockInfo struct {
 	HashAlgorithm   HashType
 	CompositeHash   *Hash
 	Secret          *Hash
-	Recipient       *PublicAccount
+	Recipient       *Address
 }
 
 func CalculateCompositeHash(secret *Hash, recipient *Address) (*Hash, error) {
