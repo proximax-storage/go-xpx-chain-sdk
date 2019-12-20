@@ -5,10 +5,12 @@
 package integration
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	math "math/rand"
 	"sync"
 	"testing"
@@ -19,7 +21,20 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
-const defaultDurationNamespaceAndMosaic = 1000000
+//
+// const testUrl = "http://bcdev1.xpxsirius.io:3000"
+// const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
+
+
+const testUrl = "http://127.0.0.1:3000"
+const privateKey = "0F36D6D36A169F3CA2A03D19B4FA0828B656937491F8EE897FC158D8D4D6D470"
+
+//const testUrl = "http://35.167.38.200:3000"
+//const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
+const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
+
+const timeout = 2 * time.Minute
+const defaultDurationNamespaceAndMosaic = 10
 
 var listening = false
 
@@ -30,7 +45,43 @@ type Result struct {
 	error
 }
 
-func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash) <-chan Result {
+var cfg *sdk.Config
+var ctx context.Context
+var client *sdk.Client
+var wsc websocket.CatapultClient
+var defaultAccount *sdk.Account
+var nemesisAccount *sdk.Account
+
+const iter = 1000
+
+func init() {
+	ctx = context.Background()
+
+	cfg, err := sdk.NewConfig(ctx, []string{testUrl})
+	if err != nil {
+		panic(err)
+	}
+	cfg.FeeCalculationStrategy = 0
+
+	client = sdk.NewClient(nil, cfg)
+
+	wsc, err = websocket.NewClient(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Transaction) <-chan Result {
 	if !listening {
 		// Starting listening messages from websocket
 		go wsc.Listen()
@@ -46,6 +97,25 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash) <-chan Re
 		}
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
 		fmt.Println("Successful!")
+		transaction.GetAbstractTransaction().Signer = nil
+		transaction.GetAbstractTransaction().Signature = ""
+		transaction.GetAbstractTransaction().TransactionInfo = nil
+		transaction.GetAbstractTransaction().Deadline = tx.GetAbstractTransaction().Deadline
+
+		if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
+			transaction.GetAbstractTransaction().Type == sdk.AggregateCompleted {
+			agTx := transaction.(*sdk.AggregateTransaction)
+			originalAgTx := tx.(*sdk.AggregateTransaction)
+
+			for i, t := range agTx.InnerTransactions {
+				t.GetAbstractTransaction().Signer = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer
+				t.GetAbstractTransaction().Signature = ""
+				t.GetAbstractTransaction().TransactionInfo = nil
+				t.GetAbstractTransaction().Deadline = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline
+			}
+			agTx.Cosignatures = originalAgTx.Cosignatures
+		}
+		assert.Equal(t, tx, transaction)
 		out <- Result{transaction, nil}
 		return true
 	}); err != nil {
@@ -123,7 +193,7 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	assert.Nil(t, err)
 
 	assert.Nil(t, err)
-	wg := initListeners(t, account, signTx.Hash)
+	wg := initListeners(t, account, signTx.Hash, tx)
 	_, err = client.Transaction.Announce(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -137,7 +207,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 	signTx, err := account.SignWithCosignatures(tx, cosignatories)
 	assert.Nil(t, err)
 
-	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "payload", signTx.Hash}
+	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "", signTx.Hash}
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewLockFundsTransaction(
@@ -154,7 +224,7 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 
 	time.Sleep(2 * time.Second)
 
-	wg := initListeners(t, account, signTx.Hash)
+	wg := initListeners(t, account, signTx.Hash, tx)
 	_, err = client.Transaction.AnnounceAggregateBonded(ctx, signTx)
 	assert.Nil(t, err)
 
@@ -364,7 +434,7 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	_, err := rand.Read(hash[:])
 	assert.Nil(t, err)
 
-	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "payload", hash}
+	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "", hash}
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewLockFundsTransaction(

@@ -2506,12 +2506,14 @@ func (tx *RegisterNamespaceTransaction) String() string {
 			"AbstractTransaction": %s,
 			"NamespaceName": %s,
 			"NamespaceId": %s,
-			"Duration": %d
+			"Duration": %d,
+			"ParentId": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.NamspaceName,
 		tx.NamespaceId,
 		tx.Duration,
+		tx.ParentId,
 	)
 }
 
@@ -2574,7 +2576,7 @@ func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
 	}
 
 	d := Duration(0)
-	n := newNamespaceIdPanic(0)
+	var n *NamespaceId = nil
 
 	if dto.Tx.NamespaceType == Root {
 		d = dto.Tx.Duration.toStruct()
@@ -2644,12 +2646,12 @@ func (tx *LockFundsTransaction) String() string {
 			"AbstractTransaction": %s,
 			"Mosaic": %s,
 			"Duration": %d,
-			"SignedTxHash": %s
+			"SignedTransaction": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Mosaic,
 		tx.Duration,
-		tx.SignedTransaction.Hash,
+		tx.SignedTransaction,
 	)
 }
 
@@ -2724,7 +2726,7 @@ func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
 		*atx,
 		mosaic,
 		dto.Tx.Duration.toStruct(),
-		&SignedTransaction{Lock, "", hash},
+		&SignedTransaction{AggregateBonded, "", hash},
 	}, nil
 }
 

@@ -81,11 +81,11 @@ const (
 )
 
 type mosaicPropertyDTO struct {
-	Id    MosaicPropertyId `json:"id"`
+	Id    MosaicPropertyId `json:"key"`
 	Value uint64DTO        `json:"value"`
 }
 
-type mosaicPropertiesDTO []mosaicPropertyDTO
+type mosaicPropertiesDTO []*mosaicPropertyDTO
 
 // namespaceMosaicMetaDTO
 type namespaceMosaicMetaDTO struct {
