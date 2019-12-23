@@ -86,6 +86,7 @@ type Drive struct {
 	BillingPeriod    Duration
 	BillingPrice     Amount
 	DriveSize        StorageSize
+	OccupiedSpace    StorageSize
 	Replicas         uint16
 	MinReplicators   uint16
 	PercentApprovers uint8
@@ -107,6 +108,7 @@ func (drive *Drive) String() string {
 			"BillingPeriod": %d,
 			"BillingPrice": %d,
 			"DriveSize": %d,
+			"OccupiedSpace": %d,
 			"Replicas": %d,
 			"MinReplicators": %d,
 			"PercentApprovers": %d,
@@ -124,6 +126,7 @@ func (drive *Drive) String() string {
 		drive.BillingPeriod,
 		drive.BillingPrice,
 		drive.DriveSize,
+		drive.OccupiedSpace,
 		drive.Replicas,
 		drive.MinReplicators,
 		drive.PercentApprovers,
@@ -238,17 +241,21 @@ type StartDriveVerificationTransaction struct {
 
 type FailureVerification struct {
 	Replicator  *PublicAccount
-	BlochHash   *Hash
+	BlochHashes   []*Hash
+}
+
+func (fail *FailureVerification) Size() int {
+	return SizeSize + len(fail.BlochHashes) * Hash256 + KeySize
 }
 
 func (fail *FailureVerification) String() string {
 	return fmt.Sprintf(
 		`
 			"Replicator": %s,
-			"BlochHash": %s,
+			"BlochHashes": %s,
 		`,
 		fail.Replicator,
-		fail.BlochHash,
+		fail.BlochHashes,
 	)
 }
 

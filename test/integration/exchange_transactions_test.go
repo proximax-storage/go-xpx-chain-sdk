@@ -12,6 +12,7 @@ import (
 )
 
 func TestAddExchangeOfferTransaction(t *testing.T) {
+	configDelta := 2
 	config, err := client.Network.GetNetworkConfig(ctx)
 	assert.Nil(t, err)
 
@@ -20,13 +21,13 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewNetworkConfigTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.Duration(1),
+			sdk.Duration(configDelta),
 			config.NetworkConfig,
 			config.SupportedEntityVersions)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 
-	time.Sleep(time.Minute)
+	waitForBlocksCount(t, configDelta)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewAddExchangeOfferTransaction(

@@ -2606,6 +2606,73 @@ func StartDriveVerificationTransactionBufferEnd(builder *flatbuffers.Builder) fl
 	return builder.EndObject()
 }
 
+type BlockHashBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsBlockHashBuffer(buf []byte, offset flatbuffers.UOffsetT) *BlockHashBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &BlockHashBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *BlockHashBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *BlockHashBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *BlockHashBuffer) BlockHashe(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *BlockHashBuffer) BlockHasheLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *BlockHashBuffer) BlockHasheBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *BlockHashBuffer) MutateBlockHashe(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func BlockHashBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func BlockHashBufferAddBlockHashe(builder *flatbuffers.Builder, blockHashe flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(blockHashe), 0)
+}
+func BlockHashBufferStartBlockHasheVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func BlockHashBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type VerificationFailureBuffer struct {
 	_tab flatbuffers.Table
 }
@@ -2626,8 +2693,20 @@ func (rcv *VerificationFailureBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *VerificationFailureBuffer) Replicator(j int) byte {
+func (rcv *VerificationFailureBuffer) Size() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *VerificationFailureBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *VerificationFailureBuffer) Replicator(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -2636,7 +2715,7 @@ func (rcv *VerificationFailureBuffer) Replicator(j int) byte {
 }
 
 func (rcv *VerificationFailureBuffer) ReplicatorLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -2644,7 +2723,7 @@ func (rcv *VerificationFailureBuffer) ReplicatorLength() int {
 }
 
 func (rcv *VerificationFailureBuffer) ReplicatorBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -2652,7 +2731,7 @@ func (rcv *VerificationFailureBuffer) ReplicatorBytes() []byte {
 }
 
 func (rcv *VerificationFailureBuffer) MutateReplicator(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -2660,58 +2739,48 @@ func (rcv *VerificationFailureBuffer) MutateReplicator(j int, n byte) bool {
 	return false
 }
 
-func (rcv *VerificationFailureBuffer) BlockHash(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+func (rcv *VerificationFailureBuffer) BlockHashes(obj *BlockHashBuffer, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
-func (rcv *VerificationFailureBuffer) BlockHashLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+func (rcv *VerificationFailureBuffer) BlockHashesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
 }
 
-func (rcv *VerificationFailureBuffer) BlockHashBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *VerificationFailureBuffer) MutateBlockHash(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
 func VerificationFailureBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
+}
+func VerificationFailureBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
 }
 func VerificationFailureBufferAddReplicator(builder *flatbuffers.Builder, replicator flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(replicator), 0)
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(replicator), 0)
 }
 func VerificationFailureBufferStartReplicatorVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func VerificationFailureBufferAddBlockHash(builder *flatbuffers.Builder, blockHash flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(blockHash), 0)
+func VerificationFailureBufferAddBlockHashes(builder *flatbuffers.Builder, blockHashes flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(blockHashes), 0)
 }
-func VerificationFailureBufferStartBlockHashVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func VerificationFailureBufferStartBlockHashesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func VerificationFailureBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+
 
 type EndDriveVerificationTransactionBuffer struct {
 	_tab flatbuffers.Table
@@ -2889,44 +2958,8 @@ func (rcv *EndDriveVerificationTransactionBuffer) MutateDeadline(j int, n uint32
 	return false
 }
 
-/// 2 bytes
-func (rcv *EndDriveVerificationTransactionBuffer) FailureCount(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *EndDriveVerificationTransactionBuffer) FailureCountLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveVerificationTransactionBuffer) FailureCountBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-/// 2 bytes
-func (rcv *EndDriveVerificationTransactionBuffer) MutateFailureCount(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
 func (rcv *EndDriveVerificationTransactionBuffer) Failures(obj *VerificationFailureBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -2938,7 +2971,7 @@ func (rcv *EndDriveVerificationTransactionBuffer) Failures(obj *VerificationFail
 }
 
 func (rcv *EndDriveVerificationTransactionBuffer) FailuresLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -2946,7 +2979,7 @@ func (rcv *EndDriveVerificationTransactionBuffer) FailuresLength() int {
 }
 
 func EndDriveVerificationTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(9)
+	builder.StartObject(8)
 }
 func EndDriveVerificationTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -2981,14 +3014,8 @@ func EndDriveVerificationTransactionBufferAddDeadline(builder *flatbuffers.Build
 func EndDriveVerificationTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func EndDriveVerificationTransactionBufferAddFailureCount(builder *flatbuffers.Builder, failureCount flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(failureCount), 0)
-}
-func EndDriveVerificationTransactionBufferStartFailureCountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
 func EndDriveVerificationTransactionBufferAddFailures(builder *flatbuffers.Builder, failures flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(failures), 0)
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(failures), 0)
 }
 func EndDriveVerificationTransactionBufferStartFailuresVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
