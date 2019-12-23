@@ -473,7 +473,7 @@ func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	xorRootHash, err := dto.Tx.RootHash.Hash()
+	xorRootHash, err := dto.Tx.XorRootHash.Hash()
 	if err != nil {
 		return nil, err
 	}

@@ -112,7 +112,7 @@ func (dto *offerDTO) toStruct() (*Offer, error) {
 }
 
 type addOfferDTO struct {
-	Offer    offerDTO  `json:"offer"`
+	offerDTO
 	Duration uint64DTO `json:"duration"`
 }
 
@@ -120,7 +120,7 @@ func addOfferDTOArrayToStruct(offers []*addOfferDTO) ([]*AddOffer, error) {
 	offersResult := make([]*AddOffer, len(offers))
 	var err error = nil
 	for i, offer := range offers {
-		o, err := offer.Offer.toStruct()
+		o, err := offer.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +254,7 @@ func (tx *ExchangeOfferTransaction) Bytes() ([]byte, error) {
 }
 
 type confirmationOfferDTO struct {
-	Offer offerDTO `json:"offer"`
+	offerDTO
 	Owner string   `json:"owner"`
 }
 
@@ -262,7 +262,7 @@ func confirmationOfferDTOArrayToStruct(offers []*confirmationOfferDTO, networkTy
 	offersResult := make([]*ExchangeConfirmation, len(offers))
 	var err error = nil
 	for i, offer := range offers {
-		o, err := offer.Offer.toStruct()
+		o, err := offer.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -387,7 +387,7 @@ func (tx *RemoveExchangeOfferTransaction) Bytes() ([]byte, error) {
 
 type removeOfferDTO struct {
 	AssetId assetIdDTO `json:"mosaicId"`
-	Type    OfferType  `json:"type"`
+	Type    OfferType  `json:"offerType"`
 }
 
 func removeOfferDTOArrayToStruct(offers []*removeOfferDTO) ([]*RemoveOffer, error) {
