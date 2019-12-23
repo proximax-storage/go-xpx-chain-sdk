@@ -133,11 +133,15 @@ func endDriveVerificationTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newArrayAttribute("failureCount", ByteSize),
 			newTableArrayAttribute("failures", schema{
 				[]schemaAttribute{
+					newScalarAttribute("size", IntSize),
 					newArrayAttribute("replicator", ByteSize),
-					newArrayAttribute("blockHash", ByteSize),
+					newTableArrayAttribute("blockHashes", schema{
+						[]schemaAttribute{
+							newArrayAttribute("blockHash", ByteSize),
+						},
+					}.schemaDefinition),
 				},
 			}.schemaDefinition),
 		},

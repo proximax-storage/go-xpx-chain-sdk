@@ -180,6 +180,7 @@ type driveDTO struct {
 		BillingPeriod    uint64DTO          `json:"billingPeriod"`
 		BillingPrice     uint64DTO          `json:"billingPrice"`
 		DriveSize        uint64DTO          `json:"size"`
+		OccupiedSpace    uint64DTO          `json:"occupiedSpace"`
 		Replicas         uint16             `json:"replicas"`
 		MinReplicators   uint16             `json:"minReplicators"`
 		PercentApprovers uint8              `json:"percentApprovers"`
@@ -217,6 +218,7 @@ func (ref *driveDTO) toStruct(networkType NetworkType) (*Drive, error) {
 	drive.BillingPeriod = ref.Drive.BillingPeriod.toStruct()
 	drive.BillingPrice = ref.Drive.BillingPrice.toStruct()
 	drive.DriveSize = ref.Drive.DriveSize.toStruct()
+	drive.OccupiedSpace = ref.Drive.OccupiedSpace.toStruct()
 	drive.Replicas = ref.Drive.Replicas
 	drive.MinReplicators = ref.Drive.MinReplicators
 	drive.PercentApprovers = ref.Drive.PercentApprovers

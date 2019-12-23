@@ -114,9 +114,14 @@ table StartDriveVerificationTransactionBuffer {
     driveKey: [ubyte];
 }
 
+table BlockHashBuffer {
+    blockHashe: [ubyte];
+}
+
 table VerificationFailureBuffer {
+    size: uint;
     replicator: [ubyte];
-    blockHash: [ubyte];
+    blockHashes: [BlockHashBuffer];
 }
 
 table EndDriveVerificationTransactionBuffer {
@@ -127,8 +132,6 @@ table EndDriveVerificationTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    /// 2 bytes
-    failureCount: [ubyte];
     failures: [VerificationFailureBuffer];
 }
 
@@ -153,6 +156,8 @@ root_type JoinToDriveTransactionBuffer;
 root_type PrepareDriveTransactionBuffer;
 
 root_type StartDriveVerificationTransactionBuffer;
+
+root_type BlockHashBuffer;
 
 root_type VerificationFailureBuffer;
 

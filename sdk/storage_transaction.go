@@ -1051,12 +1051,22 @@ func failureVerificationsToArrayToBuffer(builder *flatbuffers.Builder, failures 
 			return 0, err
 		}
 
+		blockHashesb := make([]flatbuffers.UOffsetT, len(f.BlochHashes))
+
+		for i, block := range f.BlochHashes {
+			hV := hashToBuffer(builder, block)
+			transactions.BlockHashBufferStart(builder)
+			transactions.BlockHashBufferAddBlockHashe(builder, hV)
+			blockHashesb[i] = transactions.BlockHashBufferEnd(builder)
+		}
+
 		rV := transactions.TransactionBufferCreateByteVector(builder, rb)
-		hV := hashToBuffer(builder, f.BlochHash)
+		hV := transactions.TransactionBufferCreateUOffsetVector(builder, blockHashesb)
 
 		transactions.VerificationFailureBufferStart(builder)
+		transactions.VerificationFailureBufferAddSize(builder, uint32(f.Size()))
 		transactions.VerificationFailureBufferAddReplicator(builder, rV)
-		transactions.VerificationFailureBufferAddBlockHash(builder, hV)
+		transactions.VerificationFailureBufferAddBlockHashes(builder, hV)
 		failuresb[i] = transactions.VerificationFailureBufferEnd(builder)
 	}
 
@@ -1076,14 +1086,9 @@ func (tx *EndDriveVerificationTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	failureCountB := make([]byte, 2)
-	binary.LittleEndian.PutUint16(failureCountB, uint16(len(tx.Failures)))
-	failureCountV := transactions.TransactionBufferCreateByteVector(builder, failureCountB)
-
 	transactions.EndDriveVerificationTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.EndDriveVerificationTransactionBufferAddFailureCount(builder, failureCountV)
 	transactions.EndDriveVerificationTransactionBufferAddFailures(builder, failuresV)
 	t := transactions.EndDriveVerificationTransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -1092,12 +1097,17 @@ func (tx *EndDriveVerificationTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *EndDriveVerificationTransaction) Size() int {
-	return TransactionHeaderSize + 2 + len(tx.Failures) * (KeySize + Hash256)
+	size := 0
+	for _, f := range tx.Failures {
+		size += f.Size()
+	}
+
+	return TransactionHeaderSize + size
 }
 
 type failureVerificationDTO struct {
 	Replicator     string       `json:"replicator"`
-	BlockHash      hashDto      `json:"blockHash"`
+	BlockHashes    []hashDto    `json:"blockHashes"`
 }
 
 func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVerification, error) {
@@ -1106,14 +1116,19 @@ func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVe
 		return nil, err
 	}
 
-	hash, err := dto.BlockHash.Hash()
-	if err != nil {
-		return nil, err
+	hashes := make([]*Hash, len(dto.BlockHashes))
+
+	for i, h := range dto.BlockHashes {
+		hash, err := h.Hash()
+		if err != nil {
+			return nil, err
+		}
+		hashes[i] = hash
 	}
 
 	return &FailureVerification{
 		acc,
-		hash,
+		hashes,
 	}, nil
 }
 
