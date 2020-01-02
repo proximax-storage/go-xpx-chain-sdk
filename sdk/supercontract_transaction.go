@@ -10,7 +10,7 @@ import (
 )
 
 func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash,
-		functionsList []string, networkType NetworkType) (*DeployTransaction, error) {
+	functionsList []*Hash, vmFunctions []*Hash, networkType NetworkType) (*DeployTransaction, error) {
 
 	if drive == nil {
 		return nil, ErrNilAccount
@@ -27,10 +27,11 @@ func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccoun
 			Type:        Deploy,
 			NetworkType: networkType,
 		},
-		DriveAccount:           drive,
-		SuperContractAccount:   supercontract,
-		FileHash:               fileHash,
-		FunctionsList:          functionsList,
+		DriveAccount:         drive,
+		SuperContractAccount: supercontract,
+		FileHash:             fileHash,
+		VMFunctions:          vmFunctions,
+		FunctionsList:        functionsList,
 	}
 
 	return &tx, nil
@@ -47,12 +48,14 @@ func (tx *DeployTransaction) String() string {
 			"DriveAccount": %s,
 			"SuperContractAccount": %s,
 			"FileHash": %s,
+			"VMFunctions": %+v,
 			"FunctionsList": %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveAccount,
 		tx.SuperContractAccount,
 		tx.FileHash,
+		tx.VMFunctions,
 		tx.FunctionsList,
 	)
 }
@@ -65,7 +68,7 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	return nil, nil
 }
 
-func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string, networkType NetworkType) (*ExecuteTransaction, error) {
+func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function *Hash, networkType NetworkType) (*ExecuteTransaction, error) {
 	if supercontract == nil {
 		return nil, ErrNilAccount
 	}
@@ -83,9 +86,9 @@ func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mos
 			Type:        Execute,
 			NetworkType: networkType,
 		},
-		SuperContract:      supercontract,
-		LockMosaics:        mosaics,
-		Function:           function,
+		SuperContract: supercontract,
+		LockMosaics:   mosaics,
+		Function:      function,
 	}
 
 	return &tx, nil
@@ -130,8 +133,8 @@ func NewAggregateOperationBoundedTransaction(deadline *Deadline, innerTxs []Tran
 			Type:        AggregateOperationBonded,
 			NetworkType: networkType,
 		},
-		OperationHash:        hash,
-		InnerTransactions:    innerTxs,
+		OperationHash:     hash,
+		InnerTransactions: innerTxs,
 	}
 
 	return &tx, nil
@@ -149,8 +152,8 @@ func NewAggregateOperationCompleteTransaction(deadline *Deadline, innerTxs []Tra
 			Type:        AggregateOperationCompleted,
 			NetworkType: networkType,
 		},
-		OperationHash:        hash,
-		InnerTransactions:    innerTxs,
+		OperationHash:     hash,
+		InnerTransactions: innerTxs,
 	}
 
 	return &tx, nil
@@ -196,8 +199,8 @@ func NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status Op
 			Type:        EndOperation,
 			NetworkType: networkType,
 		},
-		UsedMosaics:    mosaics,
-		Status:         status,
+		UsedMosaics: mosaics,
+		Status:      status,
 	}
 
 	return &tx, nil
