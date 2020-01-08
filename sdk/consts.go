@@ -20,6 +20,9 @@ var StorageNamespaceId, _ = NewNamespaceIdFromName("prx.storage")
 // namespace id for streaming mosaic
 var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.streaming")
 
+// namespace id for super contract mosaic
+var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")
+
 // routes for AccountService
 const (
 	accountsRoute                 = "/account"
