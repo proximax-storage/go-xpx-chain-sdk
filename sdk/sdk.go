@@ -682,7 +682,7 @@ func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures
 	return tx, err
 }
 
-func (c *Client) NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, functionsList map[string]string) (*DeployTransaction, error) {
+func (c *Client) NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, functionsList []string) (*DeployTransaction, error) {
 	tx, err := NewDeployTransaction(deadline, drive, supercontract, fileHash, functionsList, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)

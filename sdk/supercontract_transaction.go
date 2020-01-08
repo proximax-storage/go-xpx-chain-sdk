@@ -10,7 +10,7 @@ import (
 )
 
 func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash,
-		functionsList map[string]string, networkType NetworkType) (*DeployTransaction, error) {
+		functionsList []string, networkType NetworkType) (*DeployTransaction, error) {
 
 	if drive == nil {
 		return nil, ErrNilAccount

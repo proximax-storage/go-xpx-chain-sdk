@@ -51,7 +51,7 @@ type DeployTransaction struct {
 	DriveAccount                *PublicAccount
 	SuperContractAccount        *PublicAccount
 	FileHash                    *Hash
-	FunctionsList               map[string]string
+	FunctionsList               []string
 }
 
 type ExecuteTransaction struct {
