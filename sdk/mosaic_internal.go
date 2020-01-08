@@ -81,7 +81,7 @@ const (
 )
 
 type mosaicPropertyDTO struct {
-	Id    MosaicPropertyId `json:"key"`
+	Id    MosaicPropertyId `json:"id"`
 	Value uint64DTO        `json:"value"`
 }
 
