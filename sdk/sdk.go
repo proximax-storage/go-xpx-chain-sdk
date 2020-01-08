@@ -153,18 +153,19 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain  *BlockchainService
-	Exchange    *ExchangeService
-	Mosaic      *MosaicService
-	Namespace   *NamespaceService
-	Network     *NetworkService
-	Transaction *TransactionService
-	Resolve     *ResolverService
-	Account     *AccountService
-	Storage     *StorageService
-	Lock        *LockService
-	Contract    *ContractService
-	Metadata    *MetadataService
+	Blockchain      *BlockchainService
+	Exchange        *ExchangeService
+	Mosaic          *MosaicService
+	Namespace       *NamespaceService
+	Network         *NetworkService
+	Transaction     *TransactionService
+	Resolve         *ResolverService
+	Account         *AccountService
+	Storage         *StorageService
+	SuperContract   *SuperContractService
+	Lock            *LockService
+	Contract        *ContractService
+	Metadata        *MetadataService
 }
 
 type service struct {
@@ -200,6 +201,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Lock = (*LockService)(&c.common)
 	c.Storage = &StorageService{&c.common, c.Lock}
+	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 
@@ -673,6 +675,51 @@ func (c *Client) NewStartDriveVerificationTransaction(deadline *Deadline, driveK
 
 func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures []*FailureVerification) (*EndDriveVerificationTransaction, error) {
 	tx, err := NewEndDriveVerificationTransaction(deadline, failures, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, functionsList map[string]string) (*DeployTransaction, error) {
+	tx, err := NewDeployTransaction(deadline, drive, supercontract, fileHash, functionsList, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string) (*ExecuteTransaction, error) {
+	tx, err := NewExecuteTransaction(deadline, supercontract, mosaics, function, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAggregateOperationBoundedTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash) (*AggregateOperationTransaction, error) {
+	tx, err := NewAggregateOperationBoundedTransaction(deadline, innerTxs, hash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAggregateOperationCompleteTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash) (*AggregateOperationTransaction, error) {
+	tx, err := NewAggregateOperationCompleteTransaction(deadline, innerTxs, hash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status OperationStatus) (*EndOperationTransaction, error) {
+	tx, err := NewEndOperationTransaction(deadline, mosaics, status, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

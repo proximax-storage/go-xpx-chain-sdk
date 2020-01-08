@@ -41,9 +41,9 @@ func (s *StorageService) GetDrive(ctx context.Context, driveKey *PublicAccount) 
 type DriveParticipantFilter string
 
 const (
-	AllRoles   DriveParticipantFilter = ""
-	Owner      DriveParticipantFilter = "/owner"
-	Replicator DriveParticipantFilter = "/replicator"
+	AllDriveRoles   DriveParticipantFilter = ""
+	OwnerDrive      DriveParticipantFilter = "/owner"
+	ReplicatorDrive DriveParticipantFilter = "/replicator"
 )
 
 func (s *StorageService) GetAccountDrives(ctx context.Context, driveKey *PublicAccount, filter DriveParticipantFilter) ([]*Drive, error) {

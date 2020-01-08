@@ -189,9 +189,8 @@ func TestStorageService_GetDrive(t *testing.T) {
 }
 
 func TestStorageService_GetAccountDrives(test *testing.T) {
-	for _, filter := range []DriveParticipantFilter{ Replicator, Owner, AllRoles } {
+	for _, filter := range []DriveParticipantFilter{ReplicatorDrive, OwnerDrive, AllDriveRoles} {
 		test.Run(fmt.Sprintf("Test for filter %s", filter), func(t *testing.T) {
-			filter := Replicator
 			mock := newSdkMockWithRouter(&mock.Router{
 				Path:                fmt.Sprintf(drivesOfAccountRoute, testDriveOwnerAccount.PublicKey, filter),
 				AcceptedHttpMethods: []string{http.MethodGet},

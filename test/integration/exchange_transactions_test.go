@@ -12,7 +12,7 @@ import (
 )
 
 func TestAddExchangeOfferTransaction(t *testing.T) {
-	configDelta := 2
+	configDelta := 5
 	config, err := client.Network.GetNetworkConfig(ctx)
 	assert.Nil(t, err)
 

@@ -151,7 +151,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
+	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllDriveRoles)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewFilesDepositTransaction(
@@ -183,7 +183,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	drives, err = client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllRoles)
+	drives, err = client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllDriveRoles)
 	assert.Nil(t, err)
 	fmt.Println(drives)
 
