@@ -10,7 +10,7 @@ type (
 
 	PartialRemoved interface {
 		AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*PartialRemovedHandler
 		GetAddresses() []string
@@ -101,9 +101,9 @@ func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...Parti
 	return nil
 }
 
-func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) (bool, error) {
+func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) bool {
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -113,7 +113,7 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *partialRemovedImpl) HasHandlers(address *sdk.Address) bool {

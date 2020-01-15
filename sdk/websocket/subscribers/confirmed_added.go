@@ -10,7 +10,7 @@ type (
 
 	ConfirmedAdded interface {
 		AddHandlers(address *sdk.Address, handlers ...ConfirmedAddedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*ConfirmedAddedHandler
 		GetAddresses() []string
@@ -100,10 +100,10 @@ func (e *confirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...Confi
 	return nil
 }
 
-func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) (bool, error) {
+func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*ConfirmedAddedHandler) bool {
 
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -113,7 +113,7 @@ func (e *confirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*C
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *confirmedAddedImpl) HasHandlers(address *sdk.Address) bool {

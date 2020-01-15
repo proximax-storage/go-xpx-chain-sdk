@@ -9,7 +9,7 @@ type (
 	UnconfirmedAddedHandler func(sdk.Transaction) bool
 	UnconfirmedAdded        interface {
 		AddHandlers(address *sdk.Address, handlers ...UnconfirmedAddedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*UnconfirmedAddedHandler
 		GetAddresses() []string
@@ -99,9 +99,9 @@ func (e *unconfirmedAddedImpl) AddHandlers(address *sdk.Address, handlers ...Unc
 	return nil
 }
 
-func (e *unconfirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) (bool, error) {
+func (e *unconfirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedAddedHandler) bool {
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -111,7 +111,7 @@ func (e *unconfirmedAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *unconfirmedAddedImpl) HasHandlers(address *sdk.Address) bool {

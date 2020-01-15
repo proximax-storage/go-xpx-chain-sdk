@@ -188,8 +188,7 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got, err := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
-			assert.Equal(t, err != nil, tt.wantErr)
+			got := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, got, tt.want)
 		})
 	}
