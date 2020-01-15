@@ -10,7 +10,7 @@ type (
 
 	Block interface {
 		AddHandlers(handlers ...BlockHandler) error
-		RemoveHandlers(handlers ...*BlockHandler) (bool, error)
+		RemoveHandlers(handlers ...*BlockHandler) bool
 		HasHandlers() bool
 		GetHandlers() []*BlockHandler
 	}
@@ -93,8 +93,7 @@ func (s *blockSubscriberImpl) AddHandlers(handlers ...BlockHandler) error {
 	return nil
 }
 
-func (s *blockSubscriberImpl) RemoveHandlers(handlers ...*BlockHandler) (bool, error) {
-
+func (s *blockSubscriberImpl) RemoveHandlers(handlers ...*BlockHandler) bool {
 	resCh := make(chan bool)
 	s.removeSubscriberCh <- &blockSubscription{
 
@@ -102,7 +101,7 @@ func (s *blockSubscriberImpl) RemoveHandlers(handlers ...*BlockHandler) (bool, e
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (s *blockSubscriberImpl) HasHandlers() bool {

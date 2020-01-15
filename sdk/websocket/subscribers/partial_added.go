@@ -8,7 +8,7 @@ import (
 type (
 	PartialAdded interface {
 		AddHandlers(address *sdk.Address, handlers ...PartialAddedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*PartialAddedHandler
 		GetAddresses() []string
@@ -99,9 +99,9 @@ func (e *partialAddedImpl) AddHandlers(address *sdk.Address, handlers ...Partial
 	return nil
 }
 
-func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) (bool, error) {
+func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialAddedHandler) bool {
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -111,7 +111,7 @@ func (e *partialAddedImpl) RemoveHandlers(address *sdk.Address, handlers ...*Par
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *partialAddedImpl) HasHandlers(address *sdk.Address) bool {

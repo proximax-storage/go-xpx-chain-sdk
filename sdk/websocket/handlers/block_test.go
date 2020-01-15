@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/proximax-storage/go-xpx-chain-sdk/mocks/mappers"
+	mappers "github.com/proximax-storage/go-xpx-chain-sdk/mocks"
 	mocksSubscribers "github.com/proximax-storage/go-xpx-chain-sdk/mocks/websocket/subscribers"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"

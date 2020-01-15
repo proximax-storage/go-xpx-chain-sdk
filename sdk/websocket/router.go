@@ -39,12 +39,14 @@ func (r *messageRouter) RouteMessage(m []byte) {
 
 	handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
 	if handler == nil {
-		panic(errors.Wrap(ErrUnsupportedMessageType, "getting topic handler from topic handlers storage"))
+		fmt.Println("getting topic handler from topic handlers storage")
+		return
 	}
 
 	if ok := handler.Handle(messageInfo.Address, m); !ok {
 		if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
-			panic(errors.Wrap(err, "unsubscribing from topic"))
+			fmt.Println(err, "unsubscribing from topic")
+			return
 		}
 	}
 
