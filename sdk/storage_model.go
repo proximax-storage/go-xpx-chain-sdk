@@ -270,26 +270,3 @@ type VerificationStatus struct {
 	Active      bool
 	Available   bool
 }
-
-// Start File Download Transaction
-
-type DownloadFile struct {
-	FileHash    *Hash
-	Size        StorageSize
-}
-
-type StartFileDownloadTransaction struct {
-	AbstractTransaction
-	Drive           *PublicAccount
-	OperationToken  *Hash
-	Files           []*DownloadFile
-}
-
-// End File Download Transaction
-
-type EndFileDownloadTransaction struct {
-	AbstractTransaction
-	Drive           *PublicAccount
-	OperationToken  *Hash
-	Files           []*File
-}
