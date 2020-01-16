@@ -55,14 +55,15 @@ type DeployTransaction struct {
 	SuperContractAccount *PublicAccount
 	FileHash             *Hash
 	VMFunctions          []*Hash
-	FunctionsList        []*Hash
+	FunctionsList        []string
 }
 
 type ExecuteTransaction struct {
 	AbstractTransaction
-	SuperContract *PublicAccount
-	LockMosaics   []*Mosaic
-	Function      *Hash
+	SuperContract      *PublicAccount
+	LockMosaics        []*Mosaic
+	Function           string
+	FunctionParameters []int64
 }
 
 type StartOperationTransaction struct {

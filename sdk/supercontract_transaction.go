@@ -10,7 +10,7 @@ import (
 )
 
 func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash,
-	functionsList []*Hash, vmFunctions []*Hash, networkType NetworkType) (*DeployTransaction, error) {
+	functionsList []string, vmFunctions []*Hash, networkType NetworkType) (*DeployTransaction, error) {
 
 	if drive == nil {
 		return nil, ErrNilAccount
@@ -68,7 +68,7 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	return nil, nil
 }
 
-func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function *Hash, networkType NetworkType) (*ExecuteTransaction, error) {
+func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string, functionParameters []int64, networkType NetworkType) (*ExecuteTransaction, error) {
 	if supercontract == nil {
 		return nil, ErrNilAccount
 	}
@@ -86,9 +86,10 @@ func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mos
 			Type:        Execute,
 			NetworkType: networkType,
 		},
-		SuperContract: supercontract,
-		LockMosaics:   mosaics,
-		Function:      function,
+		SuperContract:      supercontract,
+		LockMosaics:        mosaics,
+		Function:           function,
+		FunctionParameters: functionParameters,
 	}
 
 	return &tx, nil
@@ -105,11 +106,13 @@ func (tx *ExecuteTransaction) String() string {
 			"SuperContract": %s,
 			"LockMosaics": %s,
 			"Function": %s,
+			"functionParameters": %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.SuperContract,
 		tx.LockMosaics,
 		tx.Function,
+		tx.FunctionParameters,
 	)
 }
 
