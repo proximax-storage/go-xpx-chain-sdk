@@ -18,17 +18,17 @@ const (
 )
 
 type Operation struct {
-	Status          OperationStatus
-	Executor        *PublicAccount
-	LockedMosaics   []*Mosaic
-	Transactions    []*Transaction
+	Status        OperationStatus
+	Executor      *PublicAccount
+	LockedMosaics []*Mosaic
+	Transactions  []*Transaction
 }
 
 type SuperContract struct {
-	Account         *PublicAccount
-	Drive           *Drive
-	FileHash        *Hash
-	FunctionsList   map[string]string
+	Account       *PublicAccount
+	Drive         *Drive
+	FileHash      *Hash
+	FunctionsList []string
 }
 
 func (s *SuperContract) String() string {
@@ -48,35 +48,35 @@ func (s *SuperContract) String() string {
 
 type DeployTransaction struct {
 	AbstractTransaction
-	DriveAccount                *PublicAccount
-	SuperContractAccount        *PublicAccount
-	FileHash                    *Hash
-	FunctionsList               []string
+	DriveAccount         *PublicAccount
+	SuperContractAccount *PublicAccount
+	FileHash             *Hash
+	FunctionsList        []string
 }
 
 type ExecuteTransaction struct {
 	AbstractTransaction
-	SuperContract       *PublicAccount
-	LockMosaics         []*Mosaic
-	Function            string
+	SuperContract *PublicAccount
+	LockMosaics   []*Mosaic
+	Function      string
 }
 
 type StartOperationTransaction struct {
 	AbstractTransaction
-	OperationExecutor           *PublicAccount
-	Mosaics                     []*Mosaic
+	OperationExecutor *PublicAccount
+	Mosaics           []*Mosaic
 }
 
 // Must be aggregated in AOT
 type EndOperationTransaction struct {
 	AbstractTransaction
-	UsedMosaics             []*Mosaic
-	Status                  OperationStatus
+	UsedMosaics []*Mosaic
+	Status      OperationStatus
 }
 
 type AggregateOperationTransaction struct {
 	AbstractTransaction
-	OperationHash       *Hash
-	InnerTransactions   []Transaction
-	Cosignatures        []*AggregateTransactionCosignature
+	OperationHash     *Hash
+	InnerTransactions []Transaction
+	Cosignatures      []*AggregateTransactionCosignature
 }
