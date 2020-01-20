@@ -25,11 +25,10 @@ type Operation struct {
 }
 
 type SuperContract struct {
-	Account       *PublicAccount
-	Drive         *Drive
-	FileHash      *Hash
-	VMFunctions   []*Hash
-	FunctionsList []string
+	Account   *PublicAccount
+	Drive     *Drive
+	FileHash  *Hash
+	VMVersion uint64
 }
 
 func (s *SuperContract) String() string {
@@ -38,14 +37,12 @@ func (s *SuperContract) String() string {
 			"Account": %s,
 			"Drive": %s,
 			"FileHash": %s,
-			"VMFunctions": %+v,
-			"FunctionsList": %+v,
+			"VMVersion": %d,
 		`,
 		s.Account,
 		s.Drive,
 		s.FileHash,
-		s.VMFunctions,
-		s.FunctionsList,
+		s.VMVersion,
 	)
 }
 
@@ -54,8 +51,7 @@ type DeployTransaction struct {
 	DriveAccount         *PublicAccount
 	SuperContractAccount *PublicAccount
 	FileHash             *Hash
-	VMFunctions          []*Hash
-	FunctionsList        []string
+	VMVersion            uint64
 }
 
 type ExecuteTransaction struct {

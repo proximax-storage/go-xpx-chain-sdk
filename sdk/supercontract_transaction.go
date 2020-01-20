@@ -9,9 +9,7 @@ import (
 	"fmt"
 )
 
-func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash,
-	functionsList []string, vmFunctions []*Hash, networkType NetworkType) (*DeployTransaction, error) {
-
+func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, vmVersion uint64, networkType NetworkType) (*DeployTransaction, error) {
 	if drive == nil {
 		return nil, ErrNilAccount
 	}
@@ -30,8 +28,7 @@ func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccoun
 		DriveAccount:         drive,
 		SuperContractAccount: supercontract,
 		FileHash:             fileHash,
-		VMFunctions:          vmFunctions,
-		FunctionsList:        functionsList,
+		VMVersion:            vmVersion,
 	}
 
 	return &tx, nil
@@ -48,15 +45,13 @@ func (tx *DeployTransaction) String() string {
 			"DriveAccount": %s,
 			"SuperContractAccount": %s,
 			"FileHash": %s,
-			"VMFunctions": %+v,
-			"FunctionsList": %+v,
+			"VMVersion": %+d,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveAccount,
 		tx.SuperContractAccount,
 		tx.FileHash,
-		tx.VMFunctions,
-		tx.FunctionsList,
+		tx.VMVersion,
 	)
 }
 

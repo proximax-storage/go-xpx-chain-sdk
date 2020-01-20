@@ -66,6 +66,6 @@ func (s *SuperContractService) GetAccountSuperContracts(ctx context.Context, acc
 	return nil, nil
 }
 
-func (s *SuperContractService) GetExectutionStatus(ctx context.Context, operationHash *Hash) (*Operation, error) {
+func (s *SuperContractService) GetExecutionStatus(ctx context.Context, operationHash *Hash) (*Operation, error) {
 	return nil, nil
 }
