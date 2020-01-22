@@ -23,9 +23,6 @@ var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.sm")
 // namespace id for suepr contract mosaic
 var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")
 
-// namespace id for super contract mosaic
-var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")
-
 // routes for AccountService
 const (
 	accountsRoute                 = "/account"
