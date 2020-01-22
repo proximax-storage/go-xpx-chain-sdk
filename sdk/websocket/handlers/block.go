@@ -45,12 +45,7 @@ func (h *blockHandler) Handle(address *sdk.Address, resp []byte) bool {
 				return
 			}
 
-			_, err = h.handlers.RemoveHandlers(f)
-			if err != nil {
-				panic(errors.Wrap(err, "removing handler from storage"))
-			}
-
-			return
+			h.handlers.RemoveHandlers(f)
 		}(f)
 	}
 

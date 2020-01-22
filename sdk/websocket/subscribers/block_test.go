@@ -135,8 +135,7 @@ func Test_blockSubscriberImpl_RemoveHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.s.handleNewSubscription()
-			got, err := tt.s.RemoveHandlers(tt.args.handlers...)
-			assert.Equal(t, tt.wantErr, err != nil)
+			got := tt.s.RemoveHandlers(tt.args.handlers...)
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -15,10 +15,13 @@ var XemNamespaceId, _ = NewNamespaceIdFromName("nem.xem")
 var XpxNamespaceId, _ = NewNamespaceIdFromName("prx.xpx")
 
 // namespace id for storage mosaic
-var StorageNamespaceId, _ = NewNamespaceIdFromName("prx.storage")
+var StorageNamespaceId, _ = NewNamespaceIdFromName("prx.so")
 
 // namespace id for streaming mosaic
-var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.streaming")
+var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.sm")
+
+// namespace id for suepr contract mosaic
+var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")
 
 // namespace id for super contract mosaic
 var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")

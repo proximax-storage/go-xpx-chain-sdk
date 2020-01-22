@@ -11,7 +11,7 @@ type (
 
 	DriveState interface {
 		AddHandlers(address *sdk.Address, handlers ...DriveStateHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*DriveStateHandler
 		GetAddresses() []string
@@ -100,10 +100,10 @@ func (e *driveStateImpl) AddHandlers(address *sdk.Address, handlers ...DriveStat
 	return nil
 }
 
-func (e *driveStateImpl) RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) (bool, error) {
+func (e *driveStateImpl) RemoveHandlers(address *sdk.Address, handlers ...*DriveStateHandler) bool {
 
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -114,7 +114,7 @@ func (e *driveStateImpl) RemoveHandlers(address *sdk.Address, handlers ...*Drive
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *driveStateImpl) HasHandlers(address *sdk.Address) bool {

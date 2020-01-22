@@ -10,7 +10,7 @@ type (
 
 	Status interface {
 		AddHandlers(address *sdk.Address, handlers ...StatusHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*StatusHandler
 		GetAddresses() []string
@@ -100,9 +100,9 @@ func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler
 	return nil
 }
 
-func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) (bool, error) {
+func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) bool {
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -112,7 +112,7 @@ func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHan
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *statusImpl) HasHandlers(address *sdk.Address) bool {

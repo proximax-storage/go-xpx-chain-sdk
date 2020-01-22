@@ -11,7 +11,7 @@ type (
 
 	Cosignature interface {
 		AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*CosignatureHandler
 		GetAddresses() []string
@@ -100,10 +100,10 @@ func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...Cosignat
 	return nil
 }
 
-func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) (bool, error) {
+func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) bool {
 
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -114,7 +114,7 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *cosignatureImpl) HasHandlers(address *sdk.Address) bool {

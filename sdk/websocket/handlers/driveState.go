@@ -44,10 +44,7 @@ func (h *driveStateHandler) Handle(address *sdk.Address, resp []byte) bool {
 				return
 			}
 
-			_, err := h.handlers.RemoveHandlers(address, f)
-			if err != nil {
-				panic(errors.Wrap(err, "removing handler from storage"))
-			}
+			h.handlers.RemoveHandlers(address, f)
 		}(f)
 	}
 

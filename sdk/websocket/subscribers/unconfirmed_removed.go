@@ -10,7 +10,7 @@ type (
 
 	UnconfirmedRemoved interface {
 		AddHandlers(address *sdk.Address, handlers ...UnconfirmedRemovedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) (bool, error)
+		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) bool
 		HasHandlers(address *sdk.Address) bool
 		GetHandlers(address *sdk.Address) []*UnconfirmedRemovedHandler
 		GetAddresses() []string
@@ -100,9 +100,9 @@ func (e *unconfirmedRemovedImpl) AddHandlers(address *sdk.Address, handlers ...U
 	return nil
 }
 
-func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) (bool, error) {
+func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) bool {
 	if len(handlers) == 0 {
-		return false, nil
+		return false
 	}
 
 	resCh := make(chan bool)
@@ -112,7 +112,7 @@ func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers .
 		resultCh: resCh,
 	}
 
-	return <-resCh, nil
+	return <-resCh
 }
 
 func (e *unconfirmedRemovedImpl) HasHandlers(address *sdk.Address) bool {
