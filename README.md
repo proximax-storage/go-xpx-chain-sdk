@@ -1,12 +1,8 @@
-# ProximaX Sirius Blockchain Golang SDK
+<p align="center"><a href="https://www.rust-lang.org" target="_blank" rel="noopener noreferrer"><img width="300" src="https://user-images.githubusercontent.com/29048783/72933412-b35a0580-3d2f-11ea-9852-9950f2031949.png" alt="Golang logo"></a></p>
 
 Official ProximaX Sirius Blockchain SDK Library in Golang.
 
 The ProximaX Sirius Catapult Chain Golang SDK works as a lightweight Golang library for interacting with the Sirius Blockchain. It provides a complete library set coverage, and supports synchronous and asynchronous requests. 
-
-<p align="center">
-    <img src="./doc/catapult-nem2-sdk-go.jpg">
-</p>
 
 ## Getting Started
 
