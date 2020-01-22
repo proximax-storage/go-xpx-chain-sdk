@@ -15,7 +15,7 @@ import (
 
 func NewPrepareDriveTransaction(
 	deadline *Deadline,
-	owner *PublicAccount,
+	drive *PublicAccount,
 	duration Duration,
 	billingPeriod Duration,
 	billingPrice Amount,
@@ -26,7 +26,7 @@ func NewPrepareDriveTransaction(
 	networkType NetworkType,
 ) (*PrepareDriveTransaction, error) {
 
-	if owner == nil {
+	if drive == nil {
 		return nil, ErrNilAccount
 	}
 
@@ -69,7 +69,7 @@ func NewPrepareDriveTransaction(
 			Type:        PrepareDrive,
 			NetworkType: networkType,
 		},
-		Owner:            owner,
+		Drive:            drive,
 		Duration:         duration,
 		BillingPeriod:    billingPeriod,
 		BillingPrice:     billingPrice,
@@ -90,7 +90,7 @@ func (tx *PrepareDriveTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"Owner": %s,
+			"Drive": %s,
 			"Duration": %d,
 			"BillingPeriod": %d,
 			"BillingPrice": %d,
@@ -100,7 +100,7 @@ func (tx *PrepareDriveTransaction) String() string {
 			"PercentApprovers": %d,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.Owner,
+		tx.Drive,
 		tx.Duration,
 		tx.BillingPeriod,
 		tx.BillingPrice,
@@ -119,12 +119,12 @@ func (tx *PrepareDriveTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	ownerB, err := hex.DecodeString(tx.Owner.PublicKey)
+	driveB, err := hex.DecodeString(tx.Drive.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	ownerV := transactions.TransactionBufferCreateByteVector(builder, ownerB)
+	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 	durationV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 	billingPeriodV := transactions.TransactionBufferCreateUint32Vector(builder, tx.BillingPeriod.toArray())
 	billingPriceV := transactions.TransactionBufferCreateUint32Vector(builder, tx.BillingPrice.toArray())
@@ -134,7 +134,7 @@ func (tx *PrepareDriveTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.PrepareDriveTransactionBufferAddOwner(builder, ownerV)
+	transactions.PrepareDriveTransactionBufferAddDrive(builder, driveV)
 	transactions.PrepareDriveTransactionBufferAddDuration(builder, durationV)
 	transactions.PrepareDriveTransactionBufferAddBillingPeriod(builder, billingPeriodV)
 	transactions.PrepareDriveTransactionBufferAddBillingPrice(builder, billingPriceV)
@@ -156,7 +156,7 @@ func (tx *PrepareDriveTransaction) Size() int {
 type prepareDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Owner            string    `json:"owner"`
+		Drive            string    `json:"drive"`
 		Duration         uint64DTO `json:"duration"`
 		BillingPeriod    uint64DTO `json:"billingPeriod"`
 		BillingPrice     uint64DTO `json:"billingPrice"`
@@ -179,14 +179,14 @@ func (dto *prepareDriveTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	owner, err := NewAccountFromPublicKey(dto.Tx.Owner, atx.NetworkType)
+	drive, err := NewAccountFromPublicKey(dto.Tx.Drive, atx.NetworkType)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PrepareDriveTransaction{
 		*atx,
-		owner,
+		drive,
 		dto.Tx.Duration.toStruct(),
 		dto.Tx.BillingPeriod.toStruct(),
 		dto.Tx.BillingPrice.toStruct(),

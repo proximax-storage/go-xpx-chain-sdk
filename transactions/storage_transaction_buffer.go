@@ -392,10 +392,10 @@ func PrepareDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, dead
 func PrepareDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func PrepareDriveTransactionBufferAddOwner(builder *flatbuffers.Builder, owner flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(owner), 0)
+func PrepareDriveTransactionBufferAddDrive(builder *flatbuffers.Builder, drive flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(drive), 0)
 }
-func PrepareDriveTransactionBufferStartOwnerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func PrepareDriveTransactionBufferStartDriveVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func PrepareDriveTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {

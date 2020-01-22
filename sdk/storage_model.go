@@ -140,7 +140,7 @@ func (drive *Drive) String() string {
 // Prepare Drive Transaction
 type PrepareDriveTransaction struct {
 	AbstractTransaction
-	Owner            *PublicAccount
+	Drive            *PublicAccount
 	Duration         Duration
 	BillingPeriod    Duration
 	BillingPrice     Amount

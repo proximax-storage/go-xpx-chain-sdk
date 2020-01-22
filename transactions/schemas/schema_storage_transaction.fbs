@@ -8,7 +8,7 @@ table PrepareDriveTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    owner:[ubyte];
+    drive:[ubyte];
     duration:[uint];
     billingPeriod:[uint];
     billingPrice:[uint];

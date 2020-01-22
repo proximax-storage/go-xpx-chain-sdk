@@ -52,8 +52,6 @@ var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
 var nemesisAccount *sdk.Account
 
-const iter = 1000
-
 func init() {
 	ctx = context.Background()
 
