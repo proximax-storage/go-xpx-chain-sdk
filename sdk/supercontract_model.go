@@ -68,16 +68,14 @@ type StartOperationTransaction struct {
 	Mosaics           []*Mosaic
 }
 
+type OperationIdentifyTransaction struct {
+	AbstractTransaction
+	OperationHash     *Hash
+}
+
 // Must be aggregated in AOT
 type EndOperationTransaction struct {
 	AbstractTransaction
 	UsedMosaics []*Mosaic
 	Status      OperationStatus
-}
-
-type AggregateOperationTransaction struct {
-	AbstractTransaction
-	OperationHash     *Hash
-	InnerTransactions []Transaction
-	Cosignatures      []*AggregateTransactionCosignature
 }

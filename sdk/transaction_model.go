@@ -3340,8 +3340,7 @@ const (
 	Execute                     EntityType = 0x0
 	StartOperation              EntityType = 0x0
 	EndOperation                EntityType = 0x0
-	AggregateOperationBonded    EntityType = 0x0
-	AggregateOperationCompleted EntityType = 0x0
+	OperationIdentify           EntityType = 0x0
 )
 
 func (t EntityType) String() string {
@@ -3388,8 +3387,7 @@ const (
 	ExecuteVersion                      EntityVersion = 1
 	StartOperationVersion               EntityVersion = 1
 	EndOperationVersion                 EntityVersion = 1
-	AggregateOperationBondedVersion     EntityVersion = 1
-	AggregateOperationCompletedVersion  EntityVersion = 1
+	OperationIdentifyVersion            EntityVersion = 1
 )
 
 type AccountLinkAction uint8

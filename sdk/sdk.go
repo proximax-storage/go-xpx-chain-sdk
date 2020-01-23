@@ -700,17 +700,8 @@ func (c *Client) NewExecuteTransaction(deadline *Deadline, supercontract *Public
 	return tx, err
 }
 
-func (c *Client) NewAggregateOperationBoundedTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash) (*AggregateOperationTransaction, error) {
-	tx, err := NewAggregateOperationBoundedTransaction(deadline, innerTxs, hash, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
-func (c *Client) NewAggregateOperationCompleteTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash) (*AggregateOperationTransaction, error) {
-	tx, err := NewAggregateOperationCompleteTransaction(deadline, innerTxs, hash, c.config.NetworkType)
+func (c *Client) NewOperationIdentifyTransaction(deadline *Deadline, hash *Hash) (*OperationIdentifyTransaction, error) {
+	tx, err := NewOperationIdentifyTransaction(deadline, hash, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

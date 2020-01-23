@@ -119,66 +119,44 @@ func (tx *ExecuteTransaction) Bytes() ([]byte, error) {
 	return nil, nil
 }
 
-func NewAggregateOperationBoundedTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash, networkType NetworkType) (*AggregateOperationTransaction, error) {
-	if innerTxs == nil {
-		return nil, errors.New("innerTransactions must not be nil")
+func NewOperationIdentifyTransaction(deadline *Deadline, operationKey *Hash, networkType NetworkType) (*OperationIdentifyTransaction, error) {
+	if operationKey == nil {
+		return nil, ErrNilHash
 	}
 
-	tx := AggregateOperationTransaction{
+	tx := OperationIdentifyTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     AggregateOperationBondedVersion,
+			Version:     OperationIdentifyVersion,
 			Deadline:    deadline,
-			Type:        AggregateOperationBonded,
+			Type:        OperationIdentify,
 			NetworkType: networkType,
 		},
-		OperationHash:     hash,
-		InnerTransactions: innerTxs,
+		OperationHash:      operationKey,
 	}
 
 	return &tx, nil
 }
 
-func NewAggregateOperationCompleteTransaction(deadline *Deadline, innerTxs []Transaction, hash *Hash, networkType NetworkType) (*AggregateOperationTransaction, error) {
-	if innerTxs == nil {
-		return nil, errors.New("innerTransactions must not be nil")
-	}
-
-	tx := AggregateOperationTransaction{
-		AbstractTransaction: AbstractTransaction{
-			Version:     AggregateOperationCompletedVersion,
-			Deadline:    deadline,
-			Type:        AggregateOperationCompleted,
-			NetworkType: networkType,
-		},
-		OperationHash:     hash,
-		InnerTransactions: innerTxs,
-	}
-
-	return &tx, nil
-}
-
-func (tx *AggregateOperationTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *OperationIdentifyTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *AggregateOperationTransaction) String() string {
+func (tx *OperationIdentifyTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
 			"OperationHash": %s,
-			"InnerTransactions": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.OperationHash,
-		tx.InnerTransactions,
 	)
 }
 
-func (tx *AggregateOperationTransaction) Size() int {
+func (tx *OperationIdentifyTransaction) Size() int {
 	return 0
 }
 
-func (tx *AggregateOperationTransaction) Bytes() ([]byte, error) {
+func (tx *OperationIdentifyTransaction) Bytes() ([]byte, error) {
 	return nil, nil
 }
 
