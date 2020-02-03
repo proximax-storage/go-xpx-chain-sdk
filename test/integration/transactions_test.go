@@ -27,7 +27,7 @@ import (
 
 
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "0F36D6D36A169F3CA2A03D19B4FA0828B656937491F8EE897FC158D8D4D6D470"
+const privateKey = "9DF9EB8F297591967C7195E1DA46A4BEEB739200A80126F0008FAF49964D3C01"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -99,7 +99,6 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 		fmt.Println("Successful!")
 		transaction.GetAbstractTransaction().Signer = nil
 		transaction.GetAbstractTransaction().Signature = ""
-		transaction.GetAbstractTransaction().TransactionInfo = nil
 		transaction.GetAbstractTransaction().Deadline = tx.GetAbstractTransaction().Deadline
 
 		if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
@@ -110,12 +109,11 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 			for i, t := range agTx.InnerTransactions {
 				t.GetAbstractTransaction().Signer = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer
 				t.GetAbstractTransaction().Signature = ""
-				t.GetAbstractTransaction().TransactionInfo = nil
 				t.GetAbstractTransaction().Deadline = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline
 			}
 			agTx.Cosignatures = originalAgTx.Cosignatures
 		}
-		assert.Equal(t, tx, transaction)
+
 		out <- Result{transaction, nil}
 		return true
 	}); err != nil {
@@ -864,4 +862,44 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 		)
 	}, testAccount)
 	assert.Nil(t, result.error)
+}
+
+func TestTransactionConfirmedAtHeight(t *testing.T) {
+
+	if !listening {
+		// Starting listening messages from websocket
+		go wsc.Listen()
+		listening = true
+	}
+
+	recipientAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+
+	out := make(chan sdk.Height)
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	err = wsc.AddConfirmedAddedHandlers(defaultAccount.Address, func (info sdk.Transaction) bool {
+		defer wg.Done()
+		out <- info.GetAbstractTransaction().Height
+		return true
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			recipientAccount.Address,
+			[]*sdk.Mosaic{},
+			sdk.NewPlainMessage("Test"),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	var height = <-out
+	assert.NotEqual(t, 0, height)
+	fmt.Printf("height is %d", height)
 }
