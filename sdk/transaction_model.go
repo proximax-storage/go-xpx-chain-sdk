@@ -33,7 +33,7 @@ type transactionDto interface {
 }
 
 type AbstractTransaction struct {
-	*TransactionInfo
+	TransactionInfo
 	NetworkType NetworkType
 	Deadline    *Deadline
 	Type        EntityType
@@ -44,19 +44,20 @@ type AbstractTransaction struct {
 }
 
 func (tx *AbstractTransaction) IsUnconfirmed() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
+	return tx.TransactionInfo.Height == 0 && tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
 func (tx *AbstractTransaction) IsConfirmed() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height > 0
+	return tx.TransactionInfo.Height > 0
 }
 
 func (tx *AbstractTransaction) HasMissingSignatures() bool {
-	return tx.TransactionInfo != nil && tx.TransactionInfo.Height == 0 && !tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
+	return tx.TransactionInfo.Height == 0 && !tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
 func (tx *AbstractTransaction) IsUnannounced() bool {
-	return tx.TransactionInfo == nil
+	return tx.TransactionInfo.TransactionHash == nil ||
+		tx.TransactionInfo.AggregateHash == nil || tx.TransactionInfo.UniqueAggregateHash == nil
 }
 
 func (tx *AbstractTransaction) ToAggregate(signer *PublicAccount) {
@@ -76,7 +77,7 @@ func (tx *AbstractTransaction) String() string {
 			"Signer": %s
 		`,
 		tx.NetworkType,
-		tx.TransactionInfo,
+		tx.TransactionInfo.String(),
 		tx.Type,
 		tx.Version,
 		tx.MaxFee,
@@ -134,7 +135,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 	}
 
 	return &AbstractTransaction{
-		tInfo,
+		*tInfo,
 		nt,
 		d,
 		dto.Type,
@@ -152,6 +153,7 @@ type TransactionInfo struct {
 	TransactionHash     *Hash
 	MerkleComponentHash *Hash
 	AggregateHash       *Hash
+	UniqueAggregateHash *Hash
 	AggregateId         string
 }
 
@@ -164,6 +166,7 @@ func (ti *TransactionInfo) String() string {
 			"TransactionHash": %s,
 			"MerkleComponentHash:" %s,
 			"AggregateHash": %s,
+			"UniqueAggregateHash": %s,
 			"AggregateId": %s
 		`,
 		ti.Height,
@@ -172,6 +175,7 @@ func (ti *TransactionInfo) String() string {
 		ti.TransactionHash,
 		ti.MerkleComponentHash,
 		ti.AggregateHash,
+		ti.UniqueAggregateHash,
 		ti.AggregateId,
 	)
 }
@@ -183,6 +187,7 @@ type transactionInfoDTO struct {
 	TransactionHash     hashDto   `json:"hash"`
 	MerkleComponentHash hashDto   `json:"merkleComponentHash"`
 	AggregateHash       hashDto   `json:"aggregateHash,omitempty"`
+	UniqueAggregateHash hashDto   `json:"uniqueAggregateHash,omitempty"`
 	AggregateId         string    `json:"aggregateId,omitempty"`
 }
 
@@ -199,6 +204,10 @@ func (dto *transactionInfoDTO) toStruct() (*TransactionInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	uniqueAggregateHash, err := dto.UniqueAggregateHash.Hash()
+	if err != nil {
+		return nil, err
+	}
 
 	ref := TransactionInfo{
 		dto.Height.toStruct(),
@@ -207,6 +216,7 @@ func (dto *transactionInfoDTO) toStruct() (*TransactionInfo, error) {
 		transactionHash,
 		merkleComponentHash,
 		aggregateHash,
+		uniqueAggregateHash,
 		dto.AggregateId,
 	}
 
@@ -1288,6 +1298,17 @@ func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, n
 	}, nil
 }
 
+func (tx *AggregateTransaction) UpdateUniqueAggregateHash(generationHash *Hash) (err error) {
+	for _, innerTx := range tx.InnerTransactions {
+		innerTx.GetAbstractTransaction().UniqueAggregateHash, err = UniqueAggregateHash(tx, innerTx, generationHash)
+		if err != nil {
+			break
+		}
+	}
+
+	return err
+}
+
 func (tx *AggregateTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
@@ -1296,7 +1317,7 @@ func (tx *AggregateTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"InnerTransactions": %s,
+			"InnerTransactions": %+v,
 			"Cosignatures": %s
 		`,
 		tx.AbstractTransaction.String(),
@@ -3022,7 +3043,7 @@ func NewCosignatureTransactionFromHash(hash *Hash) *CosignatureTransaction {
 	return &CosignatureTransaction{
 		TransactionToCosign: &AggregateTransaction{
 			AbstractTransaction: AbstractTransaction{
-				TransactionInfo: &TransactionInfo{
+				TransactionInfo: TransactionInfo{
 					TransactionHash: hash,
 				},
 			},
@@ -3296,46 +3317,50 @@ const (
 	ExchangeOfferHeaderSize                      = TransactionHeaderSize + OffersCountSize
 	RemoveExchangeOfferSize                      = OfferTypeSize + MosaicIdSize
 	RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
+	StartFileDownloadHeaderSize                  = TransactionHeaderSize + 2 + KeySize
+	EndFileDownloadHeaderSize                    = TransactionHeaderSize + 2 + KeySize + Hash256
 )
 
 type EntityType uint16
 
 const (
-	AccountPropertyAddress    EntityType = 0x4150
-	AccountPropertyMosaic     EntityType = 0x4250
-	AccountPropertyEntityType EntityType = 0x4350
-	AddressAlias              EntityType = 0x424e
-	AggregateBonded           EntityType = 0x4241
-	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = 0x415D
-	ExchangeOffer             EntityType = 0x425D
-	RemoveExchangeOffer       EntityType = 0x435D
-	Block                     EntityType = 0x8143
-	NemesisBlock              EntityType = 0x8043
-	NetworkConfigEntityType   EntityType = 0x4159
-	BlockchainUpgrade         EntityType = 0x4158
-	LinkAccount               EntityType = 0x414c
-	Lock                      EntityType = 0x4148
-	MetadataAddress           EntityType = 0x413d
-	MetadataMosaic            EntityType = 0x423d
-	MetadataNamespace         EntityType = 0x433d
-	ModifyContract            EntityType = 0x4157
-	ModifyMultisig            EntityType = 0x4155
-	MosaicAlias               EntityType = 0x434e
-	MosaicDefinition          EntityType = 0x414d
-	MosaicSupplyChange        EntityType = 0x424d
-	RegisterNamespace         EntityType = 0x414e
-	SecretLock                EntityType = 0x4152
-	SecretProof               EntityType = 0x4252
-	Transfer                  EntityType = 0x4154
-	PrepareDrive              EntityType = 0x415A
-	JoinToDrive               EntityType = 0x425A
-	DriveFileSystem           EntityType = 0x435A
-	FilesDeposit              EntityType = 0x445A
-	EndDrive                  EntityType = 0x455A
-	DriveFilesReward              EntityType = 0x465A
-	StartDriveVerification    EntityType = 0x475A
-	EndDriveVerification      EntityType = 0x485A
+	AccountPropertyAddress      EntityType = 0x4150
+	AccountPropertyMosaic       EntityType = 0x4250
+	AccountPropertyEntityType   EntityType = 0x4350
+	AddressAlias                EntityType = 0x424e
+	AggregateBonded             EntityType = 0x4241
+	AggregateCompleted          EntityType = 0x4141
+	AddExchangeOffer            EntityType = 0x415D
+	ExchangeOffer               EntityType = 0x425D
+	RemoveExchangeOffer         EntityType = 0x435D
+	Block                       EntityType = 0x8143
+	NemesisBlock                EntityType = 0x8043
+	NetworkConfigEntityType     EntityType = 0x4159
+	BlockchainUpgrade           EntityType = 0x4158
+	LinkAccount                 EntityType = 0x414c
+	Lock                        EntityType = 0x4148
+	MetadataAddress             EntityType = 0x413d
+	MetadataMosaic              EntityType = 0x423d
+	MetadataNamespace           EntityType = 0x433d
+	ModifyContract              EntityType = 0x4157
+	ModifyMultisig              EntityType = 0x4155
+	MosaicAlias                 EntityType = 0x434e
+	MosaicDefinition            EntityType = 0x414d
+	MosaicSupplyChange          EntityType = 0x424d
+	RegisterNamespace           EntityType = 0x414e
+	SecretLock                  EntityType = 0x4152
+	SecretProof                 EntityType = 0x4252
+	Transfer                    EntityType = 0x4154
+	PrepareDrive                EntityType = 0x415A
+	JoinToDrive                 EntityType = 0x425A
+	DriveFileSystem             EntityType = 0x435A
+	FilesDeposit                EntityType = 0x445A
+	EndDrive                    EntityType = 0x455A
+	DriveFilesReward            EntityType = 0x465A
+	StartDriveVerification      EntityType = 0x475A
+	EndDriveVerification        EntityType = 0x485A
+	StartFileDownload           EntityType = 0x495A
+	EndFileDownload             EntityType = 0x4A5A
 )
 
 func (t EntityType) String() string {
@@ -3345,39 +3370,41 @@ func (t EntityType) String() string {
 type EntityVersion uint32
 
 const (
-	AccountPropertyAddressVersion    EntityVersion = 1
-	AccountPropertyMosaicVersion     EntityVersion = 1
-	AccountPropertyEntityTypeVersion EntityVersion = 1
-	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 2
-	AggregateCompletedVersion        EntityVersion = 2
-	AddExchangeOfferVersion          EntityVersion = 1
-	ExchangeOfferVersion             EntityVersion = 1
-	RemoveExchangeOfferVersion       EntityVersion = 1
-	NetworkConfigVersion             EntityVersion = 1
-	BlockchainUpgradeVersion         EntityVersion = 1
-	LinkAccountVersion               EntityVersion = 2
-	LockVersion                      EntityVersion = 1
-	MetadataAddressVersion           EntityVersion = 1
-	MetadataMosaicVersion            EntityVersion = 1
-	MetadataNamespaceVersion         EntityVersion = 1
-	ModifyContractVersion            EntityVersion = 3
-	ModifyMultisigVersion            EntityVersion = 3
-	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
-	MosaicSupplyChangeVersion        EntityVersion = 2
-	RegisterNamespaceVersion         EntityVersion = 2
-	SecretLockVersion                EntityVersion = 1
-	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 3
-	PrepareDriveVersion              EntityVersion = 1
-	JoinToDriveVersion               EntityVersion = 1
-	DriveFileSystemVersion           EntityVersion = 1
-	FilesDepositVersion              EntityVersion = 1
-	EndDriveVersion                  EntityVersion = 1
-	DriveFilesRewardVersion              EntityVersion = 1
-	StartDriveVerificationVersion    EntityVersion = 1
-	EndDriveVerificationVersion      EntityVersion = 1
+	AccountPropertyAddressVersion       EntityVersion = 1
+	AccountPropertyMosaicVersion        EntityVersion = 1
+	AccountPropertyEntityTypeVersion    EntityVersion = 1
+	AddressAliasVersion                 EntityVersion = 1
+	AggregateBondedVersion              EntityVersion = 2
+	AggregateCompletedVersion           EntityVersion = 2
+	AddExchangeOfferVersion             EntityVersion = 1
+	ExchangeOfferVersion                EntityVersion = 1
+	RemoveExchangeOfferVersion          EntityVersion = 1
+	NetworkConfigVersion                EntityVersion = 1
+	BlockchainUpgradeVersion            EntityVersion = 1
+	LinkAccountVersion                  EntityVersion = 2
+	LockVersion                         EntityVersion = 1
+	MetadataAddressVersion              EntityVersion = 1
+	MetadataMosaicVersion               EntityVersion = 1
+	MetadataNamespaceVersion            EntityVersion = 1
+	ModifyContractVersion               EntityVersion = 3
+	ModifyMultisigVersion               EntityVersion = 3
+	MosaicAliasVersion                  EntityVersion = 1
+	MosaicDefinitionVersion             EntityVersion = 3
+	MosaicSupplyChangeVersion           EntityVersion = 2
+	RegisterNamespaceVersion            EntityVersion = 2
+	SecretLockVersion                   EntityVersion = 1
+	SecretProofVersion                  EntityVersion = 1
+	TransferVersion                     EntityVersion = 3
+	PrepareDriveVersion                 EntityVersion = 1
+	JoinToDriveVersion                  EntityVersion = 1
+	DriveFileSystemVersion              EntityVersion = 1
+	FilesDepositVersion                 EntityVersion = 1
+	EndDriveVersion                     EntityVersion = 1
+	DriveFilesRewardVersion             EntityVersion = 1
+	StartDriveVerificationVersion       EntityVersion = 1
+	EndDriveVerificationVersion         EntityVersion = 1
+	StartFileDownloadVersion            EntityVersion = 1
+	EndFileDownloadVersion              EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3597,17 +3624,16 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &startDriveVerificationTransactionDTO{}
 	case EndDriveVerification:
 		dto = &endDriveVerificationTransactionDTO{}
+	case StartFileDownload:
+		dto = &startFileDownloadTransactionDTO{}
+	case EndFileDownload:
+		dto = &endFileDownloadTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)
 }
 
-func createTransactionHash(p string, generationHash *Hash) (*Hash, error) {
-	b, err := hex.DecodeString(p)
-	if err != nil {
-		return nil, err
-	}
-
+func createTransactionHash(b []byte, generationHash *Hash) (*Hash, error) {
 	var sizeOfGenerationHash = 0
 	if generationHash != nil {
 		sizeOfGenerationHash = len(generationHash)
@@ -3683,12 +3709,38 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 	copy(p[SizeSize+SignatureSize:SizeSize+SignatureSize+SignerSize], a.KeyPair.PublicKey.Raw)
 	copy(p[SizeSize+SignatureSize+SignerSize:], b[SizeSize+SignatureSize+SignerSize:])
 
-	ph := hex.EncodeToString(p)
-	h, err := createTransactionHash(ph, a.generationHash)
+	h, err := createTransactionHash(p, a.generationHash)
 	if err != nil {
 		return nil, err
 	}
-	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(ph), h}, nil
+	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(hex.EncodeToString(p)), h}, nil
+}
+
+func UniqueAggregateHash(aggregateTx *AggregateTransaction, tx Transaction, generationHash *Hash) (*Hash, error) {
+	b, err := toAggregateTransactionBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+	generationSize := len(generationHash)
+	sb := make([]byte, len(b)-SizeSize+DeadLineSize+generationSize)
+	copy(sb, b[SizeSize:SizeSize+SignerSize])
+	copy(sb[SignerSize:], generationHash[:])
+	copy(sb[SignerSize+generationSize:], b[SizeSize+SignerSize:SizeSize+SignerSize+VersionSize+TypeSize])
+
+	// We are using dealine of aggregate transaction instead of deadline of transaction
+	deadlineB := aggregateTx.Deadline.ToBlockchainTimestamp().toLittleEndian()
+	copy(sb[SignerSize+generationSize+VersionSize+TypeSize:], deadlineB)
+	copy(
+		sb[SignerSize+generationSize+VersionSize+TypeSize+DeadLineSize:],
+		b[SizeSize+SignerSize+VersionSize+TypeSize:],
+	)
+
+	r, err := crypto.HashesSha3_256(sb)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytesToHash(r)
 }
 
 func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
@@ -3721,7 +3773,7 @@ func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosig
 }
 
 func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
-	if tx.TransactionToCosign.TransactionInfo == nil || tx.TransactionToCosign.TransactionInfo.TransactionHash.Empty() {
+	if tx.TransactionToCosign.TransactionInfo.TransactionHash.Empty() {
 		return nil, errors.New("cosignature transaction hash is nil")
 	}
 

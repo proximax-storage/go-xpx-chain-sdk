@@ -392,10 +392,10 @@ func PrepareDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, dead
 func PrepareDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func PrepareDriveTransactionBufferAddDrive(builder *flatbuffers.Builder, drive flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(drive), 0)
+func PrepareDriveTransactionBufferAddOwner(builder *flatbuffers.Builder, owner flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(owner), 0)
 }
-func PrepareDriveTransactionBufferStartDriveVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func PrepareDriveTransactionBufferStartOwnerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func PrepareDriveTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
@@ -3021,5 +3021,639 @@ func EndDriveVerificationTransactionBufferStartFailuresVector(builder *flatbuffe
 	return builder.StartVector(4, numElems, 4)
 }
 func EndDriveVerificationTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type StartFileDownloadTransactionBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsStartFileDownloadTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *StartFileDownloadTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &StartFileDownloadTransactionBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Size() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Signature(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) SignatureLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) SignatureBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Signer(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) SignerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) SignerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Version() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Type() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateType(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(12, n)
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MaxFee(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MaxFeeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Deadline(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) DeadlineLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) DriveKey(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) DriveKeyLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) DriveKeyBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) FileCount() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) MutateFileCount(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(20, n)
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) Files(obj *AddActionBuffer, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *StartFileDownloadTransactionBuffer) FilesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func StartFileDownloadTransactionBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(10)
+}
+func StartFileDownloadTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func StartFileDownloadTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func StartFileDownloadTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func StartFileDownloadTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func StartFileDownloadTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func StartFileDownloadTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
+}
+func StartFileDownloadTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func StartFileDownloadTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
+}
+func StartFileDownloadTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func StartFileDownloadTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func StartFileDownloadTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func StartFileDownloadTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
+}
+func StartFileDownloadTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func StartFileDownloadTransactionBufferAddFileCount(builder *flatbuffers.Builder, fileCount uint16) {
+	builder.PrependUint16Slot(8, fileCount, 0)
+}
+func StartFileDownloadTransactionBufferAddFiles(builder *flatbuffers.Builder, files flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(files), 0)
+}
+func StartFileDownloadTransactionBufferStartFilesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func StartFileDownloadTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type EndFileDownloadTransactionBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsEndFileDownloadTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *EndFileDownloadTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &EndFileDownloadTransactionBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Size() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Signature(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) SignatureLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) SignatureBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Signer(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) SignerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) SignerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Version() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Type() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateType(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(12, n)
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MaxFee(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MaxFeeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Deadline(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) DeadlineLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Recipient(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) RecipientLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) RecipientBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateRecipient(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) OperationToken(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) OperationTokenLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) OperationTokenBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateOperationToken(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) FileCount() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) MutateFileCount(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(22, n)
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) Files(obj *RemoveActionBuffer, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *EndFileDownloadTransactionBuffer) FilesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func EndFileDownloadTransactionBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(11)
+}
+func EndFileDownloadTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func EndFileDownloadTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func EndFileDownloadTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func EndFileDownloadTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func EndFileDownloadTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func EndFileDownloadTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
+}
+func EndFileDownloadTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func EndFileDownloadTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
+}
+func EndFileDownloadTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func EndFileDownloadTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func EndFileDownloadTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func EndFileDownloadTransactionBufferAddRecipient(builder *flatbuffers.Builder, recipient flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(recipient), 0)
+}
+func EndFileDownloadTransactionBufferStartRecipientVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func EndFileDownloadTransactionBufferAddOperationToken(builder *flatbuffers.Builder, operationToken flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(operationToken), 0)
+}
+func EndFileDownloadTransactionBufferStartOperationTokenVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func EndFileDownloadTransactionBufferAddFileCount(builder *flatbuffers.Builder, fileCount uint16) {
+	builder.PrependUint16Slot(9, fileCount, 0)
+}
+func EndFileDownloadTransactionBufferAddFiles(builder *flatbuffers.Builder, files flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(files), 0)
+}
+func EndFileDownloadTransactionBufferStartFilesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func EndFileDownloadTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

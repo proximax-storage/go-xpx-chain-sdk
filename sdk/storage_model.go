@@ -140,7 +140,7 @@ func (drive *Drive) String() string {
 // Prepare Drive Transaction
 type PrepareDriveTransaction struct {
 	AbstractTransaction
-	Drive            *PublicAccount
+	Owner            *PublicAccount
 	Duration         Duration
 	BillingPeriod    Duration
 	BillingPrice     Amount
@@ -269,4 +269,31 @@ type EndDriveVerificationTransaction struct {
 type VerificationStatus struct {
 	Active      bool
 	Available   bool
+}
+
+// Start File Download Transaction
+
+type DownloadFile = Action
+
+type StartFileDownloadTransaction struct {
+	AbstractTransaction
+	Drive           *PublicAccount
+	Files           []*DownloadFile
+}
+
+type DownloadInfo struct {
+	OperationToken      *Hash
+	DriveAccount        *PublicAccount
+	FileRecipient       *PublicAccount
+	Height              Height
+	Files               []*DownloadFile
+}
+
+// End File Download Transaction
+
+type EndFileDownloadTransaction struct {
+	AbstractTransaction
+	Recipient       *PublicAccount
+	OperationToken  *Hash
+	Files           []*DownloadFile
 }

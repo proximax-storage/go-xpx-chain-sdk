@@ -148,6 +148,51 @@ func endDriveVerificationTransactionSchema() *schema {
 	}
 }
 
+func startFileDownloadTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newScalarAttribute("filesCount", ShortSize),
+			newTableArrayAttribute("files", schema{
+				[]schemaAttribute{
+					newArrayAttribute("hash", ByteSize),
+					newArrayAttribute("size", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func endFileDownloadTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("recipient", ByteSize),
+			newArrayAttribute("operationHash", ByteSize),
+			newScalarAttribute("filesCount", ShortSize),
+			newTableArrayAttribute("files", schema{
+				[]schemaAttribute{
+					newArrayAttribute("hash", ByteSize),
+					newArrayAttribute("size", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
 func driveFilesRewardTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{

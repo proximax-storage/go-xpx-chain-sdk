@@ -273,3 +273,69 @@ func (ref *driveDTOs) toStruct(networkType NetworkType) ([]*Drive, error) {
 
 	return drives, nil
 }
+
+type downloadInfoDTO struct {
+	Download struct {
+		OperationToken      hashDto             `json:"operationToken"`
+		DriveKey            string              `json:"driveKey"`
+		FileRecipient       string              `json:"fileRecipient"`
+		Height              uint64DTO           `json:"height"`
+		Files               []*downloadFileDTO  `json:"files"`
+	} `json:"downloadInfo"`
+}
+
+func (ref *downloadInfoDTO) toStruct(networkType NetworkType) (*DownloadInfo, error) {
+	info := DownloadInfo{}
+
+	var err error
+	info.DriveAccount, err = NewAccountFromPublicKey(ref.Download.DriveKey, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	info.FileRecipient, err = NewAccountFromPublicKey(ref.Download.FileRecipient, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	info.OperationToken, err = ref.Download.OperationToken.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("sdk.driveDTO.toStruct Drive.RootHash.Hash: %v", err)
+	}
+
+	info.Height = ref.Download.Height.toStruct()
+
+	info.Files = make([]*DownloadFile, len(ref.Download.Files))
+
+	for i, f := range ref.Download.Files {
+		file, err := f.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		info.Files[i] = file
+	}
+
+
+	return &info, nil
+}
+
+type downloadInfoDTOs []*downloadInfoDTO
+
+func (ref *downloadInfoDTOs) toStruct(networkType NetworkType) ([]*DownloadInfo, error) {
+	var (
+		dtos   = *ref
+		drives = make([]*DownloadInfo, len(dtos))
+	)
+
+	for i, dto := range dtos {
+		info, err := dto.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		drives[i] = info
+	}
+
+	return drives, nil
+}
