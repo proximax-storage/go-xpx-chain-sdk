@@ -3336,11 +3336,12 @@ const (
 	DriveFilesReward            EntityType = 0x465A
 	StartDriveVerification      EntityType = 0x475A
 	EndDriveVerification        EntityType = 0x485A
-	Deploy                      EntityType = 0x0
-	Execute                     EntityType = 0x0
-	StartOperation              EntityType = 0x0
-	EndOperation                EntityType = 0x0
-	OperationIdentify           EntityType = 0x0
+	// TODO: change to real values
+	Deploy                      EntityType = 0x5001
+	Execute                     EntityType = 0x5002
+	StartOperation              EntityType = 0x5003
+	EndOperation                EntityType = 0x5004
+	OperationIdentify           EntityType = 0x5005
 )
 
 func (t EntityType) String() string {
