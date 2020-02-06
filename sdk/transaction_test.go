@@ -28,7 +28,7 @@ var transaction = &TransferTransaction{
 		Signer:      &PublicAccount{&Address{MijinTest, "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"}, "27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9"},
 		MaxFee:      uint64DTO{1, 0}.toStruct(),
 		Deadline:    NewDeadlineFromBlockchainTimestamp(blockchainTimestampDTO{1094650402, 17}.toStruct()),
-		TransactionInfo: &TransactionInfo{
+		TransactionInfo: TransactionInfo{
 			Height:              uint64DTO{42, 0}.toStruct(),
 			TransactionHash:     stringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),
 			MerkleComponentHash: stringToHashPanic("45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1"),

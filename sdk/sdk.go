@@ -462,20 +462,22 @@ func (c *Client) NewBlockchainUpgradeTransaction(deadline *Deadline, upgradePeri
 
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
 	tx, err := NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
+	if err != nil {
+		return nil, err
 	}
+	c.modifyTransaction(tx)
 
-	return tx, err
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
 func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
 	tx, err := NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
+	if err != nil {
+		return nil, err
 	}
+	c.modifyTransaction(tx)
 
-	return tx, err
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
 func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
@@ -711,6 +713,24 @@ func (c *Client) NewOperationIdentifyTransaction(deadline *Deadline, hash *Hash)
 
 func (c *Client) NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status OperationStatus) (*EndOperationTransaction, error) {
 	tx, err := NewEndOperationTransaction(deadline, mosaics, status, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStartFileDownloadTransaction(deadline *Deadline, drive *PublicAccount, files []*DownloadFile) (*StartFileDownloadTransaction, error) {
+	tx, err := NewStartFileDownloadTransaction(deadline, drive, files, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *PublicAccount, operationToken *Hash, files []*DownloadFile) (*EndFileDownloadTransaction, error) {
+	tx, err := NewEndFileDownloadTransaction(deadline, recipient, operationToken, files, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

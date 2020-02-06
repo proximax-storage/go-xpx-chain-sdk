@@ -98,8 +98,11 @@ const (
 
 // routes for StorageService
 const (
-	driveRoute              = "/drive/%s"
-	drivesOfAccountRoute    = "/account/%s/drive%s"
+	driveRoute                  = "/drive/%s"
+	drivesOfAccountRoute        = "/account/%s/drive%s"
+	downloadInfoRoute           = "/downloads/%s"
+	driveDownloadInfosRoute     = "/drive/%s/downloads"
+	accountDownloadInfosRoute   = "/account/%s/downloads"
 )
 
 // routes for ExchangeService

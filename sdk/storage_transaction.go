@@ -1167,3 +1167,303 @@ func (dto *endDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
 		failures,
 	}, nil
 }
+
+func NewStartFileDownloadTransaction(
+	deadline *Deadline,
+	drive *PublicAccount,
+	files []*DownloadFile,
+	networkType NetworkType,
+) (*StartFileDownloadTransaction, error) {
+
+	if drive == nil {
+		return nil, ErrNilAccount
+	}
+
+	if len(files) == 0 {
+		return nil, ErrNoChanges
+	}
+
+	tx := StartFileDownloadTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     StartFileDownloadVersion,
+			Deadline:    deadline,
+			Type:        StartFileDownload,
+			NetworkType: networkType,
+		},
+		Drive: drive,
+		Files: files,
+	}
+
+	return &tx, nil
+}
+
+func (tx *StartFileDownloadTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *StartFileDownloadTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"Drive": %s,
+			"Files": %+v,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.Drive,
+		tx.Files,
+	)
+}
+
+func downloadFilesToArrayToBuffer(builder *flatbuffers.Builder, files []*DownloadFile) (flatbuffers.UOffsetT, error) {
+	filesb := make([]flatbuffers.UOffsetT, len(files))
+	for i, f := range files {
+		hV := hashToBuffer(builder, f.FileHash)
+		sizeV := transactions.TransactionBufferCreateUint32Vector(builder, f.FileSize.toArray())
+
+		transactions.AddActionBufferStart(builder)
+		transactions.AddActionBufferAddFileSize(builder, sizeV)
+		transactions.AddActionBufferAddFileHash(builder, hV)
+		filesb[i] = transactions.AddActionBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, filesb), nil
+}
+
+func (tx *StartFileDownloadTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.Drive.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	filesV, err := downloadFilesToArrayToBuffer(builder, tx.Files)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.StartFileDownloadTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.StartFileDownloadTransactionBufferAddDriveKey(builder, driveV)
+	transactions.StartFileDownloadTransactionBufferAddFileCount(builder, uint16(len(tx.Files)))
+	transactions.StartFileDownloadTransactionBufferAddFiles(builder, filesV)
+	t := transactions.StartFileDownloadTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return startFileDownloadTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *StartFileDownloadTransaction) Size() int {
+	return StartFileDownloadHeaderSize + len(tx.Files) * (StorageSizeSize + Hash256)
+}
+
+type downloadFileDTO struct {
+	Hash    hashDto       `json:"fileHash"`
+	Size    uint64DTO     `json:"fileSize"`
+}
+
+func (dto *downloadFileDTO) toStruct() (*DownloadFile, error) {
+	hash, err := dto.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &DownloadFile{
+		hash,
+		dto.Size.toStruct(),
+	}, nil
+}
+
+type startFileDownloadTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey        string              `json:"driveKey"`
+		Files           []*downloadFileDTO  `json:"files"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *startFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	files := make([]*DownloadFile, len(dto.Tx.Files))
+
+	for i, f := range dto.Tx.Files {
+		file, err := f.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		files[i] = file
+	}
+
+	return &StartFileDownloadTransaction{
+		*atx,
+		acc,
+		files,
+	}, nil
+}
+
+func NewEndFileDownloadTransaction(
+	deadline *Deadline,
+	recipient *PublicAccount,
+	operationToken *Hash,
+	files []*DownloadFile,
+	networkType NetworkType,
+) (*EndFileDownloadTransaction, error) {
+
+	if recipient == nil {
+		return nil, ErrNilAccount
+	}
+
+	if operationToken == nil {
+		return nil, ErrNilHash
+	}
+
+	if len(files) == 0 {
+		return nil, ErrNoChanges
+	}
+
+	tx := EndFileDownloadTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     EndFileDownloadVersion,
+			Deadline:    deadline,
+			Type:        EndFileDownload,
+			NetworkType: networkType,
+		},
+		Recipient: recipient,
+		OperationToken: operationToken,
+		Files: files,
+	}
+
+	return &tx, nil
+}
+
+func (tx *EndFileDownloadTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *EndFileDownloadTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"Recipient": %s,
+			"OperationToken": %s,
+			"Files": %+v,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.Recipient,
+		tx.OperationToken,
+		tx.Files,
+	)
+}
+
+func (tx *EndFileDownloadTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	hashV := hashToBuffer(builder, tx.OperationToken)
+
+	b, err := hex.DecodeString(tx.Recipient.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	recipientV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	filesV, err := downloadFilesToArrayToBuffer(builder, tx.Files)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.EndFileDownloadTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.EndFileDownloadTransactionBufferAddRecipient(builder, recipientV)
+	transactions.EndFileDownloadTransactionBufferAddOperationToken(builder, hashV)
+	transactions.EndFileDownloadTransactionBufferAddFileCount(builder, uint16(len(tx.Files)))
+	transactions.EndFileDownloadTransactionBufferAddFiles(builder, filesV)
+	t := transactions.EndFileDownloadTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return endFileDownloadTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *EndFileDownloadTransaction) Size() int {
+	return EndFileDownloadHeaderSize + len(tx.Files) * (Hash256 + StorageSizeSize)
+}
+
+type endFileDownloadTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Recipient       string              `json:"fileRecipient"`
+		OperationHash   hashDto             `json:"operationToken"`
+		Files           []*downloadFileDTO  `json:"files"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *endFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewAccountFromPublicKey(dto.Tx.Recipient, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := dto.Tx.OperationHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	files := make([]*DownloadFile, len(dto.Tx.Files))
+
+	for i, f := range dto.Tx.Files {
+		file, err := f.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		files[i] = file
+	}
+
+	return &EndFileDownloadTransaction{
+		*atx,
+		acc,
+		hash,
+		files,
+	}, nil
+}

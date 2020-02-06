@@ -52,8 +52,6 @@ var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
 var nemesisAccount *sdk.Account
 
-const iter = 1000
-
 func init() {
 	ctx = context.Background()
 
@@ -97,10 +95,10 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 		}
 		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
 		fmt.Println("Successful!")
-		transaction.GetAbstractTransaction().Signer = nil
-		transaction.GetAbstractTransaction().Signature = ""
-		transaction.GetAbstractTransaction().TransactionInfo = nil
-		transaction.GetAbstractTransaction().Deadline = tx.GetAbstractTransaction().Deadline
+		tx.GetAbstractTransaction().Signer = transaction.GetAbstractTransaction().Signer
+		tx.GetAbstractTransaction().Signature = transaction.GetAbstractTransaction().Signature
+		tx.GetAbstractTransaction().TransactionInfo = transaction.GetAbstractTransaction().TransactionInfo
+		tx.GetAbstractTransaction().Deadline = transaction.GetAbstractTransaction().Deadline
 
 		if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
 			transaction.GetAbstractTransaction().Type == sdk.AggregateCompleted {
@@ -108,10 +106,10 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 			originalAgTx := tx.(*sdk.AggregateTransaction)
 
 			for i, t := range agTx.InnerTransactions {
-				t.GetAbstractTransaction().Signer = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer
-				t.GetAbstractTransaction().Signature = ""
-				t.GetAbstractTransaction().TransactionInfo = nil
-				t.GetAbstractTransaction().Deadline = originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer = t.GetAbstractTransaction().Signer
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signature = t.GetAbstractTransaction().Signature
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().TransactionInfo = t.GetAbstractTransaction().TransactionInfo
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline = t.GetAbstractTransaction().Deadline
 			}
 			agTx.Cosignatures = originalAgTx.Cosignatures
 		}

@@ -87,9 +87,9 @@ func (m baseInt64) toArray() [2]uint32 {
 }
 
 func (m baseInt64) toLittleEndian() []byte {
-	bytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bytes, uint64(m))
-	return bytes
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(m))
+	return b
 }
 
 type Amount = baseInt64

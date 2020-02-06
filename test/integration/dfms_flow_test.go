@@ -152,6 +152,8 @@ func TestDriveFlowTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	drives, err := client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllDriveRoles)
+	assert.Nil(t, err)
+	fmt.Println(drives)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewFilesDepositTransaction(
@@ -165,31 +167,6 @@ func TestDriveFlowTransaction(t *testing.T) {
 		)
 	}, replicatorAccount)
 	assert.Nil(t, result.error)
-
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewDriveFileSystemTransaction(
-			sdk.NewDeadline(time.Hour),
-			driveAccount.PublicAccount,
-			&sdk.Hash{},
-			&sdk.Hash{1},
-			[]*sdk.Action{},
-			[]*sdk.Action{
-				{
-					FileHash: fileHash,
-					FileSize: sdk.StorageSize(fileSize),
-				},
-			},
-		)
-	}, defaultAccount)
-	assert.Nil(t, result.error)
-
-	drives, err = client.Storage.GetAccountDrives(ctx, defaultAccount.PublicAccount, sdk.AllDriveRoles)
-	assert.Nil(t, err)
-	fmt.Println(drives)
-
-	drive, err := client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
-	assert.Nil(t, err)
-	fmt.Println(drive)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewAddExchangeOfferTransaction(
@@ -268,7 +245,65 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, replicatorAccount)
 	assert.Nil(t, result.error)
 
-	drive, err = client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	startFileDownloadTx, err := client.NewStartFileDownloadTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveAccount.PublicAccount,
+		[]*sdk.DownloadFile{
+			{
+				FileHash: fileHash,
+				FileSize: sdk.StorageSize(fileSize),
+			},
+		},
+	)
+	startFileDownloadTx.ToAggregate(defaultAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	agTx, err := client.NewCompleteAggregateTransaction(
+		sdk.NewDeadline(time.Hour),
+		[]sdk.Transaction{startFileDownloadTx},
+	)
+	assert.Nil(t, err)
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return agTx, nil
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	uniqueHash, err := sdk.UniqueAggregateHash(agTx, startFileDownloadTx, client.GenerationHash())
+	assert.Nil(t, err)
+	donwloadInfo, err := client.Storage.GetDownloadInfo(ctx, uniqueHash)
+	assert.Nil(t, err)
+
+	donwloadInfos, err := client.Storage.GetAccountDownloadInfos(ctx, defaultAccount.PublicAccount)
+	assert.Nil(t, err)
+	assert.Equal(t, donwloadInfo, donwloadInfos[0])
+
+	donwloadInfos, err = client.Storage.GetDriveDownloadInfos(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	assert.Equal(t, donwloadInfo, donwloadInfos[0])
+
+	endFileDownloadTx, err := client.NewEndFileDownloadTransaction(
+		sdk.NewDeadline(time.Hour),
+		defaultAccount.PublicAccount,
+		uniqueHash,
+		[]*sdk.DownloadFile{
+			{
+				FileHash: fileHash,
+				FileSize: sdk.StorageSize(fileSize),
+			},
+		},
+	)
+	endFileDownloadTx.ToAggregate(driveAccount.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{endFileDownloadTx},
+		)
+	}, replicatorAccount)
+	assert.Nil(t, result.error)
+
+	drive, err := client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
 	assert.Nil(t, err)
 	fmt.Println(drive)
 
@@ -278,6 +313,26 @@ func TestDriveFlowTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, verificationStatus.Active)
 	assert.False(t, verificationStatus.Available)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDriveFileSystemTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount.PublicAccount,
+			&sdk.Hash{},
+			&sdk.Hash{1},
+			[]*sdk.Action{},
+			[]*sdk.Action{
+				{
+					FileHash: fileHash,
+					FileSize: sdk.StorageSize(fileSize),
+				},
+			},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	drive, err = client.Storage.GetDrive(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
 
 	endDriveTx, err := client.NewEndDriveTransaction(
 		sdk.NewDeadline(time.Hour),
