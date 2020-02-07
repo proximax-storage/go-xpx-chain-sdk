@@ -71,7 +71,7 @@ type DeployTransaction struct {
 	DriveAccount            *PublicAccount
 	Owner                   *PublicAccount
 	FileHash                *Hash
-	VMVersion               BlockChainVersion
+	VMVersion               uint64
 }
 
 type StartExecuteTransaction struct {

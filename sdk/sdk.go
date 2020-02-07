@@ -684,7 +684,7 @@ func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures
 	return tx, err
 }
 
-func (c *Client) NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion BlockChainVersion) (*DeployTransaction, error) {
+func (c *Client) NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion uint64) (*DeployTransaction, error) {
 	tx, err := NewDeployTransaction(deadline, drive, owner, fileHash, vmVersion, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)

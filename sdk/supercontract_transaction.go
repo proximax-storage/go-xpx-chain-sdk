@@ -13,7 +13,7 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
-func NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion BlockChainVersion, networkType NetworkType) (*DeployTransaction, error) {
+func NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion uint64, networkType NetworkType) (*DeployTransaction, error) {
 	if drive == nil {
 		return nil, ErrNilAccount
 	}
@@ -91,7 +91,7 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	vV := transactions.TransactionBufferCreateUint32Vector(builder, tx.VMVersion.toArray())
+	vV := transactions.TransactionBufferCreateUint32Vector(builder, baseInt64(tx.VMVersion).toArray())
 
 	transactions.DeployTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -148,7 +148,7 @@ func (dto *deployTransactionDTO) toStruct() (Transaction, error) {
 		drive,
 		owner,
 		hash,
-		BlockChainVersion(dto.Tx.VMVersion.toUint64()),
+		dto.Tx.VMVersion.toUint64(),
 	}, nil
 }
 
