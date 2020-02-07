@@ -704,7 +704,7 @@ func (c *Client) NewStartExecuteTransaction(deadline *Deadline, supercontract *P
 	return tx, err
 }
 
-func (c *Client) EndStartExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndExecuteTransaction, error) {
+func (c *Client) NewEndExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndExecuteTransaction, error) {
 	tx, err := NewEndExecuteTransaction(deadline, mosaics, token, status, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
