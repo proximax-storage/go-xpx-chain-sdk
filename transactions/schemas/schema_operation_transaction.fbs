@@ -1,0 +1,47 @@
+namespace Catapult.Buffers;
+
+table OperationIdentifyTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    operationToken:[ubyte];
+}
+
+table StartOperationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    mosaicsCount: ubyte;
+    duration:[uint];
+    executorsCount: ubyte;
+    mosaics: [ubyte];
+    executors: [ubyte];
+}
+
+table EndOperationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    mosaicsCount: ubyte;
+    operationToken: [ubyte];
+    status: ushort;
+    mosaics: [ubyte];
+}
+
+root_type OperationIdentifyTransactionBuffer;
+
+root_type StartOperationTransactionBuffer;
+
+root_type EndOperationTransactionBuffer;

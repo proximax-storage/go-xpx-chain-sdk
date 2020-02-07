@@ -684,8 +684,8 @@ func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures
 	return tx, err
 }
 
-func (c *Client) NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, vmVersion uint64) (*DeployTransaction, error) {
-	tx, err := NewDeployTransaction(deadline, drive, supercontract, fileHash, vmVersion, c.config.NetworkType)
+func (c *Client) NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion BlockChainVersion) (*DeployTransaction, error) {
+	tx, err := NewDeployTransaction(deadline, drive, owner, fileHash, vmVersion, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -693,8 +693,19 @@ func (c *Client) NewDeployTransaction(deadline *Deadline, drive, supercontract *
 	return tx, err
 }
 
-func (c *Client) NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string, functionParameters []int64) (*ExecuteTransaction, error) {
-	tx, err := NewExecuteTransaction(deadline, supercontract, mosaics, function, functionParameters, c.config.NetworkType)
+func (c *Client) NewStartExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic,
+		function string, functionParameters []int64) (*StartExecuteTransaction, error) {
+
+	tx, err := NewStartExecuteTransaction(deadline, supercontract, mosaics, function, functionParameters, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) EndStartExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndExecuteTransaction, error) {
+	tx, err := NewEndExecuteTransaction(deadline, mosaics, token, status, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -711,8 +722,8 @@ func (c *Client) NewOperationIdentifyTransaction(deadline *Deadline, hash *Hash)
 	return tx, err
 }
 
-func (c *Client) NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status OperationStatus) (*EndOperationTransaction, error) {
-	tx, err := NewEndOperationTransaction(deadline, mosaics, status, c.config.NetworkType)
+func (c *Client) NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndOperationTransaction, error) {
+	tx, err := NewEndOperationTransaction(deadline, mosaics, token, status, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

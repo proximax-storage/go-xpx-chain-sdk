@@ -5,16 +5,20 @@
 package sdk
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/google/flatbuffers/go"
+	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
-func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccount, fileHash *Hash, vmVersion uint64, networkType NetworkType) (*DeployTransaction, error) {
+func NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion BlockChainVersion, networkType NetworkType) (*DeployTransaction, error) {
 	if drive == nil {
 		return nil, ErrNilAccount
 	}
 
-	if supercontract == nil {
+	if owner == nil {
 		return nil, ErrNilAccount
 	}
 
@@ -26,7 +30,7 @@ func NewDeployTransaction(deadline *Deadline, drive, supercontract *PublicAccoun
 			NetworkType: networkType,
 		},
 		DriveAccount:         drive,
-		SuperContractAccount: supercontract,
+		Owner:                owner,
 		FileHash:             fileHash,
 		VMVersion:            vmVersion,
 	}
@@ -43,27 +47,112 @@ func (tx *DeployTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DriveAccount": %s,
-			"SuperContractAccount": %s,
+			"Owner": %s,
 			"FileHash": %s,
 			"VMVersion": %+d,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveAccount,
-		tx.SuperContractAccount,
+		tx.Owner,
 		tx.FileHash,
 		tx.VMVersion,
 	)
 }
 
 func (tx *DeployTransaction) Size() int {
-	return 0
+	return DeployHeaderSize
 }
 
 func (tx *DeployTransaction) Bytes() ([]byte, error) {
-	return nil, nil
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := hashToBuffer(builder, tx.FileHash)
+	dB, err := hex.DecodeString(tx.DriveAccount.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	dV := transactions.TransactionBufferCreateByteVector(builder, dB)
+	if err != nil {
+		return nil, err
+	}
+
+	oB, err := hex.DecodeString(tx.Owner.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	oV := transactions.TransactionBufferCreateByteVector(builder, oB)
+	if err != nil {
+		return nil, err
+	}
+	vV := transactions.TransactionBufferCreateUint32Vector(builder, tx.VMVersion.toArray())
+
+	transactions.DeployTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.DeployTransactionBufferAddDriveKey(builder, dV)
+	transactions.DeployTransactionBufferAddOwner(builder, oV)
+	transactions.DeployTransactionBufferAddFileHash(builder, hV)
+	transactions.DeployTransactionBufferAddVmVersion(builder, vV)
+	t := transactions.DeployTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return deployTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string, functionParameters []int64, networkType NetworkType) (*ExecuteTransaction, error) {
+type deployTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Drive       string      `json:"drive"`
+		Owner       string      `json:"owner"`
+		FileHash    hashDto     `json:"fileHash"`
+		VMVersion   uint64DTO   `json:"version"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *deployTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	drive, err := NewAccountFromPublicKey(dto.Tx.Drive, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	owner, err := NewAccountFromPublicKey(dto.Tx.Owner, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := dto.Tx.FileHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &DeployTransaction{
+		*atx,
+		drive,
+		owner,
+		hash,
+		BlockChainVersion(dto.Tx.VMVersion.toUint64()),
+	}, nil
+}
+
+func NewStartExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic, function string, functionParameters []int64, networkType NetworkType) (*StartExecuteTransaction, error) {
 	if supercontract == nil {
 		return nil, ErrNilAccount
 	}
@@ -74,11 +163,11 @@ func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mos
 		return nil, errors.New("Mosaics should be not empty")
 	}
 
-	tx := ExecuteTransaction{
+	tx := StartExecuteTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     ExecuteVersion,
+			Version:     StartExecuteVersion,
 			Deadline:    deadline,
-			Type:        Execute,
+			Type:        StartExecute,
 			NetworkType: networkType,
 		},
 		SuperContract:      supercontract,
@@ -90,11 +179,11 @@ func NewExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mos
 	return &tx, nil
 }
 
-func (tx *ExecuteTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *StartExecuteTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *ExecuteTransaction) String() string {
+func (tx *StartExecuteTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
@@ -111,12 +200,141 @@ func (tx *ExecuteTransaction) String() string {
 	)
 }
 
-func (tx *ExecuteTransaction) Size() int {
-	return 0
+func (tx *StartExecuteTransaction) Size() int {
+	return StartExecuteHeaderSize + len(tx.Function) + len(tx.FunctionParameters) * 8 + len(tx.LockMosaics) * (AmountSize + MosaicIdSize)
 }
 
-func (tx *ExecuteTransaction) Bytes() ([]byte, error) {
-	return nil, nil
+func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	sB, err := hex.DecodeString(tx.SuperContract.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	sV := transactions.TransactionBufferCreateByteVector(builder, sB)
+	if err != nil {
+		return nil, err
+	}
+
+	pB := make([]byte, len(tx.FunctionParameters) * 8)
+	for i, b := range tx.FunctionParameters {
+		binary.LittleEndian.PutUint64(pB[8*i:8*(i+1)], uint64(b))
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, pB)
+
+	functionV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.Function))
+	mb := make([]flatbuffers.UOffsetT, len(tx.LockMosaics))
+	for i, mos := range tx.LockMosaics {
+		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.AssetId.toArray())
+		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.toArray())
+		transactions.MosaicBufferStart(builder)
+		transactions.MosaicBufferAddId(builder, id)
+		transactions.MosaicBufferAddAmount(builder, am)
+		mb[i] = transactions.MosaicBufferEnd(builder)
+	}
+	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
+
+	transactions.StartExecuteTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.StartExecuteTransactionBufferAddMosaicsCount(builder, uint8(len(tx.LockMosaics)))
+	transactions.StartExecuteTransactionBufferAddFunctionSize(builder, uint8(len(tx.Function)))
+	transactions.StartExecuteTransactionBufferAddDataSize(builder, uint16(len(pB)))
+	transactions.StartExecuteTransactionBufferAddSuperContract(builder, sV)
+	transactions.StartExecuteTransactionBufferAddData(builder, pV)
+	transactions.StartExecuteTransactionBufferAddFunction(builder, functionV)
+	transactions.StartExecuteTransactionBufferAddMosaics(builder, mV)
+	t := transactions.StartExecuteTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return startExecuteTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+type startExecuteTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		SuperContract   string          `json:"superContract"`
+		Function        string          `json:"function"`
+		Data            string          `json:"data"`
+		Mosaics         []*mosaicDTO    `json:"mosaics"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *startExecuteTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+
+	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
+
+	for i, mosaic := range dto.Tx.Mosaics {
+		msc, err := mosaic.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		mosaics[i] = msc
+	}
+
+	sc, err := NewAccountFromPublicKey(dto.Tx.SuperContract, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(dto.Tx.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	pB := make([]int64, len(b) / 8)
+	for i := 0; i < len(pB); i++ {
+		pB[i] = int64(binary.LittleEndian.Uint64(b[8*i:8*(i+1)]))
+	}
+
+	return &StartExecuteTransaction{
+		*atx,
+		sc,
+		dto.Tx.Function,
+		mosaics,
+		pB,
+	}, nil
+}
+
+func NewEndExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus, networkType NetworkType) (*EndExecuteTransaction, error) {
+	if token == nil {
+		return nil, ErrNilHash
+	}
+	if len(mosaics) == 0 {
+		return nil, errors.New("Mosaics should be not empty")
+	}
+
+	tx := EndExecuteTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     EndExecuteVersion,
+			Deadline:    deadline,
+			Type:        EndExecute,
+			NetworkType: networkType,
+		},
+		OperationToken:     token,
+		UsedMosaics:        mosaics,
+		Status:             status,
+	}
+
+	return &tx, nil
 }
 
 func NewOperationIdentifyTransaction(deadline *Deadline, operationKey *Hash, networkType NetworkType) (*OperationIdentifyTransaction, error) {
@@ -153,14 +371,60 @@ func (tx *OperationIdentifyTransaction) String() string {
 }
 
 func (tx *OperationIdentifyTransaction) Size() int {
-	return 0
+	return OperationIdentifyHeaderSize
 }
 
 func (tx *OperationIdentifyTransaction) Bytes() ([]byte, error) {
-	return nil, nil
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := hashToBuffer(builder, tx.OperationHash)
+
+	transactions.OperationIdentifyTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.OperationIdentifyTransactionBufferAddOperationToken(builder, hV)
+	t := transactions.OperationIdentifyTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return operationIdentifyTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status OperationStatus, networkType NetworkType) (*EndOperationTransaction, error) {
+type operationIdentifyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Token    hashDto     `json:"operationToken"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *operationIdentifyTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := dto.Tx.Token.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &OperationIdentifyTransaction{
+		*atx,
+		hash,
+	}, nil
+}
+
+func NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus, networkType NetworkType) (*EndOperationTransaction, error) {
 	if status == Unknown {
 		return nil, errors.New("Status should be not unknown")
 	}
@@ -175,8 +439,9 @@ func NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, status Op
 			Type:        EndOperation,
 			NetworkType: networkType,
 		},
-		UsedMosaics: mosaics,
-		Status:      status,
+		UsedMosaics:    mosaics,
+		OperationToken: token,
+		Status:         status,
 	}
 
 	return &tx, nil
@@ -191,18 +456,99 @@ func (tx *EndOperationTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"Status": %d,
+			"OperationToken": %s,
 			"UsedMosaics": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Status,
+		tx.OperationToken,
 		tx.UsedMosaics,
 	)
 }
 
 func (tx *EndOperationTransaction) Size() int {
-	return 0
+	return EndOperationHeaderSize + len(tx.UsedMosaics) * (AmountSize + MosaicIdSize)
 }
 
 func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
-	return nil, nil
+	if tx.Status == Unknown {
+		return nil, errors.New("Unknown status of operation")
+	}
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := hashToBuffer(builder, tx.OperationToken)
+	mb := make([]flatbuffers.UOffsetT, len(tx.UsedMosaics))
+	for i, mos := range tx.UsedMosaics {
+		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.AssetId.toArray())
+		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.toArray())
+		transactions.MosaicBufferStart(builder)
+		transactions.MosaicBufferAddId(builder, id)
+		transactions.MosaicBufferAddAmount(builder, am)
+		mb[i] = transactions.MosaicBufferEnd(builder)
+	}
+	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
+
+	transactions.EndOperationTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.EndOperationTransactionBufferAddMosaicsCount(builder, uint8(len(tx.UsedMosaics)))
+	transactions.EndOperationTransactionBufferAddOperationToken(builder, hV)
+	transactions.EndOperationTransactionBufferAddStatus(builder, uint16(tx.Status))
+	transactions.EndOperationTransactionBufferAddMosaics(builder, mV)
+	t := transactions.EndOperationTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return endOperationTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+type endOperationTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Mosaics     []*mosaicDTO    `json:"mosaics"`
+		Token       hashDto         `json:"operationToken"`
+		Status      OperationStatus `json:"status"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *endOperationTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+
+	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
+
+	for i, mosaic := range dto.Tx.Mosaics {
+		msc, err := mosaic.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		mosaics[i] = msc
+	}
+
+
+	hash, err := dto.Tx.Token.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &EndOperationTransaction{
+		*atx,
+		mosaics,
+		hash,
+		dto.Tx.Status,
+	}, nil
 }

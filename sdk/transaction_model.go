@@ -3319,6 +3319,10 @@ const (
 	RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
 	StartFileDownloadHeaderSize                  = TransactionHeaderSize + 2 + KeySize
 	EndFileDownloadHeaderSize                    = TransactionHeaderSize + 2 + KeySize + Hash256
+	OperationIdentifyHeaderSize                  = TransactionHeaderSize + Hash256
+	EndOperationHeaderSize                       = TransactionHeaderSize + 1 + Hash256 + 2
+	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
+	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 )
 
 type EntityType uint16
@@ -3361,12 +3365,12 @@ const (
 	EndDriveVerification        EntityType = 0x485A
 	StartFileDownload           EntityType = 0x495A
 	EndFileDownload             EntityType = 0x4A5A
-	// TODO: change to real values
-	Deploy                      EntityType = 0x5001
-	Execute                     EntityType = 0x5002
-	StartOperation              EntityType = 0x5003
-	EndOperation                EntityType = 0x5004
-	OperationIdentify           EntityType = 0x5005
+	OperationIdentify           EntityType = 0x415F
+	StartOperation              EntityType = 0x425F
+	EndOperation                EntityType = 0x435F
+	Deploy                      EntityType = 0x4160
+	StartExecute                EntityType = 0x4260
+	EndExecute                  EntityType = 0x4360
 )
 
 func (t EntityType) String() string {
@@ -3412,7 +3416,8 @@ const (
 	StartFileDownloadVersion            EntityVersion = 1
 	EndFileDownloadVersion              EntityVersion = 1
 	DeployVersion                       EntityVersion = 1
-	ExecuteVersion                      EntityVersion = 1
+	StartExecuteVersion                 EntityVersion = 1
+	EndExecuteVersion                   EntityVersion = 1
 	StartOperationVersion               EntityVersion = 1
 	EndOperationVersion                 EntityVersion = 1
 	OperationIdentifyVersion            EntityVersion = 1
@@ -3639,6 +3644,16 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &startFileDownloadTransactionDTO{}
 	case EndFileDownload:
 		dto = &endFileDownloadTransactionDTO{}
+	case OperationIdentify:
+		dto = &operationIdentifyTransactionDTO{}
+	case EndOperation:
+		dto = &endOperationTransactionDTO{}
+	case Deploy:
+		dto = &deployTransactionDTO{}
+	case StartExecute:
+		dto = &startExecuteTransactionDTO{}
+	case EndExecute:
+		dto = &endOperationTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto)

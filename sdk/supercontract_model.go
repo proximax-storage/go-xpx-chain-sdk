@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type OperationStatus uint8
+type OperationStatus uint16
 
 const (
 	Unknown OperationStatus = iota
@@ -46,26 +46,11 @@ func (s *SuperContract) String() string {
 	)
 }
 
-type DeployTransaction struct {
-	AbstractTransaction
-	DriveAccount         *PublicAccount
-	SuperContractAccount *PublicAccount
-	FileHash             *Hash
-	VMVersion            uint64
-}
-
-type ExecuteTransaction struct {
-	AbstractTransaction
-	SuperContract      *PublicAccount
-	LockMosaics        []*Mosaic
-	Function           string
-	FunctionParameters []int64
-}
-
 type StartOperationTransaction struct {
 	AbstractTransaction
-	OperationExecutor *PublicAccount
-	Mosaics           []*Mosaic
+	OperationExecutors  []*PublicAccount
+	Mosaics             []*Mosaic
+	Duration            Duration
 }
 
 type OperationIdentifyTransaction struct {
@@ -76,6 +61,25 @@ type OperationIdentifyTransaction struct {
 // Must be aggregated in AOT
 type EndOperationTransaction struct {
 	AbstractTransaction
-	UsedMosaics []*Mosaic
-	Status      OperationStatus
+	UsedMosaics         []*Mosaic
+	OperationToken      *Hash
+	Status              OperationStatus
 }
+
+type DeployTransaction struct {
+	AbstractTransaction
+	DriveAccount            *PublicAccount
+	Owner                   *PublicAccount
+	FileHash                *Hash
+	VMVersion               BlockChainVersion
+}
+
+type StartExecuteTransaction struct {
+	AbstractTransaction
+	SuperContract      *PublicAccount
+	Function           string
+	LockMosaics        []*Mosaic
+	FunctionParameters []int64
+}
+
+type EndExecuteTransaction = EndOperationTransaction
