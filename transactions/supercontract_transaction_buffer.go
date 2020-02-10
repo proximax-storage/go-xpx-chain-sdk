@@ -609,16 +609,38 @@ func (rcv *StartExecuteTransactionBuffer) MutateMosaicsCount(n byte) bool {
 	return rcv._tab.MutateByteSlot(22, n)
 }
 
-func (rcv *StartExecuteTransactionBuffer) DataSize() uint16 {
+func (rcv *StartExecuteTransactionBuffer) DataSize(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *StartExecuteTransactionBuffer) MutateDataSize(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(24, n)
+func (rcv *StartExecuteTransactionBuffer) DataSizeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *StartExecuteTransactionBuffer) DataSizeBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *StartExecuteTransactionBuffer) MutateDataSize(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *StartExecuteTransactionBuffer) Function(j int) byte {
@@ -771,8 +793,11 @@ func StartExecuteTransactionBufferAddFunctionSize(builder *flatbuffers.Builder, 
 func StartExecuteTransactionBufferAddMosaicsCount(builder *flatbuffers.Builder, mosaicsCount byte) {
 	builder.PrependByteSlot(9, mosaicsCount, 0)
 }
-func StartExecuteTransactionBufferAddDataSize(builder *flatbuffers.Builder, dataSize uint16) {
-	builder.PrependUint16Slot(10, dataSize, 0)
+func StartExecuteTransactionBufferAddDataSize(builder *flatbuffers.Builder, dataSize flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(dataSize), 0)
+}
+func StartExecuteTransactionBufferStartDataSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func StartExecuteTransactionBufferAddFunction(builder *flatbuffers.Builder, function flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(function), 0)

@@ -240,12 +240,16 @@ func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
 
+	dataSizeB := make([]byte, 2)
+	binary.LittleEndian.PutUint16(dataSizeB, uint16(len(pB)))
+	dataSizeV := transactions.TransactionBufferCreateByteVector(builder, dataSizeB)
+
 	transactions.StartExecuteTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.StartExecuteTransactionBufferAddMosaicsCount(builder, uint8(len(tx.LockMosaics)))
 	transactions.StartExecuteTransactionBufferAddFunctionSize(builder, uint8(len(tx.Function)))
-	transactions.StartExecuteTransactionBufferAddDataSize(builder, uint16(len(pB)))
+	transactions.StartExecuteTransactionBufferAddDataSize(builder, dataSizeV)
 	transactions.StartExecuteTransactionBufferAddSuperContract(builder, sV)
 	transactions.StartExecuteTransactionBufferAddData(builder, pV)
 	transactions.StartExecuteTransactionBufferAddFunction(builder, functionV)

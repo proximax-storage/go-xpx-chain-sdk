@@ -245,7 +245,7 @@ func startExecuteTransactionSchema() *schema {
 			newArrayAttribute("superContract", ByteSize),
 			newScalarAttribute("functionSize", ByteSize),
 			newScalarAttribute("mosaicsCount", ByteSize),
-			newScalarAttribute("dataSize", ShortSize),
+			newArrayAttribute("dataSize", ByteSize),
 			newArrayAttribute("function", ByteSize),
 			newTableArrayAttribute("mosaics", schema{
 				[]schemaAttribute{

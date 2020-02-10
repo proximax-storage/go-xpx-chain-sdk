@@ -25,7 +25,7 @@ table StartExecuteTransactionBuffer {
     superContract:[ubyte];
     functionSize: ubyte;
     mosaicsCount: ubyte;
-    dataSize: ushort;
+    dataSize: [ubyte];
     function: [ubyte];
     mosaics: [ubyte];
     data: [ubyte];

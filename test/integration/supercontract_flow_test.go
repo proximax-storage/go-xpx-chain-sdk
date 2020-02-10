@@ -143,8 +143,6 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Mosaic{sdk.SuperContractMosaic(1000)},
 		"GoGoGo",
 		[]int64{
-			123,
-			228,
 		},
 	);
 	execute.ToAggregate(initiator.PublicAccount)
