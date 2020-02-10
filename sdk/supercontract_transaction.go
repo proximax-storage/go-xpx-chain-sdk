@@ -82,12 +82,12 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	oB, err := hex.DecodeString(tx.Owner.PublicKey)
+	ownerBytes, err := hex.DecodeString(tx.Owner.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	oV := transactions.TransactionBufferCreateByteVector(builder, oB)
+	ownerVector := transactions.TransactionBufferCreateByteVector(builder, ownerBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.DeployTransactionBufferAddDriveKey(builder, dV)
-	transactions.DeployTransactionBufferAddOwner(builder, oV)
+	transactions.DeployTransactionBufferAddOwner(builder, ownerVector)
 	transactions.DeployTransactionBufferAddFileHash(builder, hV)
 	transactions.DeployTransactionBufferAddVmVersion(builder, vV)
 	t := transactions.DeployTransactionBufferEnd(builder)
@@ -112,7 +112,7 @@ type deployTransactionDTO struct {
 		Drive       string      `json:"drive"`
 		Owner       string      `json:"owner"`
 		FileHash    hashDto     `json:"fileHash"`
-		VMVersion   uint64DTO   `json:"version"`
+		VMVersion   uint64DTO   `json:"vmVersion"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

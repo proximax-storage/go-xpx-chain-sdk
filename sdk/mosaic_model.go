@@ -236,3 +236,8 @@ func Storage(amount uint64) *Mosaic {
 func Streaming(amount uint64) *Mosaic {
 	return newMosaicPanic(StreamingNamespaceId, Amount(amount))
 }
+
+// returns super contract  mosaic with passed amount
+func SuperContractMosaic(amount uint64) *Mosaic {
+	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
+}
