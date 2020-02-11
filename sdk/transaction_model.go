@@ -1309,6 +1309,20 @@ func (tx *AggregateTransaction) UpdateUniqueAggregateHash(generationHash *Hash) 
 	return err
 }
 
+func CompareInnerTransaction(left []Transaction, right []Transaction) bool {
+	if len(left) != len(right) {
+		return false
+	}
+
+	for i, _ := range left {
+		if InnerTransactionHash(left[i]) != InnerTransactionHash(right[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (tx *AggregateTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
@@ -3740,6 +3754,33 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 		return nil, err
 	}
 	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(hex.EncodeToString(p)), h}, nil
+}
+
+func InnerTransactionHash(tx Transaction) *Hash {
+	b, err := toAggregateTransactionBytes(tx)
+	if err != nil {
+		panic(err)
+	}
+	sb := make([]byte, len(b)-SizeSize)
+	copy(sb, b[SizeSize:SizeSize+SignerSize])
+	copy(sb[SignerSize:], b[SizeSize+SignerSize:SizeSize+SignerSize+VersionSize+TypeSize])
+
+	copy(
+		sb[SignerSize+VersionSize+TypeSize:],
+		b[SizeSize+SignerSize+VersionSize+TypeSize:],
+	)
+
+	r, err := crypto.HashesSha3_256(sb)
+	if err != nil {
+		panic(err)
+	}
+
+	result, err := bytesToHash(r)
+	if err != nil {
+		panic(err)
+	}
+	
+	return result
 }
 
 func UniqueAggregateHash(aggregateTx *AggregateTransaction, tx Transaction, generationHash *Hash) (*Hash, error) {
