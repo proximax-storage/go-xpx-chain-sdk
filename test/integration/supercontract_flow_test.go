@@ -113,7 +113,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		driveAccount.PublicAccount,
 		defaultAccount.PublicAccount,
 		fileHash,
-		0,
+		123,
 	);
 	deploy.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
@@ -125,6 +125,13 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		)
 	}, defaultAccount, superContract)
 	assert.Nil(t, result.error)
+
+	contract, err := client.SuperContract.GetSuperContract(ctx, superContract.PublicAccount)
+	assert.Nil(t, err)
+
+	contracts, err := client.SuperContract.GetDriveSuperContracts(ctx, driveAccount.PublicAccount)
+	assert.Nil(t, err)
+	assert.Equal(t, contract, contracts[0])
 
 	initiator, err := client.NewAccount()
 	assert.Nil(t, err)

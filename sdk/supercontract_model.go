@@ -25,10 +25,12 @@ type Operation struct {
 }
 
 type SuperContract struct {
-	Account   *PublicAccount
-	Drive     *Drive
-	FileHash  *Hash
-	VMVersion uint64
+	Account     *PublicAccount
+	Drive       *PublicAccount
+	FileHash    *Hash
+	VMVersion   uint64
+	Start       Height
+	End         Height
 }
 
 func (s *SuperContract) String() string {

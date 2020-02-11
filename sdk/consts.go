@@ -105,6 +105,12 @@ const (
 	accountDownloadInfosRoute   = "/account/%s/downloads"
 )
 
+// routes for SuperContractService
+const (
+	driveSuperContractsRoute     = "/drive/%s/supercontracts"
+	superContractRoute           = "/supercontract/%s"
+)
+
 // routes for ExchangeService
 const (
 	exchangeRoute           = "/account/%s/exchange"
