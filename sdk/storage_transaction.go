@@ -168,7 +168,7 @@ type prepareDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *prepareDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *prepareDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -274,7 +274,7 @@ type joinToDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *joinToDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *joinToDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -453,7 +453,7 @@ type driveFileSystemTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
+func (dto *driveFileSystemTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -631,7 +631,7 @@ type filesDepositTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *filesDepositTransactionDTO) toStruct() (Transaction, error) {
+func (dto *filesDepositTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -751,7 +751,7 @@ type endDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -884,7 +884,7 @@ type driveFilesRewardTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *driveFilesRewardTransactionDTO) toStruct() (Transaction, error) {
+func (dto *driveFilesRewardTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -987,7 +987,7 @@ type startDriveVerificationTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *startDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+func (dto *startDriveVerificationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1140,7 +1140,7 @@ type endDriveVerificationTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endDriveVerificationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1291,7 +1291,7 @@ type startFileDownloadTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *startFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+func (dto *startFileDownloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1428,7 +1428,7 @@ type endFileDownloadTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endFileDownloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err

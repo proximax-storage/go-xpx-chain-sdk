@@ -52,6 +52,41 @@ func (s *SuperContractService) GetDriveSuperContracts(ctx context.Context, drive
 	return dto.toStruct(s.client.NetworkType())
 }
 
-func (s *SuperContractService) GetExecutionStatus(ctx context.Context, operationHash *Hash) (*Operation, error) {
-	return nil, nil
+func (s *SuperContractService) GetOperation(ctx context.Context, operationHash *Hash) (*Operation, error) {
+	if operationHash == nil {
+		return nil, ErrNilHash
+	}
+
+	url := net.NewUrl(fmt.Sprintf(operationRoute, operationHash.String()))
+
+	dto := &operationDTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *SuperContractService) GetOperationsByAccount(ctx context.Context, account *PublicAccount) ([]*Operation, error) {
+	if account == nil {
+		return nil, ErrNilAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(accountOperationsRoute, account.PublicKey))
+
+	dto := &operationDTOs{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
 }

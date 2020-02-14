@@ -33,7 +33,7 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 		return nil, err
 	}
 
-	return MapTransaction(&b)
+	return MapTransaction(&b, txs.client.GenerationHash())
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
@@ -52,7 +52,7 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 		return nil, err
 	}
 
-	return MapTransactions(&b)
+	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
 // returns transaction hash after announcing passed SignedTransaction

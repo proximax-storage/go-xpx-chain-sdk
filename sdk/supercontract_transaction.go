@@ -117,7 +117,7 @@ type deployTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *deployTransactionDTO) toStruct() (Transaction, error) {
+func (dto *deployTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -271,7 +271,7 @@ type startExecuteTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *startExecuteTransactionDTO) toStruct() (Transaction, error) {
+func (dto *startExecuteTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -406,7 +406,7 @@ type operationIdentifyTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *operationIdentifyTransactionDTO) toStruct() (Transaction, error) {
+func (dto *operationIdentifyTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -485,7 +485,6 @@ func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	hV := hashToBuffer(builder, tx.OperationToken)
 	mb := make([]flatbuffers.UOffsetT, len(tx.UsedMosaics))
 	for i, mos := range tx.UsedMosaics {
 		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.AssetId.toArray())
@@ -496,6 +495,7 @@ func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
 		mb[i] = transactions.MosaicBufferEnd(builder)
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
+	hV := hashToBuffer(builder, tx.OperationToken)
 
 	transactions.EndOperationTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -515,12 +515,12 @@ type endOperationTransactionDTO struct {
 		abstractTransactionDTO
 		Mosaics     []*mosaicDTO    `json:"mosaics"`
 		Token       hashDto         `json:"operationToken"`
-		Status      OperationStatus `json:"status"`
+		Status      OperationStatus `json:"result"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endOperationTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endOperationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -530,7 +530,6 @@ func (dto *endOperationTransactionDTO) toStruct() (Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-
 
 	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
 

@@ -11,6 +11,11 @@ table OperationIdentifyTransactionBuffer {
     operationToken:[ubyte];
 }
 
+table MosaicBuffer {
+    id: [uint];
+    amount: [uint];
+}
+
 table StartOperationTransactionBuffer {
     size: uint;
     signature: [ubyte];
@@ -22,7 +27,7 @@ table StartOperationTransactionBuffer {
     mosaicsCount: ubyte;
     duration:[uint];
     executorsCount: ubyte;
-    mosaics: [ubyte];
+    mosaics: [MosaicBuffer];
     executors: [ubyte];
 }
 
@@ -37,7 +42,7 @@ table EndOperationTransactionBuffer {
     mosaicsCount: ubyte;
     operationToken: [ubyte];
     status: ushort;
-    mosaics: [ubyte];
+    mosaics: [MosaicBuffer];
 }
 
 root_type OperationIdentifyTransactionBuffer;

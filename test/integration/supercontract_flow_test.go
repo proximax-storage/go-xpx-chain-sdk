@@ -161,4 +161,44 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 			[]sdk.Transaction{transferSCToInitiator, execute},
 		)
 	}, defaultAccount, initiator, replicatorAccount)
+	assert.Nil(t, result.error)
+
+
+	operationToken := result.Transaction.(*sdk.AggregateTransaction).InnerTransactions[1].GetAbstractTransaction().UniqueAggregateHash
+	operation, err := client.SuperContract.GetOperation(ctx, operationToken)
+	assert.Nil(t, err)
+
+	operations, err := client.SuperContract.GetOperationsByAccount(ctx, initiator.PublicAccount)
+	assert.Nil(t, err)
+	assert.Equal(t, operation, operations[0])
+
+	operationIdentify, err := client.NewOperationIdentifyTransaction(
+		sdk.NewDeadline(time.Hour),
+		operationToken,
+	);
+	operationIdentify.ToAggregate(superContract.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{operationIdentify, transferSCToInitiator},
+		)
+	}, defaultAccount, replicatorAccount)
+
+	endExecute, err := client.NewEndExecuteTransaction(
+		sdk.NewDeadline(time.Hour),
+		[]*sdk.Mosaic{sdk.SuperContractMosaic(1000)},
+		operationToken,
+		sdk.Success,
+	);
+	endExecute.ToAggregate(superContract.PublicAccount)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{endExecute, transferSCToInitiator},
+		)
+	}, defaultAccount, replicatorAccount)
 }

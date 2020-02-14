@@ -143,7 +143,7 @@ type addExchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *addExchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *addExchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -290,7 +290,7 @@ type exchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *exchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *exchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -417,7 +417,7 @@ type removeExchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *removeExchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *removeExchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err

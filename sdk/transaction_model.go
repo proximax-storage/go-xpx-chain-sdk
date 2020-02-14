@@ -29,7 +29,7 @@ type Transaction interface {
 }
 
 type transactionDto interface {
-	toStruct() (Transaction, error)
+	toStruct(*Hash) (Transaction, error)
 }
 
 type AbstractTransaction struct {
@@ -354,7 +354,7 @@ type accountPropertiesAddressTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *accountPropertiesAddressTransactionDTO) toStruct() (Transaction, error) {
+func (dto *accountPropertiesAddressTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -509,7 +509,7 @@ type accountPropertiesMosaicTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *accountPropertiesMosaicTransactionDTO) toStruct() (Transaction, error) {
+func (dto *accountPropertiesMosaicTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -659,7 +659,7 @@ type accountPropertiesEntityTypeTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *accountPropertiesEntityTypeTransactionDTO) toStruct() (Transaction, error) {
+func (dto *accountPropertiesEntityTypeTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -824,7 +824,7 @@ type addressAliasTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *addressAliasTransactionDTO) toStruct() (Transaction, error) {
+func (dto *addressAliasTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -910,7 +910,7 @@ type mosaicAliasTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *mosaicAliasTransactionDTO) toStruct() (Transaction, error) {
+func (dto *mosaicAliasTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1010,7 +1010,7 @@ type accountLinkTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *accountLinkTransactionDTO) toStruct() (Transaction, error) {
+func (dto *accountLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1131,7 +1131,7 @@ type networkConfigTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *networkConfigTransactionDTO) toStruct() (Transaction, error) {
+func (dto *networkConfigTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1239,7 +1239,7 @@ type blockchainUpgradeTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *blockchainUpgradeTransactionDTO) toStruct() (Transaction, error) {
+func (dto *blockchainUpgradeTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1386,13 +1386,13 @@ type aggregateTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *aggregateTransactionDTO) toStruct() (Transaction, error) {
+func (dto *aggregateTransactionDTO) toStruct(generationHash *Hash) (Transaction, error) {
 	txsr, err := json.Marshal(dto.Tx.InnerTransactions)
 	if err != nil {
 		return nil, err
 	}
 
-	txs, err := MapTransactions(bytes.NewBuffer(txsr))
+	txs, err := MapTransactions(bytes.NewBuffer(txsr), generationHash)
 	if err != nil {
 		return nil, err
 	}
@@ -1423,11 +1423,13 @@ func (dto *aggregateTransactionDTO) toStruct() (Transaction, error) {
 		iatx.TransactionInfo = atx.TransactionInfo
 	}
 
-	return &AggregateTransaction{
+	agtx := AggregateTransaction{
 		*atx,
 		txs,
 		as,
-	}, nil
+	}
+
+	return &agtx, agtx.UpdateUniqueAggregateHash(generationHash)
 }
 
 type ModifyMetadataTransaction struct {
@@ -1574,7 +1576,7 @@ type modifyMetadataAddressTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyMetadataAddressTransactionDTO) toStruct() (Transaction, error) {
+func (dto *modifyMetadataAddressTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1656,7 +1658,7 @@ type modifyMetadataMosaicTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyMetadataMosaicTransactionDTO) toStruct() (Transaction, error) {
+func (dto *modifyMetadataMosaicTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1738,7 +1740,7 @@ type modifyMetadataNamespaceTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyMetadataNamespaceTransactionDTO) toStruct() (Transaction, error) {
+func (dto *modifyMetadataNamespaceTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1862,7 +1864,7 @@ type mosaicDefinitionTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *mosaicDefinitionTransactionDTO) toStruct() (Transaction, error) {
+func (dto *mosaicDefinitionTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1977,7 +1979,7 @@ type mosaicSupplyChangeTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *mosaicSupplyChangeTransactionDTO) toStruct() (Transaction, error) {
+func (dto *mosaicSupplyChangeTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2148,7 +2150,7 @@ type transferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *transferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *transferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2275,7 +2277,7 @@ type modifyMultisigAccountTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyMultisigAccountTransactionDTO) toStruct() (Transaction, error) {
+func (dto *modifyMultisigAccountTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2427,7 +2429,7 @@ type modifyContractTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *modifyContractTransactionDTO) toStruct() (Transaction, error) {
+func (dto *modifyContractTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2599,7 +2601,7 @@ type registerNamespaceTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *registerNamespaceTransactionDTO) toStruct() (Transaction, error) {
+func (dto *registerNamespaceTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2731,7 +2733,7 @@ type lockFundsTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *lockFundsTransactionDTO) toStruct() (Transaction, error) {
+func (dto *lockFundsTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -2874,7 +2876,7 @@ type secretLockTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *secretLockTransactionDTO) toStruct() (Transaction, error) {
+func (dto *secretLockTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -3011,7 +3013,7 @@ type secretProofTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *secretProofTransactionDTO) toStruct() (Transaction, error) {
+func (dto *secretProofTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -3527,7 +3529,7 @@ func ExtractVersion(version int64) EntityVersion {
 	return EntityVersion(uint32(version) & 0xFFFFFF)
 }
 
-func MapTransactions(b *bytes.Buffer) ([]Transaction, error) {
+func MapTransactions(b *bytes.Buffer, generationHash *Hash) ([]Transaction, error) {
 	var wg sync.WaitGroup
 	var err error
 
@@ -3544,7 +3546,7 @@ func MapTransactions(b *bytes.Buffer) ([]Transaction, error) {
 		wg.Add(1)
 		go func(i int, t jsonLib.RawMessage) {
 			defer wg.Done()
-			txs[i], errs[i] = MapTransaction(bytes.NewBuffer([]byte(t)))
+			txs[i], errs[i] = MapTransaction(bytes.NewBuffer([]byte(t)), generationHash)
 		}(i, t)
 	}
 	wg.Wait()
@@ -3558,7 +3560,7 @@ func MapTransactions(b *bytes.Buffer) ([]Transaction, error) {
 	return txs, nil
 }
 
-func dtoToTransaction(b *bytes.Buffer, dto transactionDto) (Transaction, error) {
+func dtoToTransaction(b *bytes.Buffer, dto transactionDto, generationHash *Hash) (Transaction, error) {
 	if dto == nil {
 		return nil, errors.New("dto can't be nil")
 	}
@@ -3568,14 +3570,14 @@ func dtoToTransaction(b *bytes.Buffer, dto transactionDto) (Transaction, error) 
 		return nil, err
 	}
 
-	tx, err := dto.toStruct()
+	tx, err := dto.toStruct(generationHash)
 	if err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func MapTransaction(b *bytes.Buffer) (Transaction, error) {
+func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) {
 	rawT := struct {
 		Transaction struct {
 			Type EntityType
@@ -3670,7 +3672,7 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &endOperationTransactionDTO{}
 	}
 
-	return dtoToTransaction(b, dto)
+	return dtoToTransaction(b, dto, generationHash)
 }
 
 func createTransactionHash(b []byte, generationHash *Hash) (*Hash, error) {

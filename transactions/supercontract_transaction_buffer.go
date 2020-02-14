@@ -677,13 +677,16 @@ func (rcv *StartExecuteTransactionBuffer) MutateFunction(j int, n byte) bool {
 	return false
 }
 
-func (rcv *StartExecuteTransactionBuffer) Mosaics(j int) byte {
+func (rcv *StartExecuteTransactionBuffer) Mosaics(obj *MosaicBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
 func (rcv *StartExecuteTransactionBuffer) MosaicsLength() int {
@@ -692,23 +695,6 @@ func (rcv *StartExecuteTransactionBuffer) MosaicsLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
-}
-
-func (rcv *StartExecuteTransactionBuffer) MosaicsBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *StartExecuteTransactionBuffer) MutateMosaics(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
 }
 
 func (rcv *StartExecuteTransactionBuffer) Data(j int) byte {
@@ -809,7 +795,7 @@ func StartExecuteTransactionBufferAddMosaics(builder *flatbuffers.Builder, mosai
 	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(mosaics), 0)
 }
 func StartExecuteTransactionBufferStartMosaicsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+	return builder.StartVector(4, numElems, 4)
 }
 func StartExecuteTransactionBufferAddData(builder *flatbuffers.Builder, data flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(data), 0)

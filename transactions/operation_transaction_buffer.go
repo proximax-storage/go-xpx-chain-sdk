@@ -262,7 +262,6 @@ func OperationIdentifyTransactionBufferEnd(builder *flatbuffers.Builder) flatbuf
 	return builder.EndObject()
 }
 
-
 type StartOperationTransactionBuffer struct {
 	_tab flatbuffers.Table
 }
@@ -489,13 +488,16 @@ func (rcv *StartOperationTransactionBuffer) MutateExecutorsCount(n byte) bool {
 	return rcv._tab.MutateByteSlot(22, n)
 }
 
-func (rcv *StartOperationTransactionBuffer) Mosaics(j int) byte {
+func (rcv *StartOperationTransactionBuffer) Mosaics(obj *MosaicBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
 func (rcv *StartOperationTransactionBuffer) MosaicsLength() int {
@@ -504,23 +506,6 @@ func (rcv *StartOperationTransactionBuffer) MosaicsLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
-}
-
-func (rcv *StartOperationTransactionBuffer) MosaicsBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *StartOperationTransactionBuffer) MutateMosaics(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
 }
 
 func (rcv *StartOperationTransactionBuffer) Executors(j int) byte {
@@ -609,7 +594,7 @@ func StartOperationTransactionBufferAddMosaics(builder *flatbuffers.Builder, mos
 	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(mosaics), 0)
 }
 func StartOperationTransactionBufferStartMosaicsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+	return builder.StartVector(4, numElems, 4)
 }
 func StartOperationTransactionBufferAddExecutors(builder *flatbuffers.Builder, executors flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(executors), 0)
@@ -620,7 +605,6 @@ func StartOperationTransactionBufferStartExecutorsVector(builder *flatbuffers.Bu
 func StartOperationTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
-
 
 type EndOperationTransactionBuffer struct {
 	_tab flatbuffers.Table
@@ -810,34 +794,8 @@ func (rcv *EndOperationTransactionBuffer) MutateMosaicsCount(n byte) bool {
 	return rcv._tab.MutateByteSlot(18, n)
 }
 
-func (rcv *EndOperationTransactionBuffer) Duration(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
-	}
-	return 0
-}
-
-func (rcv *EndOperationTransactionBuffer) DurationLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndOperationTransactionBuffer) MutateDuration(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
-}
-
 func (rcv *EndOperationTransactionBuffer) OperationToken(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -846,7 +804,7 @@ func (rcv *EndOperationTransactionBuffer) OperationToken(j int) byte {
 }
 
 func (rcv *EndOperationTransactionBuffer) OperationTokenLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -854,7 +812,7 @@ func (rcv *EndOperationTransactionBuffer) OperationTokenLength() int {
 }
 
 func (rcv *EndOperationTransactionBuffer) OperationTokenBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -862,7 +820,7 @@ func (rcv *EndOperationTransactionBuffer) OperationTokenBytes() []byte {
 }
 
 func (rcv *EndOperationTransactionBuffer) MutateOperationToken(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -871,7 +829,7 @@ func (rcv *EndOperationTransactionBuffer) MutateOperationToken(j int, n byte) bo
 }
 
 func (rcv *EndOperationTransactionBuffer) Status() uint16 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
@@ -879,45 +837,31 @@ func (rcv *EndOperationTransactionBuffer) Status() uint16 {
 }
 
 func (rcv *EndOperationTransactionBuffer) MutateStatus(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(24, n)
+	return rcv._tab.MutateUint16Slot(22, n)
 }
 
-func (rcv *EndOperationTransactionBuffer) Mosaics(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+func (rcv *EndOperationTransactionBuffer) Mosaics(obj *MosaicBuffer, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
 func (rcv *EndOperationTransactionBuffer) MosaicsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
 }
 
-func (rcv *EndOperationTransactionBuffer) MosaicsBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *EndOperationTransactionBuffer) MutateMosaics(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
 func EndOperationTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(12)
+	builder.StartObject(11)
 }
 func EndOperationTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -955,26 +899,20 @@ func EndOperationTransactionBufferStartDeadlineVector(builder *flatbuffers.Build
 func EndOperationTransactionBufferAddMosaicsCount(builder *flatbuffers.Builder, mosaicsCount byte) {
 	builder.PrependByteSlot(7, mosaicsCount, 0)
 }
-func EndOperationTransactionBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(duration), 0)
-}
-func EndOperationTransactionBufferStartDurationVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
-}
 func EndOperationTransactionBufferAddOperationToken(builder *flatbuffers.Builder, operationToken flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(operationToken), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(operationToken), 0)
 }
 func EndOperationTransactionBufferStartOperationTokenVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func EndOperationTransactionBufferAddStatus(builder *flatbuffers.Builder, status uint16) {
-	builder.PrependUint16Slot(10, status, 0)
+	builder.PrependUint16Slot(9, status, 0)
 }
 func EndOperationTransactionBufferAddMosaics(builder *flatbuffers.Builder, mosaics flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(mosaics), 0)
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(mosaics), 0)
 }
 func EndOperationTransactionBufferStartMosaicsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+	return builder.StartVector(4, numElems, 4)
 }
 func EndOperationTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

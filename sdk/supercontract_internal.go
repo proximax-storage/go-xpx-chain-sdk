@@ -62,3 +62,81 @@ func (ref *superContractDTOs) toStruct(networkType NetworkType) ([]*SuperContrac
 
 	return contracts, nil
 }
+
+type operationDTO struct {
+	Operation struct {
+		Initiator           string              `json:"account"`
+		Height              uint64DTO           `json:"height"`
+		Mosaics             []*mosaicDTO        `json:"mosaics"`
+		Token               hashDto             `json:"token"`
+		Status              OperationStatus     `json:"result"`
+		Executors           []string            `json:"executors"`
+		TransactionHashes   []*hashDto          `json:"transactionHashes"`
+	}
+}
+
+func (ref *operationDTO) toStruct(networkType NetworkType) (*Operation, error) {
+	operation := Operation{}
+
+	var err error
+	operation.Initiator, err = NewAccountFromPublicKey(ref.Operation.Initiator, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	operation.LockedMosaics = make([]*Mosaic, len(ref.Operation.Mosaics))
+	for i, mosaic := range ref.Operation.Mosaics {
+		msc, err := mosaic.toStruct()
+		if err != nil {
+			return nil, err
+		}
+
+		operation.LockedMosaics[i] = msc
+	}
+
+	operation.Token, err = ref.Operation.Token.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	operation.Executors = make([]*PublicAccount, len(ref.Operation.Executors))
+	for i, executor := range ref.Operation.Executors {
+		operation.Executors[i], err = NewAccountFromPublicKey(executor, networkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	operation.AggregateHashes = make([]*Hash, len(ref.Operation.TransactionHashes))
+	for i, hash := range ref.Operation.TransactionHashes {
+		operation.AggregateHashes[i], err = hash.Hash()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	operation.Height = ref.Operation.Height.toStruct()
+	operation.Status = ref.Operation.Status
+
+	return &operation, nil
+}
+
+type operationDTOs []*operationDTO
+
+func (ref *operationDTOs) toStruct(networkType NetworkType) ([]*Operation, error) {
+	var (
+		dtos   = *ref
+		objects = make([]*Operation, len(dtos))
+	)
+
+	for i, dto := range dtos {
+		object, err := dto.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		objects[i] = object
+	}
+
+	return objects, nil
+}

@@ -107,8 +107,10 @@ const (
 
 // routes for SuperContractService
 const (
-	driveSuperContractsRoute     = "/drive/%s/supercontracts"
-	superContractRoute           = "/supercontract/%s"
+	driveSuperContractsRoute        = "/drive/%s/supercontracts"
+	superContractRoute              = "/supercontract/%s"
+	accountOperationsRoute          = "/account/%s/operations"
+	operationRoute                  = "/operation/%s"
 )
 
 // routes for ExchangeService
