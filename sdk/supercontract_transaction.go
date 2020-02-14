@@ -475,9 +475,6 @@ func (tx *EndOperationTransaction) Size() int {
 }
 
 func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
-	if tx.Status == Unknown {
-		return nil, errors.New("Unknown status of operation")
-	}
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
