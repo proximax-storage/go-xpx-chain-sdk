@@ -82,6 +82,7 @@ type (
 	CatapultClient interface {
 		Client
 
+		Config() *sdk.Config
 		AddBlockHandlers(handlers ...subscribers.BlockHandler) error
 		AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
 		AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error
@@ -146,6 +147,11 @@ func (c *CatapultWebsocketClientImpl) Close() error {
 	c.cancelFunc()
 	return nil
 }
+
+func (c *CatapultWebsocketClientImpl) Config() *sdk.Config {
+	return c.config
+}
+
 func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.BlockHandler) error {
 	if len(handlers) == 0 {
 		return nil
@@ -444,7 +450,6 @@ func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
 }
 
 func (c *CatapultWebsocketClientImpl) startListener() {
-
 	for {
 		_, resp, e := c.conn.ReadMessage()
 		if e != nil {
@@ -461,9 +466,7 @@ func (c *CatapultWebsocketClientImpl) startListener() {
 			}
 		}
 
-		go func(response []byte) {
-			c.messageRouter.RouteMessage(response)
-		}(resp)
+		c.messageRouter.RouteMessage(resp)
 	}
 }
 
