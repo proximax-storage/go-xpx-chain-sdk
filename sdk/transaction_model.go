@@ -1315,7 +1315,7 @@ func CompareInnerTransaction(left []Transaction, right []Transaction) bool {
 	}
 
 	for i, _ := range left {
-		if InnerTransactionHash(left[i]).Equal(InnerTransactionHash(right[i])) {
+		if !InnerTransactionHash(left[i]).Equal(InnerTransactionHash(right[i])) {
 			return false
 		}
 	}
