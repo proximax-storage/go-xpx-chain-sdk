@@ -3333,7 +3333,7 @@ const (
 	DriveFileSystem           EntityType = 0x435A
 	FilesDeposit              EntityType = 0x445A
 	EndDrive                  EntityType = 0x455A
-	DriveFilesReward              EntityType = 0x465A
+	DriveFilesReward          EntityType = 0x465A
 	StartDriveVerification    EntityType = 0x475A
 	EndDriveVerification      EntityType = 0x485A
 )
@@ -3370,12 +3370,12 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
-	PrepareDriveVersion              EntityVersion = 1
+	PrepareDriveVersion              EntityVersion = 2
 	JoinToDriveVersion               EntityVersion = 1
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1
 	EndDriveVersion                  EntityVersion = 1
-	DriveFilesRewardVersion              EntityVersion = 1
+	DriveFilesRewardVersion          EntityVersion = 1
 	StartDriveVerificationVersion    EntityVersion = 1
 	EndDriveVerificationVersion      EntityVersion = 1
 )
