@@ -6,8 +6,9 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"math"
+
+	"github.com/pkg/errors"
 )
 
 type OfferType uint8
@@ -18,7 +19,7 @@ const (
 	UnknownType
 )
 
-func(o OfferType) String()string {
+func (o OfferType) String() string {
 	switch o {
 	case SellOffer:
 		return "sell"
@@ -29,7 +30,7 @@ func(o OfferType) String()string {
 	}
 }
 
-func(o OfferType) CounterOffer() OfferType {
+func (o OfferType) CounterOffer() OfferType {
 	switch o {
 	case SellOffer:
 		return BuyOffer
@@ -41,8 +42,8 @@ func(o OfferType) CounterOffer() OfferType {
 }
 
 type UserExchangeInfo struct {
-	Owner	*PublicAccount
-	Offers	map[OfferType]map[MosaicId]*OfferInfo
+	Owner  *PublicAccount                        `json:"owner"`
+	Offers map[OfferType]map[MosaicId]*OfferInfo `json:"offers"`
 }
 
 func (info *UserExchangeInfo) String() string {
@@ -57,12 +58,12 @@ func (info *UserExchangeInfo) String() string {
 }
 
 type OfferInfo struct {
-	Type				OfferType
-	Owner				*PublicAccount
-	Mosaic				*Mosaic
-	PriceNumerator		Amount
-	PriceDenominator	Amount
-	Deadline			Height
+	Type             OfferType      `json:"offer_type"`
+	Owner            *PublicAccount `json:"owner"`
+	Mosaic           *Mosaic        `json:"mosaic"`
+	PriceNumerator   Amount         `json:"price_numerator"`
+	PriceDenominator Amount         `json:"price_denominator"`
+	Deadline         Height         `json:"deadline"`
 }
 
 func (info *OfferInfo) String() string {
@@ -84,7 +85,7 @@ func (info *OfferInfo) String() string {
 	)
 }
 
-func(o *OfferInfo) Cost(amount Amount) (Amount, error) {
+func (o *OfferInfo) Cost(amount Amount) (Amount, error) {
 	if o.Mosaic.Amount < amount {
 		return 0, errors.New("You can't get more mosaics when in offer")
 	}
@@ -92,16 +93,16 @@ func(o *OfferInfo) Cost(amount Amount) (Amount, error) {
 	switch o.Type {
 	case SellOffer:
 		// If user want to buy mosaic, we round the cost towards the seller(because we buy part of mosaics)
-		return Amount(math.Ceil(float64(o.PriceNumerator * amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Ceil(float64(o.PriceNumerator*amount) / float64(o.PriceDenominator))), nil
 	case BuyOffer:
 		// If user want to sell mosaic, we round the cost towards the buyer(because we sell part of mosaics)
-		return Amount(math.Floor(float64(o.PriceNumerator * amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Floor(float64(o.PriceNumerator*amount) / float64(o.PriceDenominator))), nil
 	default:
 		return 0, errors.New("Unknown offer type")
 	}
 }
 
-func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
+func (o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 	cost, err := o.Cost(amount)
 	if err != nil {
 		return nil, err
@@ -109,9 +110,9 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 
 	confirmation := &ExchangeConfirmation{
 		Offer{
-			Type:		o.Type,
-			Mosaic:		newMosaicPanic(o.Mosaic.AssetId, amount),
-			Cost:		cost,
+			Type:   o.Type,
+			Mosaic: newMosaicPanic(o.Mosaic.AssetId, amount),
+			Cost:   cost,
 		},
 		o.Owner,
 	}
@@ -120,14 +121,14 @@ func(o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 }
 
 type Offer struct {
-	Type 		OfferType
-	Mosaic		*Mosaic
-	Cost 		Amount
+	Type   OfferType `json:"offer_type"`
+	Mosaic *Mosaic   `json:"mosaic"`
+	Cost   Amount    `json:"cost"`
 }
 
 type AddOffer struct {
 	Offer
-	Duration	Duration
+	Duration Duration `json:"duration"`
 }
 
 func (offer *AddOffer) String() string {
@@ -150,12 +151,12 @@ func (offer *AddOffer) String() string {
 // Add Exchange Offer Transaction
 type AddExchangeOfferTransaction struct {
 	AbstractTransaction
-	Offers				[]*AddOffer
+	Offers []*AddOffer
 }
 
 type ExchangeConfirmation struct {
 	Offer
-	Owner				*PublicAccount
+	Owner *PublicAccount `json:"owner"`
 }
 
 func (offer *ExchangeConfirmation) String() string {
@@ -178,12 +179,12 @@ func (offer *ExchangeConfirmation) String() string {
 // Exchange Transaction
 type ExchangeOfferTransaction struct {
 	AbstractTransaction
-	Confirmations		[]*ExchangeConfirmation
+	Confirmations []*ExchangeConfirmation
 }
 
 type RemoveOffer struct {
-	Type		OfferType
-	AssetId		AssetId
+	Type    OfferType
+	AssetId AssetId
 }
 
 func (offer *RemoveOffer) String() string {
@@ -200,5 +201,5 @@ func (offer *RemoveOffer) String() string {
 // Remove Exchange Offer Transaction
 type RemoveExchangeOfferTransaction struct {
 	AbstractTransaction
-	Offers			[]*RemoveOffer
+	Offers []*RemoveOffer
 }

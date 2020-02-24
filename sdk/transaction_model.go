@@ -15,9 +15,10 @@ import (
 	"sync"
 
 	"github.com/google/flatbuffers/go"
-	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-crypto"
 	"github.com/proximax-storage/go-xpx-utils"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
 type Transaction interface {
@@ -34,13 +35,13 @@ type transactionDto interface {
 
 type AbstractTransaction struct {
 	TransactionInfo
-	NetworkType NetworkType
-	Deadline    *Deadline
-	Type        EntityType
-	Version     EntityVersion
-	MaxFee      Amount
-	Signature   string
-	Signer      *PublicAccount
+	NetworkType NetworkType    `json:"network_type"`
+	Deadline    *Deadline      `json:"deadline"`
+	Type        EntityType     `json:"entity_type"`
+	Version     EntityVersion  `json:"version"`
+	MaxFee      Amount         `json:"max_fee"`
+	Signature   string         `json:"signature"`
+	Signer      *PublicAccount `json:"signer"`
 }
 
 func (tx *AbstractTransaction) IsUnconfirmed() bool {
@@ -1314,7 +1315,7 @@ func CompareInnerTransaction(left []Transaction, right []Transaction) bool {
 		return false
 	}
 
-	for i, _ := range left {
+	for i := range left {
 		if !InnerTransactionHash(left[i]).Equal(InnerTransactionHash(right[i])) {
 			return false
 		}
@@ -3161,9 +3162,9 @@ func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType)
 }
 
 type MetadataModification struct {
-	Type  MetadataModificationType
-	Key   string
-	Value string
+	Type  MetadataModificationType `json:"type"`
+	Key   string                   `json:"key"`
+	Value string                   `json:"value"`
 }
 
 func (m *MetadataModification) Size() int {
@@ -3198,11 +3199,11 @@ func (dto *metadataModificationDTO) toStruct(networkType NetworkType) (*Metadata
 }
 
 type TransactionStatus struct {
-	Deadline *Deadline
-	Group    string
-	Status   string
-	Hash     *Hash
-	Height   Height
+	Deadline *Deadline `json:"deadline"`
+	Group    string    `json:"group"`
+	Status   string    `json:"status"`
+	Hash     *Hash     `json:"hash"`
+	Height   Height    `json:"height"`
 }
 
 func (ts *TransactionStatus) String() string {
@@ -3344,49 +3345,49 @@ const (
 type EntityType uint16
 
 const (
-	AccountPropertyAddress      EntityType = 0x4150
-	AccountPropertyMosaic       EntityType = 0x4250
-	AccountPropertyEntityType   EntityType = 0x4350
-	AddressAlias                EntityType = 0x424e
-	AggregateBonded             EntityType = 0x4241
-	AggregateCompleted          EntityType = 0x4141
-	AddExchangeOffer            EntityType = 0x415D
-	ExchangeOffer               EntityType = 0x425D
-	RemoveExchangeOffer         EntityType = 0x435D
-	Block                       EntityType = 0x8143
-	NemesisBlock                EntityType = 0x8043
-	NetworkConfigEntityType     EntityType = 0x4159
-	BlockchainUpgrade           EntityType = 0x4158
-	LinkAccount                 EntityType = 0x414c
-	Lock                        EntityType = 0x4148
-	MetadataAddress             EntityType = 0x413d
-	MetadataMosaic              EntityType = 0x423d
-	MetadataNamespace           EntityType = 0x433d
-	ModifyContract              EntityType = 0x4157
-	ModifyMultisig              EntityType = 0x4155
-	MosaicAlias                 EntityType = 0x434e
-	MosaicDefinition            EntityType = 0x414d
-	MosaicSupplyChange          EntityType = 0x424d
-	RegisterNamespace           EntityType = 0x414e
-	SecretLock                  EntityType = 0x4152
-	SecretProof                 EntityType = 0x4252
-	Transfer                    EntityType = 0x4154
-	PrepareDrive                EntityType = 0x415A
-	JoinToDrive                 EntityType = 0x425A
-	DriveFileSystem             EntityType = 0x435A
-	FilesDeposit                EntityType = 0x445A
-	EndDrive                    EntityType = 0x455A
-	DriveFilesReward            EntityType = 0x465A
-	StartDriveVerification      EntityType = 0x475A
-	EndDriveVerification        EntityType = 0x485A
-	StartFileDownload           EntityType = 0x495A
-	EndFileDownload             EntityType = 0x4A5A
-	OperationIdentify           EntityType = 0x415F
-	StartOperation              EntityType = 0x425F
-	EndOperation                EntityType = 0x435F
-	Deploy                      EntityType = 0x4160
-	StartExecute                EntityType = 0x4260
-	EndExecute                  EntityType = 0x4360
+	AccountPropertyAddress    EntityType = 0x4150
+	AccountPropertyMosaic     EntityType = 0x4250
+	AccountPropertyEntityType EntityType = 0x4350
+	AddressAlias              EntityType = 0x424e
+	AggregateBonded           EntityType = 0x4241
+	AggregateCompleted        EntityType = 0x4141
+	AddExchangeOffer          EntityType = 0x415D
+	ExchangeOffer             EntityType = 0x425D
+	RemoveExchangeOffer       EntityType = 0x435D
+	Block                     EntityType = 0x8143
+	NemesisBlock              EntityType = 0x8043
+	NetworkConfigEntityType   EntityType = 0x4159
+	BlockchainUpgrade         EntityType = 0x4158
+	LinkAccount               EntityType = 0x414c
+	Lock                      EntityType = 0x4148
+	MetadataAddress           EntityType = 0x413d
+	MetadataMosaic            EntityType = 0x423d
+	MetadataNamespace         EntityType = 0x433d
+	ModifyContract            EntityType = 0x4157
+	ModifyMultisig            EntityType = 0x4155
+	MosaicAlias               EntityType = 0x434e
+	MosaicDefinition          EntityType = 0x414d
+	MosaicSupplyChange        EntityType = 0x424d
+	RegisterNamespace         EntityType = 0x414e
+	SecretLock                EntityType = 0x4152
+	SecretProof               EntityType = 0x4252
+	Transfer                  EntityType = 0x4154
+	PrepareDrive              EntityType = 0x415A
+	JoinToDrive               EntityType = 0x425A
+	DriveFileSystem           EntityType = 0x435A
+	FilesDeposit              EntityType = 0x445A
+	EndDrive                  EntityType = 0x455A
+	DriveFilesReward          EntityType = 0x465A
+	StartDriveVerification    EntityType = 0x475A
+	EndDriveVerification      EntityType = 0x485A
+	StartFileDownload         EntityType = 0x495A
+	EndFileDownload           EntityType = 0x4A5A
+	OperationIdentify         EntityType = 0x415F
+	StartOperation            EntityType = 0x425F
+	EndOperation              EntityType = 0x435F
+	Deploy                    EntityType = 0x4160
+	StartExecute              EntityType = 0x4260
+	EndExecute                EntityType = 0x4360
 )
 
 func (t EntityType) String() string {
@@ -3396,47 +3397,47 @@ func (t EntityType) String() string {
 type EntityVersion uint32
 
 const (
-	AccountPropertyAddressVersion       EntityVersion = 1
-	AccountPropertyMosaicVersion        EntityVersion = 1
-	AccountPropertyEntityTypeVersion    EntityVersion = 1
-	AddressAliasVersion                 EntityVersion = 1
-	AggregateBondedVersion              EntityVersion = 2
-	AggregateCompletedVersion           EntityVersion = 2
-	AddExchangeOfferVersion             EntityVersion = 1
-	ExchangeOfferVersion                EntityVersion = 1
-	RemoveExchangeOfferVersion          EntityVersion = 1
-	NetworkConfigVersion                EntityVersion = 1
-	BlockchainUpgradeVersion            EntityVersion = 1
-	LinkAccountVersion                  EntityVersion = 2
-	LockVersion                         EntityVersion = 1
-	MetadataAddressVersion              EntityVersion = 1
-	MetadataMosaicVersion               EntityVersion = 1
-	MetadataNamespaceVersion            EntityVersion = 1
-	ModifyContractVersion               EntityVersion = 3
-	ModifyMultisigVersion               EntityVersion = 3
-	MosaicAliasVersion                  EntityVersion = 1
-	MosaicDefinitionVersion             EntityVersion = 3
-	MosaicSupplyChangeVersion           EntityVersion = 2
-	RegisterNamespaceVersion            EntityVersion = 2
-	SecretLockVersion                   EntityVersion = 1
-	SecretProofVersion                  EntityVersion = 1
-	TransferVersion                     EntityVersion = 3
-	PrepareDriveVersion                 EntityVersion = 2
-	JoinToDriveVersion                  EntityVersion = 1
-	DriveFileSystemVersion              EntityVersion = 1
-	FilesDepositVersion                 EntityVersion = 1
-	EndDriveVersion                     EntityVersion = 1
-	DriveFilesRewardVersion             EntityVersion = 1
-	StartDriveVerificationVersion       EntityVersion = 1
-	EndDriveVerificationVersion         EntityVersion = 1
-	StartFileDownloadVersion            EntityVersion = 1
-	EndFileDownloadVersion              EntityVersion = 1
-	DeployVersion                       EntityVersion = 1
-	StartExecuteVersion                 EntityVersion = 1
-	EndExecuteVersion                   EntityVersion = 1
-	StartOperationVersion               EntityVersion = 1
-	EndOperationVersion                 EntityVersion = 1
-	OperationIdentifyVersion            EntityVersion = 1
+	AccountPropertyAddressVersion    EntityVersion = 1
+	AccountPropertyMosaicVersion     EntityVersion = 1
+	AccountPropertyEntityTypeVersion EntityVersion = 1
+	AddressAliasVersion              EntityVersion = 1
+	AggregateBondedVersion           EntityVersion = 2
+	AggregateCompletedVersion        EntityVersion = 2
+	AddExchangeOfferVersion          EntityVersion = 1
+	ExchangeOfferVersion             EntityVersion = 1
+	RemoveExchangeOfferVersion       EntityVersion = 1
+	NetworkConfigVersion             EntityVersion = 1
+	BlockchainUpgradeVersion         EntityVersion = 1
+	LinkAccountVersion               EntityVersion = 2
+	LockVersion                      EntityVersion = 1
+	MetadataAddressVersion           EntityVersion = 1
+	MetadataMosaicVersion            EntityVersion = 1
+	MetadataNamespaceVersion         EntityVersion = 1
+	ModifyContractVersion            EntityVersion = 3
+	ModifyMultisigVersion            EntityVersion = 3
+	MosaicAliasVersion               EntityVersion = 1
+	MosaicDefinitionVersion          EntityVersion = 3
+	MosaicSupplyChangeVersion        EntityVersion = 2
+	RegisterNamespaceVersion         EntityVersion = 2
+	SecretLockVersion                EntityVersion = 1
+	SecretProofVersion               EntityVersion = 1
+	TransferVersion                  EntityVersion = 3
+	PrepareDriveVersion              EntityVersion = 2
+	JoinToDriveVersion               EntityVersion = 1
+	DriveFileSystemVersion           EntityVersion = 1
+	FilesDepositVersion              EntityVersion = 1
+	EndDriveVersion                  EntityVersion = 1
+	DriveFilesRewardVersion          EntityVersion = 1
+	StartDriveVerificationVersion    EntityVersion = 1
+	EndDriveVerificationVersion      EntityVersion = 1
+	StartFileDownloadVersion         EntityVersion = 1
+	EndFileDownloadVersion           EntityVersion = 1
+	DeployVersion                    EntityVersion = 1
+	StartExecuteVersion              EntityVersion = 1
+	EndExecuteVersion                EntityVersion = 1
+	StartOperationVersion            EntityVersion = 1
+	EndOperationVersion              EntityVersion = 1
+	OperationIdentifyVersion         EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3781,7 +3782,7 @@ func InnerTransactionHash(tx Transaction) *Hash {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return result
 }
 
