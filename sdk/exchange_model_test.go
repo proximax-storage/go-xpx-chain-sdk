@@ -18,6 +18,21 @@ func TestCounterOffer(t *testing.T) {
 	assert.Equal(t, BuyOffer.CounterOffer(), SellOffer)
 }
 
+func TestCost_Cost_Overflow(t *testing.T) {
+	offer := &OfferInfo{
+		Owner: exchangeAccount,
+		Type: SellOffer,
+		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(9000000000000000)),
+		Deadline: Duration(10000023),
+	}
+
+	offer.PriceNumerator = 9000000000000000
+	offer.PriceDenominator = 9000000000000000
+	cost, err := offer.Cost(Amount(1000000000))
+	assert.Nil(t, err)
+	assert.Equal(t, cost, Amount(1000000000))
+}
+
 func TestCost_SellOffer(t *testing.T) {
 	offer := &OfferInfo{
 		Owner: exchangeAccount,

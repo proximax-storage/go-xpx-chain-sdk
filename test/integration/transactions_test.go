@@ -140,7 +140,7 @@ func waitForBlocksCount(t *testing.T, duration int) {
 
 	count := duration
 
-	out := make(chan Result)
+	out := make(chan Result, 1)
 	m := sync.Mutex{}
 
 	innerCounter := 0
