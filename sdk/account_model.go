@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/proximax-storage/go-xpx-utils/str"
 	"github.com/proximax-storage/go-xpx-crypto"
+	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
 const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -57,8 +57,8 @@ func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAc
 }
 
 type PublicAccount struct {
-	Address   *Address
-	PublicKey string
+	Address   *Address `json:"address"`
+	PublicKey string   `json:"public_key"`
 }
 
 func (ref *PublicAccount) String() string {
