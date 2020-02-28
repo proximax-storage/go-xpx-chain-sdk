@@ -302,7 +302,7 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 func TestCosignatureTransactionSigning(t *testing.T) {
 	rtx := "{\"meta\":{\"hash\":\"671653C94E2254F2A23EFEDB15D67C38332AED1FBD24B063C0A8E675582B6A96\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E55\",\"index\":0,\"merkleComponentHash\":\"81E5E7AE49998802DABC816EC10158D3A7879702FF29084C2C992CD1289877A7\"},\"transaction\":{\"cosignatures\":[{\"signature\":\"5780C8DF9D46BA2BCF029DCC5D3BF55FE1CB5BE7ABCF30387C4637DDEDFC2152703CA0AD95F21BB9B942F3CC52FCFC2064C7B84CF60D1A9E69195F1943156C07\",\"signer\":\"A5F82EC8EBB341427B6785C8111906CD0DF18838FB11B51CE0E18B5E79DFF630\"}],\"deadline\":[3266625578,11],\"maxFee\":[1,0],\"signature\":\"939673209A13FF82397578D22CC96EB8516A6760C894D9B7535E3A1E068007B9255CFA9A914C97142A7AE18533E381C846B69D2AE0D60D1DC8A55AD120E2B606\",\"signer\":\"7681ED5023141D9CDCF184E5A7B60B7D466739918ED5DA30F7E71EA7B86EFF2D\",\"transactions\":[{\"meta\":{\"aggregateHash\":\"3D28C804EDD07D5A728E5C5FFEC01AB07AFA5766AE6997B38526D36015A4D006\",\"aggregateId\":\"5A0069D83F17CF0001777E55\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E56\",\"index\":0},\"transaction\":{\"message\":{\"payload\":\"746573742D6D657373616765\",\"type\":0},\"mosaics\":[{\"amount\":[3863990592,95248],\"id\":[298950589,1817567325]}],\"recipient\":\"9050B9837EFAB4BBE8A4B9BB32D812F9885C00D8FC1650E142\",\"signer\":\"B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\",\"type\":16724,\"version\":36867}}],\"type\":16705,\"version\":36867}}"
 	b := bytes.NewBufferString(rtx)
-	tx, err := MapTransaction(b)
+	tx, err := MapTransaction(b, &Hash{})
 
 	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
 
@@ -961,7 +961,7 @@ func TestDeadline(t *testing.T) {
 func TestMapTransaction_MosaicDefinitionTransaction(t *testing.T) {
 	txr := `{"transaction":{"signer":"9C2086FE49B7A00578009B705AD719DB7E02A27870C67966AAA40540C136E248","version":43010,"type":16717,"parentId":[2031553063,2912841636],"mosaicId":[1477049789,645988887],"properties":[{"key":0,"value":[2,0]},{"key":1,"value":[0,0]},{"key":2,"value":[5,0]}],"name":"storage_0"}}`
 
-	_, err := MapTransaction(bytes.NewBuffer([]byte(txr)))
+	_, err := MapTransaction(bytes.NewBuffer([]byte(txr)), &Hash{})
 
 	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
 }
@@ -969,7 +969,7 @@ func TestMapTransaction_MosaicDefinitionTransaction(t *testing.T) {
 func TestMapTransactions(t *testing.T) {
 	txr := `[{"transaction":{"signer":"9C2086FE49B7A00578009B705AD719DB7E02A27870C67966AAA40540C136E248","version":43010,"type":16717,"parentId":[2031553063,2912841636],"mosaicId":[1477049789,645988887],"properties":[{"key":0,"value":[2,0]},{"key":1,"value":[0,0]},{"key":2,"value":[5,0]}],"name":"storage_0"}}, {"transaction":{"signer":"9C2086FE49B7A00578009B705AD719DB7E02A27870C67966AAA40540C136E248","version":43010,"type":16717,"parentId":[2031553063,2912841636],"mosaicId":[1477049789,645988887],"properties":[{"key":0,"value":[2,0]},{"key":1,"value":[0,0]},{"key":2,"value":[5,0]}],"name":"storage_0"}}]`
 
-	txs, err := MapTransactions(bytes.NewBuffer([]byte(txr)))
+	txs, err := MapTransactions(bytes.NewBuffer([]byte(txr)), &Hash{})
 
 	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
 	assert.True(t, len(txs) == 2)

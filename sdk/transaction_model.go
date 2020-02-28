@@ -1827,6 +1827,10 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 		f += Transferable
 	}
 
+	nonceB := make([]byte, 4)
+	binary.LittleEndian.PutUint32(nonceB, tx.MosaicNonce)
+	nonceV := transactions.TransactionBufferCreateByteVector(builder, nonceB)
+
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
 	pV := mosaicPropertyArrayToBuffer(builder, tx.MosaicProperties.OptionalProperties)
 
@@ -1838,7 +1842,7 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	transactions.MosaicDefinitionTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, tx.MosaicNonce)
+	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, nonceV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
