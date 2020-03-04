@@ -552,3 +552,22 @@ func (dto *endOperationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		dto.Tx.Status,
 	}, nil
 }
+
+func NewSuperContractFileSystemTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	newRootHash *Hash,
+	oldRootHash *Hash,
+	addActions []*Action,
+	removeActions []*Action,
+	networkType NetworkType,
+) (*SuperContractFileSystemTransaction, error) {
+	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, networkType)
+	if err != nil {
+		return nil, err
+	}
+	tx.Type = SuperContractFileSystem
+	tx.Version = SuperContractFileSystemVersion
+
+	return tx, nil
+}

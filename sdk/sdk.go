@@ -749,6 +749,15 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
+func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
+	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {

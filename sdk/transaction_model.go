@@ -1780,6 +1780,12 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 		return nil, ErrNilMosaicProperties
 	}
 
+	for _, p := range mosaicProps.OptionalProperties {
+		if p.Value == 0 {
+			return nil, errors.New("duration can't be zero")
+		}
+	}
+
 	// Signer of transaction must be the same with ownerPublicKey
 	mosaicId, err := NewMosaicIdFromNonceAndOwner(nonce, ownerPublicKey)
 	if err != nil {
@@ -1828,6 +1834,10 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 		f += Transferable
 	}
 
+	nonceB := make([]byte, 4)
+	binary.LittleEndian.PutUint32(nonceB, tx.MosaicNonce)
+	nonceV := transactions.TransactionBufferCreateByteVector(builder, nonceB)
+
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
 	pV := mosaicPropertyArrayToBuffer(builder, tx.MosaicProperties.OptionalProperties)
 
@@ -1839,7 +1849,7 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	transactions.MosaicDefinitionTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, tx.MosaicNonce)
+	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, nonceV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
@@ -3388,6 +3398,7 @@ const (
 	Deploy                    EntityType = 0x4160
 	StartExecute              EntityType = 0x4260
 	EndExecute                EntityType = 0x4360
+	SuperContractFileSystem   EntityType = 0x4460
 )
 
 func (t EntityType) String() string {
@@ -3438,6 +3449,7 @@ const (
 	StartOperationVersion            EntityVersion = 1
 	EndOperationVersion              EntityVersion = 1
 	OperationIdentifyVersion         EntityVersion = 1
+	SuperContractFileSystemVersion         EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3671,6 +3683,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &startExecuteTransactionDTO{}
 	case EndExecute:
 		dto = &endOperationTransactionDTO{}
+	case SuperContractFileSystem:
+		dto = &driveFileSystemTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

@@ -259,16 +259,38 @@ func (rcv *MosaicDefinitionTransactionBuffer) MutateDeadline(j int, n uint32) bo
 	return false
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MosaicNonce() uint32 {
+func (rcv *MosaicDefinitionTransactionBuffer) MosaicNonce(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *MosaicDefinitionTransactionBuffer) MutateMosaicNonce(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(18, n)
+func (rcv *MosaicDefinitionTransactionBuffer) MosaicNonceLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *MosaicDefinitionTransactionBuffer) MosaicNonceBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *MosaicDefinitionTransactionBuffer) MutateMosaicNonce(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *MosaicDefinitionTransactionBuffer) MosaicId(j int) uint32 {
@@ -389,8 +411,11 @@ func MosaicDefinitionTransactionBufferAddDeadline(builder *flatbuffers.Builder, 
 func MosaicDefinitionTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func MosaicDefinitionTransactionBufferAddMosaicNonce(builder *flatbuffers.Builder, mosaicNonce uint32) {
-	builder.PrependUint32Slot(7, mosaicNonce, 0)
+func MosaicDefinitionTransactionBufferAddMosaicNonce(builder *flatbuffers.Builder, mosaicNonce flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(mosaicNonce), 0)
+}
+func MosaicDefinitionTransactionBufferStartMosaicNonceVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func MosaicDefinitionTransactionBufferAddMosaicId(builder *flatbuffers.Builder, mosaicId flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(mosaicId), 0)
