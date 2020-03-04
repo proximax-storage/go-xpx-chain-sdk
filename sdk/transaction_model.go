@@ -3172,7 +3172,7 @@ func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType)
 }
 
 type MetadataModification struct {
-	Type  MetadataModificationType `json:"type"`
+	Type  MetadataModificationType `json:"modification_type"`
 	Key   string                   `json:"key"`
 	Value string                   `json:"value"`
 }
