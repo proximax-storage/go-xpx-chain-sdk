@@ -90,3 +90,5 @@ type StartExecuteTransaction struct {
 }
 
 type EndExecuteTransaction = EndOperationTransaction
+
+type SuperContractFileSystemTransaction = DriveFileSystemTransaction

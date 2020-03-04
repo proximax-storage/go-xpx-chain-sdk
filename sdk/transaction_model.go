@@ -1780,6 +1780,12 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 		return nil, ErrNilMosaicProperties
 	}
 
+	for _, p := range mosaicProps.OptionalProperties {
+		if p.Value == 0 {
+			return nil, errors.New("duration can't be zero")
+		}
+	}
+
 	// Signer of transaction must be the same with ownerPublicKey
 	mosaicId, err := NewMosaicIdFromNonceAndOwner(nonce, ownerPublicKey)
 	if err != nil {
@@ -3392,6 +3398,7 @@ const (
 	Deploy                    EntityType = 0x4160
 	StartExecute              EntityType = 0x4260
 	EndExecute                EntityType = 0x4360
+	SuperContractFileSystem   EntityType = 0x4460
 )
 
 func (t EntityType) String() string {
@@ -3442,6 +3449,7 @@ const (
 	StartOperationVersion            EntityVersion = 1
 	EndOperationVersion              EntityVersion = 1
 	OperationIdentifyVersion         EntityVersion = 1
+	SuperContractFileSystemVersion         EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3675,6 +3683,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &startExecuteTransactionDTO{}
 	case EndExecute:
 		dto = &endOperationTransactionDTO{}
+	case SuperContractFileSystem:
+		dto = &driveFileSystemTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
