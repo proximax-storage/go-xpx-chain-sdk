@@ -132,8 +132,8 @@ type MosaicProperties struct {
 }
 
 type MosaicProperty struct {
-	Id    MosaicPropertyId
-	Value baseInt64
+	Id    MosaicPropertyId `json:"id"`
+	Value baseInt64        `json:"value"`
 }
 
 func (mp *MosaicProperty) String() string {
