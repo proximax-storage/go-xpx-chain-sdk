@@ -5,6 +5,8 @@
 package sdk
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -22,6 +24,28 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 		return nil, ErrWrongBitMosaicId
 	}
 	return newMosaicIdPanic(id), nil
+}
+
+func (m *MosaicId) UnmarshalJSON(data []byte) error {
+	var id uint64
+	err := binary.Read(bytes.NewBuffer(data[:]), binary.LittleEndian, &id)
+	if err != nil {
+		return err
+	}
+
+	ns, err := NewMosaicId(id)
+	if err != nil {
+		return err
+	}
+
+	*m = *ns
+	return nil
+}
+
+func (m *MosaicId) MarshalJSON() ([]byte, error) {
+	data := make([]byte, 8)
+	binary.LittleEndian.PutUint64(data, m.Id())
+	return data, nil
 }
 
 func newMosaicIdPanic(id uint64) *MosaicId {

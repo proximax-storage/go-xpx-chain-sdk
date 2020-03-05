@@ -35,7 +35,7 @@ func (h Hash) Equal(other *Hash) bool {
 func (h Hash) Xor(other *Hash) *Hash {
 	temp := Hash{}
 
-	for i, _ := range other {
+	for i := range other {
 		temp[i] = other[i] ^ h[i]
 	}
 
@@ -61,6 +61,14 @@ type AssetId interface {
 	Type() AssetIdType
 	Id() uint64
 	Equals(AssetId) (bool, error)
+}
+
+func NewAssetIdFromId(id uint64) (AssetId, error) {
+	if hasBits(id, NamespaceBit) {
+		return NewNamespaceId(id)
+	} else {
+		return NewMosaicId(id)
+	}
 }
 
 type TransactionOrder string
