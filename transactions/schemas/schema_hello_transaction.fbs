@@ -1,0 +1,16 @@
+namespace Catapult.Buffers;
+
+table HelloTransactionBuffer {
+	size: uint;
+	signature: [ubyte];
+	signer: [ubyte];
+	version: uint;
+	type: ushort;
+	maxFee: [uint];
+	deadline:[uint];
+	messageCount: ushort;
+	signerKey: [ubyte];
+}
+
+root_type HelloTransactionBuffer;
+

@@ -27,7 +27,7 @@ import (
 
 
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "0F36D6D36A169F3CA2A03D19B4FA0828B656937491F8EE897FC158D8D4D6D470"
+const privateKey = "272AE88464F10725211EA09F130536C007FD2129F99A11ECF8E654087AB03D02"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -863,5 +863,17 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 			},
 		)
 	}, testAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestHelloTransaction(t *testing.T) {
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewHelloTransaction(
+			sdk.NewDeadline(time.Hour),
+			3,
+			defaultAccount.PublicAccount)
+
+	}, defaultAccount)
 	assert.Nil(t, result.error)
 }

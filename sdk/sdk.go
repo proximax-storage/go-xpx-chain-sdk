@@ -617,6 +617,15 @@ func (c *Client) NewPrepareDriveTransaction(deadline *Deadline, owner *PublicAcc
 	return tx, err
 }
 
+func (c *Client) NewHelloTransaction(deadline *Deadline, messageCount uint16, account *PublicAccount) (*HelloTransaction, error) {
+	tx, err := NewHelloTransaction(deadline, c.config.NetworkType, messageCount, account)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicAccount) (*JoinToDriveTransaction, error) {
 	tx, err := NewJoinToDriveTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
@@ -679,6 +688,8 @@ func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures
 
 	return tx, err
 }
+
+
 
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)

@@ -3296,6 +3296,7 @@ const (
 	ExchangeOfferHeaderSize                      = TransactionHeaderSize + OffersCountSize
 	RemoveExchangeOfferSize                      = OfferTypeSize + MosaicIdSize
 	RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
+	HelloTransactionSize             			 = TransactionHeaderSize + 2 + KeySize
 )
 
 type EntityType uint16
@@ -3333,6 +3334,7 @@ const (
 	DriveFileSystem           EntityType = 0x435A
 	FilesDeposit              EntityType = 0x445A
 	EndDrive                  EntityType = 0x455A
+	Hello                 	  EntityType = 0x415D
 	DriveFilesReward              EntityType = 0x465A
 	StartDriveVerification    EntityType = 0x475A
 	EndDriveVerification      EntityType = 0x485A
@@ -3378,6 +3380,7 @@ const (
 	DriveFilesRewardVersion              EntityVersion = 1
 	StartDriveVerificationVersion    EntityVersion = 1
 	EndDriveVerificationVersion      EntityVersion = 1
+	HelloVersion					 EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3840,3 +3843,56 @@ func multisigCosignatoryDTOArrayToStruct(Modifications []*multisigCosignatoryMod
 
 	return ms, err
 }
+
+// region Hello Transaction
+type HelloTransaction struct {
+	AbstractTransaction
+	messageCount uint16
+	signerKey *PublicAccount
+}
+
+func (tx *HelloTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	keyBytes, _ := hex.DecodeString(tx.signerKey.PublicKey)
+	keyV := transactions.TransactionBufferCreateByteVector(builder, keyBytes)
+
+	transactions.HelloTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+	transactions.HelloTransactionBufferAddMessageCount(builder, tx.messageCount)
+	transactions.HelloTransactionBufferAddSignerKey(builder, keyV)
+	t := transactions.HelloTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return helloTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *HelloTransaction) Size() int {
+	return HelloTransactionSize
+}
+
+// returns NetworkConfigTransaction from passed ApplyHeightDelta, NetworkConfig and SupportedEntityVersions
+func NewHelloTransaction(deadline *Deadline, networkType NetworkType, messageCount uint16, account *PublicAccount) (*HelloTransaction, error) {
+	return &HelloTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        Hello,
+			Version:     HelloVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		messageCount:        messageCount,
+		signerKey: account,
+	}, nil
+}
+
+func (tx *HelloTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+// end region
