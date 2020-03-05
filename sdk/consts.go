@@ -73,11 +73,11 @@ const (
 
 // routes for LockService
 const (
-	hashLocksRoute              = "/account/%s/lock/hash"
-	secretLocksByAccountRoute   = "/account/%s/lock/secret"
-	hashLockRoute               = "/lock/hash/%s"
-	secretLockRoute             = "/lock/compositeHash/%s"
-	secretLocksBySecretRoute    = "/lock/secret/%s"
+	hashLocksRoute            = "/account/%s/lock/hash"
+	secretLocksByAccountRoute = "/account/%s/lock/secret"
+	hashLockRoute             = "/lock/hash/%s"
+	secretLockRoute           = "/lock/compositeHash/%s"
+	secretLocksBySecretRoute  = "/lock/secret/%s"
 )
 
 // routes for MetadataService
@@ -98,25 +98,25 @@ const (
 
 // routes for StorageService
 const (
-	driveRoute                  = "/drive/%s"
-	drivesOfAccountRoute        = "/account/%s/drive%s"
-	downloadInfoRoute           = "/downloads/%s"
-	driveDownloadInfosRoute     = "/drive/%s/downloads"
-	accountDownloadInfosRoute   = "/account/%s/downloads"
+	driveRoute                = "/drive/%s"
+	drivesOfAccountRoute      = "/account/%s/drive%s"
+	downloadInfoRoute         = "/downloads/%s"
+	driveDownloadInfosRoute   = "/drive/%s/downloads"
+	accountDownloadInfosRoute = "/account/%s/downloads"
 )
 
 // routes for SuperContractService
 const (
-	driveSuperContractsRoute        = "/drive/%s/supercontracts"
-	superContractRoute              = "/supercontract/%s"
-	accountOperationsRoute          = "/account/%s/operations"
-	operationRoute                  = "/operation/%s"
+	driveSuperContractsRoute = "/drive/%s/supercontracts"
+	superContractRoute       = "/supercontract/%s"
+	accountOperationsRoute   = "/account/%s/operations"
+	operationRoute           = "/operation/%s"
 )
 
 // routes for ExchangeService
 const (
-	exchangeRoute           = "/account/%s/exchange"
-	offersByMosaicRoute     = "/exchange/%s/%s"
+	exchangeRoute       = "/account/%s/exchange"
+	offersByMosaicRoute = "/exchange/%s/%s"
 )
 
 // routes for TransactionService

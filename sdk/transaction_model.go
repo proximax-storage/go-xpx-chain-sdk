@@ -3172,9 +3172,9 @@ func (dto *multisigCosignatoryModificationDTO) toStruct(networkType NetworkType)
 }
 
 type MetadataModification struct {
-	Type  MetadataModificationType `json:"modification_type"`
-	Key   string                   `json:"key"`
-	Value string                   `json:"value"`
+	Type  MetadataModificationType
+	Key   string
+	Value string
 }
 
 func (m *MetadataModification) Size() int {
@@ -3209,11 +3209,11 @@ func (dto *metadataModificationDTO) toStruct(networkType NetworkType) (*Metadata
 }
 
 type TransactionStatus struct {
-	Deadline *Deadline `json:"deadline"`
-	Group    string    `json:"group"`
-	Status   string    `json:"status"`
-	Hash     *Hash     `json:"hash"`
-	Height   Height    `json:"height"`
+	Deadline *Deadline
+	Group    string
+	Status   string
+	Hash     *Hash
+	Height   Height
 }
 
 func (ts *TransactionStatus) String() string {
@@ -3449,7 +3449,7 @@ const (
 	StartOperationVersion            EntityVersion = 1
 	EndOperationVersion              EntityVersion = 1
 	OperationIdentifyVersion         EntityVersion = 1
-	SuperContractFileSystemVersion         EntityVersion = 1
+	SuperContractFileSystemVersion   EntityVersion = 1
 )
 
 type AccountLinkAction uint8

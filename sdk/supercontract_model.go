@@ -19,23 +19,23 @@ const (
 
 type Operation struct {
 	// Token is hash of first transaction which started the operation. In case of aggregate transaction is UniqueAggregateHash
-	Token                   *Hash
-	Initiator               *PublicAccount
-	Height                  Height
-	Status                  OperationStatus
-	Executors               []*PublicAccount
-	LockedMosaics           []*Mosaic
+	Token         *Hash
+	Initiator     *PublicAccount
+	Height        Height
+	Status        OperationStatus
+	Executors     []*PublicAccount
+	LockedMosaics []*Mosaic
 	// Aggregate transactions which were sent during operation.
-	AggregateHashes         []*Hash
+	AggregateHashes []*Hash
 }
 
 type SuperContract struct {
-	Account     *PublicAccount
-	Drive       *PublicAccount
-	FileHash    *Hash
-	VMVersion   uint64
-	Start       Height
-	End         Height
+	Account   *PublicAccount
+	Drive     *PublicAccount
+	FileHash  *Hash
+	VMVersion uint64
+	Start     Height
+	End       Height
 }
 
 func (s *SuperContract) String() string {
@@ -55,30 +55,30 @@ func (s *SuperContract) String() string {
 
 type StartOperationTransaction struct {
 	AbstractTransaction
-	OperationExecutors  []*PublicAccount
-	Mosaics             []*Mosaic
-	Duration            Duration
+	OperationExecutors []*PublicAccount
+	Mosaics            []*Mosaic
+	Duration           Duration
 }
 
 type OperationIdentifyTransaction struct {
 	AbstractTransaction
-	OperationHash     *Hash
+	OperationHash *Hash
 }
 
 // Must be aggregated in AOT
 type EndOperationTransaction struct {
 	AbstractTransaction
-	UsedMosaics         []*Mosaic
-	OperationToken      *Hash
-	Status              OperationStatus
+	UsedMosaics    []*Mosaic
+	OperationToken *Hash
+	Status         OperationStatus
 }
 
 type DeployTransaction struct {
 	AbstractTransaction
-	DriveAccount            *PublicAccount
-	Owner                   *PublicAccount
-	FileHash                *Hash
-	VMVersion               uint64
+	DriveAccount *PublicAccount
+	Owner        *PublicAccount
+	FileHash     *Hash
+	VMVersion    uint64
 }
 
 type StartExecuteTransaction struct {

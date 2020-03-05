@@ -431,7 +431,7 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DriveFileSystemTransaction) Size() int {
-	return DriveFileSystemHeaderSize + (len(tx.AddActions) + len(tx.RemoveActions))*(Hash256+StorageSizeSize)
+	return DriveFileSystemHeaderSize + (len(tx.AddActions)+len(tx.RemoveActions))*(Hash256+StorageSizeSize)
 }
 
 type driveFileSystemAddActionDTO struct {
@@ -442,12 +442,12 @@ type driveFileSystemAddActionDTO struct {
 type driveFileSystemTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey           string                            `json:"driveKey"`
-		RootHash           hashDto                           `json:"rootHash"`
-		XorRootHash        hashDto                           `json:"xorRootHash"`
-		AddActionsCount    uint16                            `json:"addActionsCount"`
-		RemoveActionsCount uint16                            `json:"removeActionsCount"`
-		AddActions         []*driveFileSystemAddActionDTO    `json:"addActions"`
+		DriveKey           string                         `json:"driveKey"`
+		RootHash           hashDto                        `json:"rootHash"`
+		XorRootHash        hashDto                        `json:"xorRootHash"`
+		AddActionsCount    uint16                         `json:"addActionsCount"`
+		RemoveActionsCount uint16                         `json:"removeActionsCount"`
+		AddActions         []*driveFileSystemAddActionDTO `json:"addActions"`
 		RemoveActions      []*driveFileSystemAddActionDTO `json:"removeActions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -856,12 +856,12 @@ func (tx *DriveFilesRewardTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DriveFilesRewardTransaction) Size() int {
-	return TransactionHeaderSize + 2 + len(tx.UploadInfos) * (Hash256 + StorageSizeSize)
+	return TransactionHeaderSize + 2 + len(tx.UploadInfos)*(Hash256+StorageSizeSize)
 }
 
 type uploadInfoDTO struct {
-	Participant     string      `json:"participant"`
-	Uploaded        uint64DTO   `json:"uploaded"`
+	Participant string    `json:"participant"`
+	Uploaded    uint64DTO `json:"uploaded"`
 }
 
 func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error) {
@@ -879,7 +879,7 @@ func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error)
 type driveFilesRewardTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		UploadInfos     []*uploadInfoDTO    `json:"uploadInfos"`
+		UploadInfos []*uploadInfoDTO `json:"uploadInfos"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1106,8 +1106,8 @@ func (tx *EndDriveVerificationTransaction) Size() int {
 }
 
 type failureVerificationDTO struct {
-	Replicator     string       `json:"replicator"`
-	BlockHashes    []hashDto    `json:"blockHashes"`
+	Replicator  string    `json:"replicator"`
+	BlockHashes []hashDto `json:"blockHashes"`
 }
 
 func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVerification, error) {
@@ -1135,7 +1135,7 @@ func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVe
 type endDriveVerificationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Failures    []*failureVerificationDTO   `json:"verificationFailures"`
+		Failures []*failureVerificationDTO `json:"verificationFailures"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1262,12 +1262,12 @@ func (tx *StartFileDownloadTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *StartFileDownloadTransaction) Size() int {
-	return StartFileDownloadHeaderSize + len(tx.Files) * (StorageSizeSize + Hash256)
+	return StartFileDownloadHeaderSize + len(tx.Files)*(StorageSizeSize+Hash256)
 }
 
 type downloadFileDTO struct {
-	Hash    hashDto       `json:"fileHash"`
-	Size    uint64DTO     `json:"fileSize"`
+	Hash hashDto   `json:"fileHash"`
+	Size uint64DTO `json:"fileSize"`
 }
 
 func (dto *downloadFileDTO) toStruct() (*DownloadFile, error) {
@@ -1285,8 +1285,8 @@ func (dto *downloadFileDTO) toStruct() (*DownloadFile, error) {
 type startFileDownloadTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey        string              `json:"driveKey"`
-		Files           []*downloadFileDTO  `json:"files"`
+		DriveKey string             `json:"driveKey"`
+		Files    []*downloadFileDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1352,9 +1352,9 @@ func NewEndFileDownloadTransaction(
 			Type:        EndFileDownload,
 			NetworkType: networkType,
 		},
-		Recipient: recipient,
+		Recipient:      recipient,
 		OperationToken: operationToken,
-		Files: files,
+		Files:          files,
 	}
 
 	return &tx, nil
@@ -1415,15 +1415,15 @@ func (tx *EndFileDownloadTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *EndFileDownloadTransaction) Size() int {
-	return EndFileDownloadHeaderSize + len(tx.Files) * (Hash256 + StorageSizeSize)
+	return EndFileDownloadHeaderSize + len(tx.Files)*(Hash256+StorageSizeSize)
 }
 
 type endFileDownloadTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Recipient       string              `json:"fileRecipient"`
-		OperationHash   hashDto             `json:"operationToken"`
-		Files           []*downloadFileDTO  `json:"files"`
+		Recipient     string             `json:"fileRecipient"`
+		OperationHash hashDto            `json:"operationToken"`
+		Files         []*downloadFileDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

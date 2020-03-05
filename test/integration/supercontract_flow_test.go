@@ -35,7 +35,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		1,
 		1,
 		1,
-	);
+	)
 	driveTx.ToAggregate(driveAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -44,7 +44,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		replicatorAccount.Address,
 		[]*sdk.Mosaic{sdk.Storage(storageSize)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -53,7 +53,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		driveAccount.Address,
 		[]*sdk.Mosaic{sdk.Xpx(10000000)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -91,14 +91,14 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Action{},
 	)
 	fsTx.ToAggregate(defaultAccount.PublicAccount)
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 
 	transferStreamingToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
 		replicatorAccount.Address,
 		[]*sdk.Mosaic{sdk.Streaming(fileSize)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -118,7 +118,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		defaultAccount.PublicAccount,
 		fileHash,
 		123,
-	);
+	)
 	deploy.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
 
@@ -144,7 +144,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		initiator.Address,
 		[]*sdk.Mosaic{sdk.SuperContractMosaic(1000)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferSCToInitiator.ToAggregate(defaultAccount.PublicAccount)
 
 	assert.Nil(t, err)
@@ -153,9 +153,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		superContract.PublicAccount,
 		[]*sdk.Mosaic{sdk.SuperContractMosaic(1000)},
 		"GoGoGo",
-		[]int64{
-		},
-	);
+		[]int64{},
+	)
 	execute.ToAggregate(initiator.PublicAccount)
 	assert.Nil(t, err)
 
@@ -166,7 +165,6 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		)
 	}, defaultAccount, initiator, replicatorAccount)
 	assert.Nil(t, result.error)
-
 
 	operationToken := result.Transaction.(*sdk.AggregateTransaction).InnerTransactions[1].GetAbstractTransaction().UniqueAggregateHash
 	operation, err := client.SuperContract.GetOperation(ctx, operationToken)
@@ -179,7 +177,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 	operationIdentify, err := client.NewOperationIdentifyTransaction(
 		sdk.NewDeadline(time.Hour),
 		operationToken,
-	);
+	)
 	operationIdentify.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
 

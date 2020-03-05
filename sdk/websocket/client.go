@@ -358,7 +358,6 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-
 func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
 	if len(handlers) == 0 {
 		return nil

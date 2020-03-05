@@ -6,12 +6,12 @@ package sdk
 
 type superContractDTO struct {
 	SuperContract struct {
-		SuperContractKey string             `json:"multisig"`
-		Start            uint64DTO          `json:"start"`
-		End              uint64DTO          `json:"end"`
-		MainDriveKey     string             `json:"mainDriveKey"`
-		FileHash         hashDto            `json:"fileHash"`
-		Version          uint64DTO          `json:"vmVersion"`
+		SuperContractKey string    `json:"multisig"`
+		Start            uint64DTO `json:"start"`
+		End              uint64DTO `json:"end"`
+		MainDriveKey     string    `json:"mainDriveKey"`
+		FileHash         hashDto   `json:"fileHash"`
+		Version          uint64DTO `json:"vmVersion"`
 	}
 }
 
@@ -47,7 +47,7 @@ type superContractDTOs []*superContractDTO
 
 func (ref *superContractDTOs) toStruct(networkType NetworkType) ([]*SuperContract, error) {
 	var (
-		dtos   = *ref
+		dtos      = *ref
 		contracts = make([]*SuperContract, 0, len(dtos))
 	)
 
@@ -65,13 +65,13 @@ func (ref *superContractDTOs) toStruct(networkType NetworkType) ([]*SuperContrac
 
 type operationDTO struct {
 	Operation struct {
-		Initiator           string              `json:"account"`
-		Height              uint64DTO           `json:"height"`
-		Mosaics             []*mosaicDTO        `json:"mosaics"`
-		Token               hashDto             `json:"token"`
-		Status              OperationStatus     `json:"result"`
-		Executors           []string            `json:"executors"`
-		TransactionHashes   []*hashDto          `json:"transactionHashes"`
+		Initiator         string          `json:"account"`
+		Height            uint64DTO       `json:"height"`
+		Mosaics           []*mosaicDTO    `json:"mosaics"`
+		Token             hashDto         `json:"token"`
+		Status            OperationStatus `json:"result"`
+		Executors         []string        `json:"executors"`
+		TransactionHashes []*hashDto      `json:"transactionHashes"`
 	}
 }
 
@@ -125,7 +125,7 @@ type operationDTOs []*operationDTO
 
 func (ref *operationDTOs) toStruct(networkType NetworkType) ([]*Operation, error) {
 	var (
-		dtos   = *ref
+		dtos    = *ref
 		objects = make([]*Operation, len(dtos))
 	)
 

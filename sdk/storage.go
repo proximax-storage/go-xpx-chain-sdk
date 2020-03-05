@@ -85,8 +85,8 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 		case *HttpError:
 			if e.StatusCode == 404 {
 				return &VerificationStatus{
-					Active:     false,
-					Available:  true,
+					Active:    false,
+					Available: true,
 				}, nil
 			} else {
 				return nil, err
@@ -103,7 +103,7 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 	}
 
 	return &VerificationStatus{
-		Active:     lockInfo.Status == Unused,
+		Active:    lockInfo.Status == Unused,
 		Available: false,
 	}, nil
 }

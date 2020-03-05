@@ -43,8 +43,8 @@ type ConfirmedAddedMapper interface {
 }
 
 type confirmedAddedMapperImpl struct {
-	mapTransactionFunc  mapTransactionFunc
-	generationHash      *Hash
+	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (ref *confirmedAddedMapperImpl) MapConfirmedAdded(m []byte) (Transaction, error) {
@@ -66,8 +66,8 @@ type UnconfirmedAddedMapper interface {
 }
 
 type unconfirmedAddedMapperImpl struct {
-	mapTransactionFunc  mapTransactionFunc
-	generationHash    *Hash
+	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (p unconfirmedAddedMapperImpl) MapUnconfirmedAdded(m []byte) (Transaction, error) {
@@ -138,8 +138,8 @@ type PartialAddedMapper interface {
 }
 
 type partialAddedMapperImpl struct {
-	mapTransactionFunc  mapTransactionFunc
-	generationHash      *Hash
+	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (p partialAddedMapperImpl) MapPartialAdded(m []byte) (*AggregateTransaction, error) {

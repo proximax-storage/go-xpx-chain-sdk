@@ -42,8 +42,8 @@ func (o OfferType) CounterOffer() OfferType {
 }
 
 type UserExchangeInfo struct {
-	Owner  *PublicAccount                        `json:"owner"`
-	Offers map[OfferType]map[MosaicId]*OfferInfo `json:"offers"`
+	Owner  *PublicAccount
+	Offers map[OfferType]map[MosaicId]*OfferInfo
 }
 
 func (info *UserExchangeInfo) String() string {
@@ -58,12 +58,12 @@ func (info *UserExchangeInfo) String() string {
 }
 
 type OfferInfo struct {
-	Type             OfferType      `json:"offer_type"`
-	Owner            *PublicAccount `json:"owner"`
-	Mosaic           *Mosaic        `json:"mosaic"`
-	PriceNumerator   Amount         `json:"price_numerator"`
-	PriceDenominator Amount         `json:"price_denominator"`
-	Deadline         Height         `json:"deadline"`
+	Type             OfferType
+	Owner            *PublicAccount
+	Mosaic           *Mosaic
+	PriceNumerator   Amount
+	PriceDenominator Amount
+	Deadline         Height
 }
 
 func (info *OfferInfo) String() string {
@@ -121,14 +121,14 @@ func (o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
 }
 
 type Offer struct {
-	Type   OfferType `json:"offer_type"`
-	Mosaic *Mosaic   `json:"mosaic"`
-	Cost   Amount    `json:"cost"`
+	Type   OfferType
+	Mosaic *Mosaic
+	Cost   Amount
 }
 
 type AddOffer struct {
 	Offer
-	Duration Duration `json:"duration"`
+	Duration Duration
 }
 
 func (offer *AddOffer) String() string {
@@ -156,7 +156,7 @@ type AddExchangeOfferTransaction struct {
 
 type ExchangeConfirmation struct {
 	Offer
-	Owner *PublicAccount `json:"owner"`
+	Owner *PublicAccount
 }
 
 func (offer *ExchangeConfirmation) String() string {

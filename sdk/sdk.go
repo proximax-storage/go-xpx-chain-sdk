@@ -694,7 +694,7 @@ func (c *Client) NewDeployTransaction(deadline *Deadline, drive, owner *PublicAc
 }
 
 func (c *Client) NewStartExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic,
-		function string, functionParameters []int64) (*StartExecuteTransaction, error) {
+	function string, functionParameters []int64) (*StartExecuteTransaction, error) {
 
 	tx, err := NewStartExecuteTransaction(deadline, supercontract, mosaics, function, functionParameters, c.config.NetworkType)
 	if tx != nil {
