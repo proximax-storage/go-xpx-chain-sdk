@@ -209,8 +209,8 @@ func (mp *MosaicProperties) Duration() Duration {
 }
 
 type MosaicName struct {
-	MosaicId *MosaicId `json:"mosaic_id"`
-	Names    []string  `json:"names"`
+	MosaicId *MosaicId
+	Names    []string
 }
 
 func (m *MosaicName) String() string {
