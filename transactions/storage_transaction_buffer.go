@@ -905,7 +905,6 @@ func RemoveActionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
-
 type FileBuffer struct {
 	_tab flatbuffers.Table
 }
@@ -2780,7 +2779,6 @@ func VerificationFailureBufferStartBlockHashesVector(builder *flatbuffers.Builde
 func VerificationFailureBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
-
 
 type EndDriveVerificationTransactionBuffer struct {
 	_tab flatbuffers.Table

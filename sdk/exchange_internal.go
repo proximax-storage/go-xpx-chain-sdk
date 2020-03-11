@@ -5,20 +5,20 @@
 package sdk
 
 type offerInfoDTO struct {
-	MosaicId	        uint64DTO    	`json:"mosaicId"`
-	Amount	            uint64DTO    	`json:"amount"`
-	PriceNumerator		uint64DTO    	`json:"initialCost"`
-	PriceDenominator    uint64DTO    	`json:"initialAmount"`
-	Deadline		    uint64DTO 		`json:"deadline"`
-	Owner		        string   		`json:"owner"`
-	Type		        OfferType   	`json:"type"`
+	MosaicId         uint64DTO `json:"mosaicId"`
+	Amount           uint64DTO `json:"amount"`
+	PriceNumerator   uint64DTO `json:"initialCost"`
+	PriceDenominator uint64DTO `json:"initialAmount"`
+	Deadline         uint64DTO `json:"deadline"`
+	Owner            string    `json:"owner"`
+	Type             OfferType `json:"type"`
 }
 
 type offerInfoDTOs []*offerInfoDTO
 
 func (ref *offerInfoDTOs) toStruct(networkType NetworkType) ([]*OfferInfo, error) {
 	var (
-		dtos  = *ref
+		dtos   = *ref
 		offers = make([]*OfferInfo, len(*ref))
 	)
 
@@ -34,13 +34,13 @@ func (ref *offerInfoDTOs) toStruct(networkType NetworkType) ([]*OfferInfo, error
 		}
 
 		offers[i] = &OfferInfo{
-			Type: dto.Type,
-			Owner: owner,
-			Mosaic: newMosaicPanic(mosaicId, dto.Amount.toStruct()),
+			Type:             dto.Type,
+			Owner:            owner,
+			Mosaic:           newMosaicPanic(mosaicId, dto.Amount.toStruct()),
 			PriceDenominator: dto.PriceDenominator.toStruct(),
-			PriceNumerator: dto.PriceNumerator.toStruct(),
-			Deadline: dto.Deadline.toStruct(),
-		};
+			PriceNumerator:   dto.PriceNumerator.toStruct(),
+			Deadline:         dto.Deadline.toStruct(),
+		}
 	}
 
 	return offers, nil
@@ -48,9 +48,9 @@ func (ref *offerInfoDTOs) toStruct(networkType NetworkType) ([]*OfferInfo, error
 
 type exchangeDTO struct {
 	Exchange struct {
-		Owner       string          `json:"owner"`
-		BuyOffers   offerInfoDTOs   `json:"buyOffers"`
-		SellOffers  offerInfoDTOs   `json:"sellOffers"`
+		Owner      string        `json:"owner"`
+		BuyOffers  offerInfoDTOs `json:"buyOffers"`
+		SellOffers offerInfoDTOs `json:"sellOffers"`
 	} `json:"exchange"`
 }
 

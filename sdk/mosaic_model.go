@@ -5,6 +5,8 @@
 package sdk
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -22,6 +24,28 @@ func NewMosaicId(id uint64) (*MosaicId, error) {
 		return nil, ErrWrongBitMosaicId
 	}
 	return newMosaicIdPanic(id), nil
+}
+
+func (m *MosaicId) UnmarshalJSON(data []byte) error {
+	var id uint64
+	err := binary.Read(bytes.NewBuffer(data[:]), binary.LittleEndian, &id)
+	if err != nil {
+		return err
+	}
+
+	ns, err := NewMosaicId(id)
+	if err != nil {
+		return err
+	}
+
+	*m = *ns
+	return nil
+}
+
+func (m *MosaicId) MarshalJSON() ([]byte, error) {
+	data := make([]byte, 8)
+	binary.LittleEndian.PutUint64(data, m.Id())
+	return data, nil
 }
 
 func newMosaicIdPanic(id uint64) *MosaicId {
@@ -62,8 +86,8 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId AssetId `json:"asset_id"`
-	Amount  Amount  `json:"amount"`
+	AssetId AssetId
+	Amount  Amount
 }
 
 // returns a Mosaic for passed AssetId and amount
@@ -92,12 +116,12 @@ func (m *Mosaic) String() string {
 }
 
 type MosaicInfo struct {
-	MosaicId   *MosaicId         `json:"mosaic_id"`
-	Supply     Amount            `json:"supply"`
-	Height     Height            `json:"height"`
-	Owner      *PublicAccount    `json:"owner"`
-	Revision   uint32            `json:"revision"`
-	Properties *MosaicProperties `json:"properties"`
+	MosaicId   *MosaicId
+	Supply     Amount
+	Height     Height
+	Owner      *PublicAccount
+	Revision   uint32
+	Properties *MosaicProperties
 }
 
 func (m *MosaicInfo) String() string {
@@ -121,14 +145,14 @@ const Transferable = 0x02
 // `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
 // `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
 type MosaicPropertiesHeader struct {
-	SupplyMutable bool  `json:"supply_mutable"`
-	Transferable  bool  `json:"transferable"`
-	Divisibility  uint8 `json:"divisibility"`
+	SupplyMutable bool
+	Transferable  bool
+	Divisibility  uint8
 }
 
 type MosaicProperties struct {
 	MosaicPropertiesHeader
-	OptionalProperties []MosaicProperty `json:"optional_properties"`
+	OptionalProperties []MosaicProperty
 }
 
 type MosaicProperty struct {
@@ -185,8 +209,8 @@ func (mp *MosaicProperties) Duration() Duration {
 }
 
 type MosaicName struct {
-	MosaicId *MosaicId `json:"mosaic_id"`
-	Names    []string  `json:"names"`
+	MosaicId *MosaicId
+	Names    []string
 }
 
 func (m *MosaicName) String() string {

@@ -25,7 +25,6 @@ import (
 // const testUrl = "http://bcdev1.xpxsirius.io:3000"
 // const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
-
 const testUrl = "http://127.0.0.1:3000"
 const privateKey = "28FCECEA252231D2C86E1BCF7DD541552BDBBEFBB09324758B3AC199B4AA7B78"
 
@@ -275,6 +274,7 @@ func TestNetworkConfigTransaction(t *testing.T) {
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
+
 //
 //// This test will break blockchain, so only for local testing
 //func TestBlockchainUpgradeTransaction(t *testing.T) {

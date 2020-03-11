@@ -29,10 +29,10 @@ func NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileH
 			Type:        Deploy,
 			NetworkType: networkType,
 		},
-		DriveAccount:         drive,
-		Owner:                owner,
-		FileHash:             fileHash,
-		VMVersion:            vmVersion,
+		DriveAccount: drive,
+		Owner:        owner,
+		FileHash:     fileHash,
+		VMVersion:    vmVersion,
 	}
 
 	return &tx, nil
@@ -109,10 +109,10 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 type deployTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Drive       string      `json:"drive"`
-		Owner       string      `json:"owner"`
-		FileHash    hashDto     `json:"fileHash"`
-		VMVersion   uint64DTO   `json:"vmVersion"`
+		Drive     string    `json:"drive"`
+		Owner     string    `json:"owner"`
+		FileHash  hashDto   `json:"fileHash"`
+		VMVersion uint64DTO `json:"vmVersion"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -201,7 +201,7 @@ func (tx *StartExecuteTransaction) String() string {
 }
 
 func (tx *StartExecuteTransaction) Size() int {
-	return StartExecuteHeaderSize + len(tx.Function) + len(tx.FunctionParameters) * 8 + len(tx.LockMosaics) * (AmountSize + MosaicIdSize)
+	return StartExecuteHeaderSize + len(tx.Function) + len(tx.FunctionParameters)*8 + len(tx.LockMosaics)*(AmountSize+MosaicIdSize)
 }
 
 func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
@@ -222,7 +222,7 @@ func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	pB := make([]byte, len(tx.FunctionParameters) * 8)
+	pB := make([]byte, len(tx.FunctionParameters)*8)
 	for i, b := range tx.FunctionParameters {
 		binary.LittleEndian.PutUint64(pB[8*i:8*(i+1)], uint64(b))
 	}
@@ -263,10 +263,10 @@ func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
 type startExecuteTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		SuperContract   string          `json:"superContract"`
-		Function        string          `json:"function"`
-		Data            string          `json:"data"`
-		Mosaics         []*mosaicDTO    `json:"mosaics"`
+		SuperContract string       `json:"superContract"`
+		Function      string       `json:"function"`
+		Data          string       `json:"data"`
+		Mosaics       []*mosaicDTO `json:"mosaics"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -281,7 +281,6 @@ func (dto *startExecuteTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-
 
 	mosaics := make([]*Mosaic, len(dto.Tx.Mosaics))
 
@@ -304,9 +303,9 @@ func (dto *startExecuteTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	pB := make([]int64, len(b) / 8)
+	pB := make([]int64, len(b)/8)
 	for i := 0; i < len(pB); i++ {
-		pB[i] = int64(binary.LittleEndian.Uint64(b[8*i:8*(i+1)]))
+		pB[i] = int64(binary.LittleEndian.Uint64(b[8*i : 8*(i+1)]))
 	}
 
 	return &StartExecuteTransaction{
@@ -333,9 +332,9 @@ func NewEndExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash
 			Type:        EndExecute,
 			NetworkType: networkType,
 		},
-		OperationToken:     token,
-		UsedMosaics:        mosaics,
-		Status:             status,
+		OperationToken: token,
+		UsedMosaics:    mosaics,
+		Status:         status,
 	}
 
 	return &tx, nil
@@ -353,7 +352,7 @@ func NewOperationIdentifyTransaction(deadline *Deadline, operationKey *Hash, net
 			Type:        OperationIdentify,
 			NetworkType: networkType,
 		},
-		OperationHash:      operationKey,
+		OperationHash: operationKey,
 	}
 
 	return &tx, nil
@@ -401,7 +400,7 @@ func (tx *OperationIdentifyTransaction) Bytes() ([]byte, error) {
 type operationIdentifyTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Token    hashDto     `json:"operationToken"`
+		Token hashDto `json:"operationToken"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -471,7 +470,7 @@ func (tx *EndOperationTransaction) String() string {
 }
 
 func (tx *EndOperationTransaction) Size() int {
-	return EndOperationHeaderSize + len(tx.UsedMosaics) * (AmountSize + MosaicIdSize)
+	return EndOperationHeaderSize + len(tx.UsedMosaics)*(AmountSize+MosaicIdSize)
 }
 
 func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
@@ -510,9 +509,9 @@ func (tx *EndOperationTransaction) Bytes() ([]byte, error) {
 type endOperationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Mosaics     []*mosaicDTO    `json:"mosaics"`
-		Token       hashDto         `json:"operationToken"`
-		Status      OperationStatus `json:"result"`
+		Mosaics []*mosaicDTO    `json:"mosaics"`
+		Token   hashDto         `json:"operationToken"`
+		Status  OperationStatus `json:"result"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -538,7 +537,6 @@ func (dto *endOperationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 		mosaics[i] = msc
 	}
-
 
 	hash, err := dto.Tx.Token.Hash()
 	if err != nil {

@@ -6,10 +6,10 @@ package integration
 
 import (
 	"fmt"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
-	"github.com/stretchr/testify/assert"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 func TestDriveFlowTransaction(t *testing.T) {
@@ -57,7 +57,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		1,
 		1,
 		1,
-	);
+	)
 	driveTx.ToAggregate(driveAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -66,7 +66,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		replicatorAccount.Address,
 		[]*sdk.Mosaic{sdk.Storage(storageSize)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -75,7 +75,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		driveAccount.Address,
 		[]*sdk.Mosaic{sdk.Xpx(10000000)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -84,7 +84,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		exchangeAccount.Address,
 		[]*sdk.Mosaic{sdk.Storage(exchangeAmount)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferXpxToExchange.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -132,14 +132,14 @@ func TestDriveFlowTransaction(t *testing.T) {
 		[]*sdk.Action{},
 	)
 	fsTx.ToAggregate(defaultAccount.PublicAccount)
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 
 	transferStreamingToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
 		replicatorAccount.Address,
 		[]*sdk.Mosaic{sdk.Streaming(fileSize)},
 		sdk.NewPlainMessage(""),
-	);
+	)
 	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
 
@@ -357,7 +357,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		[]*sdk.UploadInfo{
 			{
-				Participant: replicatorAccount.PublicAccount,
+				Participant:  replicatorAccount.PublicAccount,
 				UploadedSize: 100,
 			},
 		},

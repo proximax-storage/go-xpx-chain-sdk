@@ -2,7 +2,6 @@
 
 package transactions
 
-
 import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )

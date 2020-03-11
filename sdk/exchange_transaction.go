@@ -255,7 +255,7 @@ func (tx *ExchangeOfferTransaction) Bytes() ([]byte, error) {
 
 type confirmationOfferDTO struct {
 	offerDTO
-	Owner string   `json:"owner"`
+	Owner string `json:"owner"`
 }
 
 func confirmationOfferDTOArrayToStruct(offers []*confirmationOfferDTO, networkType NetworkType) ([]*ExchangeConfirmation, error) {

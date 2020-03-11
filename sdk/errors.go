@@ -84,7 +84,7 @@ var (
 	ErrBlankAddress      = errors.New("address is blank")
 	ErrNilAccount        = errors.New("account should not be nil")
 	ErrInvalidAddress    = errors.New("wrong address")
-	ErrNoChanges    	 = errors.New("transaction should contain changes")
+	ErrNoChanges         = errors.New("transaction should contain changes")
 )
 
 // reputations error

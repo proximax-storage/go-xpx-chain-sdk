@@ -27,20 +27,20 @@ type SignerInfo struct {
 }
 
 type driveStateDto struct {
-	DriveKey    string        `json:"driveKey"`
-	State       DriveState    `json:"state"`
+	DriveKey string     `json:"driveKey"`
+	State    DriveState `json:"state"`
 }
 
 func (dto *driveStateDto) toStruct() (*DriveStateInfo, error) {
 	return &DriveStateInfo{
-		DriveKey:   dto.DriveKey,
-		State:      dto.State,
+		DriveKey: dto.DriveKey,
+		State:    dto.State,
 	}, nil
 }
 
 type DriveStateInfo struct {
-	DriveKey    string
-	State       DriveState
+	DriveKey string
+	State    DriveState
 }
 
 type UnconfirmedRemoved struct {

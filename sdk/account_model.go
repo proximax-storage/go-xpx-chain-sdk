@@ -57,8 +57,8 @@ func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAc
 }
 
 type PublicAccount struct {
-	Address   *Address `json:"address"`
-	PublicKey string   `json:"public_key"`
+	Address   *Address
+	PublicKey string
 }
 
 func (ref *PublicAccount) String() string {

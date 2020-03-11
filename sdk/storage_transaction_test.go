@@ -366,7 +366,7 @@ func TestDriveFilesRewardTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		[]*UploadInfo{
 			&UploadInfo{
-				Participant: testDrive.PublicAccount,
+				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
 		},
@@ -385,7 +385,7 @@ func TestDriveFilesRewardTransactionToAggregate(t *testing.T) {
 		fakeDeadline,
 		[]*UploadInfo{
 			&UploadInfo{
-				Participant: testDrive.PublicAccount,
+				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
 		},
@@ -405,7 +405,7 @@ func TestDriveFilesRewardTransactionSigning(t *testing.T) {
 		fakeDeadline,
 		[]*UploadInfo{
 			&UploadInfo{
-				Participant: testDrive.PublicAccount,
+				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
 		},
@@ -469,8 +469,8 @@ func TestEndDriveVerificationTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		[]*FailureVerification{
 			&FailureVerification{
-				Replicator: testDrive.PublicAccount,
-				BlochHashes: []*Hash{ &Hash{ 123 } } ,
+				Replicator:  testDrive.PublicAccount,
+				BlochHashes: []*Hash{&Hash{123}},
 			},
 		},
 		MijinTest,
@@ -488,8 +488,8 @@ func TestEndDriveVerificationTransactionToAggregate(t *testing.T) {
 		fakeDeadline,
 		[]*FailureVerification{
 			&FailureVerification{
-				Replicator: testDrive.PublicAccount,
-				BlochHashes: []*Hash{ &Hash{ 123 } } ,
+				Replicator:  testDrive.PublicAccount,
+				BlochHashes: []*Hash{&Hash{123}},
 			},
 		},
 		MijinTest,
@@ -508,8 +508,8 @@ func TestEndDriveVerificationTransactionSigning(t *testing.T) {
 		fakeDeadline,
 		[]*FailureVerification{
 			&FailureVerification{
-				Replicator: testDrive.PublicAccount,
-				BlochHashes: []*Hash{ &Hash{ 123 } } ,
+				Replicator:  testDrive.PublicAccount,
+				BlochHashes: []*Hash{&Hash{123}},
 			},
 		},
 		MijinTest,

@@ -83,7 +83,7 @@ func NewSecretFromHexString(hash string, hashType HashType) (*Secret, error) {
 }
 
 type Proof struct {
-	Data []byte `json:"data"`
+	Data []byte
 }
 
 func (p *Proof) String() string {

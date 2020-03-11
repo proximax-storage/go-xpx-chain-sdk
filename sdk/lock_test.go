@@ -88,54 +88,54 @@ const (
   }
 }`
 
-	testHashLockInfoJsonArr    = "[" + testHashLockInfoJson + ", " + testHashLockInfoJson + "]"
-	testSecretLockInfoJsonArr    = "[" + testSecretLockInfoJson_Used + ", " + testSecretLockInfoJson_Unused + "]"
+	testHashLockInfoJsonArr   = "[" + testHashLockInfoJson + ", " + testHashLockInfoJson + "]"
+	testSecretLockInfoJsonArr = "[" + testSecretLockInfoJson_Used + ", " + testSecretLockInfoJson_Unused + "]"
 )
 
 var testLockAccount, _ = NewAccountFromPublicKey("CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE", PublicTest)
 var testRecipientAddress, _ = NewAddressFromBase32("90CFA4D204CC396ED38A1BA693CB2482B58152E175BFE8B5BB")
-var testLockMosaicId = newMosaicIdPanic(uint64DTO{ 519256100, 642862634 }.toUint64())
+var testLockMosaicId = newMosaicIdPanic(uint64DTO{519256100, 642862634}.toUint64())
 var testHashLockHash = stringToHashPanic("67829ABA183FDA679273373C9973F23F0D8611371ED31C23C6D80FCAD0AE5C87")
 var testCompositeHashLockHash = stringToHashPanic("B8C1A5FBAA5AB8AB62444212CABB59E2E357DD9099001A29E81C166606810AA6")
 
 var (
 	testLockHashInfo = &HashLockInfo{
 		CommonLockInfo: CommonLockInfo{
-			Account:    testLockAccount,
-			MosaicId:   testLockMosaicId,
-			Height:     Height(256),
-			Amount:     Height(10000000),
-			Status:     Used,
+			Account:  testLockAccount,
+			MosaicId: testLockMosaicId,
+			Height:   Height(256),
+			Amount:   Height(10000000),
+			Status:   Used,
 		},
 		Hash: testHashLockHash,
 	}
 
 	testLockSecretInfo_Used = &SecretLockInfo{
 		CommonLockInfo: CommonLockInfo{
-			Account:    testLockAccount,
-			MosaicId:   testLockMosaicId,
-			Height:     Height(254),
-			Amount:     Height(10),
-			Status:     Used,
+			Account:  testLockAccount,
+			MosaicId: testLockMosaicId,
+			Height:   Height(254),
+			Amount:   Height(10),
+			Status:   Used,
 		},
-		CompositeHash:  testCompositeHashLockHash,
-		HashAlgorithm:  Internal_Hash_Type,
-		Recipient:      testRecipientAddress,
-		Secret:         &Hash{},
+		CompositeHash: testCompositeHashLockHash,
+		HashAlgorithm: Internal_Hash_Type,
+		Recipient:     testRecipientAddress,
+		Secret:        &Hash{},
 	}
 
 	testLockSecretInfo_Unused = &SecretLockInfo{
 		CommonLockInfo: CommonLockInfo{
-			Account:    testLockAccount,
-			MosaicId:   testLockMosaicId,
-			Height:     Height(254),
-			Amount:     Height(10),
-			Status:     Unused,
+			Account:  testLockAccount,
+			MosaicId: testLockMosaicId,
+			Height:   Height(254),
+			Amount:   Height(10),
+			Status:   Unused,
 		},
-		CompositeHash:  testCompositeHashLockHash,
-		HashAlgorithm:  Internal_Hash_Type,
-		Recipient:      testRecipientAddress,
-		Secret:         &Hash{},
+		CompositeHash: testCompositeHashLockHash,
+		HashAlgorithm: Internal_Hash_Type,
+		Recipient:     testRecipientAddress,
+		Secret:        &Hash{},
 	}
 )
 
@@ -154,7 +154,7 @@ func TestLockService_GetHashLockInfosByAccount(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, hashLocks)
 	assert.Equal(t, len(hashLocks), 2)
-	assert.Equal(t, []*HashLockInfo{ testLockHashInfo, testLockHashInfo }, hashLocks)
+	assert.Equal(t, []*HashLockInfo{testLockHashInfo, testLockHashInfo}, hashLocks)
 }
 
 func TestLockService_GetHashLockInfo(t *testing.T) {
@@ -189,7 +189,7 @@ func TestLockService_GetSecretLockInfosByAccount(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, secretLocks)
 	assert.Equal(t, len(secretLocks), 2)
-	assert.Equal(t, []*SecretLockInfo{ testLockSecretInfo_Used, testLockSecretInfo_Unused }, secretLocks)
+	assert.Equal(t, []*SecretLockInfo{testLockSecretInfo_Used, testLockSecretInfo_Unused}, secretLocks)
 }
 
 func TestLockService_GetSecretLockInfo(t *testing.T) {
@@ -224,5 +224,5 @@ func TestLockService_GetSecretLockInfosBySecret(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, secretLocks)
 	assert.Equal(t, len(secretLocks), 2)
-	assert.Equal(t, []*SecretLockInfo{ testLockSecretInfo_Used, testLockSecretInfo_Unused }, secretLocks)
+	assert.Equal(t, []*SecretLockInfo{testLockSecretInfo_Used, testLockSecretInfo_Unused}, secretLocks)
 }

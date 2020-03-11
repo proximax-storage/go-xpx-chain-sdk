@@ -112,7 +112,7 @@ const (
   }
 }`
 
-	testDriveInfoJsonArr    = "[" + testDriveInfoJson + ", " + testDriveInfoJson + "]"
+	testDriveInfoJsonArr = "[" + testDriveInfoJson + ", " + testDriveInfoJson + "]"
 )
 
 var testDriveAccount, _ = NewAccountFromPublicKey("415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309", PublicTest)
@@ -122,27 +122,27 @@ var testFileHash = stringToHashPanic("AA2D2427E105A9B60DF634553849135DF629F1408A
 
 var (
 	testDriveInfo = &Drive{
-		Duration: Duration(3),
-		RootHash: &Hash{ 1 },
-		State: Finished,
-		DriveSize: StorageSize(10000),
-		BillingPeriod: Duration(1),
-		BillingPrice: Amount(50),
-		MinReplicators: 1,
+		Duration:         Duration(3),
+		RootHash:         &Hash{1},
+		State:            Finished,
+		DriveSize:        StorageSize(10000),
+		BillingPeriod:    Duration(1),
+		BillingPrice:     Amount(50),
+		MinReplicators:   1,
 		PercentApprovers: 100,
-		Start: Height(2073),
-		Replicas: 1,
-		OwnerAccount: testDriveOwnerAccount,
-		DriveAccount: testDriveAccount,
+		Start:            Height(2073),
+		Replicas:         1,
+		OwnerAccount:     testDriveOwnerAccount,
+		DriveAccount:     testDriveAccount,
 		Files: map[Hash]StorageSize{
 			*testFileHash: StorageSize(50),
 		},
 		Replicators: map[string]*ReplicatorInfo{
 			testReplicatorAccount.PublicKey: &ReplicatorInfo{
-				Start:	Height(2077),
-				End:	Height(0),
-				Account:testReplicatorAccount,
-				Index:  0,
+				Start:   Height(2077),
+				End:     Height(0),
+				Account: testReplicatorAccount,
+				Index:   0,
 				ActiveFilesWithoutDeposit: map[Hash]bool{
 					*testFileHash: true,
 				},
@@ -150,19 +150,19 @@ var (
 		},
 		UploadPayments: []*PaymentInformation{
 			&PaymentInformation{
-				Amount: Amount(9999925),
+				Amount:   Amount(9999925),
 				Receiver: testDriveOwnerAccount,
-				Height: Height(2098),
+				Height:   Height(2098),
 			},
 		},
 		BillingHistory: []*BillingDescription{
 			&BillingDescription{
-				Start:  Height(2084),
-				End:  Height(2085),
+				Start: Height(2084),
+				End:   Height(2085),
 				Payments: []*PaymentInformation{
 					&PaymentInformation{
-						Amount: Amount(10),
-						Height: Height(2085),
+						Amount:   Amount(10),
+						Height:   Height(2085),
 						Receiver: testReplicatorAccount,
 					},
 				},
@@ -205,7 +205,7 @@ func TestStorageService_GetAccountDrives(test *testing.T) {
 			assert.Nil(t, err)
 			assert.NotNil(t, drives)
 			assert.Equal(t, len(drives), 2)
-			assert.Equal(t, []*Drive{ testDriveInfo, testDriveInfo }, drives)
+			assert.Equal(t, []*Drive{testDriveInfo, testDriveInfo}, drives)
 		})
 	}
 }
