@@ -534,6 +534,15 @@ func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32
 	return tx, err
 }
 
+func (c *Client) NewMosaicDefinitionWithLevyTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, levy MosaicLevy) (*MosaicDefinitionTransaction, error) {
+	tx, err := NewMosaicDefinitionWithLevyTransaction(deadline, nonce, ownerPublicKey, levy, mosaicProps, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration) (*MosaicSupplyChangeTransaction, error) {
 	tx, err := NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
 	if tx != nil {

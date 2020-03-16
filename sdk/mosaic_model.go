@@ -135,6 +135,17 @@ type MosaicProperty struct {
 	Value baseInt64
 }
 
+const Levy_None = 0x1
+const Levy_AbsoluteFee = 0x2
+const Levy_CaculatedFee = 0x3
+
+type MosaicLevy struct {
+	Type 		uint16
+	Recipient   *Address
+	Fee      	Amount
+	*MosaicId
+}
+
 func (mp *MosaicProperty) String() string {
 	return str.StructToString(
 		"MosaicProperty",

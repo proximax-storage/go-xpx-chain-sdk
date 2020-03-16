@@ -148,6 +148,14 @@ func mosaicDefinitionTransactionSchema() *schema {
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("mosaicNonce", IntSize),
 			newArrayAttribute("mosaicId", IntSize),
+			newTableAttribute("levy", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ShortSize),
+					newArrayAttribute("recipient", ByteSize),
+					newArrayAttribute("mosaicId", IntSize),
+					newArrayAttribute("fee", IntSize),
+				},
+			}.schemaDefinition),
 			newScalarAttribute("numOptionalProperties", ByteSize),
 			newScalarAttribute("flags", ByteSize),
 			newScalarAttribute("divisibility", ByteSize),

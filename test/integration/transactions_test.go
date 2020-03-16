@@ -306,6 +306,28 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
+func TestMosaicDefinitionWithLevyTransaction(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	var levy sdk.MosaicLevy
+	levy.Type = sdk.Levy_CaculatedFee
+	levy.Recipient = defaultAccount.PublicAccount.Address
+	levy.Fee = sdk.Amount(10);
+	levy.MosaicId = &sdk.MosaicId{}
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicDefinitionWithLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			nonce,
+			defaultAccount.PublicAccount.PublicKey,
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+			levy,
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
 func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()

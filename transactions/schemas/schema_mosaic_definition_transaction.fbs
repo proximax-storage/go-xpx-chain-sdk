@@ -1,8 +1,15 @@
-namespace Catapult.Buffers;
+namespace transactions;
 
 table MosaicProperty {
     mosaicPropertyId:ubyte;
     value:[uint];
+}
+
+table MosaicLevy {
+    type: ushort;
+    recipient: [ubyte];
+    mosaicId:[uint];
+    fee: [uint];
 }
 
 table MosaicDefinitionTransactionBuffer {
@@ -15,6 +22,7 @@ table MosaicDefinitionTransactionBuffer {
     deadline:[uint];
     mosaicNonce:uint;
     mosaicId:[uint];
+    levy:MosaicLevy;
     numOptionalProperties:ubyte;
     flags:ubyte;
     divisibility:ubyte;

@@ -1730,6 +1730,7 @@ type MosaicDefinitionTransaction struct {
 	*MosaicProperties
 	MosaicNonce uint32
 	*MosaicId
+	MosaicLevy
 }
 
 // returns MosaicDefinitionTransaction from passed nonce, public key of announcer and MosaicProperties
@@ -1758,6 +1759,43 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 		MosaicProperties: mosaicProps,
 		MosaicNonce:      nonce,
 		MosaicId:         mosaicId,
+		MosaicLevy:		  MosaicLevy{
+			Type: Levy_None,
+			Recipient: &Address{ NotSupportedNet, ""},
+			MosaicId : &MosaicId{0},
+			Fee: Amount(10),
+		},
+	}, nil
+}
+
+func NewMosaicDefinitionWithLevyTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, levy MosaicLevy,
+	mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error) {
+
+	if len(ownerPublicKey) != 64 {
+		return nil, ErrInvalidOwnerPublicKey
+	}
+
+	if mosaicProps == nil {
+		return nil, ErrNilMosaicProperties
+	}
+
+	// Signer of transaction must be the same with ownerPublicKey
+	mosaicId, err := NewMosaicIdFromNonceAndOwner(nonce, ownerPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicDefinitionTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     MosaicDefinitionVersion,
+			Deadline:    deadline,
+			Type:        MosaicDefinition,
+			NetworkType: networkType,
+		},
+		MosaicProperties: mosaicProps,
+		MosaicNonce:      nonce,
+		MosaicId:         mosaicId,
+		MosaicLevy:		  levy,
 	}, nil
 }
 
@@ -1771,7 +1809,7 @@ func (tx *MosaicDefinitionTransaction) String() string {
 			"AbstractTransaction": %s,
 			"MosaicProperties": %s,
 			"MosaicNonce": %d,
-			"MosaicId": %s
+			"MosaicId": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicProperties,
@@ -1798,14 +1836,37 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
+	var r []byte
+	if tx.MosaicLevy.Type != Levy_None {
+		r, err = tx.MosaicLevy.Recipient.Decode()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		r = make([]byte, AddressSize)
+	}
+
+	rV := transactions.TransactionBufferCreateByteVector(builder, r)
+	feeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicLevy.Fee.toArray())
+	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicLevy.MosaicId.toArray())
+
+	transactions.MosaicLevyStart(builder)
+	transactions.MosaicLevyAddRecipient(builder, rV)
+	transactions.MosaicLevyAddType(builder, uint16(tx.MosaicLevy.Type))
+	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
+	transactions.MosaicLevyAddFee(builder, feeV)
+	mL := transactions.TransactionBufferEnd(builder)
+
 	transactions.MosaicDefinitionTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
+
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, tx.MosaicNonce)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
+	transactions.MosaicDefinitionTransactionBufferAddLevy(builder, mL)
+	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, byte(len(tx.MosaicProperties.OptionalProperties)))
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
-	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, byte(len(tx.MosaicProperties.OptionalProperties)))
 	transactions.MosaicDefinitionTransactionBufferAddOptionalProperties(builder, pV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -1848,11 +1909,15 @@ func (dto *mosaicDefinitionTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
+	// temporary
+	var levy MosaicLevy
+
 	return &MosaicDefinitionTransaction{
 		*atx,
 		properties,
 		uint32(dto.Tx.MosaicNonce),
 		mosaicId,
+		levy,
 	}, nil
 }
 
@@ -3264,7 +3329,8 @@ const (
 	MosaicPropertiesHeaderSize               int = 3
 	MosaicPropertyIdSize                     int = 1
 	MosaicOptionalPropertySize                   = MosaicPropertyIdSize + BaseInt64Size
-	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
+	MosaicLevySize								 = 2 + AddressSize + MosaicIdSize + MaxFeeSize
+	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicLevySize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
 	NamespaceTypeSize                        int = 1
