@@ -298,7 +298,7 @@ func (dto *joinToDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewDriveFileSystemTransaction(
 	deadline *Deadline,
-	driveKey *PublicAccount,
+	driveKey string,
 	newRootHash *Hash,
 	oldRootHash *Hash,
 	addActions []*Action,
@@ -306,7 +306,7 @@ func NewDriveFileSystemTransaction(
 	networkType NetworkType,
 ) (*DriveFileSystemTransaction, error) {
 
-	if driveKey == nil {
+	if len(driveKey) == 0 {
 		return nil, ErrNilAccount
 	}
 
@@ -381,7 +381,7 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey)
 	if err != nil {
 		return nil, err
 	}
@@ -463,10 +463,6 @@ func (dto *driveFileSystemTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
 
 	rHash, err := dto.Tx.RootHash.Hash()
 	if err != nil {
@@ -490,7 +486,7 @@ func (dto *driveFileSystemTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 	return &DriveFileSystemTransaction{
 		*atx,
-		driveKey,
+		dto.Tx.DriveKey,
 		rHash,
 		xorRootHash.Xor(rHash),
 		addActs,

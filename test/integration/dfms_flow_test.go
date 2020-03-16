@@ -120,7 +120,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 
 	fsTx, err := client.NewDriveFileSystemTransaction(
 		sdk.NewDeadline(time.Hour),
-		driveAccount.PublicAccount,
+		driveAccount.PublicAccount.PublicKey,
 		&sdk.Hash{1},
 		&sdk.Hash{},
 		[]*sdk.Action{
@@ -317,7 +317,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewDriveFileSystemTransaction(
 			sdk.NewDeadline(time.Hour),
-			driveAccount.PublicAccount,
+			driveAccount.PublicAccount.PublicKey,
 			&sdk.Hash{},
 			&sdk.Hash{1},
 			[]*sdk.Action{},

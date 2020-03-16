@@ -553,7 +553,7 @@ func (dto *endOperationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewSuperContractFileSystemTransaction(
 	deadline *Deadline,
-	driveKey *PublicAccount,
+	driveKey string,
 	newRootHash *Hash,
 	oldRootHash *Hash,
 	addActions []*Action,

@@ -79,7 +79,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 
 	fsTx, err := client.NewDriveFileSystemTransaction(
 		sdk.NewDeadline(time.Hour),
-		driveAccount.PublicAccount,
+		driveAccount.PublicAccount.PublicKey,
 		&sdk.Hash{1},
 		&sdk.Hash{},
 		[]*sdk.Action{
@@ -185,7 +185,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	scFs, err := client.NewSuperContractFileSystemTransaction(
 		sdk.NewDeadline(time.Hour),
-		driveAccount.PublicAccount,
+		driveAccount.PublicAccount.PublicKey,
 		&sdk.Hash{2},
 		&sdk.Hash{1},
 		[]*sdk.Action{

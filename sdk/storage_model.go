@@ -188,7 +188,7 @@ func (action *Action) String() string {
 
 type DriveFileSystemTransaction struct {
 	AbstractTransaction
-	DriveKey      *PublicAccount
+	DriveKey      string
 	NewRootHash   *Hash
 	OldRootHash   *Hash
 	AddActions    []*Action

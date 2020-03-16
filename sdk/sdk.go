@@ -630,7 +630,7 @@ func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicA
 	return tx, err
 }
 
-func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
+func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
 	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -749,7 +749,7 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
-func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
+func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
