@@ -295,3 +295,19 @@ func endOperationTransactionSchema() *schema {
 		},
 	}
 }
+
+func deactivateTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("superContract", ByteSize),
+			newArrayAttribute("drive", ByteSize),
+		},
+	}
+}

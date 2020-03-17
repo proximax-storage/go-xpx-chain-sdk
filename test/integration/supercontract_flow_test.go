@@ -220,4 +220,13 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 			[]sdk.Transaction{transferSCToInitiator, endExecute},
 		)
 	}, defaultAccount, replicatorAccount)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDeactivateTransaction(
+			sdk.NewDeadline(time.Hour),
+			superContract.PublicAccount.PublicKey,
+			driveAccount.PublicAccount.PublicKey,
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
 }

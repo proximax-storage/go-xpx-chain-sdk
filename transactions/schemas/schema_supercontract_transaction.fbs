@@ -36,6 +36,20 @@ table StartExecuteTransactionBuffer {
     data: [ubyte];
 }
 
+table DeactivateTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    superContract:[ubyte];
+    driveKey:[ubyte];
+}
+
 root_type DeployTransactionBuffer;
 
 root_type StartExecuteTransactionBuffer;
+
+root_type DeactivateTransactionBuffer;

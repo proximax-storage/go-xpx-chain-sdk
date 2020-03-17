@@ -3350,6 +3350,7 @@ const (
 	EndOperationHeaderSize                       = TransactionHeaderSize + 1 + Hash256 + 2
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
+	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 )
 
 type EntityType uint16
@@ -3399,6 +3400,7 @@ const (
 	StartExecute              EntityType = 0x4260
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
+	Deactivate                EntityType = 0x4560
 )
 
 func (t EntityType) String() string {
@@ -3450,6 +3452,7 @@ const (
 	EndOperationVersion              EntityVersion = 1
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
+	DeactivateVersion                EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3685,6 +3688,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &endOperationTransactionDTO{}
 	case SuperContractFileSystem:
 		dto = &driveFileSystemTransactionDTO{}
+	case Deactivate:
+		dto = &deactivateTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

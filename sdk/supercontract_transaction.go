@@ -569,3 +569,105 @@ func NewSuperContractFileSystemTransaction(
 
 	return tx, nil
 }
+
+
+func NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string, networkType NetworkType) (*DeactivateTransaction, error) {
+	if len(sc) != 64 {
+		return nil, errors.New("wrong super contract key")
+	}
+	if len(driveKey) != 64 {
+		return nil, errors.New("wrong drive key")
+	}
+
+	tx := DeactivateTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DeactivateVersion,
+			Deadline:    deadline,
+			Type:        Deactivate,
+			NetworkType: networkType,
+		},
+		SuperContract:  sc,
+		DriveKey:       driveKey,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DeactivateTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DeactivateTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"SuperContract": %d,
+			"DriveKey": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.SuperContract,
+		tx.DriveKey,
+	)
+}
+
+func (tx *DeactivateTransaction) Size() int {
+	return DeactivateHeaderSize
+}
+
+func (tx *DeactivateTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	scB, err := hex.DecodeString(tx.SuperContract)
+	if err != nil {
+		return nil, err
+	}
+	scV := transactions.TransactionBufferCreateByteVector(builder, scB)
+
+	driveB, err := hex.DecodeString(tx.DriveKey)
+	if err != nil {
+		return nil, err
+	}
+	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
+
+	transactions.DeactivateTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.DeactivateTransactionBufferAddSuperContract(builder, scV)
+	transactions.DeactivateTransactionBufferAddDriveKey(builder, driveV)
+	t := transactions.DeactivateTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return deactivateTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+type deactivateTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		SuperContract   string  `json:"superContract"`
+		Drive           string  `json:"driveKey"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *deactivateTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DeactivateTransaction{
+		*atx,
+		dto.Tx.SuperContract,
+		dto.Tx.Drive,
+	}, nil
+}

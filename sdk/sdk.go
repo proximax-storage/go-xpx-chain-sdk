@@ -758,6 +758,15 @@ func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, drive
 	return tx, err
 }
 
+func (c *Client) NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string) (*DeactivateTransaction, error) {
+	tx, err := NewDeactivateTransaction(deadline, sc, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {

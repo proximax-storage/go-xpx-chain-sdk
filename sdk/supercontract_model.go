@@ -92,3 +92,10 @@ type StartExecuteTransaction struct {
 type EndExecuteTransaction = EndOperationTransaction
 
 type SuperContractFileSystemTransaction = DriveFileSystemTransaction
+
+
+type DeactivateTransaction struct {
+	AbstractTransaction
+	SuperContract       string
+	DriveKey            string
+}
