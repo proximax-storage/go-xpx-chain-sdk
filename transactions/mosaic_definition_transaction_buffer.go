@@ -204,7 +204,8 @@ func MosaicLevyStart(builder *flatbuffers.Builder) {
 	builder.StartObject(4)
 }
 func MosaicLevyAddType(builder *flatbuffers.Builder, type_ uint16) {
-	builder.PrependUint16Slot(0, type_, 0)
+	builder.PlaceUint16(type_)
+	builder.Slot(0)
 }
 func MosaicLevyAddRecipient(builder *flatbuffers.Builder, recipient flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(recipient), 0)

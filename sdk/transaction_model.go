@@ -1759,12 +1759,7 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 		MosaicProperties: mosaicProps,
 		MosaicNonce:      nonce,
 		MosaicId:         mosaicId,
-		MosaicLevy:		  MosaicLevy{
-			Type: Levy_None,
-			Recipient: &Address{ NotSupportedNet, ""},
-			MosaicId : &MosaicId{0},
-			Fee: Amount(10),
-		},
+		MosaicLevy:		  createBlankLevyInfo(),
 	}, nil
 }
 
@@ -1808,11 +1803,13 @@ func (tx *MosaicDefinitionTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"MosaicProperties": %s,
+			"MosaicLevy": %s,
 			"MosaicNonce": %d,
 			"MosaicId": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicProperties,
+		tx.MosaicLevy.String(),
 		tx.MosaicNonce,
 		tx.MosaicId,
 	)
@@ -1884,6 +1881,7 @@ type mosaicDefinitionTransactionDTO struct {
 		Properties  mosaicPropertiesDTO `json:"properties"`
 		MosaicNonce int64               `json:"mosaicNonce"`
 		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
+		MosaicLevy	 mosaicLevyDTO		`json:"levy"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1909,8 +1907,10 @@ func (dto *mosaicDefinitionTransactionDTO) toStruct() (Transaction, error) {
 		return nil, err
 	}
 
-	// temporary
-	var levy MosaicLevy
+	levy, err := dto.Tx.MosaicLevy.toStruct()
+	if err != nil {
+		return nil, err
+	}
 
 	return &MosaicDefinitionTransaction{
 		*atx,

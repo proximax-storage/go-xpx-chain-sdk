@@ -85,6 +85,13 @@ type mosaicPropertyDTO struct {
 	Value uint64DTO        `json:"value"`
 }
 
+type mosaicLevyDTO struct {
+	Type 		uint16			`json:"type"`
+	Recipient   string			`json:"recipient"`
+	Fee      	*uint64DTO		`json:"fee"`
+	MosaicId	*mosaicIdDTO	`json:"mosaicId"`
+}
+
 type mosaicPropertiesDTO []*mosaicPropertyDTO
 
 // namespaceMosaicMetaDTO
@@ -101,7 +108,7 @@ type mosaicDefinitionDTO struct {
 	Owner      string
 	Revision   uint32
 	Properties mosaicPropertiesDTO
-	Levy       interface{}
+	Levy       mosaicLevyDTO
 }
 
 // mosaicInfoDTO is temporary struct for reading response & fill MosaicInfo
@@ -132,6 +139,31 @@ func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
 		divisibility,
 		duration,
 	), nil
+}
+
+func (dto *mosaicLevyDTO) toStruct() (MosaicLevy, error) {
+
+	mosaicId, err := dto.MosaicId.toStruct()
+	if err != nil {
+		return MosaicLevy{}, err
+	}
+
+	var f Amount
+	if dto.Fee != nil {
+		f = dto.Fee.toStruct()
+	}
+
+	a, err := NewAddressFromBase32(dto.Recipient)
+	if err != nil {
+		a = NewAddress("", NotSupportedNet)
+	}
+
+	return MosaicLevy{
+		Type:dto.Type,
+		Recipient: a,
+		MosaicId: mosaicId,
+		Fee: f,
+	}, nil
 }
 
 func (ref *mosaicInfoDTO) toStruct(networkType NetworkType) (*MosaicInfo, error) {
