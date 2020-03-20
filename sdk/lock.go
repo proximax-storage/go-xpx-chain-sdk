@@ -117,4 +117,3 @@ func (s *LockService) GetSecretLockInfosBySecret(ctx context.Context, secret *Ha
 
 	return dto.toStruct(s.client.NetworkType())
 }
-

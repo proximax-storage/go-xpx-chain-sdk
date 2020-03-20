@@ -11,12 +11,18 @@ import (
 )
 
 func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandlersStorage) Router {
-	return &messageRouter{
+	router := messageRouter{
 		uid:               uid,
 		topicHandlers:     topicHandlers,
 		messageInfoMapper: messageInfoMapperFn(MapMessageInfo),
 		messagePublisher:  publisher,
+		dataCh:            make(chan []byte, 1024),
 	}
+
+	// TODO: Close channel
+	go router.run()
+
+	return &router
 }
 
 type Router interface {
@@ -29,28 +35,33 @@ type messageRouter struct {
 	messagePublisher  MessagePublisher
 	messageInfoMapper MessageInfoMapper
 	topicHandlers     TopicHandlersStorage
+	dataCh            chan []byte
+}
+
+func (r *messageRouter) run() {
+	for m := range r.dataCh {
+		messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
+		if err != nil {
+			panic(errors.Wrap(err, "getting message info"))
+		}
+
+		handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
+		if handler == nil {
+			fmt.Println("getting topic handler from topic handlers storage")
+			continue
+		}
+
+		if ok := handler.Handle(messageInfo.Address, m); !ok {
+			if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
+				fmt.Println(err, "unsubscribing from topic")
+				continue
+			}
+		}
+	}
 }
 
 func (r *messageRouter) RouteMessage(m []byte) {
-	messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
-	if err != nil {
-		panic(errors.Wrap(err, "getting message info"))
-	}
-
-	handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
-	if handler == nil {
-		fmt.Println("getting topic handler from topic handlers storage")
-		return
-	}
-
-	if ok := handler.Handle(messageInfo.Address, m); !ok {
-		if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
-			fmt.Println(err, "unsubscribing from topic")
-			return
-		}
-	}
-
-	return
+	r.dataCh <- m
 }
 
 func (r *messageRouter) SetUid(uid string) {
@@ -90,20 +101,20 @@ type TopicHandlersStorage interface {
 type topicHandlersMap map[Path]*TopicHandler
 
 type topicHandlers struct {
-	sync.Mutex
+	sync.RWMutex
 	h topicHandlersMap
 }
 
 func (h *topicHandlers) HasHandler(path Path) bool {
-	h.Lock()
-	defer h.Unlock()
+	h.RLock()
+	defer h.RUnlock()
 	_, ok := h.h[path]
 	return ok
 }
 
 func (h *topicHandlers) GetHandler(path Path) *TopicHandler {
-	h.Lock()
-	defer h.Unlock()
+	h.RLock()
+	defer h.RUnlock()
 	val, ok := h.h[path]
 	if !ok {
 		return nil

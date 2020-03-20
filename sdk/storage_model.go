@@ -52,11 +52,11 @@ func (desc *BillingDescription) String() string {
 }
 
 type ReplicatorInfo struct {
-	Account                     *PublicAccount
-	Start                       Height
-	End                         Height
-	Index                       int
-	ActiveFilesWithoutDeposit   map[Hash]bool
+	Account                   *PublicAccount
+	Start                     Height
+	End                       Height
+	Index                     int
+	ActiveFilesWithoutDeposit map[Hash]bool
 }
 
 func (info *ReplicatorInfo) String() string {
@@ -188,7 +188,7 @@ func (action *Action) String() string {
 
 type DriveFileSystemTransaction struct {
 	AbstractTransaction
-	DriveKey      *PublicAccount
+	DriveKey      string
 	NewRootHash   *Hash
 	OldRootHash   *Hash
 	AddActions    []*Action
@@ -210,8 +210,8 @@ type EndDriveTransaction struct {
 }
 
 type UploadInfo struct {
-	Participant     *PublicAccount
-	UploadedSize    Amount
+	Participant  *PublicAccount
+	UploadedSize Amount
 }
 
 func (info *UploadInfo) String() string {
@@ -236,16 +236,16 @@ type DriveFilesRewardTransaction struct {
 
 type StartDriveVerificationTransaction struct {
 	AbstractTransaction
-	DriveKey    *PublicAccount
+	DriveKey *PublicAccount
 }
 
 type FailureVerification struct {
 	Replicator  *PublicAccount
-	BlochHashes   []*Hash
+	BlochHashes []*Hash
 }
 
 func (fail *FailureVerification) Size() int {
-	return SizeSize + len(fail.BlochHashes) * Hash256 + KeySize
+	return SizeSize + len(fail.BlochHashes)*Hash256 + KeySize
 }
 
 func (fail *FailureVerification) String() string {
@@ -267,6 +267,33 @@ type EndDriveVerificationTransaction struct {
 }
 
 type VerificationStatus struct {
-	Active      bool
-	Available   bool
+	Active    bool
+	Available bool
+}
+
+// Start File Download Transaction
+
+type DownloadFile = Action
+
+type StartFileDownloadTransaction struct {
+	AbstractTransaction
+	Drive *PublicAccount
+	Files []*DownloadFile
+}
+
+type DownloadInfo struct {
+	OperationToken *Hash
+	DriveAccount   *PublicAccount
+	FileRecipient  *PublicAccount
+	Height         Height
+	Files          []*DownloadFile
+}
+
+// End File Download Transaction
+
+type EndFileDownloadTransaction struct {
+	AbstractTransaction
+	Recipient      *PublicAccount
+	OperationToken *Hash
+	Files          []*DownloadFile
 }

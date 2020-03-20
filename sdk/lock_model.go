@@ -19,24 +19,24 @@ const (
 )
 
 type CommonLockInfo struct {
-	Account     *PublicAccount
-	MosaicId    *MosaicId
-	Amount      Amount
-	Height      Height
-	Status      LockStatusType
+	Account  *PublicAccount
+	MosaicId *MosaicId
+	Amount   Amount
+	Height   Height
+	Status   LockStatusType
 }
 
 type HashLockInfo struct {
 	CommonLockInfo
-	Hash    *Hash
+	Hash *Hash
 }
 
 type SecretLockInfo struct {
 	CommonLockInfo
-	HashAlgorithm   HashType
-	CompositeHash   *Hash
-	Secret          *Hash
-	Recipient       *Address
+	HashAlgorithm HashType
+	CompositeHash *Hash
+	Secret        *Hash
+	Recipient     *Address
 }
 
 func CalculateCompositeHash(secret *Hash, recipient *Address) (*Hash, error) {
@@ -62,7 +62,7 @@ func CalculateCompositeHash(secret *Hash, recipient *Address) (*Hash, error) {
 		return nil, err
 	}
 
-	hash ,err := bytesToHash(result.Sum(nil))
+	hash, err := bytesToHash(result.Sum(nil))
 	if err != nil {
 		return nil, err
 	}

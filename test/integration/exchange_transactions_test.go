@@ -12,7 +12,7 @@ import (
 )
 
 func TestAddExchangeOfferTransaction(t *testing.T) {
-	configDelta := 2
+	configDelta := 5
 	config, err := client.Network.GetNetworkConfig(ctx)
 	assert.Nil(t, err)
 
@@ -36,7 +36,7 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 				{
 					sdk.Offer{
 						sdk.SellOffer,
-						sdk.Storage(10000000),
+						sdk.Storage(1000000000000),
 						sdk.Amount(10000000),
 					},
 					sdk.Duration(10000000),
@@ -44,7 +44,15 @@ func TestAddExchangeOfferTransaction(t *testing.T) {
 				{
 					sdk.Offer{
 						sdk.SellOffer,
-						sdk.Streaming(10000000),
+						sdk.Streaming(1000000000000),
+						sdk.Amount(10000000),
+					},
+					sdk.Duration(10000000),
+				},
+				{
+					sdk.Offer{
+						sdk.SellOffer,
+						sdk.SuperContractMosaic(1000000000000),
 						sdk.Amount(10000000),
 					},
 					sdk.Duration(10000000),

@@ -245,5 +245,5 @@ func (a *AccountService) findTransactions(ctx context.Context, account *PublicAc
 		return nil, err
 	}
 
-	return MapTransactions(&b)
+	return MapTransactions(&b, a.client.GenerationHash())
 }

@@ -35,8 +35,8 @@ func TestAddExchangeOfferTransactionSerialization(t *testing.T) {
 		[]*AddOffer{
 			&AddOffer{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Duration: Duration(1),
@@ -59,8 +59,8 @@ func TestAddExchangeOfferTransactionToAggregate(t *testing.T) {
 		[]*AddOffer{
 			&AddOffer{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Duration: Duration(1),
@@ -86,8 +86,8 @@ func TestAddExchangeOfferTransactionSigning(t *testing.T) {
 		[]*AddOffer{
 			&AddOffer{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Duration: Duration(1),
@@ -112,8 +112,8 @@ func TestExchangeOfferTransactionSerialization(t *testing.T) {
 		[]*ExchangeConfirmation{
 			&ExchangeConfirmation{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Owner: owner,
@@ -140,8 +140,8 @@ func TestExchangeOfferTransactionToAggregate(t *testing.T) {
 		[]*ExchangeConfirmation{
 			&ExchangeConfirmation{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Owner: owner,
@@ -169,8 +169,8 @@ func TestExchangeOfferTransactionSigning(t *testing.T) {
 		[]*ExchangeConfirmation{
 			&ExchangeConfirmation{
 				Offer: Offer{
-					Type: SellOffer,
-					Cost: Amount(2),
+					Type:   SellOffer,
+					Cost:   Amount(2),
 					Mosaic: newMosaicPanic(StorageNamespaceId, Amount(2)),
 				},
 				Owner: owner,
@@ -192,7 +192,7 @@ func TestRemoveExchangeOfferTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		[]*RemoveOffer{
 			&RemoveOffer{
-				Type: SellOffer,
+				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},
 		},
@@ -214,7 +214,7 @@ func TestRemoveExchangeOfferTransactionToAggregate(t *testing.T) {
 		fakeDeadline,
 		[]*RemoveOffer{
 			&RemoveOffer{
-				Type: SellOffer,
+				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},
 		},
@@ -237,7 +237,7 @@ func TestRemoveExchangeOfferTransactionSigning(t *testing.T) {
 		fakeDeadline,
 		[]*RemoveOffer{
 			&RemoveOffer{
-				Type: SellOffer,
+				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},
 		},

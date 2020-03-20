@@ -143,7 +143,7 @@ type addExchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *addExchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *addExchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ func (tx *ExchangeOfferTransaction) Bytes() ([]byte, error) {
 
 type confirmationOfferDTO struct {
 	offerDTO
-	Owner string   `json:"owner"`
+	Owner string `json:"owner"`
 }
 
 func confirmationOfferDTOArrayToStruct(offers []*confirmationOfferDTO, networkType NetworkType) ([]*ExchangeConfirmation, error) {
@@ -290,7 +290,7 @@ type exchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *exchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *exchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -417,7 +417,7 @@ type removeExchangeOfferTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *removeExchangeOfferTransactionDTO) toStruct() (Transaction, error) {
+func (dto *removeExchangeOfferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err

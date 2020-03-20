@@ -1,0 +1,55 @@
+namespace Catapult.Buffers;
+
+table DeployTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey:[ubyte];
+    owner:[ubyte];
+    fileHash:[ubyte];
+    vmVersion: [uint];
+}
+
+table MosaicBuffer {
+    id: [uint];
+    amount: [uint];
+}
+
+table StartExecuteTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    superContract:[ubyte];
+    functionSize: ubyte;
+    mosaicsCount: ubyte;
+    dataSize: [ubyte];
+    function: [ubyte];
+    mosaics: [MosaicBuffer];
+    data: [ubyte];
+}
+
+table DeactivateTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    superContract:[ubyte];
+    driveKey:[ubyte];
+}
+
+root_type DeployTransactionBuffer;
+
+root_type StartExecuteTransactionBuffer;
+
+root_type DeactivateTransactionBuffer;

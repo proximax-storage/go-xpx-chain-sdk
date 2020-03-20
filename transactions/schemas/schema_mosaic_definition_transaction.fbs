@@ -13,7 +13,7 @@ table MosaicDefinitionTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    mosaicNonce:uint;
+    mosaicNonce:[ubyte];
     mosaicId:[uint];
     numOptionalProperties:ubyte;
     flags:ubyte;

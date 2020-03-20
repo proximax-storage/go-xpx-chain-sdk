@@ -153,18 +153,19 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain  *BlockchainService
-	Exchange    *ExchangeService
-	Mosaic      *MosaicService
-	Namespace   *NamespaceService
-	Network     *NetworkService
-	Transaction *TransactionService
-	Resolve     *ResolverService
-	Account     *AccountService
-	Storage     *StorageService
-	Lock        *LockService
-	Contract    *ContractService
-	Metadata    *MetadataService
+	Blockchain    *BlockchainService
+	Exchange      *ExchangeService
+	Mosaic        *MosaicService
+	Namespace     *NamespaceService
+	Network       *NetworkService
+	Transaction   *TransactionService
+	Resolve       *ResolverService
+	Account       *AccountService
+	Storage       *StorageService
+	SuperContract *SuperContractService
+	Lock          *LockService
+	Contract      *ContractService
+	Metadata      *MetadataService
 }
 
 type service struct {
@@ -183,7 +184,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 		}
 
 		httpClient = &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout:   10 * time.Second,
 			Transport: netTransport,
 		}
 	}
@@ -200,6 +201,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Lock = (*LockService)(&c.common)
 	c.Storage = &StorageService{&c.common, c.Lock}
+	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 
@@ -460,20 +462,22 @@ func (c *Client) NewBlockchainUpgradeTransaction(deadline *Deadline, upgradePeri
 
 func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
 	tx, err := NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
+	if err != nil {
+		return nil, err
 	}
+	c.modifyTransaction(tx)
 
-	return tx, err
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
 func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
 	tx, err := NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
+	if err != nil {
+		return nil, err
 	}
+	c.modifyTransaction(tx)
 
-	return tx, err
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
 func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
@@ -626,7 +630,7 @@ func (c *Client) NewJoinToDriveTransaction(deadline *Deadline, driveKey *PublicA
 	return tx, err
 }
 
-func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey *PublicAccount, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
+func (c *Client) NewDriveFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*DriveFileSystemTransaction, error) {
 	tx, err := NewDriveFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -673,6 +677,89 @@ func (c *Client) NewStartDriveVerificationTransaction(deadline *Deadline, driveK
 
 func (c *Client) NewEndDriveVerificationTransaction(deadline *Deadline, failures []*FailureVerification) (*EndDriveVerificationTransaction, error) {
 	tx, err := NewEndDriveVerificationTransaction(deadline, failures, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDeployTransaction(deadline *Deadline, drive, owner *PublicAccount, fileHash *Hash, vmVersion uint64) (*DeployTransaction, error) {
+	tx, err := NewDeployTransaction(deadline, drive, owner, fileHash, vmVersion, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStartExecuteTransaction(deadline *Deadline, supercontract *PublicAccount, mosaics []*Mosaic,
+	function string, functionParameters []int64) (*StartExecuteTransaction, error) {
+
+	tx, err := NewStartExecuteTransaction(deadline, supercontract, mosaics, function, functionParameters, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndExecuteTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndExecuteTransaction, error) {
+	tx, err := NewEndExecuteTransaction(deadline, mosaics, token, status, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewOperationIdentifyTransaction(deadline *Deadline, hash *Hash) (*OperationIdentifyTransaction, error) {
+	tx, err := NewOperationIdentifyTransaction(deadline, hash, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndOperationTransaction(deadline *Deadline, mosaics []*Mosaic, token *Hash, status OperationStatus) (*EndOperationTransaction, error) {
+	tx, err := NewEndOperationTransaction(deadline, mosaics, token, status, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStartFileDownloadTransaction(deadline *Deadline, drive *PublicAccount, files []*DownloadFile) (*StartFileDownloadTransaction, error) {
+	tx, err := NewStartFileDownloadTransaction(deadline, drive, files, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *PublicAccount, operationToken *Hash, files []*DownloadFile) (*EndFileDownloadTransaction, error) {
+	tx, err := NewEndFileDownloadTransaction(deadline, recipient, operationToken, files, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
+	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string) (*DeactivateTransaction, error) {
+	tx, err := NewDeactivateTransaction(deadline, sc, driveKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

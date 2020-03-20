@@ -135,6 +135,33 @@ table EndDriveVerificationTransactionBuffer {
     failures: [VerificationFailureBuffer];
 }
 
+table StartFileDownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey: [ubyte];
+    fileCount: ushort;
+    files: [AddActionBuffer];
+}
+
+table EndFileDownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    recipient: [ubyte];
+    operationToken: [ubyte];
+    fileCount: ushort;
+    files: [RemoveActionBuffer];
+}
+
 root_type AddActionBuffer;
 
 root_type RemoveActionBuffer;
@@ -162,3 +189,7 @@ root_type BlockHashBuffer;
 root_type VerificationFailureBuffer;
 
 root_type EndDriveVerificationTransactionBuffer;
+
+root_type StartFileDownloadTransactionBuffer;
+
+root_type EndFileDownloadTransactionBuffer;

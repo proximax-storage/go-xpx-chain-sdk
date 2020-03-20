@@ -433,7 +433,6 @@ func AddExchangeOfferTransactionBufferEnd(builder *flatbuffers.Builder) flatbuff
 	return builder.EndObject()
 }
 
-
 type ExchangeOfferBuffer struct {
 	_tab flatbuffers.Table
 }

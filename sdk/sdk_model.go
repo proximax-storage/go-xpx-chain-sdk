@@ -35,7 +35,7 @@ func (h Hash) Equal(other *Hash) bool {
 func (h Hash) Xor(other *Hash) *Hash {
 	temp := Hash{}
 
-	for i, _ := range other {
+	for i := range other {
 		temp[i] = other[i] ^ h[i]
 	}
 
@@ -63,6 +63,14 @@ type AssetId interface {
 	Equals(AssetId) (bool, error)
 }
 
+func NewAssetIdFromId(id uint64) (AssetId, error) {
+	if hasBits(id, NamespaceBit) {
+		return NewNamespaceId(id)
+	} else {
+		return NewMosaicId(id)
+	}
+}
+
 type TransactionOrder string
 
 const (
@@ -87,9 +95,9 @@ func (m baseInt64) toArray() [2]uint32 {
 }
 
 func (m baseInt64) toLittleEndian() []byte {
-	bytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bytes, uint64(m))
-	return bytes
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(m))
+	return b
 }
 
 type Amount = baseInt64

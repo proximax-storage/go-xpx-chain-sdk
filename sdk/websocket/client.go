@@ -82,6 +82,7 @@ type (
 	CatapultClient interface {
 		Client
 
+		Config() *sdk.Config
 		AddBlockHandlers(handlers ...subscribers.BlockHandler) error
 		AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
 		AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error
@@ -146,6 +147,11 @@ func (c *CatapultWebsocketClientImpl) Close() error {
 	c.cancelFunc()
 	return nil
 }
+
+func (c *CatapultWebsocketClientImpl) Config() *sdk.Config {
+	return c.config
+}
+
 func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.BlockHandler) error {
 	if len(handlers) == 0 {
 		return nil
@@ -178,7 +184,7 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 
 	if !c.topicHandlers.HasHandler(pathConfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathConfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction), c.confirmedAddedSubscribers),
+			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.confirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -204,7 +210,7 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.A
 
 	if !c.topicHandlers.HasHandler(pathUnconfirmedAdded) {
 		c.topicHandlers.SetTopicHandler(pathUnconfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction), c.unconfirmedAddedSubscribers),
+			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.unconfirmedAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -256,7 +262,7 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 
 	if !c.topicHandlers.HasHandler(pathPartialAdded) {
 		c.topicHandlers.SetTopicHandler(pathPartialAdded, &TopicHandler{
-			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction), c.partialAddedSubscribers),
+			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.partialAddedSubscribers),
 			Topic:   topicFormatFn(formatPlainTopic),
 		})
 	}
@@ -352,7 +358,6 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 	return nil
 }
 
-
 func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
 	if len(handlers) == 0 {
 		return nil
@@ -444,7 +449,6 @@ func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
 }
 
 func (c *CatapultWebsocketClientImpl) startListener() {
-
 	for {
 		_, resp, e := c.conn.ReadMessage()
 		if e != nil {
@@ -461,9 +465,7 @@ func (c *CatapultWebsocketClientImpl) startListener() {
 			}
 		}
 
-		go func(response []byte) {
-			c.messageRouter.RouteMessage(response)
-		}(resp)
+		c.messageRouter.RouteMessage(resp)
 	}
 }
 

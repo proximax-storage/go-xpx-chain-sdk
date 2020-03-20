@@ -5,27 +5,27 @@
 package sdk
 
 type commonLockInfoDTO struct {
-	Account         string          `json:"account"`
-	MosaicId        uint64DTO       `json:"mosaicId"`
-	Amount          uint64DTO       `json:"amount"`
-	Height          uint64DTO       `json:"height"`
-	Status          LockStatusType  `json:"status"`
+	Account  string         `json:"account"`
+	MosaicId uint64DTO      `json:"mosaicId"`
+	Amount   uint64DTO      `json:"amount"`
+	Height   uint64DTO      `json:"height"`
+	Status   LockStatusType `json:"status"`
 }
 
 type hashLockInfoDTO struct {
 	Lock struct {
 		commonLockInfoDTO
-		Hash            hashDto `json:"hash"`
+		Hash hashDto `json:"hash"`
 	} `json:"lock"`
 }
 
 type secretLockInfoDTO struct {
 	Lock struct {
 		commonLockInfoDTO
-		Recipient       string  `json:"recipient"`
-		Secret          hashDto `json:"secret"`
-		HashAlgorithm   HashType`json:"hashAlgorithm"`
-		CompositeHash   hashDto `json:"compositeHash"`
+		Recipient     string   `json:"recipient"`
+		Secret        hashDto  `json:"secret"`
+		HashAlgorithm HashType `json:"hashAlgorithm"`
+		CompositeHash hashDto  `json:"compositeHash"`
 	} `json:"lock"`
 }
 
@@ -41,11 +41,11 @@ func (ref *commonLockInfoDTO) toStruct(networkType NetworkType) (*CommonLockInfo
 	}
 
 	return &CommonLockInfo{
-		Account:    account,
-		MosaicId:   mosaicId,
-		Amount:     ref.Amount.toStruct(),
-		Height:     ref.Height.toStruct(),
-		Status:     ref.Status,
+		Account:  account,
+		MosaicId: mosaicId,
+		Amount:   ref.Amount.toStruct(),
+		Height:   ref.Height.toStruct(),
+		Status:   ref.Status,
 	}, nil
 }
 
@@ -101,7 +101,7 @@ type secretLockInfoDTOs []*secretLockInfoDTO
 
 func (ref *hashLockInfoDTOs) toStruct(networkType NetworkType) ([]*HashLockInfo, error) {
 	var (
-		dtos     = *ref
+		dtos  = *ref
 		infos = make([]*HashLockInfo, 0, len(dtos))
 	)
 
@@ -119,7 +119,7 @@ func (ref *hashLockInfoDTOs) toStruct(networkType NetworkType) ([]*HashLockInfo,
 
 func (ref *secretLockInfoDTOs) toStruct(networkType NetworkType) ([]*SecretLockInfo, error) {
 	var (
-		dtos     = *ref
+		dtos  = *ref
 		infos = make([]*SecretLockInfo, 0, len(dtos))
 	)
 
