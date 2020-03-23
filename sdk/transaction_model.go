@@ -55,9 +55,12 @@ func (tx *AbstractTransaction) HasMissingSignatures() bool {
 	return tx.TransactionInfo.Height == 0 && !tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
+func (tx *AbstractTransaction) IsAnnounced() bool {
+	return tx.TransactionInfo.TransactionHash != nil || tx.TransactionInfo.AggregateHash != nil
+}
+
 func (tx *AbstractTransaction) IsUnannounced() bool {
-	return tx.TransactionInfo.TransactionHash == nil ||
-		tx.TransactionInfo.AggregateHash == nil || tx.TransactionInfo.UniqueAggregateHash == nil
+	return !tx.IsAnnounced()
 }
 
 func (tx *AbstractTransaction) ToAggregate(signer *PublicAccount) {
