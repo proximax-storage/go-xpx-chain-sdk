@@ -142,7 +142,7 @@ func init() {
 			Signer:      nil,
 			MaxFee:      uint64DTO{0, 0}.toStruct(),
 			Deadline:    &Deadline{Timestamp{time.Unix(int64(uint64DTO{1, 0}.toUint64()), int64(time.Millisecond))}},
-			TransactionInfo: &TransactionInfo{
+			TransactionInfo: TransactionInfo{
 				Height:              uint64DTO{1, 0}.toStruct(),
 				TransactionHash:     stringToHashPanic("D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366"),
 				MerkleComponentHash: stringToHashPanic("D28F325EDA671D0C98AC9087A8C0568C8C25F75C63F9DBE84EC5FB9F63E82366"),
