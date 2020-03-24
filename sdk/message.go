@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/proximax-storage/go-xpx-utils/str"
 	xpxcrypto "github.com/proximax-storage/go-xpx-crypto"
+	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
 type MessageType uint8

@@ -56,7 +56,7 @@ func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height Hei
 		return nil, err
 	}
 
-	return MapTransactions(&data)
+	return MapTransactions(&data, b.client.GenerationHash())
 }
 
 // returns BlockInfo's for range block height - (block height + limit)

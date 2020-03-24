@@ -17,21 +17,21 @@ func (ht HashType) String() string {
 }
 
 const (
-	/// Input is hashed using Sha-3-256.
+	// / Input is hashed using Sha-3-256.
 	SHA3_256 HashType = iota
-	/// Input is hashed using Keccak-256.
+	// / Input is hashed using Keccak-256.
 	KECCAK_256
-	/// Input is hashed twice: first with SHA-256 and then with RIPEMD-160.
+	// / Input is hashed twice: first with SHA-256 and then with RIPEMD-160.
 	HASH_160
-	/// Input is hashed twice with SHA-256.
+	// / Input is hashed twice with SHA-256.
 	SHA_256
-	/// Internal type inside of blockchain
+	// / Internal type inside of blockchain
 	Internal_Hash_Type
 )
 
 type Secret struct {
-	Hash Hash
-	Type HashType
+	Hash Hash     `json:"hash"`
+	Type HashType `json:"type"`
 }
 
 func (s *Secret) String() string {

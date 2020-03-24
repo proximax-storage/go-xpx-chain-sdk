@@ -66,10 +66,10 @@ func (ref *paymentsDTOs) toStruct(networkType NetworkType) ([]*PaymentInformatio
 }
 
 type replicatorDTO struct {
-	Replicator                  string                          `json:"replicator"`
-	Start                       uint64DTO                       `json:"start"`
-	End                         uint64DTO                       `json:"end"`
-	ActiveFilesWithoutDeposit   activeFilesWithoutDepositDTOs   `json:"activeFilesWithoutDeposit"`
+	Replicator                string                        `json:"replicator"`
+	Start                     uint64DTO                     `json:"start"`
+	End                       uint64DTO                     `json:"end"`
+	ActiveFilesWithoutDeposit activeFilesWithoutDepositDTOs `json:"activeFilesWithoutDeposit"`
 }
 
 type replicatorsDTOs []*replicatorDTO
@@ -92,10 +92,10 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*Repli
 		}
 
 		info := ReplicatorInfo{
-			Account:             replicator,
-			Start:               dto.Start.toStruct(),
-			End:                 dto.End.toStruct(),
-			Index:               i,
+			Account:                   replicator,
+			Start:                     dto.Start.toStruct(),
+			End:                       dto.End.toStruct(),
+			Index:                     i,
 			ActiveFilesWithoutDeposit: activeFilesWithoutDeposit,
 		}
 
@@ -106,8 +106,8 @@ func (ref *replicatorsDTOs) toStruct(networkType NetworkType) (map[string]*Repli
 }
 
 type fileDTO struct {
-	FileHash hashDto      `json:"fileHash"`
-	FileSize uint64DTO    `json:"size"`
+	FileHash hashDto   `json:"fileHash"`
+	FileSize uint64DTO `json:"size"`
 }
 
 type filesDTOs []*fileDTO
@@ -276,11 +276,11 @@ func (ref *driveDTOs) toStruct(networkType NetworkType) ([]*Drive, error) {
 
 type downloadInfoDTO struct {
 	Download struct {
-		OperationToken      hashDto             `json:"operationToken"`
-		DriveKey            string              `json:"driveKey"`
-		FileRecipient       string              `json:"fileRecipient"`
-		Height              uint64DTO           `json:"height"`
-		Files               []*downloadFileDTO  `json:"files"`
+		OperationToken hashDto            `json:"operationToken"`
+		DriveKey       string             `json:"driveKey"`
+		FileRecipient  string             `json:"fileRecipient"`
+		Height         uint64DTO          `json:"height"`
+		Files          []*downloadFileDTO `json:"files"`
 	} `json:"downloadInfo"`
 }
 
@@ -315,7 +315,6 @@ func (ref *downloadInfoDTO) toStruct(networkType NetworkType) (*DownloadInfo, er
 
 		info.Files[i] = file
 	}
-
 
 	return &info, nil
 }

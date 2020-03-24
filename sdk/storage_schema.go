@@ -213,3 +213,101 @@ func driveFilesRewardTransactionSchema() *schema {
 		},
 	}
 }
+
+func deployTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("drive", ByteSize),
+			newArrayAttribute("owner", ByteSize),
+			newArrayAttribute("fileHash", ByteSize),
+			newArrayAttribute("vmVersion", IntSize),
+		},
+	}
+}
+
+func startExecuteTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("superContract", ByteSize),
+			newScalarAttribute("functionSize", ByteSize),
+			newScalarAttribute("mosaicsCount", ByteSize),
+			newArrayAttribute("dataSize", ByteSize),
+			newArrayAttribute("function", ByteSize),
+			newTableArrayAttribute("mosaics", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
+			newArrayAttribute("data", ByteSize),
+		},
+	}
+}
+
+func operationIdentifyTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("operationToken", ByteSize),
+		},
+	}
+}
+
+func endOperationTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("mosaicsCount", ByteSize),
+			newArrayAttribute("operationToken", ByteSize),
+			newScalarAttribute("status", ShortSize),
+			newTableArrayAttribute("mosaics", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func deactivateTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("superContract", ByteSize),
+			newArrayAttribute("drive", ByteSize),
+		},
+	}
+}

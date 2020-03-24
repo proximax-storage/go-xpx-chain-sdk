@@ -41,9 +41,9 @@ func (s *StorageService) GetDrive(ctx context.Context, driveKey *PublicAccount) 
 type DriveParticipantFilter string
 
 const (
-	AllRoles   DriveParticipantFilter = ""
-	Owner      DriveParticipantFilter = "/owner"
-	Replicator DriveParticipantFilter = "/replicator"
+	AllDriveRoles   DriveParticipantFilter = ""
+	OwnerDrive      DriveParticipantFilter = "/owner"
+	ReplicatorDrive DriveParticipantFilter = "/replicator"
 )
 
 func (s *StorageService) GetAccountDrives(ctx context.Context, driveKey *PublicAccount, filter DriveParticipantFilter) ([]*Drive, error) {
@@ -85,8 +85,8 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 		case *HttpError:
 			if e.StatusCode == 404 {
 				return &VerificationStatus{
-					Active:     false,
-					Available:  true,
+					Active:    false,
+					Available: true,
 				}, nil
 			} else {
 				return nil, err
@@ -103,7 +103,7 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 	}
 
 	return &VerificationStatus{
-		Active:     lockInfo.Status == Unused,
+		Active:    lockInfo.Status == Unused,
 		Available: false,
 	}, nil
 }

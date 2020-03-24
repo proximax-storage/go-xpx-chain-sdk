@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type mapTransactionFunc func(b *bytes.Buffer) (Transaction, error)
+type mapTransactionFunc func(b *bytes.Buffer, generationHash *Hash) (Transaction, error)
 
 //======================================================================================================================
 
@@ -31,9 +31,10 @@ func (p BlockMapperFn) MapBlock(m []byte) (*BlockInfo, error) {
 
 //======================================================================================================================
 
-func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc) ConfirmedAddedMapper {
+func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) ConfirmedAddedMapper {
 	return &confirmedAddedMapperImpl{
 		mapTransactionFunc: mapTransactionFunc,
+		generationHash:     generationHash,
 	}
 }
 
@@ -43,18 +44,20 @@ type ConfirmedAddedMapper interface {
 
 type confirmedAddedMapperImpl struct {
 	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (ref *confirmedAddedMapperImpl) MapConfirmedAdded(m []byte) (Transaction, error) {
 	buf := bytes.NewBuffer(m)
-	return ref.mapTransactionFunc(buf)
+	return ref.mapTransactionFunc(buf, ref.generationHash)
 }
 
 //======================================================================================================================
 
-func NewUnconfirmedAddedMapper(mapTransactionFunc mapTransactionFunc) UnconfirmedAddedMapper {
+func NewUnconfirmedAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) UnconfirmedAddedMapper {
 	return &unconfirmedAddedMapperImpl{
 		mapTransactionFunc: mapTransactionFunc,
+		generationHash:     generationHash,
 	}
 }
 
@@ -64,11 +67,12 @@ type UnconfirmedAddedMapper interface {
 
 type unconfirmedAddedMapperImpl struct {
 	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (p unconfirmedAddedMapperImpl) MapUnconfirmedAdded(m []byte) (Transaction, error) {
 	buf := bytes.NewBuffer(m)
-	return p.mapTransactionFunc(buf)
+	return p.mapTransactionFunc(buf, p.generationHash)
 }
 
 //======================================================================================================================
@@ -122,9 +126,10 @@ func (p StatusMapperFn) MapStatus(m []byte) (*StatusInfo, error) {
 
 //======================================================================================================================
 
-func NewPartialAddedMapper(mapTransactionFunc mapTransactionFunc) PartialAddedMapper {
+func NewPartialAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) PartialAddedMapper {
 	return &partialAddedMapperImpl{
 		mapTransactionFunc: mapTransactionFunc,
+		generationHash:     generationHash,
 	}
 }
 
@@ -134,11 +139,12 @@ type PartialAddedMapper interface {
 
 type partialAddedMapperImpl struct {
 	mapTransactionFunc mapTransactionFunc
+	generationHash     *Hash
 }
 
 func (p partialAddedMapperImpl) MapPartialAdded(m []byte) (*AggregateTransaction, error) {
 	buf := bytes.NewBuffer(m)
-	tr, err := p.mapTransactionFunc(buf)
+	tr, err := p.mapTransactionFunc(buf, p.generationHash)
 	if err != nil {
 		return nil, err
 	}

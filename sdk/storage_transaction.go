@@ -168,7 +168,7 @@ type prepareDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *prepareDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *prepareDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -274,7 +274,7 @@ type joinToDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *joinToDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *joinToDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -298,7 +298,7 @@ func (dto *joinToDriveTransactionDTO) toStruct() (Transaction, error) {
 
 func NewDriveFileSystemTransaction(
 	deadline *Deadline,
-	driveKey *PublicAccount,
+	driveKey string,
 	newRootHash *Hash,
 	oldRootHash *Hash,
 	addActions []*Action,
@@ -306,7 +306,7 @@ func NewDriveFileSystemTransaction(
 	networkType NetworkType,
 ) (*DriveFileSystemTransaction, error) {
 
-	if driveKey == nil {
+	if len(driveKey) == 0 {
 		return nil, ErrNilAccount
 	}
 
@@ -381,7 +381,7 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey)
 	if err != nil {
 		return nil, err
 	}
@@ -431,7 +431,7 @@ func (tx *DriveFileSystemTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DriveFileSystemTransaction) Size() int {
-	return DriveFileSystemHeaderSize + (len(tx.AddActions) + len(tx.RemoveActions))*(Hash256+StorageSizeSize)
+	return DriveFileSystemHeaderSize + (len(tx.AddActions)+len(tx.RemoveActions))*(Hash256+StorageSizeSize)
 }
 
 type driveFileSystemAddActionDTO struct {
@@ -442,28 +442,24 @@ type driveFileSystemAddActionDTO struct {
 type driveFileSystemTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey           string                            `json:"driveKey"`
-		RootHash           hashDto                           `json:"rootHash"`
-		XorRootHash        hashDto                           `json:"xorRootHash"`
-		AddActionsCount    uint16                            `json:"addActionsCount"`
-		RemoveActionsCount uint16                            `json:"removeActionsCount"`
-		AddActions         []*driveFileSystemAddActionDTO    `json:"addActions"`
+		DriveKey           string                         `json:"driveKey"`
+		RootHash           hashDto                        `json:"rootHash"`
+		XorRootHash        hashDto                        `json:"xorRootHash"`
+		AddActionsCount    uint16                         `json:"addActionsCount"`
+		RemoveActionsCount uint16                         `json:"removeActionsCount"`
+		AddActions         []*driveFileSystemAddActionDTO `json:"addActions"`
 		RemoveActions      []*driveFileSystemAddActionDTO `json:"removeActions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
+func (dto *driveFileSystemTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
 	}
 
 	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
-	if err != nil {
-		return nil, err
-	}
-	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
 	if err != nil {
 		return nil, err
 	}
@@ -490,7 +486,7 @@ func (dto *driveFileSystemTransactionDTO) toStruct() (Transaction, error) {
 
 	return &DriveFileSystemTransaction{
 		*atx,
-		driveKey,
+		dto.Tx.DriveKey,
 		rHash,
 		xorRootHash.Xor(rHash),
 		addActs,
@@ -631,7 +627,7 @@ type filesDepositTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *filesDepositTransactionDTO) toStruct() (Transaction, error) {
+func (dto *filesDepositTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -751,7 +747,7 @@ type endDriveTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endDriveTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -856,12 +852,12 @@ func (tx *DriveFilesRewardTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DriveFilesRewardTransaction) Size() int {
-	return TransactionHeaderSize + 2 + len(tx.UploadInfos) * (Hash256 + StorageSizeSize)
+	return TransactionHeaderSize + 2 + len(tx.UploadInfos)*(Hash256+StorageSizeSize)
 }
 
 type uploadInfoDTO struct {
-	Participant     string      `json:"participant"`
-	Uploaded        uint64DTO   `json:"uploaded"`
+	Participant string    `json:"participant"`
+	Uploaded    uint64DTO `json:"uploaded"`
 }
 
 func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error) {
@@ -879,12 +875,12 @@ func (dto *uploadInfoDTO) toStruct(networkType NetworkType) (*UploadInfo, error)
 type driveFilesRewardTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		UploadInfos     []*uploadInfoDTO    `json:"uploadInfos"`
+		UploadInfos []*uploadInfoDTO `json:"uploadInfos"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *driveFilesRewardTransactionDTO) toStruct() (Transaction, error) {
+func (dto *driveFilesRewardTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -987,7 +983,7 @@ type startDriveVerificationTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *startDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+func (dto *startDriveVerificationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1106,8 +1102,8 @@ func (tx *EndDriveVerificationTransaction) Size() int {
 }
 
 type failureVerificationDTO struct {
-	Replicator     string       `json:"replicator"`
-	BlockHashes    []hashDto    `json:"blockHashes"`
+	Replicator  string    `json:"replicator"`
+	BlockHashes []hashDto `json:"blockHashes"`
 }
 
 func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVerification, error) {
@@ -1135,12 +1131,12 @@ func (dto *failureVerificationDTO) toStruct(networkType NetworkType) (*FailureVe
 type endDriveVerificationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Failures    []*failureVerificationDTO   `json:"verificationFailures"`
+		Failures []*failureVerificationDTO `json:"verificationFailures"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endDriveVerificationTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endDriveVerificationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1262,12 +1258,12 @@ func (tx *StartFileDownloadTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *StartFileDownloadTransaction) Size() int {
-	return StartFileDownloadHeaderSize + len(tx.Files) * (StorageSizeSize + Hash256)
+	return StartFileDownloadHeaderSize + len(tx.Files)*(StorageSizeSize+Hash256)
 }
 
 type downloadFileDTO struct {
-	Hash    hashDto       `json:"fileHash"`
-	Size    uint64DTO     `json:"fileSize"`
+	Hash hashDto   `json:"fileHash"`
+	Size uint64DTO `json:"fileSize"`
 }
 
 func (dto *downloadFileDTO) toStruct() (*DownloadFile, error) {
@@ -1285,13 +1281,13 @@ func (dto *downloadFileDTO) toStruct() (*DownloadFile, error) {
 type startFileDownloadTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey        string              `json:"driveKey"`
-		Files           []*downloadFileDTO  `json:"files"`
+		DriveKey string             `json:"driveKey"`
+		Files    []*downloadFileDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *startFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+func (dto *startFileDownloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1352,9 +1348,9 @@ func NewEndFileDownloadTransaction(
 			Type:        EndFileDownload,
 			NetworkType: networkType,
 		},
-		Recipient: recipient,
+		Recipient:      recipient,
 		OperationToken: operationToken,
-		Files: files,
+		Files:          files,
 	}
 
 	return &tx, nil
@@ -1415,20 +1411,20 @@ func (tx *EndFileDownloadTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *EndFileDownloadTransaction) Size() int {
-	return EndFileDownloadHeaderSize + len(tx.Files) * (Hash256 + StorageSizeSize)
+	return EndFileDownloadHeaderSize + len(tx.Files)*(Hash256+StorageSizeSize)
 }
 
 type endFileDownloadTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Recipient       string              `json:"fileRecipient"`
-		OperationHash   hashDto             `json:"operationToken"`
-		Files           []*downloadFileDTO  `json:"files"`
+		Recipient     string             `json:"fileRecipient"`
+		OperationHash hashDto            `json:"operationToken"`
+		Files         []*downloadFileDTO `json:"files"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *endFileDownloadTransactionDTO) toStruct() (Transaction, error) {
+func (dto *endFileDownloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err

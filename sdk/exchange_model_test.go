@@ -11,7 +11,7 @@ import (
 )
 
 var exchangeAccount, _ = NewAccountFromPublicKey("ED7A848FDEB2321EE97CE8AF265588C54B4A58C72117247C7205EB061865055C", PublicTest)
-var exchangeMosaicId, _    = NewMosaicId(0x26514E2A1EF33824)
+var exchangeMosaicId, _ = NewMosaicId(0x26514E2A1EF33824)
 
 func TestCounterOffer(t *testing.T) {
 	assert.Equal(t, SellOffer.CounterOffer(), BuyOffer)
@@ -35,9 +35,9 @@ func TestCost_Cost_Overflow(t *testing.T) {
 
 func TestCost_SellOffer(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: SellOffer,
-		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
+		Owner:    exchangeAccount,
+		Type:     SellOffer,
+		Mosaic:   newMosaicPanic(exchangeMosaicId, Amount(100)),
 		Deadline: Duration(10000023),
 	}
 
@@ -66,9 +66,9 @@ func TestCost_SellOffer(t *testing.T) {
 
 func TestCost_BuyOffer(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: BuyOffer,
-		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
+		Owner:    exchangeAccount,
+		Type:     BuyOffer,
+		Mosaic:   newMosaicPanic(exchangeMosaicId, Amount(100)),
 		Deadline: Duration(10000023),
 	}
 
@@ -97,11 +97,11 @@ func TestCost_BuyOffer(t *testing.T) {
 
 func TestCost_Not_Enough_Amount(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: BuyOffer,
-		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
-		Deadline: Duration(10000023),
-		PriceNumerator: Amount(123),
+		Owner:            exchangeAccount,
+		Type:             BuyOffer,
+		Mosaic:           newMosaicPanic(exchangeMosaicId, Amount(100)),
+		Deadline:         Duration(10000023),
+		PriceNumerator:   Amount(123),
 		PriceDenominator: Amount(321),
 	}
 
@@ -111,10 +111,10 @@ func TestCost_Not_Enough_Amount(t *testing.T) {
 
 func TestCost_Unknown_Type(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: 3,
-		Mosaic: newMosaicPanic(exchangeMosaicId, uint64DTO{ 100, 0 }.toStruct()),
-		Deadline: uint64DTO{ 10000023, 0 }.toStruct(),
+		Owner:    exchangeAccount,
+		Type:     3,
+		Mosaic:   newMosaicPanic(exchangeMosaicId, uint64DTO{100, 0}.toStruct()),
+		Deadline: uint64DTO{10000023, 0}.toStruct(),
 	}
 
 	_, err := offer.Cost(Amount(1))
@@ -123,11 +123,11 @@ func TestCost_Unknown_Type(t *testing.T) {
 
 func TestConfirmOffer(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: SellOffer,
-		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(100)),
-		Deadline: Duration(10000023),
-		PriceNumerator: Amount(1),
+		Owner:            exchangeAccount,
+		Type:             SellOffer,
+		Mosaic:           newMosaicPanic(exchangeMosaicId, Amount(100)),
+		Deadline:         Duration(10000023),
+		PriceNumerator:   Amount(1),
 		PriceDenominator: Amount(3),
 	}
 
@@ -138,4 +138,3 @@ func TestConfirmOffer(t *testing.T) {
 	assert.Equal(t, confirmation.Mosaic, newMosaicPanic(exchangeMosaicId, Amount(99)))
 	assert.Equal(t, confirmation.Cost, Amount(33))
 }
-

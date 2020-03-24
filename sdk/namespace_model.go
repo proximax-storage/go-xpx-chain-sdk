@@ -5,12 +5,14 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"github.com/pkg/errors"
 	"fmt"
 	"strings"
 	"unsafe"
+
+	"github.com/pkg/errors"
 
 	"github.com/json-iterator/go"
 	"github.com/proximax-storage/go-xpx-utils/str"
@@ -36,6 +38,28 @@ func NewNamespaceId(id uint64) (*NamespaceId, error) {
 func newNamespaceIdPanic(id uint64) *NamespaceId {
 	namespaceId := NamespaceId{baseInt64(id)}
 	return &namespaceId
+}
+
+func (m *NamespaceId) UnmarshalJSON(data []byte) error {
+	var id uint64
+	err := binary.Read(bytes.NewBuffer(data[:]), binary.LittleEndian, &id)
+	if err != nil {
+		return err
+	}
+
+	ns, err := NewNamespaceId(id)
+	if err != nil {
+		return err
+	}
+
+	*m = *ns
+	return nil
+}
+
+func (m *NamespaceId) MarshalJSON() ([]byte, error) {
+	data := make([]byte, 8)
+	binary.LittleEndian.PutUint64(data, m.Id())
+	return data, nil
 }
 
 func (m *NamespaceId) Type() AssetIdType {
