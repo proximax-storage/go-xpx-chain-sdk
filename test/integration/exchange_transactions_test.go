@@ -76,6 +76,10 @@ func TestRemoveExchangeOfferTransaction(t *testing.T) {
 					sdk.SellOffer,
 					sdk.StreamingNamespaceId,
 				},
+				{
+					sdk.SellOffer,
+					sdk.SuperContractNamespaceId,
+				},
 			},
 		)
 	}, defaultAccount)
