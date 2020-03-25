@@ -93,10 +93,10 @@ func (o *OfferInfo) Cost(amount Amount) (Amount, error) {
 	switch o.Type {
 	case SellOffer:
 		// If user want to buy mosaic, we round the cost towards the seller(because we buy part of mosaics)
-		return Amount(math.Ceil(float64(o.PriceNumerator*amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Ceil(float64(o.PriceNumerator) * float64(amount) / float64(o.PriceDenominator))), nil
 	case BuyOffer:
 		// If user want to sell mosaic, we round the cost towards the buyer(because we sell part of mosaics)
-		return Amount(math.Floor(float64(o.PriceNumerator*amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Floor(float64(o.PriceNumerator) * float64(amount) / float64(o.PriceDenominator))), nil
 	default:
 		return 0, errors.New("Unknown offer type")
 	}

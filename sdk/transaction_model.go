@@ -56,9 +56,12 @@ func (tx *AbstractTransaction) HasMissingSignatures() bool {
 	return tx.TransactionInfo.Height == 0 && !tx.TransactionInfo.TransactionHash.Equal(tx.TransactionInfo.MerkleComponentHash)
 }
 
+func (tx *AbstractTransaction) IsAnnounced() bool {
+	return tx.TransactionInfo.TransactionHash != nil || tx.TransactionInfo.AggregateHash != nil
+}
+
 func (tx *AbstractTransaction) IsUnannounced() bool {
-	return tx.TransactionInfo.TransactionHash == nil ||
-		tx.TransactionInfo.AggregateHash == nil || tx.TransactionInfo.UniqueAggregateHash == nil
+	return !tx.IsAnnounced()
 }
 
 func (tx *AbstractTransaction) ToAggregate(signer *PublicAccount) {
@@ -3414,8 +3417,8 @@ const (
 	AccountPropertyMosaicVersion     EntityVersion = 1
 	AccountPropertyEntityTypeVersion EntityVersion = 1
 	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 3
-	AggregateCompletedVersion        EntityVersion = 3
+	AggregateBondedVersion           EntityVersion = 2
+	AggregateCompletedVersion        EntityVersion = 2
 	AddExchangeOfferVersion          EntityVersion = 1
 	ExchangeOfferVersion             EntityVersion = 1
 	RemoveExchangeOfferVersion       EntityVersion = 1
