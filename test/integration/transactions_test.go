@@ -25,9 +25,8 @@ import (
 // const testUrl = "http://bcdev1.xpxsirius.io:3000"
 // const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
-
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "0F36D6D36A169F3CA2A03D19B4FA0828B656937491F8EE897FC158D8D4D6D470"
+const privateKey = "28FCECEA252231D2C86E1BCF7DD541552BDBBEFBB09324758B3AC199B4AA7B78"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -310,18 +309,35 @@ func TestMosaicDefinitionWithLevyTransaction(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
 
-	var levy sdk.MosaicLevy
-	levy.Type = sdk.Levy_CaculatedFee
-	levy.Recipient = defaultAccount.PublicAccount.Address
-	levy.Fee = sdk.Amount(10);
-	levy.MosaicId = &sdk.MosaicId{}
-
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewMosaicDefinitionWithLevyTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+			sdk.MosaicLevy{
+				Type: sdk.Levy_AbsoluteFee,
+				Recipient: defaultAccount.Address,
+				Fee: sdk.Amount(1),
+				MosaicId : &sdk.MosaicId{},
+			},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestMosaicModifyLevyTransaction(t *testing.T) {
+	levy := sdk.CreateBlankLevyInfo()
+	levy.Type = sdk.Levy_None
+
+	/// Fill-in mosaicID here
+	mosaicId, _ := sdk.NewMosaicId(0)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicModifyLevyTransacction(
+			sdk.NewDeadline(time.Hour),
+			sdk.MosaicLevyModifyType,
+			mosaicId,
 			levy,
 		)
 	}, defaultAccount)
@@ -338,6 +354,22 @@ func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestMosaicSupplyChangeTransaction(t *testing.T) {
+	/// Fill-in mosaicID here
+	mosaicId, _ := sdk.NewMosaicId(0)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicSupplyChangeTransaction(
+			sdk.NewDeadline(time.Hour),
+			mosaicId,
+			sdk.Increase,
+			// Delta
+			sdk.Duration(100000000000),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)

@@ -1759,7 +1759,7 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPubli
 		MosaicProperties: mosaicProps,
 		MosaicNonce:      nonce,
 		MosaicId:         mosaicId,
-		MosaicLevy:		  createBlankLevyInfo(),
+		MosaicLevy:		  CreateBlankLevyInfo(),
 	}, nil
 }
 
@@ -3331,6 +3331,7 @@ const (
 	MosaicOptionalPropertySize                   = MosaicPropertyIdSize + BaseInt64Size
 	MosaicLevySize								 = 2 + AddressSize + MosaicIdSize + MaxFeeSize
 	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicLevySize + MosaicPropertiesHeaderSize
+	MosaicModifyLevyTransactionSize				 = TransactionHeaderSize + MosaicLevySize + MosaicIdSize + 4
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
 	NamespaceTypeSize                        int = 1
@@ -3390,6 +3391,7 @@ const (
 	MosaicAlias               EntityType = 0x434e
 	MosaicDefinition          EntityType = 0x414d
 	MosaicSupplyChange        EntityType = 0x424d
+	MosaicModifyLevy		  EntityType = 0x434d
 	RegisterNamespace         EntityType = 0x414e
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
@@ -3430,7 +3432,8 @@ const (
 	ModifyContractVersion            EntityVersion = 3
 	ModifyMultisigVersion            EntityVersion = 3
 	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
+	MosaicDefinitionVersion          EntityVersion = 4
+	MosaicModifyLevyVersion			 EntityVersion = 1
 	MosaicSupplyChangeVersion        EntityVersion = 2
 	RegisterNamespaceVersion         EntityVersion = 2
 	SecretLockVersion                EntityVersion = 1
@@ -3639,6 +3642,8 @@ func MapTransaction(b *bytes.Buffer) (Transaction, error) {
 		dto = &mosaicDefinitionTransactionDTO{}
 	case MosaicSupplyChange:
 		dto = &mosaicSupplyChangeTransactionDTO{}
+	case MosaicModifyLevy:
+		dto = &mosaicModifyLevyTransactionDTO{}
 	case RegisterNamespace:
 		dto = &registerNamespaceTransactionDTO{}
 	case SecretLock:
@@ -3906,3 +3911,149 @@ func multisigCosignatoryDTOArrayToStruct(Modifications []*multisigCosignatoryMod
 
 	return ms, err
 }
+
+type MosaicModifyLevyTransaction struct {
+	AbstractTransaction
+	ModifyFlag uint32
+	*MosaicId
+	MosaicLevy
+}
+
+func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, modifyFlag uint32, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	return &MosaicModifyLevyTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        MosaicModifyLevy,
+			Version:     MosaicModifyLevyVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		ModifyFlag: modifyFlag,
+		MosaicId: mosaicId,
+		MosaicLevy: levy,
+	}, nil
+}
+
+func (tx *MosaicModifyLevyTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *MosaicModifyLevyTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"ModifyFlag: %d"
+			"MosaicId": %s,
+			"MosaicLevy": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.ModifyFlag,
+		tx.MosaicId,
+		tx.MosaicLevy.String(),
+	)
+}
+
+func (tx *MosaicModifyLevyTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	r := make([]byte, AddressSize)
+
+	/// Create a blank info and transfer data one by one, DO NOT trust sdk users to pass blank info always
+	levy := CreateBlankLevyInfo()
+
+	if (tx.ModifyFlag & MosaicLevyModifyType) == MosaicLevyModifyType {
+		levy.Type = tx.MosaicLevy.Type
+
+		if levy.Type != Levy_None {
+			r, err = tx.MosaicLevy.Recipient.Decode()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if (tx.ModifyFlag & MosaicLevyModifyRecipient) == MosaicLevyModifyRecipient {
+		levy.Recipient = tx.MosaicLevy.Recipient
+	}
+	if (tx.ModifyFlag & MosaicLevyModifyeMosaicId) == MosaicLevyModifyeMosaicId {
+		levy.MosaicId = tx.MosaicLevy.MosaicId
+	}
+	if (tx.ModifyFlag & MosaicLevyModifyFee) == MosaicLevyModifyFee {
+		levy.Fee = tx.MosaicLevy.Fee
+	}
+
+	rV := transactions.TransactionBufferCreateByteVector(builder, r)
+	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
+	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
+
+	transactions.MosaicLevyStart(builder)
+	transactions.MosaicLevyAddRecipient(builder, rV)
+	transactions.MosaicLevyAddType(builder, uint16(levy.Type))
+	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
+	transactions.MosaicLevyAddFee(builder, feeV)
+	mL := transactions.TransactionBufferEnd(builder)
+
+	transactions.MosaicModifyLevyTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.MosaicModifyLevyTransactionBufferAddModifyFlag(builder, tx.ModifyFlag)
+	transactions.MosaicModifyLevyTransactionBufferAddMosaicId(builder, mV)
+	transactions.MosaicModifyLevyTransactionBufferAddLevy(builder, mL)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+	return mosaicModifyLevyTransactionScheme().serialize(builder.FinishedBytes()), nil
+
+}
+
+func (tx *MosaicModifyLevyTransaction) Size() int {
+	return MosaicModifyLevyTransactionSize
+}
+
+type mosaicModifyLevyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		ModifyFlag   uint32 			`json:"modifyFlag"`
+		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
+		MosaicLevy	 mosaicLevyDTO		`json:"levy"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicModifyLevyTransactionDTO) toStruct() (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	levy, err := dto.Tx.MosaicLevy.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicModifyLevyTransaction{
+		*atx,
+		dto.Tx.ModifyFlag,
+		mosaicId,
+		levy,
+	}, nil
+}
+
+

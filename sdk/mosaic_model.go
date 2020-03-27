@@ -135,9 +135,19 @@ type MosaicProperty struct {
 	Value baseInt64
 }
 
-const Levy_None = 0x0
-const Levy_AbsoluteFee = 0x1
-const Levy_CaculatedFee = 0x2
+const (
+	Levy_None 					= 0x0
+	Levy_AbsoluteFee 			= 0x1
+	Levy_PercentileFee			= 0x2
+
+	MosaicLevyModifyBitNone	    = 0x0000;
+	MosaicLevyModifyType     	= 0x0001;
+	MosaicLevyModifyRecipient	= 0x0002;
+	MosaicLevyModifyeMosaicId	= 0x0004;
+	MosaicLevyModifyFee	    	= 0x0008;
+
+)
+
 
 type MosaicLevy struct {
 	Type 		uint16
@@ -146,7 +156,7 @@ type MosaicLevy struct {
 	*MosaicId
 }
 
-func createBlankLevyInfo() (MosaicLevy) {
+func CreateBlankLevyInfo() (MosaicLevy) {
 	return MosaicLevy{
 		Type: 			Levy_None,
 		Recipient: 		&Address{ NotSupportedNet, ""},

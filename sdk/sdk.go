@@ -552,6 +552,16 @@ func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId As
 	return tx, err
 }
 
+func (c *Client) NewMosaicModifyLevyTransacction(deadline *Deadline, modifyFlag uint32, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevytransaction(deadline, c.config.NetworkType, modifyFlag, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+
 func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
 	tx, err := NewTransferTransaction(deadline, recipient, mosaics, message, c.config.NetworkType)
 	if tx != nil {
