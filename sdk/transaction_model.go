@@ -3417,8 +3417,8 @@ const (
 	AccountPropertyMosaicVersion     EntityVersion = 1
 	AccountPropertyEntityTypeVersion EntityVersion = 1
 	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 2
-	AggregateCompletedVersion        EntityVersion = 2
+	AggregateBondedVersion           EntityVersion = 3
+	AggregateCompletedVersion        EntityVersion = 3
 	AddExchangeOfferVersion          EntityVersion = 1
 	ExchangeOfferVersion             EntityVersion = 1
 	RemoveExchangeOfferVersion       EntityVersion = 1

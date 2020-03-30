@@ -322,14 +322,14 @@ func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
 }
 
 func TestTransferTransaction(t *testing.T) {
-	recipientAccount, err := client.NewAccount()
+	recipientAccount, err := client.NewAccountFromPublicKey("B783474A79DD4E6A2B5192226ACB63041BD439B9B69A716016FD869BC908B032")
 	assert.Nil(t, err)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			recipientAccount.Address,
-			[]*sdk.Mosaic{},
+			[]*sdk.Mosaic{sdk.XpxRelative(100000)},
 			sdk.NewPlainMessage("Test"),
 		)
 	}, defaultAccount)
