@@ -316,9 +316,9 @@ func TestMosaicDefinitionWithLevyTransaction(t *testing.T) {
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
 			sdk.MosaicLevy{
-				Type: sdk.Levy_AbsoluteFee,
+				Type: sdk.Levy_PercentileFee,
 				Recipient: defaultAccount.Address,
-				Fee: sdk.Amount(1),
+				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),   //1.5% levy
 				MosaicId : &sdk.MosaicId{},
 			},
 		)

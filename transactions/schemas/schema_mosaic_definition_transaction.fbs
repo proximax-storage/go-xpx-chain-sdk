@@ -22,11 +22,11 @@ table MosaicDefinitionTransactionBuffer {
     deadline:[uint];
     mosaicNonce:uint;
     mosaicId:[uint];
-    levy:MosaicLevy;
     numOptionalProperties:ubyte;
     flags:ubyte;
     divisibility:ubyte;
     optionalProperties: [MosaicProperty];
+    levy:MosaicLevy;
 }
 
 root_type MosaicDefinitionTransactionBuffer;

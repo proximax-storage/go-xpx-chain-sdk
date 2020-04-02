@@ -1843,16 +1843,7 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 		r = make([]byte, AddressSize)
 	}
 
-	rV := transactions.TransactionBufferCreateByteVector(builder, r)
-	feeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicLevy.Fee.toArray())
-	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicLevy.MosaicId.toArray())
-
-	transactions.MosaicLevyStart(builder)
-	transactions.MosaicLevyAddRecipient(builder, rV)
-	transactions.MosaicLevyAddType(builder, uint16(tx.MosaicLevy.Type))
-	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
-	transactions.MosaicLevyAddFee(builder, feeV)
-	mL := transactions.TransactionBufferEnd(builder)
+	mL := tx.MosaicLevy.SetBuffers(builder, r)
 
 	transactions.MosaicDefinitionTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -3969,17 +3960,15 @@ func (tx *MosaicModifyLevyTransaction) Bytes() ([]byte, error) {
 
 	if (tx.ModifyFlag & MosaicLevyModifyType) == MosaicLevyModifyType {
 		levy.Type = tx.MosaicLevy.Type
-
-		if levy.Type != Levy_None {
-			r, err = tx.MosaicLevy.Recipient.Decode()
-			if err != nil {
-				return nil, err
-			}
-		}
 	}
 
 	if (tx.ModifyFlag & MosaicLevyModifyRecipient) == MosaicLevyModifyRecipient {
 		levy.Recipient = tx.MosaicLevy.Recipient
+
+		r, err = tx.MosaicLevy.Recipient.Decode()
+		if err != nil {
+			return nil, err
+		}
 	}
 	if (tx.ModifyFlag & MosaicLevyModifyeMosaicId) == MosaicLevyModifyeMosaicId {
 		levy.MosaicId = tx.MosaicLevy.MosaicId
@@ -3988,16 +3977,7 @@ func (tx *MosaicModifyLevyTransaction) Bytes() ([]byte, error) {
 		levy.Fee = tx.MosaicLevy.Fee
 	}
 
-	rV := transactions.TransactionBufferCreateByteVector(builder, r)
-	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
-	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
-
-	transactions.MosaicLevyStart(builder)
-	transactions.MosaicLevyAddRecipient(builder, rV)
-	transactions.MosaicLevyAddType(builder, uint16(levy.Type))
-	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
-	transactions.MosaicLevyAddFee(builder, feeV)
-	mL := transactions.TransactionBufferEnd(builder)
+	mL := levy.SetBuffers(builder, r);
 
 	transactions.MosaicModifyLevyTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())

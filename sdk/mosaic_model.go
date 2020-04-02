@@ -7,7 +7,9 @@ package sdk
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 
+	"github.com/google/flatbuffers/go"
 	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
@@ -140,20 +142,24 @@ const (
 	Levy_AbsoluteFee 			= 0x1
 	Levy_PercentileFee			= 0x2
 
-	MosaicLevyModifyBitNone	    = 0x0000;
-	MosaicLevyModifyType     	= 0x0001;
-	MosaicLevyModifyRecipient	= 0x0002;
-	MosaicLevyModifyeMosaicId	= 0x0004;
-	MosaicLevyModifyFee	    	= 0x0008;
+	MosaicLevyModifyBitNone	    = 0x0000
+	MosaicLevyModifyType     	= 0x0001
+	MosaicLevyModifyRecipient	= 0x0002
+	MosaicLevyModifyeMosaicId	= 0x0004
+	MosaicLevyModifyFee	    	= 0x0008
 
+	MosaicLevyDecimalPlace		= 100000
 )
-
 
 type MosaicLevy struct {
 	Type 		uint16
 	Recipient   *Address
 	Fee      	Amount
 	*MosaicId
+}
+
+func CreateMosaicLevyFeePercentile(percent float32) Amount {
+	return Amount(percent * MosaicLevyDecimalPlace)
 }
 
 func CreateBlankLevyInfo() (MosaicLevy) {
@@ -187,6 +193,22 @@ func (mp *MosaicProperty) String() string {
 		str.NewField("Id", str.IntPattern, mp.Id),
 		str.NewField("Value", str.IntPattern, mp.Value),
 	)
+}
+
+func (levy *MosaicLevy) SetBuffers(builder *flatbuffers.Builder, r[]byte)  flatbuffers.UOffsetT{
+
+
+	rV := transactions.TransactionBufferCreateByteVector(builder, r)
+	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
+	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
+
+	transactions.MosaicLevyStart(builder)
+	transactions.MosaicLevyAddRecipient(builder, rV)
+	transactions.MosaicLevyAddType(builder, uint16(levy.Type))
+	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
+	transactions.MosaicLevyAddFee(builder, feeV)
+	mL := transactions.TransactionBufferEnd(builder)
+	return mL;
 }
 
 // returns MosaicProperties from actual values
