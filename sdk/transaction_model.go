@@ -2017,6 +2017,227 @@ func (dto *mosaicSupplyChangeTransactionDTO) toStruct(*Hash) (Transaction, error
 	}, nil
 }
 
+/// region modify mosaic levy implementation
+type MosaicModifyLevyTransaction struct {
+	AbstractTransaction
+	Command uint32
+	UpdateFlag uint32
+	*MosaicId
+	MosaicLevy
+}
+
+func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, command uint32,
+	updateFlag uint32, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+
+	return &MosaicModifyLevyTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        MosaicModifyLevy,
+			Version:     MosaicModifyLevyVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+
+		Command: command,
+		UpdateFlag: updateFlag,
+		MosaicId: mosaicId,
+		MosaicLevy: levy,
+	}, nil
+}
+
+func (tx *MosaicModifyLevyTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *MosaicModifyLevyTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"Command %d",
+			"UpdateFlag: %d",
+			"MosaicId": %s,
+			"MosaicLevy": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.Command,
+		tx.UpdateFlag,
+		tx.MosaicId,
+		tx.MosaicLevy.String(),
+	)
+}
+
+func (tx *MosaicModifyLevyTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	var r []byte
+	if(len(tx.MosaicLevy.Recipient.Address) > 0) {
+		r, err = tx.MosaicLevy.Recipient.Decode()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		r = make([]byte, AddressSize)
+	}
+
+	mL := tx.MosaicLevy.SetBuffers(builder, r);
+
+	transactions.ModifyMosaicLevyTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.ModifyMosaicLevyTransactionBufferAddCommand(builder, tx.Command)
+	transactions.ModifyMosaicLevyTransactionBufferAddUpdateFlag(builder, tx.UpdateFlag)
+	transactions.ModifyMosaicLevyTransactionBufferAddMosaicId(builder, mV)
+	transactions.ModifyMosaicLevyTransactionBufferAddLevy(builder, mL)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+	return mosaicModifyLevyTransactionScheme().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *MosaicModifyLevyTransaction) Size() int {
+	return MosaicModifyLevyTransactionSize
+}
+
+type mosaicModifyLevyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Command		 uint32				`json:"command"`
+		UpdateFlag   uint32 			`json:"updateFlag"`
+		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
+		MosaicLevy	 mosaicLevyDTO		`json:"levy"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicModifyLevyTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	levy, err := dto.Tx.MosaicLevy.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicModifyLevyTransaction{
+		*atx,
+		dto.Tx.Command,
+		dto.Tx.UpdateFlag,
+		mosaicId,
+		levy,
+	}, nil
+}
+/// end region modify mosaic levy
+
+/// region remove mosaic levy
+type MosaicRemoveLevyTransaction struct {
+	AbstractTransaction
+	*MosaicId
+}
+
+func NewMosaicRemoveLevytransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	return &MosaicRemoveLevyTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        MosaicRemoveLevy,
+			Version:     MosaicRemoveLevyVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		MosaicId: mosaicId,
+	}, nil
+}
+
+func (tx *MosaicRemoveLevyTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *MosaicRemoveLevyTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"MosaicId": %s,
+			"MosaicLevy": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.MosaicId,
+	)
+}
+
+func (tx *MosaicRemoveLevyTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.RemoveMosaicLevyTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.RemoveMosaicLevyTransactionBufferAddMosaicId(builder, mV)
+	t := transactions.TransactionBufferEnd(builder)
+
+	builder.Finish(t)
+	return mosaicRemoveLevyTransactionScheme().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *MosaicRemoveLevyTransaction) Size() int {
+	return MosaicRemoveLevyTransactionSize
+}
+
+type mosaicRemoveLevyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicRemoveLevyTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicRemoveLevyTransaction{
+		*atx,
+		mosaicId,
+	}, nil
+}
+
+/// end region
+
 type TransferTransaction struct {
 	AbstractTransaction
 	Message   Message
@@ -3318,6 +3539,9 @@ const (
 	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
+	MosaicLevySize								 = 2 + AddressSize + MosaicIdSize + MaxFeeSize
+	MosaicModifyLevyTransactionSize				 = TransactionHeaderSize + MosaicLevySize + MosaicIdSize + SizeSize + SizeSize
+	MosaicRemoveLevyTransactionSize				 = TransactionHeaderSize + MosaicIdSize
 	NamespaceTypeSize                        int = 1
 	NamespaceNameSizeSize                    int = 1
 	RegisterNamespaceHeaderSize                  = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
@@ -3382,6 +3606,8 @@ const (
 	MosaicAlias               EntityType = 0x434e
 	MosaicDefinition          EntityType = 0x414d
 	MosaicSupplyChange        EntityType = 0x424d
+	MosaicModifyLevy		  EntityType = 0x434d
+	MosaicRemoveLevy		  EntityType = 0x444d
 	RegisterNamespace         EntityType = 0x414e
 	SecretLock                EntityType = 0x4152
 	SecretProof               EntityType = 0x4252
@@ -3434,6 +3660,8 @@ const (
 	MosaicAliasVersion               EntityVersion = 1
 	MosaicDefinitionVersion          EntityVersion = 3
 	MosaicSupplyChangeVersion        EntityVersion = 2
+	MosaicModifyLevyVersion			 EntityVersion = 1
+	MosaicRemoveLevyVersion			 EntityVersion = 1
 	RegisterNamespaceVersion         EntityVersion = 2
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
@@ -3651,6 +3879,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &mosaicDefinitionTransactionDTO{}
 	case MosaicSupplyChange:
 		dto = &mosaicSupplyChangeTransactionDTO{}
+	case MosaicModifyLevy:
+		dto = &mosaicModifyLevyTransactionDTO{}
+	case MosaicRemoveLevy:
+		dto = &mosaicRemoveLevyTransactionDTO{}
 	case RegisterNamespace:
 		dto = &registerNamespaceTransactionDTO{}
 	case SecretLock:
