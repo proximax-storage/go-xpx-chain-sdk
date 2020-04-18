@@ -51,6 +51,8 @@ var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
 var nemesisAccount *sdk.Account
 
+var XPXID uint64 = 0x0DC67FBE1CAD29E3
+
 func init() {
 	ctx = context.Background()
 
@@ -861,5 +863,66 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 			},
 		)
 	}, testAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestAddMosaicLevyTransaction(t *testing.T) {
+
+	// Add levy to XPX mosaic
+	mosaicId, _ := sdk.NewMosaicId(XPXID)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicModifyLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.LevyCommandAdd,
+			0,
+			mosaicId,
+			sdk.MosaicLevy{
+				Type: sdk.Levy_PercentileFee,
+				// supply valid address here for testing
+				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
+				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				// a blank mosaic id levy : use native mosaicId
+				MosaicId : &sdk.MosaicId{},
+			},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestUpdateMosaicLevyTransaction(t *testing.T) {
+
+	// update levy to XPX mosaic
+	// Note; Levy for mosaicId should exist for this test to succeed
+	mosaicId, _ := sdk.NewMosaicId(XPXID)
+
+	levy := sdk.CreateBlankLevyInfo()
+	levy.Type = sdk.Levy_AbsoluteFee
+	levy.Fee = 100
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicModifyLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.LevyCommandUpdate,
+			sdk.MosaicLevyModifyType | sdk.MosaicLevyModifyFee,
+			mosaicId,
+			levy,
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestRemoveosaicLevyTransaction(t *testing.T) {
+
+	// remove levy to XPX mosaic
+	// Note; Levy for mosaicId should exist for this test to succeed
+	mosaicId, _ := sdk.NewMosaicId(XPXID)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicRemoveLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			mosaicId,
+		)
+	}, defaultAccount)
 	assert.Nil(t, result.error)
 }
