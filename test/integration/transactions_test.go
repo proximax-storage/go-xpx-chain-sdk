@@ -866,7 +866,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestAddMosaicLevyTransaction(t *testing.T) {
+func TestModifyMosaicLevyTransaction(t *testing.T) {
 
 	// Add levy to XPX mosaic
 	mosaicId, _ := sdk.NewMosaicId(XPXID)
@@ -874,8 +874,6 @@ func TestAddMosaicLevyTransaction(t *testing.T) {
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewMosaicModifyLevyTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.LevyCommandAdd,
-			0,
 			mosaicId,
 			sdk.MosaicLevy{
 				Type: sdk.Levy_PercentileFee,
@@ -883,32 +881,10 @@ func TestAddMosaicLevyTransaction(t *testing.T) {
 				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
 				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
 				// a blank mosaic id levy : use native mosaicId
-				MosaicId : &sdk.MosaicId{},
+				MosaicId : mosaicId,
 			},
 		)
-	}, defaultAccount)
-	assert.Nil(t, result.error)
-}
-
-func TestUpdateMosaicLevyTransaction(t *testing.T) {
-
-	// update levy to XPX mosaic
-	// Note; Levy for mosaicId should exist for this test to succeed
-	mosaicId, _ := sdk.NewMosaicId(XPXID)
-
-	levy := sdk.CreateBlankLevyInfo()
-	levy.Type = sdk.Levy_AbsoluteFee
-	levy.Fee = 100
-
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewMosaicModifyLevyTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.LevyCommandUpdate,
-			sdk.MosaicLevyModifyType | sdk.MosaicLevyModifyFee,
-			mosaicId,
-			levy,
-		)
-	}, defaultAccount)
+	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
 
@@ -923,6 +899,6 @@ func TestRemoveosaicLevyTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
 		)
-	}, defaultAccount)
+	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }

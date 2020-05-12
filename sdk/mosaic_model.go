@@ -281,17 +281,7 @@ const (
 	Levy_None 					= 0x0
 	Levy_AbsoluteFee 			= 0x1
 	Levy_PercentileFee			= 0x2
-
-	MosaicLevyModifyBitNone	    = 0x0000
-	MosaicLevyModifyType     	= 0x0001
-	MosaicLevyModifyRecipient	= 0x0002
-	MosaicLevyModifyeMosaicId	= 0x0004
-	MosaicLevyModifyFee	    	= 0x0008
-
 	MosaicLevyDecimalPlace		= 100000
-
-	LevyCommandAdd				= 0
-	LevyCommandUpdate			= 1
 )
 
 func CreateMosaicLevyFeePercentile(percent float32) Amount {
@@ -313,12 +303,4 @@ func (levy *MosaicLevy) SetBuffers(builder *flatbuffers.Builder, r[]byte)  flatb
 	return mL;
 }
 
-func CreateBlankLevyInfo() (MosaicLevy) {
-	return MosaicLevy{
-		Type: 			Levy_None,
-		Recipient: 		&Address{ NotSupportedNet, ""},
-		MosaicId : 		&MosaicId{0},
-		Fee: 			Amount(0),
-	}
-}
 /// end region levy

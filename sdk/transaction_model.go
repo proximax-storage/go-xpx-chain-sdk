@@ -2020,14 +2020,11 @@ func (dto *mosaicSupplyChangeTransactionDTO) toStruct(*Hash) (Transaction, error
 /// region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
-	Command uint32
-	UpdateFlag uint32
 	*MosaicId
 	MosaicLevy
 }
 
-func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, command uint32,
-	updateFlag uint32, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
 
 	return &MosaicModifyLevyTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -2036,9 +2033,6 @@ func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
-
-		Command: command,
-		UpdateFlag: updateFlag,
 		MosaicId: mosaicId,
 		MosaicLevy: levy,
 	}, nil
@@ -2052,14 +2046,10 @@ func (tx *MosaicModifyLevyTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"Command %d",
-			"UpdateFlag: %d",
 			"MosaicId": %s,
 			"MosaicLevy": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.Command,
-		tx.UpdateFlag,
 		tx.MosaicId,
 		tx.MosaicLevy.String(),
 	)
@@ -2091,8 +2081,6 @@ func (tx *MosaicModifyLevyTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.ModifyMosaicLevyTransactionBufferAddCommand(builder, tx.Command)
-	transactions.ModifyMosaicLevyTransactionBufferAddUpdateFlag(builder, tx.UpdateFlag)
 	transactions.ModifyMosaicLevyTransactionBufferAddMosaicId(builder, mV)
 	transactions.ModifyMosaicLevyTransactionBufferAddLevy(builder, mL)
 
@@ -2108,8 +2096,6 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 type mosaicModifyLevyTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Command		 uint32				`json:"command"`
-		UpdateFlag   uint32 			`json:"updateFlag"`
 		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
 		MosaicLevy	 mosaicLevyDTO		`json:"levy"`
 	} `json:"transaction"`
@@ -2139,8 +2125,6 @@ func (dto *mosaicModifyLevyTransactionDTO) toStruct(*Hash) (Transaction, error) 
 
 	return &MosaicModifyLevyTransaction{
 		*atx,
-		dto.Tx.Command,
-		dto.Tx.UpdateFlag,
 		mosaicId,
 		levy,
 	}, nil
@@ -3540,7 +3524,7 @@ const (
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
 	MosaicLevySize								 = 2 + AddressSize + MosaicIdSize + MaxFeeSize
-	MosaicModifyLevyTransactionSize				 = TransactionHeaderSize + MosaicLevySize + MosaicIdSize + SizeSize + SizeSize
+	MosaicModifyLevyTransactionSize				 = TransactionHeaderSize + MosaicLevySize + MosaicIdSize
 	MosaicRemoveLevyTransactionSize				 = TransactionHeaderSize + MosaicIdSize
 	NamespaceTypeSize                        int = 1
 	NamespaceNameSizeSize                    int = 1

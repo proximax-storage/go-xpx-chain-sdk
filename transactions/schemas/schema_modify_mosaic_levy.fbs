@@ -15,8 +15,6 @@ table ModifyMosaicLevyTransactionBuffer {
 	type: ushort;
 	maxFee: [uint];
 	deadline:[uint];
-	command:uint;
-	updateFlag:uint;
 	mosaicId:[uint];
 	levy:MosaicLevy;
 }

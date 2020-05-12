@@ -805,8 +805,8 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 	return nil
 }
 
-func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, command uint32, updateFlag uint32, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
-	tx, err := NewMosaicModifyLevytransaction(deadline, c.config.NetworkType, command, updateFlag, mosaicId, levy)
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevytransaction(deadline, c.config.NetworkType, mosaicId, levy)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
