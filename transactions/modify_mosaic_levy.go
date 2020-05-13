@@ -3,7 +3,7 @@
 package transactions
 
 import (
-flatbuffers "github.com/google/flatbuffers/go"
+	flatbuffers "github.com/google/flatbuffers/go"
 )
 
 type MosaicLevy struct {
@@ -128,9 +128,7 @@ func MosaicLevyStart(builder *flatbuffers.Builder) {
 	builder.StartObject(4)
 }
 func MosaicLevyAddType(builder *flatbuffers.Builder, type_ uint16) {
-	// custom
-	builder.PlaceUint16(type_)
-	builder.Slot(0)
+	builder.PrependUint16Slot(0, type_, 0)
 }
 func MosaicLevyAddRecipient(builder *flatbuffers.Builder, recipient flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(recipient), 0)
@@ -330,32 +328,8 @@ func (rcv *ModifyMosaicLevyTransactionBuffer) MutateDeadline(j int, n uint32) bo
 	return false
 }
 
-func (rcv *ModifyMosaicLevyTransactionBuffer) Command() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyMosaicLevyTransactionBuffer) MutateCommand(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(18, n)
-}
-
-func (rcv *ModifyMosaicLevyTransactionBuffer) UpdateFlag() uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.GetUint32(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ModifyMosaicLevyTransactionBuffer) MutateUpdateFlag(n uint32) bool {
-	return rcv._tab.MutateUint32Slot(20, n)
-}
-
 func (rcv *ModifyMosaicLevyTransactionBuffer) MosaicId(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
@@ -364,7 +338,7 @@ func (rcv *ModifyMosaicLevyTransactionBuffer) MosaicId(j int) uint32 {
 }
 
 func (rcv *ModifyMosaicLevyTransactionBuffer) MosaicIdLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -372,7 +346,7 @@ func (rcv *ModifyMosaicLevyTransactionBuffer) MosaicIdLength() int {
 }
 
 func (rcv *ModifyMosaicLevyTransactionBuffer) MutateMosaicId(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
@@ -381,7 +355,7 @@ func (rcv *ModifyMosaicLevyTransactionBuffer) MutateMosaicId(j int, n uint32) bo
 }
 
 func (rcv *ModifyMosaicLevyTransactionBuffer) Levy(obj *MosaicLevy) *MosaicLevy {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -394,7 +368,7 @@ func (rcv *ModifyMosaicLevyTransactionBuffer) Levy(obj *MosaicLevy) *MosaicLevy 
 }
 
 func ModifyMosaicLevyTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(11)
+	builder.StartObject(9)
 }
 func ModifyMosaicLevyTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -429,26 +403,14 @@ func ModifyMosaicLevyTransactionBufferAddDeadline(builder *flatbuffers.Builder, 
 func ModifyMosaicLevyTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func ModifyMosaicLevyTransactionBufferAddCommand(builder *flatbuffers.Builder, command uint32) {
-	// custom
-	builder.PrependUint32(command)
-	builder.Slot(7)
-}
-
-func ModifyMosaicLevyTransactionBufferAddUpdateFlag(builder *flatbuffers.Builder, updateFlag uint32) {
-	//builder.PrependUint32Slot(8, updateFlag, 0)
-	// custom
-	builder.PrependUint32(updateFlag)
-	builder.Slot(8)
-}
 func ModifyMosaicLevyTransactionBufferAddMosaicId(builder *flatbuffers.Builder, mosaicId flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(mosaicId), 0)
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(mosaicId), 0)
 }
 func ModifyMosaicLevyTransactionBufferStartMosaicIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func ModifyMosaicLevyTransactionBufferAddLevy(builder *flatbuffers.Builder, levy flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(levy), 0)
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(levy), 0)
 }
 func ModifyMosaicLevyTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
