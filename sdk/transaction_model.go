@@ -3419,7 +3419,7 @@ const (
 	AddressAliasVersion              EntityVersion = 1
 	AggregateBondedVersion           EntityVersion = 2
 	AggregateCompletedVersion        EntityVersion = 2
-	AddExchangeOfferVersion          EntityVersion = 1
+	AddExchangeOfferVersion          EntityVersion = 2
 	ExchangeOfferVersion             EntityVersion = 1
 	RemoveExchangeOfferVersion       EntityVersion = 1
 	NetworkConfigVersion             EntityVersion = 1
