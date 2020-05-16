@@ -601,7 +601,7 @@ func (tx *DeactivateTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"SuperContract": %d,
+			"SuperContract": %s,
 			"DriveKey": %s,
 		`,
 		tx.AbstractTransaction.String(),
