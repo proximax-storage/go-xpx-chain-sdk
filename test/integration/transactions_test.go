@@ -888,7 +888,7 @@ func TestModifyMosaicLevyTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestRemoveosaicLevyTransaction(t *testing.T) {
+func TestRemoveMosaicLevyTransaction(t *testing.T) {
 
 	// remove levy to XPX mosaic
 	// Note; Levy for mosaicId should exist for this test to succeed
