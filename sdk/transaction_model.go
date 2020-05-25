@@ -3097,6 +3097,19 @@ type SignedTransaction struct {
 	Hash    *Hash
 }
 
+func (tx *SignedTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"EntityType": %d,
+			"Payload": %s,
+			"Hash": %s,
+		`,
+		tx.EntityType,
+		tx.Payload,
+		tx.Hash,
+	)
+}
+
 type cosignatureSignedTransactionDto struct {
 	ParentHash string `json:"parentHash"`
 	Signature  string `json:"signature"`
