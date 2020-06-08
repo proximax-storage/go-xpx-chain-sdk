@@ -224,7 +224,7 @@ func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error)
 	}
 
 	if pl, ok := cfg.NetworkConfig.Sections["chain"]; ok {
-		if v, ok := pl.Fields["blockGenerationTargetTimes"]; ok {
+		if v, ok := pl.Fields["blockGenerationTargetTime"]; ok {
 			return time.ParseDuration(v.Value)
 		}
 	}
