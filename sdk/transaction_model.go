@@ -3432,9 +3432,9 @@ const (
 	AddressAliasVersion              EntityVersion = 1
 	AggregateBondedVersion           EntityVersion = 3
 	AggregateCompletedVersion        EntityVersion = 3
-	AddExchangeOfferVersion          EntityVersion = 3
-	ExchangeOfferVersion             EntityVersion = 1
-	RemoveExchangeOfferVersion       EntityVersion = 1
+	AddExchangeOfferVersion          EntityVersion = 4
+	ExchangeOfferVersion             EntityVersion = 2
+	RemoveExchangeOfferVersion       EntityVersion = 2
 	NetworkConfigVersion             EntityVersion = 1
 	BlockchainUpgradeVersion         EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2
