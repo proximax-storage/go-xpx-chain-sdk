@@ -208,19 +208,30 @@ type NamespaceInfo struct {
 	EndHeight   Height
 }
 
-func (ref *NamespaceInfo) String() string {
-	return str.StructToString(
-		"NamespaceInfo",
-		str.NewField("NamespaceId", str.StringPattern, ref.NamespaceId),
-		str.NewField("Active", str.BooleanPattern, ref.Active),
-		str.NewField("TypeSpace", str.IntPattern, ref.TypeSpace),
-		str.NewField("Depth", str.IntPattern, ref.Depth),
-		str.NewField("Levels", str.StringPattern, ref.Levels),
-		str.NewField("Alias", str.StringPattern, ref.Alias),
-		str.NewField("Parent", str.StringPattern, ref.Parent),
-		str.NewField("Owner", str.StringPattern, ref.Owner),
-		str.NewField("StartHeight", str.StringPattern, ref.StartHeight),
-		str.NewField("EndHeight", str.StringPattern, ref.EndHeight),
+func (info NamespaceInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"NamespaceId": %s,
+			"Active": %t,
+			"TypeSpace": %d,
+			"Depth": %d,
+			"Levels": %d,
+			"Alias": %s,
+			"Parent": %v,
+			"Owner": %s,
+			"StartHeight": %s,
+			"EndHeight": %s,
+		`,
+		info.NamespaceId,
+		info.Active,
+		info.TypeSpace,
+		info.Depth,
+		info.Levels,
+		info.Alias,
+		info.Parent,
+		info.Owner,
+		info.StartHeight,
+		info.EndHeight,
 	)
 }
 
