@@ -216,6 +216,22 @@ func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
 }
 
+//BlockGenerationTime gets value from config. If value not found returns default value - 15s
+func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error) {
+	cfg, err := c.Network.GetNetworkConfig(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if pl, ok := cfg.NetworkConfig.Sections["chain"]; ok {
+		if v, ok := pl.Fields["blockGenerationTargetTime"]; ok {
+			return time.ParseDuration(v.Value)
+		}
+	}
+
+	return time.Second * 15, nil
+}
+
 // AdaptAccount returns a new account with the same network type and generation hash like a Client
 func (c *Client) AdaptAccount(account *Account) (*Account, error) {
 	return c.NewAccountFromPrivateKey(account.PrivateKey.String())

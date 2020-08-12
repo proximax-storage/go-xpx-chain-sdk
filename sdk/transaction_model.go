@@ -3097,6 +3097,19 @@ type SignedTransaction struct {
 	Hash    *Hash
 }
 
+func (tx *SignedTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"EntityType": %d,
+			"Payload": %s,
+			"Hash": %s,
+		`,
+		tx.EntityType,
+		tx.Payload,
+		tx.Hash,
+	)
+}
+
 type cosignatureSignedTransactionDto struct {
 	ParentHash string `json:"parentHash"`
 	Signature  string `json:"signature"`
@@ -3419,9 +3432,9 @@ const (
 	AddressAliasVersion              EntityVersion = 1
 	AggregateBondedVersion           EntityVersion = 3
 	AggregateCompletedVersion        EntityVersion = 3
-	AddExchangeOfferVersion          EntityVersion = 2
-	ExchangeOfferVersion             EntityVersion = 1
-	RemoveExchangeOfferVersion       EntityVersion = 1
+	AddExchangeOfferVersion          EntityVersion = 4
+	ExchangeOfferVersion             EntityVersion = 2
+	RemoveExchangeOfferVersion       EntityVersion = 2
 	NetworkConfigVersion             EntityVersion = 1
 	BlockchainUpgradeVersion         EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2

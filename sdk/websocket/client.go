@@ -139,7 +139,6 @@ func (c *CatapultWebsocketClientImpl) Listen() {
 	select {
 	case <-c.ctx.Done():
 		c.closeConnection(c.conn)
-		c.removeHandlers()
 	}
 }
 
