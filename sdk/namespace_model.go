@@ -215,7 +215,7 @@ func (info NamespaceInfo) String() string {
 			"Active": %t,
 			"TypeSpace": %d,
 			"Depth": %d,
-			"Levels": %d,
+			"Levels": %s,
 			"Alias": %s,
 			"Parent": %v,
 			"Owner": %s,
