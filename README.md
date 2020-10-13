@@ -8,7 +8,7 @@ The ProximaX Sirius Chain Golang SDK works as a lightweight Golang library for i
 
 ## Getting Started
 
-All catapult stuff starts from importing sdk:
+All Sirius stuff starts from importing sdk:
 
 ```go
 import "github.com/proximax-storage/go-xpx-chain-sdk/sdk"
