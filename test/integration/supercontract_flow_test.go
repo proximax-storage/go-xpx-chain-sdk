@@ -229,4 +229,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
+
+	sc, err := client.SuperContract.GetSuperContract(ctx, superContract.PublicAccount)
+	assert.Nil(t, err)
+	assert.Equal(t, sdk.SuperContractDeactivatedByParticipant, sc.State)
 }
