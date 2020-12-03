@@ -4,17 +4,17 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The ProximaX Sirius Catapult Chain Golang SDK works as a lightweight Golang library for interacting with the Sirius Blockchain. It provides a complete library set coverage, and supports synchronous and asynchronous requests. 
+The ProximaX Sirius Chain Golang SDK works as a lightweight Golang library for interacting with the Sirius Blockchain. It provides a complete library set coverage, and supports synchronous and asynchronous requests. 
 
 ## Getting Started
 
-All catapult stuff starts from importing sdk:
+All Sirius stuff starts from importing sdk:
 
 ```go
 import "github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 ```
 
-Then create a Catapult network configuration
+Then create a Sirius network configuration
 
 For *Testnet*:
 ```go
@@ -25,7 +25,7 @@ Or for *Mainnet*:
 conf, err := sdk.NewConfig("http://localhost:3000",sdk.Mainnet)
 ```
 
-Construct a new REST Catapult client
+Construct a new REST Sirius client
 ```go
 client := sdk.NewClient(nil, conf)
 ```
