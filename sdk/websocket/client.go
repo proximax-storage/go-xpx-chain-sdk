@@ -21,8 +21,6 @@ import (
 )
 
 const (
-	pathWS = "ws"
-
 	pathBlock              Path = "block"
 	pathConfirmedAdded     Path = "confirmedAdded"
 	pathUnconfirmedAdded   Path = "unconfirmedAdded"
@@ -574,8 +572,13 @@ func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 }
 
 func convertToWsUrl(url *url.URL) *url.URL {
-	copyUrl := *url
-	copyUrl.Scheme = "ws" // always ws
-	copyUrl.Path = pathWS
-	return &copyUrl
+	if "https" == url.Scheme {
+		url.Scheme = "wss"
+		url.Path = "wss"
+	} else {
+		url.Scheme = "ws"
+		url.Path = "ws"
+	}
+
+	return url
 }

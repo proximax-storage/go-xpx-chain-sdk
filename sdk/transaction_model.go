@@ -3451,7 +3451,7 @@ const (
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
 	TransferVersion                  EntityVersion = 3
-	PrepareDriveVersion              EntityVersion = 2
+	PrepareDriveVersion              EntityVersion = 3
 	JoinToDriveVersion               EntityVersion = 1
 	DriveFileSystemVersion           EntityVersion = 1
 	FilesDepositVersion              EntityVersion = 1

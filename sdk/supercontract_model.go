@@ -29,6 +29,14 @@ type Operation struct {
 	AggregateHashes []*Hash
 }
 
+type SuperContractState uint8
+
+const (
+	SuperContractActive                   SuperContractState = 0
+	SuperContractDeactivatedByParticipant SuperContractState = 100
+	SuperContractDeactivatedByDriveEnd    SuperContractState = 101
+)
+
 type SuperContract struct {
 	Account   *PublicAccount
 	Drive     *PublicAccount
@@ -36,6 +44,7 @@ type SuperContract struct {
 	VMVersion uint64
 	Start     Height
 	End       Height
+	State     SuperContractState
 }
 
 func (s *SuperContract) String() string {
@@ -93,9 +102,8 @@ type EndExecuteTransaction = EndOperationTransaction
 
 type SuperContractFileSystemTransaction = DriveFileSystemTransaction
 
-
 type DeactivateTransaction struct {
 	AbstractTransaction
-	SuperContract       string
-	DriveKey            string
+	SuperContract string
+	DriveKey      string
 }

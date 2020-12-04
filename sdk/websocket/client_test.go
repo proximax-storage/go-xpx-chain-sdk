@@ -246,6 +246,9 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				confirmedAddedSubscribers: tt.fields.confirmedAddedSubscribers,
 				topicHandlers:             tt.fields.topicHandlers,
 				messagePublisher:          tt.fields.messagePublisher,
+				config: &sdk.Config{
+					GenerationHash: nil,
+				},
 			}
 			err := c.AddConfirmedAddedHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)

@@ -89,6 +89,13 @@ const (
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
+// routes for NodeService
+const (
+	nodeInfoRoute  = "/node/info"
+	nodeTimeRoute  = "/node/time"
+	nodePeersRoute = "/node/peers"
+)
+
 // routes for NetworkService
 const (
 	networkRoute = "/network"
