@@ -128,7 +128,7 @@ const (
 
 // routes for TransactionService
 const (
-	transactionsRoute                 = "/transaction"
+	transactionsRoute                 = "/transactions"
 	transactionRoute                  = "/transaction/%s"
 	transactionStatusRoute            = "/transactionStatus/%s/"
 	transactionsStatusRoute           = "/transaction/statuses"

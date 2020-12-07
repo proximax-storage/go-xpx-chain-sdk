@@ -189,7 +189,7 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 
 func TestTransactionService_GetTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     "/transaction",
+		Path:     "/transactions",
 		RespBody: "[" + transactionJson + "]",
 	})
 
