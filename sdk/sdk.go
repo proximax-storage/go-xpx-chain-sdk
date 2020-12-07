@@ -46,8 +46,8 @@ const (
 // Provides service configuration
 type Config struct {
 	reputationConfig      *reputationConfig
-	BaseURLs              []*url.URL
-	UsedBaseUrl           *url.URL
+	BaseURLs              []url.URL
+	UsedBaseUrl           url.URL
 	WsReconnectionTimeout time.Duration
 	GenerationHash        *Hash
 	NetworkType
@@ -123,7 +123,7 @@ func NewConfigWithReputation(
 	if len(baseUrls) == 0 {
 		return nil, errors.New("empty base urls")
 	}
-	urls := make([]*url.URL, 0, len(baseUrls))
+	urls := make([]url.URL, 0, len(baseUrls))
 
 	for _, singleUrlStr := range baseUrls {
 		u, err := url.Parse(singleUrlStr)
@@ -131,7 +131,7 @@ func NewConfigWithReputation(
 			return nil, err
 		}
 
-		urls = append(urls, u)
+		urls = append(urls, *u)
 	}
 
 	c := &Config{
@@ -179,8 +179,11 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
 		var netTransport = &http.Transport{
 			DialContext: (&net.Dialer{
-				Timeout: 5 * time.Second,
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
 			}).DialContext,
+			IdleConnTimeout:     90 * time.Second,
+			MaxIdleConnsPerHost: 100,
 			TLSHandshakeTimeout: 5 * time.Second,
 		}
 

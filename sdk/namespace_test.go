@@ -101,8 +101,8 @@ var (
 		},
 		Owner: &PublicAccount{
 			Address: &Address{
-				Type:    NotSupportedNet,
-				Address: "ABFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVV5DRLO7",
+				Type:    MijinTest,
+				Address: "SBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVVTOKK5M",
 			},
 			PublicKey: "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
 		},
