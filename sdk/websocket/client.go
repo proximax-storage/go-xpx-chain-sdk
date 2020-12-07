@@ -541,7 +541,7 @@ func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 	var conn *websocket.Conn
 	var err error
 
-	conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(cfg.UsedBaseUrl).String(), nil)
+	conn, _, err = websocket.DefaultDialer.Dial(newWSUrl(cfg.UsedBaseUrl).String(), nil)
 	if err != nil {
 		for _, u := range cfg.BaseURLs {
 
@@ -549,7 +549,7 @@ func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 				continue
 			}
 
-			conn, _, err = websocket.DefaultDialer.Dial(convertToWsUrl(u).String(), nil)
+			conn, _, err = websocket.DefaultDialer.Dial(newWSUrl(u).String(), nil)
 			if err != nil {
 				continue
 			}
@@ -571,7 +571,7 @@ func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 	return conn, resp.Uid, nil
 }
 
-func convertToWsUrl(url *url.URL) *url.URL {
+func newWSUrl(url url.URL) *url.URL {
 	if "https" == url.Scheme {
 		url.Scheme = "wss"
 		url.Path = "wss"
@@ -580,5 +580,5 @@ func convertToWsUrl(url *url.URL) *url.URL {
 		url.Path = "ws"
 	}
 
-	return url
+	return &url
 }
