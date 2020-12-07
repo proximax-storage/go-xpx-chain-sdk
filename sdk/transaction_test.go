@@ -208,7 +208,7 @@ func TestTransactionService_GetTransactions(t *testing.T) {
 
 func TestTransactionService_GetTransactionStatus(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     "/transaction/7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F/status",
+		Path:     "/transactionStatus/7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F/",
 		RespBody: statusJson,
 	})
 
