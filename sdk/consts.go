@@ -130,8 +130,9 @@ const (
 const (
 	transactionsRoute                 = "/transactions"
 	transactionRoute                  = "/transaction/%s"
-	transactionStatusRoute            = "/transactionStatus/%s/"
-	transactionsStatusRoute           = "/transaction/statuses"
+	transactionsStatusPluralRoute     = "/transactionStatus"
+	transactionStatusSingularRoute    = "/transactionStatus/%s/"
+	transactionStatusesRoute          = "/transaction/statuses"
 	announceAggregateRoute            = "/transaction/partial"
 	announceAggregateCosignatureRoute = "/transaction/cosignature"
 )

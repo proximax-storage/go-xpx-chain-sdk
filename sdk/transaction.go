@@ -89,7 +89,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusSingularRoute, id), nil, ts)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +101,25 @@ func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id stri
 	return ts.toStruct()
 }
 
+// returns TransactionsStatuses for passed transactions id or hashes
+func (txs *TransactionService) GetTransactionsStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
+	txIds := &TransactionHashesDTO{
+		hashes,
+	}
+
+	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsStatusPluralRoute, txIds, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dtos.toStruct()
+}
+
 // returns an array of TransactionStatus's for passed transaction ids or hashes
 func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
 	txIds := &TransactionHashesDTO{
@@ -108,7 +127,7 @@ func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashe
 	}
 
 	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionStatusesRoute, txIds, &dtos)
 	if err != nil {
 		return nil, err
 	}
