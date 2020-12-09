@@ -129,9 +129,11 @@ const (
 // routes for TransactionService
 const (
 	transactionsRoute                 = "/transactions"
-	transactionRoute                  = "/transaction/%s"
+	transactionRoute                  = "/transactions/%s"
 	transactionsStatusPluralRoute     = "/transactionStatus"
 	transactionStatusSingularRoute    = "/transactionStatus/%s/"
+	confirmedTransactionsRoute        = "transactions/confirmed"
+	partialTransactionsRoute          = "transactions/partial"
 	transactionStatusesRoute          = "/transaction/statuses"
 	announceAggregateRoute            = "/transaction/partial"
 	announceAggregateCosignatureRoute = "/transaction/cosignature"
