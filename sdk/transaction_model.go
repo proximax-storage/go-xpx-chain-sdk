@@ -140,28 +140,32 @@ type TransactionsPage struct {
 	}
 }
 
-func (t *transactionsPageDTO) toStruct() (*TransactionsPage, error) {
+func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage, error) {
 	var wg sync.WaitGroup
 	page := &TransactionsPage{}
-	page.Transactions = make([]Transaction, 0)
 
 	page.Pagination.TotalEntries = t.Pagination.TotalEntries
 	page.Pagination.PageNumber = t.Pagination.PageNumber
 	page.Pagination.PageSize = t.Pagination.PageSize
 	page.Pagination.TotalPages = t.Pagination.TotalPages
 
-	txs := make([]Transaction, len(t.Tranactions))
+	page.Transactions = make([]Transaction, len(t.Tranactions))
 	errs := make([]error, len(t.Tranactions))
 	for i, t := range t.Tranactions {
 		wg.Add(1)
 		go func(i int, t jsonLib.RawMessage) {
 			defer wg.Done()
-			txs[i], errs[i] = MapTransaction(bytes.NewBuffer([]byte(t)), generationHash)
+			page.Transactions[i], errs[i] = MapTransaction(bytes.NewBuffer([]byte(t)), generationHash)
 		}(i, t)
 	}
+
 	wg.Wait()
 
-	page.Transactions = txs
+	for _, err := range errs {
+		if err != nil {
+			return page, err
+		}
+	}
 
 	return page, nil
 }
