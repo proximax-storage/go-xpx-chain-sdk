@@ -118,6 +118,54 @@ type abstractTransactionDTO struct {
 	Signer    string                  `json:"signer"`
 }
 
+type transactionsPageDTO struct {
+	Tranactions []jsonLib.RawMessage `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+type TransactionsPage struct {
+	Transactions []Transaction
+
+	Pagination struct {
+		TotalEntries uint64
+		PageNumber   uint64
+		PageSize     uint64
+		TotalPages   uint64
+	}
+}
+
+func (t *transactionsPageDTO) toStruct() (*TransactionsPage, error) {
+	var wg sync.WaitGroup
+	page := &TransactionsPage{}
+	page.Transactions = make([]Transaction, 0)
+
+	page.Pagination.TotalEntries = t.Pagination.TotalEntries
+	page.Pagination.PageNumber = t.Pagination.PageNumber
+	page.Pagination.PageSize = t.Pagination.PageSize
+	page.Pagination.TotalPages = t.Pagination.TotalPages
+
+	txs := make([]Transaction, len(t.Tranactions))
+	errs := make([]error, len(t.Tranactions))
+	for i, t := range t.Tranactions {
+		wg.Add(1)
+		go func(i int, t jsonLib.RawMessage) {
+			defer wg.Done()
+			txs[i], errs[i] = MapTransaction(bytes.NewBuffer([]byte(t)), generationHash)
+		}(i, t)
+	}
+	wg.Wait()
+
+	page.Transactions = txs
+
+	return page, nil
+}
+
 func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTransaction, error) {
 	nt := ExtractNetworkType(dto.Version)
 
