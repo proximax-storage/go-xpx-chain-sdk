@@ -18,13 +18,11 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
-// returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
-	var b bytes.Buffer
+// returns confirmed Transactions
+func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context) (*TransactionsPage, error) {
+	tspDTO := &transactionsPageDTO{}
 
-	url := net.NewUrl(fmt.Sprintf(transactionRoute, id))
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, confirmedTransactionsRoute, nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +31,39 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 		return nil, err
 	}
 
-	return MapTransaction(&b, txs.client.GenerationHash())
+	return tspDTO.toStruct(txs.client.GenerationHash())
+}
+
+// returns unconfirmed Transactions
+func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context) (*TransactionsPage, error) {
+	tspDTO := &transactionsPageDTO{}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, unconfirmedTransactionsRoute, nil, &tspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return tspDTO.toStruct(txs.client.GenerationHash())
+}
+
+// returns partial Transactions
+func (txs *TransactionService) GetPartialTransactions(ctx context.Context) (*TransactionsPage, error) {
+	tspDTO := &transactionsPageDTO{}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, partialTransactionsRoute, nil, &tspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return tspDTO.toStruct(txs.client.GenerationHash())
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
@@ -156,17 +186,17 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 	return m.Message, nil
 }
 
-// Gets a transaction's effective paid fee
-func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetTransaction(ctx, transactionId)
-	if err != nil {
-		return -1, err
-	}
+// // Gets a transaction's effective paid fee
+// func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
+// 	tx, err := txs.GetTransaction(ctx, transactionId)
+// 	if err != nil {
+// 		return -1, err
+// 	}
 
-	block, err := txs.BlockchainService.GetBlockByHeight(ctx, tx.GetAbstractTransaction().Height)
-	if err != nil {
-		return -1, err
-	}
+// 	block, err := txs.BlockchainService.GetBlockByHeight(ctx, tx.GetAbstractTransaction().Height)
+// 	if err != nil {
+// 		return -1, err
+// 	}
 
-	return int(block.FeeMultiplier) * tx.Size(), nil
-}
+// 	return int(block.FeeMultiplier) * tx.Size(), nil
+// }
