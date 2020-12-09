@@ -174,7 +174,7 @@ var (
 
 func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf("/transaction/%s", transactionId),
+		Path:     fmt.Sprintf("/transactions/%s", transactionId),
 		RespBody: transactionJson,
 	})
 
