@@ -140,6 +140,11 @@ type TransactionsPage struct {
 	}
 }
 
+type PaginationProperties struct {
+	PageNumber uint64
+	PageSize   uint64
+}
+
 func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage, error) {
 	var wg sync.WaitGroup
 	page := &TransactionsPage{}
