@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/proximax-storage/go-xpx-utils/net"
 )
@@ -19,10 +20,21 @@ type TransactionService struct {
 }
 
 // returns confirmed Transactions
-func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context) (*TransactionsPage, error) {
+func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, confirmedTransactionsRoute, nil, &tspDTO)
+	if nil == pgProps {
+		pgProps = &PaginationProperties{
+			PageNumber: 0,
+			PageSize:   0,
+		}
+	}
+
+	url := net.NewUrl(confirmedTransactionsRoute)
+	url.AddParam("PageNumber", strconv.FormatUint(pgProps.PageNumber, 10))
+	url.AddParam("PageSize", strconv.FormatUint(pgProps.PageSize, 10))
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +47,21 @@ func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context) (*T
 }
 
 // returns unconfirmed Transactions
-func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context) (*TransactionsPage, error) {
+func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, unconfirmedTransactionsRoute, nil, &tspDTO)
+	if nil == pgProps {
+		pgProps = &PaginationProperties{
+			PageNumber: 0,
+			PageSize:   0,
+		}
+	}
+
+	url := net.NewUrl(unconfirmedTransactionsRoute)
+	url.AddParam("PageNumber", strconv.FormatUint(pgProps.PageNumber, 10))
+	url.AddParam("PageSize", strconv.FormatUint(pgProps.PageSize, 10))
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +74,21 @@ func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context) (
 }
 
 // returns partial Transactions
-func (txs *TransactionService) GetPartialTransactions(ctx context.Context) (*TransactionsPage, error) {
+func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, partialTransactionsRoute, nil, &tspDTO)
+	if nil == pgProps {
+		pgProps = &PaginationProperties{
+			PageNumber: 0,
+			PageSize:   0,
+		}
+	}
+
+	url := net.NewUrl(partialTransactionsRoute)
+	url.AddParam("PageNumber", strconv.FormatUint(pgProps.PageNumber, 10))
+	url.AddParam("PageSize", strconv.FormatUint(pgProps.PageSize, 10))
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
