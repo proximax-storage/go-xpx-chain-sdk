@@ -19,6 +19,22 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
+// returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
+	trS, err := txs.GetTransactionStatus(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if trS.Group == Confirmed.String() {
+		return txs.GetConfirmedTransaction(ctx, id)
+	} else if trS.Group == Unconfirmed.String() {
+		return txs.GetUnconfirmedTransaction(ctx, id)
+	} else {
+		return txs.GetPartialTransaction(ctx, id)
+	}
+}
+
 // returns confirmed Transaction by id or hash
 func (txs *TransactionService) GetConfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
 	var b bytes.Buffer
@@ -258,7 +274,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusSingularRoute, id), nil, ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusSingularRoute, id), nil, &ts)
 	if err != nil {
 		return nil, err
 	}
@@ -325,17 +341,17 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 	return m.Message, nil
 }
 
-// // Gets a transaction's effective paid fee
-// func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-// 	tx, err := txs.GetTransaction(ctx, transactionId)
-// 	if err != nil {
-// 		return -1, err
-// 	}
+// Gets a transaction's effective paid fee
+func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
+	tx, err := txs.GetTransaction(ctx, transactionId)
+	if err != nil {
+		return -1, err
+	}
 
-// 	block, err := txs.BlockchainService.GetBlockByHeight(ctx, tx.GetAbstractTransaction().Height)
-// 	if err != nil {
-// 		return -1, err
-// 	}
+	block, err := txs.BlockchainService.GetBlockByHeight(ctx, tx.GetAbstractTransaction().Height)
+	if err != nil {
+		return -1, err
+	}
 
-// 	return int(block.FeeMultiplier) * tx.Size(), nil
-// }
+	return int(block.FeeMultiplier) * tx.Size(), nil
+}
