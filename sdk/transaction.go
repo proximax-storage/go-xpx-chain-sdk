@@ -19,6 +19,22 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
+// returns confirmed Transaction by id or hash
+func (txs *TransactionService) GetConfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
+	var b bytes.Buffer
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(confirmedTransactionRoute, id), nil, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransaction(&b, txs.client.GenerationHash())
+}
+
 // returns confirmed Transactions
 func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
@@ -65,6 +81,22 @@ func (txs *TransactionService) GetConfirmedTransactionsByIds(ctx context.Context
 	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
+// returns unconfirmed Transaction by id or hash
+func (txs *TransactionService) GetUnconfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
+	var b bytes.Buffer
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(unconfirmedTransactionRoute, id), nil, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransaction(&b, txs.client.GenerationHash())
+}
+
 // returns unconfirmed Transactions
 func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
@@ -109,6 +141,22 @@ func (txs *TransactionService) GetUnconfirmedTransactionsByIds(ctx context.Conte
 	}
 
 	return MapTransactions(&b, txs.client.GenerationHash())
+}
+
+// returns partial Transaction by id or hash
+func (txs *TransactionService) GetPartialTransaction(ctx context.Context, id string) (Transaction, error) {
+	var b bytes.Buffer
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(partialTransactionRoute, id), nil, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransaction(&b, txs.client.GenerationHash())
 }
 
 // returns partial Transactions
