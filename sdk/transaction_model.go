@@ -14,9 +14,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/google/flatbuffers/go"
-	"github.com/proximax-storage/go-xpx-crypto"
-	"github.com/proximax-storage/go-xpx-utils"
+	flatbuffers "github.com/google/flatbuffers/go"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
+	utils "github.com/proximax-storage/go-xpx-utils"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
@@ -3425,6 +3425,18 @@ const (
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 )
+
+type TransactionGroup uint8
+
+const (
+	Confirmed   TransactionGroup = 0
+	Unconfirmed TransactionGroup = 1
+	Partial     TransactionGroup = 2
+)
+
+func (tG TransactionGroup) String() string {
+	return [...]string{"confirmed", "unconfirmed", "partial"}[tG]
+}
 
 type EntityType uint16
 
