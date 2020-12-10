@@ -46,6 +46,25 @@ func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgP
 	return tspDTO.toStruct(txs.client.GenerationHash())
 }
 
+// returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetConfirmedTransactionsByIds(ctx context.Context, ids []string) ([]Transaction, error) {
+	var b bytes.Buffer
+	txIds := &TransactionIdsDTO{
+		ids,
+	}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, confirmedTransactionsRoute, txIds, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransactions(&b, txs.client.GenerationHash())
+}
+
 // returns unconfirmed Transactions
 func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
@@ -73,6 +92,25 @@ func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, p
 	return tspDTO.toStruct(txs.client.GenerationHash())
 }
 
+// returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetUnconfirmedTransactionsByIds(ctx context.Context, ids []string) ([]Transaction, error) {
+	var b bytes.Buffer
+	txIds := &TransactionIdsDTO{
+		ids,
+	}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, unconfirmedTransactionsRoute, txIds, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransactions(&b, txs.client.GenerationHash())
+}
+
 // returns partial Transactions
 func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgProps *PaginationProperties) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
@@ -98,6 +136,25 @@ func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgPro
 	}
 
 	return tspDTO.toStruct(txs.client.GenerationHash())
+}
+
+// returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetPartialTransactionsByIds(ctx context.Context, ids []string) ([]Transaction, error) {
+	var b bytes.Buffer
+	txIds := &TransactionIdsDTO{
+		ids,
+	}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, partialTransactionsRoute, txIds, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
