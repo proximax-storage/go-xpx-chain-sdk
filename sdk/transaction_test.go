@@ -104,6 +104,69 @@ const statusJson = `{
 	"height": [1, 0]
 }`
 
+const confirmedTransactionsJson = `
+{
+	"data": [
+		{
+			"meta":{
+				"height":[42, 0],
+				"hash":"45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1",
+				"merkleComponentHash":"45AC1259DABD7163B2816232773E66FC00342BB8DD5C965D4B784CD575FDFAF1",
+				"index":0,
+				"id":"5B686E97F0C0EA00017B9437"
+			},
+			"transaction":{
+				"signature":"ADF80CBC864B65A8D94205E9EC6640FA4AE0E3011B27F8A93D93761E454A9853BF0AB1ECB3DF62E1D2D267D3F1913FAB0E2225CE5EA3937790B78FFA1288870C",
+				"signer":"27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9",
+				"version":-1879048189,
+				"type":16724,
+				"maxFee":[
+				1,
+				0
+				],
+				"deadline":[
+				1094650402,
+				17
+				],
+				"recipient":"90534434E016CAA132AB5EAC70C0AF7DF043B990C789A93EB1",
+				"message":{
+				"type":0,
+				"payload":""
+				},
+				"mosaics":[
+				{
+					"id":[
+						3646934825,
+						3576016193
+					],
+					"amount":[
+						10000000,
+						0
+					]
+				}
+				]
+			}
+		}
+	],
+	"pagination": {
+		"totalEntries": 1,
+		"pageNumber": 1,
+		"pageSize": 20,
+		"totalPages": 1
+	}
+}
+`
+
+var confirmedTransactions = &TransactionsPage{
+	Transactions: []Transaction{transaction},
+	Pagination: Pagination{
+		TotalEntries: 1,
+		PageNumber:   1,
+		PageSize:     20,
+		TotalPages:   1,
+	},
+}
+
 var (
 	aggregateTransactionSerializationCorr = []byte{0xd5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3, 0x0, 0x0, 0x90, 0x41, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xba, 0xfd, 0x56, 0x0, 0x0, 0x0, 0x0, 0x57, 0x0, 0x0, 0x0, 0x57, 0x0, 0x0, 0x0, 0x84, 0x6b, 0x44, 0x39, 0x15, 0x45, 0x79, 0xa5, 0x90, 0x3b, 0x14, 0x59, 0xc9, 0xcf, 0x69, 0xcb, 0x81, 0x53, 0xf6, 0xd0, 0x11, 0xa, 0x7a, 0xe, 0xd6, 0x1d, 0xe2, 0x9a, 0xe4, 0x81, 0xb, 0xf2, 0x3, 0x0, 0x0, 0x90, 0x54, 0x41, 0x90, 0x50, 0xb9, 0x83, 0x7e, 0xfa, 0xb4, 0xbb, 0xe8, 0xa4, 0xb9, 0xbb, 0x32, 0xd8, 0x12, 0xf9, 0x88, 0x5c, 0x0, 0xd8, 0xfc, 0x16, 0x50, 0xe1, 0x42, 0x1, 0x0, 0x1, 0x0, 0x29, 0xcf, 0x5f, 0xd9, 0x41, 0xad, 0x25, 0xd5, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0}
 
@@ -190,6 +253,60 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 	assert.Nilf(t, err, "TransactionService.GetTransaction returned error: %v", err)
 
 	tests.ValidateStringers(t, transaction, tx)
+}
+
+func TestTransactionService_GetConfirmedTransaction_TransferTransaction(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf("/transactions/confirmed/%s", transactionId),
+		RespBody: transactionJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	tx, err := cl.Transaction.GetConfirmedTransaction(context.Background(), transactionId)
+
+	assert.Nilf(t, err, "TransactionService.GetConfirmedTransaction returned error: %v", err)
+
+	tests.ValidateStringers(t, transaction, tx)
+}
+
+func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/confirmed",
+		RespBody: confirmedTransactionsJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetConfirmedTransactions(context.Background(), nil)
+
+	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactions returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs.Transactions))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs.Transactions[0])
+
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageSize, txs.Pagination.PageSize)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalEntries, txs.Pagination.TotalEntries)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageNumber, txs.Pagination.PageNumber)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalPages, txs.Pagination.TotalPages)
+}
+
+func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/confirmed",
+		RespBody: "[" + transactionJson + "]",
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetConfirmedTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()})
+
+	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactionsByIds returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs[0])
 }
 
 func TestTransactionService_GetTransactions(t *testing.T) {
