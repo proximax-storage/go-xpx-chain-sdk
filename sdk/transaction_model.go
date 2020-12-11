@@ -129,15 +129,16 @@ type transactionsPageDTO struct {
 	} `json:"pagination"`
 }
 
+type Pagination struct {
+	TotalEntries uint64
+	PageNumber   uint64
+	PageSize     uint64
+	TotalPages   uint64
+}
+
 type TransactionsPage struct {
 	Transactions []Transaction
-
-	Pagination struct {
-		TotalEntries uint64
-		PageNumber   uint64
-		PageSize     uint64
-		TotalPages   uint64
-	}
+	Pagination   Pagination
 }
 
 type PaginationProperties struct {
@@ -147,14 +148,16 @@ type PaginationProperties struct {
 
 func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage, error) {
 	var wg sync.WaitGroup
-	page := &TransactionsPage{}
+	page := &TransactionsPage{
+		Transactions: make([]Transaction, len(t.Tranactions)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
 
-	page.Pagination.TotalEntries = t.Pagination.TotalEntries
-	page.Pagination.PageNumber = t.Pagination.PageNumber
-	page.Pagination.PageSize = t.Pagination.PageSize
-	page.Pagination.TotalPages = t.Pagination.TotalPages
-
-	page.Transactions = make([]Transaction, len(t.Tranactions))
 	errs := make([]error, len(t.Tranactions))
 	for i, t := range t.Tranactions {
 		wg.Add(1)
