@@ -438,7 +438,7 @@ func TestTransactionService_GetTransactions(t *testing.T) {
 
 func TestTransactionService_GetTransactionStatus(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     "/transactionStatus/7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F/",
+		Path:     "/transactionStatus/7D354E056A10E7ADAC66741D1021B0E79A57998EAD7E17198821141CE87CF63F",
 		RespBody: statusJson,
 	})
 
@@ -451,17 +451,17 @@ func TestTransactionService_GetTransactionStatus(t *testing.T) {
 	tests.ValidateStringers(t, status, txStatus)
 }
 
-func TestTransactionService_GetTransactionStatuses(t *testing.T) {
+func TestTransactionService_GetTransactionsStatuses(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     "/transaction/statuses",
+		Path:     "/transactionStatus",
 		RespBody: "[" + statusJson + "]",
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txStatuses, err := cl.Transaction.GetTransactionStatuses(context.Background(), []string{transactionHash})
+	txStatuses, err := cl.Transaction.GetTransactionsStatuses(context.Background(), []string{transactionHash})
 
-	assert.Nilf(t, err, "TransactionService.GetTransactionStatuses returned error: %v", err)
+	assert.Nilf(t, err, "TransactionService.GetTransactionsStatuses returned error: %v", err)
 
 	for _, txStatus := range txStatuses {
 		tests.ValidateStringers(t, status, txStatus)
