@@ -256,6 +256,12 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 }
 
 func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
+
+	// It is needed, because we have the same routs with
+	// different types of request (Example: /transactions/confirmed GET, POST etc.)
+	mockServer.Close()
+	mockServer = newSdkMock(5 * time.Minute)
+
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf("/transactions/confirmed/%s", transactionId),
 		RespBody: transactionJson,
@@ -293,6 +299,12 @@ func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
 }
 
 func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
+
+	// It is needed, because we have the same routs with
+	// different types of request (Example: /transactions/confirmed GET, POST etc.)
+	mockServer.Close()
+	mockServer = newSdkMock(5 * time.Minute)
+
 	mockServer.AddRouter(&mock.Router{
 		Path:     "/transactions/confirmed",
 		RespBody: "[" + transactionJson + "]",
@@ -347,6 +359,12 @@ func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
 }
 
 func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
+
+	// It is needed, because we have the same routs with
+	// different types of request (Example: /transactions/confirmed GET, POST etc.)
+	mockServer.Close()
+	mockServer = newSdkMock(5 * time.Minute)
+
 	mockServer.AddRouter(&mock.Router{
 		Path:     "/transactions/unconfirmed",
 		RespBody: "[" + transactionJson + "]",
@@ -401,6 +419,12 @@ func TestTransactionService_GetPartialTransactions(t *testing.T) {
 }
 
 func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
+
+	// It is needed, because we have the same routs with
+	// different types of request (Example: /transactions/confirmed GET, POST etc.)
+	mockServer.Close()
+	mockServer = newSdkMock(5 * time.Minute)
+
 	mockServer.AddRouter(&mock.Router{
 		Path:     "/transactions/partial",
 		RespBody: "[" + transactionJson + "]",
