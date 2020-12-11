@@ -255,7 +255,7 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 	tests.ValidateStringers(t, transaction, tx)
 }
 
-func TestTransactionService_GetConfirmedTransaction_TransferTransaction(t *testing.T) {
+func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf("/transactions/confirmed/%s", transactionId),
 		RespBody: transactionJson,
@@ -303,6 +303,114 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 	txs, err := cl.Transaction.GetConfirmedTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()})
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactionsByIds returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs[0])
+}
+
+func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf("/transactions/unconfirmed/%s", transactionId),
+		RespBody: transactionJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	tx, err := cl.Transaction.GetUnconfirmedTransaction(context.Background(), transactionId)
+
+	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransaction returned error: %v", err)
+
+	tests.ValidateStringers(t, transaction, tx)
+}
+
+func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/unconfirmed",
+		RespBody: confirmedTransactionsJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetUnconfirmedTransactions(context.Background(), nil)
+
+	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactions returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs.Transactions))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs.Transactions[0])
+
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageSize, txs.Pagination.PageSize)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalEntries, txs.Pagination.TotalEntries)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageNumber, txs.Pagination.PageNumber)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalPages, txs.Pagination.TotalPages)
+}
+
+func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/unconfirmed",
+		RespBody: "[" + transactionJson + "]",
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetUnconfirmedTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()})
+
+	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactionsByIds returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs[0])
+}
+
+func TestTransactionService_GetPartialTransaction(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf("/transactions/partial/%s", transactionId),
+		RespBody: transactionJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	tx, err := cl.Transaction.GetPartialTransaction(context.Background(), transactionId)
+
+	assert.Nilf(t, err, "TransactionService.GetPartialTransaction returned error: %v", err)
+
+	tests.ValidateStringers(t, transaction, tx)
+}
+
+func TestTransactionService_GetPartialTransactions(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/partial",
+		RespBody: confirmedTransactionsJson,
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetPartialTransactions(context.Background(), nil)
+
+	assert.Nilf(t, err, "TransactionService.GetPartialTransactions returned error: %v", err)
+
+	tests.AssertEqual(t, 1, len(txs.Transactions))
+
+	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs.Transactions[0])
+
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageSize, txs.Pagination.PageSize)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalEntries, txs.Pagination.TotalEntries)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.PageNumber, txs.Pagination.PageNumber)
+	tests.AssertEqual(t, confirmedTransactions.Pagination.TotalPages, txs.Pagination.TotalPages)
+}
+
+func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/transactions/partial",
+		RespBody: "[" + transactionJson + "]",
+	})
+
+	cl := mockServer.getPublicTestClientUnsafe()
+
+	txs, err := cl.Transaction.GetPartialTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()})
+
+	assert.Nilf(t, err, "TransactionService.GetPartialTransactionsByIds returned error: %v", err)
 
 	tests.AssertEqual(t, 1, len(txs))
 
