@@ -305,25 +305,6 @@ func (txs *TransactionService) GetTransactionsStatuses(ctx context.Context, hash
 	return dtos.toStruct()
 }
 
-// returns an array of TransactionStatus's for passed transaction ids or hashes
-func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
-	txIds := &TransactionHashesDTO{
-		hashes,
-	}
-
-	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionStatusesRoute, txIds, &dtos)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-		return nil, err
-	}
-
-	return dtos.toStruct()
-}
-
 func (txs *TransactionService) announceTransaction(ctx context.Context, tx interface{}, path string) (string, error) {
 	m := struct {
 		Message string `json:"message"`
