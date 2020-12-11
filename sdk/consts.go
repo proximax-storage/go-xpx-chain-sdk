@@ -136,7 +136,6 @@ const (
 	unconfirmedTransactionRoute       = "/transactions/unconfirmed/%s"
 	partialTransactionsRoute          = "/transactions/partial"
 	partialTransactionRoute           = "/transactions/partial/%s"
-	transactionStatusesRoute          = "/transaction/statuses"
 	announceAggregateRoute            = "/transaction/partial"
 	announceAggregateCosignatureRoute = "/transaction/cosignature"
 )
