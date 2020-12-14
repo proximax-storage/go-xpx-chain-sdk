@@ -248,7 +248,7 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 		tx.Payload,
 		tx.Hash.String(),
 	}
-	return txs.announceTransaction(ctx, &dto, announceAggregateRoute)
+	return txs.announceTransaction(ctx, &dto, partialTransactionsRoute)
 }
 
 // returns transaction hash after announcing passed CosignatureSignedTransaction
