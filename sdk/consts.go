@@ -137,8 +137,7 @@ const (
 	unconfirmedTransactionRoute       = "/transactions/unconfirmed/%s"
 	partialTransactionsRoute          = "/transactions/partial"
 	partialTransactionRoute           = "/transactions/partial/%s"
-	announceAggregateRoute            = "/transaction/partial"
-	announceAggregateCosignatureRoute = "/transaction/cosignature"
+	announceAggregateCosignatureRoute = "/transactions/cosignature"
 )
 
 type NamespaceType uint8
