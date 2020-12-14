@@ -105,6 +105,7 @@ const (
 
 // routes for StorageService
 const (
+	drivesRoute               = "/drives"
 	driveRoute                = "/drive/%s"
 	drivesOfAccountRoute      = "/account/%s/drive%s"
 	downloadInfoRoute         = "/downloads/%s"
