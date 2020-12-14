@@ -129,23 +129,6 @@ type transactionsPageDTO struct {
 	} `json:"pagination"`
 }
 
-type Pagination struct {
-	TotalEntries uint64
-	PageNumber   uint64
-	PageSize     uint64
-	TotalPages   uint64
-}
-
-type TransactionsPage struct {
-	Transactions []Transaction
-	Pagination   Pagination
-}
-
-type PaginationProperties struct {
-	PageNumber uint64
-	PageSize   uint64
-}
-
 func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage, error) {
 	var wg sync.WaitGroup
 	page := &TransactionsPage{
@@ -176,6 +159,23 @@ func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage,
 	}
 
 	return page, nil
+}
+
+type Pagination struct {
+	TotalEntries uint64
+	PageNumber   uint64
+	PageSize     uint64
+	TotalPages   uint64
+}
+
+type TransactionsPage struct {
+	Transactions []Transaction
+	Pagination   Pagination
+}
+
+type PaginationProperties struct {
+	PageNumber uint64
+	PageSize   uint64
 }
 
 func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTransaction, error) {
