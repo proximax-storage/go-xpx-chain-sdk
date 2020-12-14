@@ -173,9 +173,10 @@ type TransactionsPage struct {
 	Pagination   Pagination
 }
 
-type PaginationProperties struct {
+type PaginationOptions struct {
 	PageNumber uint64
 	PageSize   uint64
+	Offset     uint64
 }
 
 func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTransaction, error) {
