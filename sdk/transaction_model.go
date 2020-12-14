@@ -173,6 +173,17 @@ type TransactionsPage struct {
 	Pagination   Pagination
 }
 
+type TransactionFilters struct {
+	Height           uint
+	FromHeight       uint64
+	ToHeight         uint64
+	Address          string
+	SignerPublicKey  string
+	RecipientAddress string
+	Type             []uint
+	Embedded         bool
+}
+
 type PaginationOptions struct {
 	PageNumber uint64
 	PageSize   uint64
