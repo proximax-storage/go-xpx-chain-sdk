@@ -5,7 +5,10 @@
 package sdk
 
 import (
+	"bytes"
+	jsonLib "encoding/json"
 	"fmt"
+	"sync"
 )
 
 type DriveState uint8
@@ -135,6 +138,105 @@ func (drive *Drive) String() string {
 		drive.Replicators,
 		drive.UploadPayments,
 	)
+}
+
+type drivesPageDTO struct {
+	Drives []jsonLib.RawMessage `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *drivesPageDTO) toStruct(networkType NetworkType) (*DrivesPage, error) {
+	var wg sync.WaitGroup
+	page := &DrivesPage{
+		Drives: make([]Drive, len(t.Drives)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	errs := make([]error, len(t.Drives))
+	for i, t := range t.Drives {
+		wg.Add(1)
+		go func(i int, t jsonLib.RawMessage) {
+			defer wg.Done()
+			currDr, currErr := MapDrive(bytes.NewBuffer([]byte(t)), networkType)
+			page.Drives[i], errs[i] = *currDr, currErr
+		}(i, t)
+	}
+
+	wg.Wait()
+
+	for _, err := range errs {
+		if err != nil {
+			return page, err
+		}
+	}
+
+	return page, nil
+}
+
+func MapDrive(b *bytes.Buffer, networkType NetworkType) (*Drive, error) {
+	dtoD := driveDTO{}
+
+	err := json.Unmarshal(b.Bytes(), &dtoD)
+	if err != nil {
+		return nil, err
+	}
+
+	d, err := dtoD.toStruct(networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return d, nil
+}
+
+type DrivesPage struct {
+	Drives     []Drive
+	Pagination Pagination
+}
+
+type DriveFilters struct {
+	Start     uint64
+	StartType DriveStartValueType
+	States    []uint32
+}
+
+type DriveSortOptions struct {
+	SortField string
+	Direction DriveSortDirection
+}
+
+type DriveSortDirection uint8
+
+const (
+	ASC  DriveSortDirection = 0
+	DESC DriveSortDirection = 1
+)
+
+func (sD DriveSortDirection) String() string {
+	return [...]string{"asc", "desc"}[sD]
+}
+
+type DriveStartValueType uint8
+
+const (
+	Start     DriveStartValueType = 0
+	FromStart DriveStartValueType = 1
+	ToStart   DriveStartValueType = 2
+)
+
+func (vT DriveStartValueType) String() string {
+	return [...]string{"start", "fromStart", "toStart"}[vT]
 }
 
 // Prepare Drive Transaction
