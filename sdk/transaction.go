@@ -52,7 +52,7 @@ func (txs *TransactionService) GetConfirmedTransaction(ctx context.Context, id s
 }
 
 // returns confirmed Transactions
-func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions) (*TransactionsPage, error) {
+func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
 	url := net.NewUrl(confirmedTransactionsRoute)
@@ -61,6 +61,20 @@ func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgO
 		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
 		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
 		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	}
+
+	if tFlts != nil {
+		url.AddParam("height", fmt.Sprint(tFlts.Height))
+		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
+		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
+		url.AddParam("address", tFlts.Address)
+		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
+		url.AddParam("recipientAddress", tFlts.RecipientAddress)
+		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
+
+		for _, t := range tFlts.Type {
+			url.AddParam("type", fmt.Sprint(t))
+		}
 	}
 
 	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
@@ -111,7 +125,7 @@ func (txs *TransactionService) GetUnconfirmedTransaction(ctx context.Context, id
 }
 
 // returns unconfirmed Transactions
-func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions) (*TransactionsPage, error) {
+func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
 	url := net.NewUrl(unconfirmedTransactionsRoute)
@@ -120,6 +134,20 @@ func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, p
 		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
 		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
 		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	}
+
+	if tFlts != nil {
+		url.AddParam("height", fmt.Sprint(tFlts.Height))
+		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
+		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
+		url.AddParam("address", tFlts.Address)
+		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
+		url.AddParam("recipientAddress", tFlts.RecipientAddress)
+		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
+
+		for _, t := range tFlts.Type {
+			url.AddParam("type", fmt.Sprint(t))
+		}
 	}
 
 	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
@@ -170,7 +198,7 @@ func (txs *TransactionService) GetPartialTransaction(ctx context.Context, id str
 }
 
 // returns partial Transactions
-func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgOpts *PaginationOptions) (*TransactionsPage, error) {
+func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
 	url := net.NewUrl(partialTransactionsRoute)
@@ -179,6 +207,20 @@ func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgOpt
 		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
 		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
 		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	}
+
+	if tFlts != nil {
+		url.AddParam("height", fmt.Sprint(tFlts.Height))
+		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
+		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
+		url.AddParam("address", tFlts.Address)
+		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
+		url.AddParam("recipientAddress", tFlts.RecipientAddress)
+		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
+
+		for _, t := range tFlts.Type {
+			url.AddParam("type", fmt.Sprint(t))
+		}
 	}
 
 	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
