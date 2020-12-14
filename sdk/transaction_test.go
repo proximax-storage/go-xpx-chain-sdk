@@ -284,7 +284,7 @@ func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetConfirmedTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetConfirmedTransactions(context.Background(), nil, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactions returned error: %v", err)
 
@@ -344,7 +344,7 @@ func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetUnconfirmedTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetUnconfirmedTransactions(context.Background(), nil, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactions returned error: %v", err)
 
@@ -404,7 +404,7 @@ func TestTransactionService_GetPartialTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetPartialTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetPartialTransactions(context.Background(), nil, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransactions returned error: %v", err)
 
