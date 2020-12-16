@@ -205,7 +205,7 @@ func TestStorageService_GetDrives(t *testing.T) {
 
 	defer mock.Close()
 
-	drives, err := exchangeClient.GetDrives(ctx, nil, nil, nil)
+	drives, err := exchangeClient.GetDrives(ctx, nil)
 	assert.Nil(t, err)
 	assert.NotNil(t, drives)
 	assert.Equal(t, testDrivesPage, drives)
