@@ -9,9 +9,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
-
-	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type TransactionService struct {
@@ -52,32 +49,15 @@ func (txs *TransactionService) GetConfirmedTransaction(ctx context.Context, id s
 }
 
 // returns confirmed Transactions
-func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
+func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	url := net.NewUrl(confirmedTransactionsRoute)
-
-	if pgOpts != nil {
-		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
-		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
-		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	u, err := addOptions(confirmedTransactionsRoute, tpOpts)
+	if err != nil {
+		return nil, err
 	}
 
-	if tFlts != nil {
-		url.AddParam("height", fmt.Sprint(tFlts.Height))
-		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
-		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
-		url.AddParam("address", tFlts.Address)
-		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
-		url.AddParam("recipientAddress", tFlts.RecipientAddress)
-		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
-
-		for _, t := range tFlts.Type {
-			url.AddParam("type", fmt.Sprint(t))
-		}
-	}
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +92,7 @@ func (txs *TransactionService) GetConfirmedTransactionsByIds(ctx context.Context
 func (txs *TransactionService) GetUnconfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
 	var b bytes.Buffer
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(unconfirmedTransactionRoute, id), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(unconfirmedSingularTransactionRoute, id), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -125,32 +105,15 @@ func (txs *TransactionService) GetUnconfirmedTransaction(ctx context.Context, id
 }
 
 // returns unconfirmed Transactions
-func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
+func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	url := net.NewUrl(unconfirmedTransactionsRoute)
-
-	if pgOpts != nil {
-		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
-		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
-		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	u, err := addOptions(unconfirmedTransactionsRoute, tpOpts)
+	if err != nil {
+		return nil, err
 	}
 
-	if tFlts != nil {
-		url.AddParam("height", fmt.Sprint(tFlts.Height))
-		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
-		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
-		url.AddParam("address", tFlts.Address)
-		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
-		url.AddParam("recipientAddress", tFlts.RecipientAddress)
-		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
-
-		for _, t := range tFlts.Type {
-			url.AddParam("type", fmt.Sprint(t))
-		}
-	}
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -198,32 +161,15 @@ func (txs *TransactionService) GetPartialTransaction(ctx context.Context, id str
 }
 
 // returns partial Transactions
-func (txs *TransactionService) GetPartialTransactions(ctx context.Context, pgOpts *PaginationOptions, tFlts *TransactionFilters) (*TransactionsPage, error) {
+func (txs *TransactionService) GetPartialTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	url := net.NewUrl(partialTransactionsRoute)
-
-	if pgOpts != nil {
-		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
-		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
-		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
+	u, err := addOptions(partialTransactionsRoute, tpOpts)
+	if err != nil {
+		return nil, err
 	}
 
-	if tFlts != nil {
-		url.AddParam("height", fmt.Sprint(tFlts.Height))
-		url.AddParam("fromHeight", strconv.FormatUint(tFlts.FromHeight, 10))
-		url.AddParam("toHeight", strconv.FormatUint(tFlts.ToHeight, 10))
-		url.AddParam("address", tFlts.Address)
-		url.AddParam("signerPublicKey", tFlts.SignerPublicKey)
-		url.AddParam("recipientAddress", tFlts.RecipientAddress)
-		url.AddParam("embedded", strconv.FormatBool(tFlts.Embedded))
-
-		for _, t := range tFlts.Type {
-			url.AddParam("type", fmt.Sprint(t))
-		}
-	}
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &tspDTO)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +212,7 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 		return nil, err
 	}
 
-	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err
 	}
 
@@ -331,7 +277,7 @@ func (txs *TransactionService) GetTransactionsStatuses(ctx context.Context, hash
 		return nil, err
 	}
 
-	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err
 	}
 
