@@ -129,15 +129,16 @@ const (
 
 // routes for TransactionService
 const (
-	transactionsRoute                 = "/transactions"
-	transactionsStatusPluralRoute     = "/transactionStatus"
-	transactionStatusSingularRoute    = "/transactionStatus/%s"
-	confirmedTransactionsRoute        = "/transactions/confirmed"
-	confirmedTransactionRoute         = "/transactions/confirmed/%s"
-	unconfirmedTransactionRoute       = "/transactions/unconfirmed/%s"
-	partialTransactionsRoute          = "/transactions/partial"
-	partialTransactionRoute           = "/transactions/partial/%s"
-	announceAggregateCosignatureRoute = "/transactions/cosignature"
+	transactionsRoute                   = "/transactions"
+	transactionsStatusPluralRoute       = "/transactionStatus"
+	transactionStatusSingularRoute      = "/transactionStatus/%s"
+	confirmedTransactionsRoute          = "/transactions/confirmed"
+	confirmedTransactionRoute           = "/transactions/confirmed/%s"
+	unconfirmedPluralTransactionsRoute  = "/transactions/unconfirmed"
+	unconfirmedSingularTransactionRoute = "/transactions/unconfirmed/%s"
+	partialTransactionsRoute            = "/transactions/partial"
+	partialTransactionRoute             = "/transactions/partial/%s"
+	announceAggregateCosignatureRoute   = "/transactions/cosignature"
 )
 
 type NamespaceType uint8
