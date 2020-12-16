@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-utils/net"
@@ -40,31 +39,17 @@ func (s *StorageService) GetDrive(ctx context.Context, driveKey *PublicAccount) 
 	return dto.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageService) GetDrives(ctx context.Context, srtOpts *DriveSortOptions, pgOpts *PaginationOptions, dFlts *DriveFilters) (*DrivesPage, error) {
+func (s *StorageService) GetDrives(ctx context.Context, dpOpts *DrivesPageOptions) (*DrivesPage, error) {
 	dspDTO := &drivesPageDTO{}
 
-	url := net.NewUrl(drivesRoute)
-
-	if srtOpts != nil {
-		url.AddParam("SortField", srtOpts.SortField)
-		url.AddParam("SortDirection", srtOpts.Direction.String())
+	u, err := addOptions(drivesRoute, dpOpts)
+	if err != nil {
+		return nil, err
 	}
 
-	if pgOpts != nil {
-		url.AddParam("PageNumber", strconv.FormatUint(pgOpts.PageNumber, 10))
-		url.AddParam("PageSize", strconv.FormatUint(pgOpts.PageSize, 10))
-		url.AddParam("Offset", strconv.FormatUint(pgOpts.Offset, 10))
-	}
+	fmt.Println(u)
 
-	if dFlts != nil {
-		url.AddParam(dFlts.StartType.String(), strconv.FormatUint(dFlts.Start, 10))
-
-		for _, s := range dFlts.States {
-			url.AddParam("states", fmt.Sprint(s))
-		}
-	}
-
-	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dspDTO)
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &dspDTO)
 	if err != nil {
 		return nil, err
 	}
