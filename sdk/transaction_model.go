@@ -173,21 +173,16 @@ type TransactionsPage struct {
 	Pagination   Pagination
 }
 
-type TransactionFilters struct {
-	Height           uint
-	FromHeight       uint64
-	ToHeight         uint64
-	Address          string
-	SignerPublicKey  string
-	RecipientAddress string
-	Type             []uint
-	Embedded         bool
-}
-
-type PaginationOptions struct {
-	PageNumber uint64
-	PageSize   uint64
-	Offset     uint64
+type TransactionsPageOptions struct {
+	Height           uint   `url:"Height,omitempty"`
+	FromHeight       uint64 `url:"FromHeight,omitempty"`
+	ToHeight         uint64 `url:"ToHeight,omitempty"`
+	Address          string `url:"Address,omitempty"`
+	SignerPublicKey  string `url:"SignerPublicKey,omitempty"`
+	RecipientAddress string `url:"RecipientAddress,omitempty"`
+	Type             []uint `url:"Type,omitempty"`
+	Embedded         bool   `url:"Embedded,omitempty"`
+	PaginationOrderingOptions
 }
 
 func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTransaction, error) {
