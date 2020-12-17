@@ -47,8 +47,6 @@ func (s *StorageService) GetDrives(ctx context.Context, dpOpts *DrivesPageOption
 		return nil, err
 	}
 
-	fmt.Println(u)
-
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &dspDTO)
 	if err != nil {
 		return nil, err
