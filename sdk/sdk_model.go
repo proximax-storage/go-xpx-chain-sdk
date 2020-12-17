@@ -84,6 +84,30 @@ type AccountTransactionsOption struct {
 	Ordering TransactionOrder `url:"ordering,omitempty"`
 }
 
+type SortOptions struct {
+	SortField string
+	Direction SortDirection
+}
+
+type SortDirection uint8
+
+const (
+	ASC  SortDirection = 0
+	DESC SortDirection = 1
+)
+
+func (sD SortDirection) String() string {
+	return [...]string{"asc", "desc"}[sD]
+}
+
+type PaginationOrderingOptions struct {
+	PageSize      uint64 `url:"pageSize,omitempty"`
+	PageNumber    uint64 `url:"pageNumber,omitempty"`
+	Offset        string `bson:"offset,omitempty"`
+	SortField     string `url:"sortField,omitempty"`
+	SortDirection string `url:"sortDirection,omitempty"`
+}
+
 type baseInt64 int64
 
 func (m baseInt64) String() string {
