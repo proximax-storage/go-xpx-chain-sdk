@@ -338,3 +338,40 @@ func (ref *downloadInfoDTOs) toStruct(networkType NetworkType) ([]*DownloadInfo,
 
 	return drives, nil
 }
+
+type drivesPageDTO struct {
+	Drives []driveDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *drivesPageDTO) toStruct(networkType NetworkType) (*DrivesPage, error) {
+	page := &DrivesPage{
+		Drives: make([]Drive, len(t.Drives)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	errs := make([]error, len(t.Drives))
+	for i, t := range t.Drives {
+		currDr, currErr := t.toStruct(networkType)
+		page.Drives[i], errs[i] = *currDr, currErr
+	}
+
+	for _, err := range errs {
+		if err != nil {
+			return page, err
+		}
+	}
+
+	return page, nil
+}
