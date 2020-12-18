@@ -73,7 +73,7 @@ func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group T
 }
 
 // returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
+func (txs *TransactionService) GetAnyTransactionById(ctx context.Context, id string) (Transaction, error) {
 	trS, err := txs.GetTransactionStatus(ctx, id)
 	if err != nil {
 		return nil, err
@@ -230,7 +230,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 
 // Gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetTransaction(ctx, transactionId)
+	tx, err := txs.GetAnyTransactionById(ctx, transactionId)
 	if err != nil {
 		return -1, err
 	}

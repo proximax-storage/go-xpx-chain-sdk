@@ -235,7 +235,7 @@ var (
 	lockFundsTransactionSigningCorr = "B2000000035A5C7C862177970E59E314B3F76723472EDBB903DBB0D6F03FE91A0C7857AE84E5865642C26571ADCF87501AA74261BBF6BD850CBB868F6FE9D9BF0E46C8011026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010000904841000000000000000000BAFD560000000029CF5FD941AD25D5809698000000000064000000000000008498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"
 )
 
-func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
+func TestTransactionService_GetAnyTransactionById_TransferTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     fmt.Sprintf("%s/%s", transactionStatusRoute, transactionId),
 		RespBody: statusJson,
@@ -248,7 +248,7 @@ func TestTransactionService_GetTransaction_TransferTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetTransaction(context.Background(), transactionId)
+	tx, err := cl.Transaction.GetAnyTransactionById(context.Background(), transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetTransaction returned error: %v", err)
 
