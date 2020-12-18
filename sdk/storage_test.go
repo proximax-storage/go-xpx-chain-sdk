@@ -173,7 +173,7 @@ var (
 
 var (
 	testDrivesPage = &DrivesPage{
-		Drives: []Drive{*testDriveInfo, *testDriveInfo},
+		Drives: []*Drive{testDriveInfo, testDriveInfo},
 	}
 )
 

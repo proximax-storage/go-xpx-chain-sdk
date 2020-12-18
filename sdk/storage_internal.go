@@ -352,7 +352,7 @@ type drivesPageDTO struct {
 
 func (t *drivesPageDTO) toStruct(networkType NetworkType) (*DrivesPage, error) {
 	page := &DrivesPage{
-		Drives: make([]Drive, len(t.Drives)),
+		Drives: make([]*Drive, len(t.Drives)),
 		Pagination: Pagination{
 			TotalEntries: t.Pagination.TotalEntries,
 			PageNumber:   t.Pagination.PageNumber,
@@ -364,7 +364,7 @@ func (t *drivesPageDTO) toStruct(networkType NetworkType) (*DrivesPage, error) {
 	errs := make([]error, len(t.Drives))
 	for i, t := range t.Drives {
 		currDr, currErr := t.toStruct(networkType)
-		page.Drives[i], errs[i] = *currDr, currErr
+		page.Drives[i], errs[i] = currDr, currErr
 	}
 
 	for _, err := range errs {
