@@ -20,7 +20,7 @@ type TransactionService struct {
 func (txs *TransactionService) getTransaction(ctx context.Context, group string, id string) (Transaction, error) {
 	var b bytes.Buffer
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf("%s/%s/%s", transactionsRoute, group, id), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionsByIdRoute, group, id), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (txs *TransactionService) getTransaction(ctx context.Context, group string,
 func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group TransactionGroups, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	u, err := addOptions(fmt.Sprintf("%s/%s", transactionsRoute, group.String()), tpOpts)
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group.String()), tpOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group T
 		ids,
 	}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, fmt.Sprintf("%s/%s", transactionsRoute, group.String()), txIds, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, fmt.Sprintf(transactionsByGroupRoute, group.String()), txIds, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 		tx.Payload,
 		tx.Hash.String(),
 	}
-	return txs.announceTransaction(ctx, &dto, fmt.Sprintf("%s/%s", transactionsRoute, partial.String()))
+	return txs.announceTransaction(ctx, &dto, fmt.Sprintf(transactionsByGroupRoute, partial.String()))
 }
 
 // returns transaction hash after announcing passed CosignatureSignedTransaction
@@ -180,7 +180,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf("%s/%s", transactionStatusRoute, id), nil, &ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusByIdRoute, id), nil, &ts)
 	if err != nil {
 		return nil, err
 	}
