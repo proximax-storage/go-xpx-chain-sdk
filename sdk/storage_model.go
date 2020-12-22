@@ -6,6 +6,8 @@ package sdk
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 )
 
 type DriveState uint8
@@ -138,7 +140,7 @@ func (drive *Drive) String() string {
 }
 
 type DrivesPage struct {
-	Drives     []Drive
+	Drives     []*Drive
 	Pagination Pagination
 }
 
@@ -148,29 +150,27 @@ type DrivesPageOptions struct {
 }
 
 type DrivesPageFilters struct {
-	Start          string         `url:"Start,omitempty"`
-	StartValueType StartValueType `url:"-"`
-	States         []uint32       `url:"States,omitempty"`
+	Start  StartValue `url:""`
+	States []uint32   `url:"States,omitempty"`
 }
 
-func (sV *DrivesPageFilters) MarshalJSON() ([]byte, error) {
-	m, _ := json.Marshal(*sV)
+type StartValue struct {
+	Start          uint64
+	StartValueType StartValueType
+}
 
-	var a interface{}
-	json.Unmarshal(m, &a)
-	b := a.(map[string]interface{})
-
-	if sV.StartValueType == FromStart {
-		b[FromStart.String()] = b[Start.String()]
-		delete(b, Start.String())
-	} else if sV.StartValueType == ToStart {
-		b[ToStart.String()] = b[Start.String()]
-		delete(b, Start.String())
-	} else {
-		return json.Marshal(b)
+func (sV StartValue) EncodeValues(key string, v *url.Values) error {
+	if Start == sV.StartValueType {
+		v.Add(Start.String(), strconv.FormatUint(sV.Start, 10))
+	} else if FromStart == sV.StartValueType {
+		u := uint64DTO(uint64ToArray(sV.Start))
+		v.Add(FromStart.String(), u.toStruct().String())
+	} else if ToStart == sV.StartValueType {
+		u := uint64DTO(uint64ToArray(sV.Start))
+		v.Add(ToStart.String(), u.toStruct().String())
 	}
 
-	return json.Marshal(b)
+	return nil
 }
 
 type StartValueType uint8
