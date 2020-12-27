@@ -137,15 +137,15 @@ const (
 	announceAggregateCosignatureRoute = "/transactions/cosignature"
 )
 
-type TransactionGroups string
+type TransactionGroup string
 
 const (
-	confirmed   TransactionGroups = "confirmed"
-	unconfirmed TransactionGroups = "unconfirmed"
-	partial     TransactionGroups = "partial"
+	confirmed   TransactionGroup = "confirmed"
+	unconfirmed TransactionGroup = "unconfirmed"
+	partial     TransactionGroup = "partial"
 )
 
-func (tG TransactionGroups) String() string {
+func (tG TransactionGroup) String() string {
 	return string(tG)
 }
 

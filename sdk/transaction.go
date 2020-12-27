@@ -33,7 +33,7 @@ func (txs *TransactionService) getTransaction(ctx context.Context, group string,
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group TransactionGroups, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
+func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
 	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group.String()), tpOpts)
@@ -54,7 +54,7 @@ func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group TransactionGroups, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
+func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group TransactionGroup	, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
 		ids,
