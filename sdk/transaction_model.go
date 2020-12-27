@@ -2318,19 +2318,7 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
-)
-
-type TransactionGroup uint8
-
-const (
-	Confirmed TransactionGroup = iota
-	Unconfirmed
-	Partial
-)
-
-func (tG TransactionGroup) String() string {
-	return [...]string{"confirmed", "unconfirmed", "partial"}[tG]
-}
+)	
 
 type EntityType uint16
 
