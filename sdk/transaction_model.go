@@ -2323,9 +2323,9 @@ const (
 type TransactionGroup uint8
 
 const (
-	Confirmed   TransactionGroup = 0
-	Unconfirmed TransactionGroup = 1
-	Partial     TransactionGroup = 2
+	Confirmed TransactionGroup = iota
+	Unconfirmed
+	Partial
 )
 
 func (tG TransactionGroup) String() string {
