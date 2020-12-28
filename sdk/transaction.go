@@ -33,7 +33,7 @@ func (txs *TransactionService) getTransaction(ctx context.Context, group string,
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
+func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
 	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group.String()), tpOpts)
@@ -54,7 +54,7 @@ func (txs *TransactionService) getTransactionsByGroup(ctx context.Context, group
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group TransactionGroup	, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
+func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group TransactionGroup, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
 		ids,
@@ -78,58 +78,18 @@ func (txs *TransactionService) getTransactionsByIds(ctx context.Context, group T
 }
 
 // returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetAnyTransactionById(ctx context.Context, id string) (Transaction, error) {
+func (txs *TransactionService) GetAnyTransactionByGroup(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
+	return txs.getTransaction(ctx, group.String(), id)
+}
+
+// returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string) (Transaction, error) {
 	trS, err := txs.GetTransactionStatus(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return txs.getTransaction(ctx, trS.Group, id)
-}
-
-// returns confirmed Transaction by id or hash
-func (txs *TransactionService) GetConfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
-	return txs.getTransaction(ctx, confirmed.String(), id)
-}
-
-// returns confirmed Transactions
-func (txs *TransactionService) GetConfirmedTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
-	return txs.getTransactionsByGroup(ctx, confirmed, tpOpts)
-}
-
-// returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetConfirmedTransactionsByIds(ctx context.Context, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
-	return txs.getTransactionsByIds(ctx, confirmed, ids, tpOpts)
-}
-
-// returns unconfirmed Transaction by id or hash
-func (txs *TransactionService) GetUnconfirmedTransaction(ctx context.Context, id string) (Transaction, error) {
-	return txs.getTransaction(ctx, unconfirmed.String(), id)
-}
-
-// returns unconfirmed Transactions
-func (txs *TransactionService) GetUnconfirmedTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
-	return txs.getTransactionsByGroup(ctx, unconfirmed, tpOpts)
-}
-
-// returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetUnconfirmedTransactionsByIds(ctx context.Context, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
-	return txs.getTransactionsByIds(ctx, unconfirmed, ids, tpOpts)
-}
-
-// returns partial Transaction by id or hash
-func (txs *TransactionService) GetPartialTransaction(ctx context.Context, id string) (Transaction, error) {
-	return txs.getTransaction(ctx, partial.String(), id)
-}
-
-// returns partial Transactions
-func (txs *TransactionService) GetPartialTransactions(ctx context.Context, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
-	return txs.getTransactionsByGroup(ctx, partial, tpOpts)
-}
-
-// returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetPartialTransactionsByIds(ctx context.Context, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
-	return txs.getTransactionsByIds(ctx, partial, ids, tpOpts)
 }
 
 // returns an array of Transaction's for passed array of transaction ids or hashes
@@ -235,7 +195,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 
 // Gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetAnyTransactionById(ctx, transactionId)
+	tx, err := txs.GetAnyTransaction(ctx, transactionId)
 	if err != nil {
 		return -1, err
 	}
