@@ -248,7 +248,7 @@ func TestTransactionService_GetAnyTransactionById_TransferTransaction(t *testing
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetAnyTransactionById(context.Background(), transactionId)
+	tx, err := cl.Transaction.GetAnyTransaction(context.Background(), transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetTransaction returned error: %v", err)
 
@@ -269,7 +269,7 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetConfirmedTransaction(context.Background(), transactionId)
+	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), confirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransaction returned error: %v", err)
 
@@ -284,7 +284,7 @@ func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetConfirmedTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), confirmed, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactions returned error: %v", err)
 
@@ -312,7 +312,7 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetConfirmedTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), confirmed, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactionsByIds returned error: %v", err)
 
@@ -329,7 +329,7 @@ func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetUnconfirmedTransaction(context.Background(), transactionId)
+	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), unconfirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransaction returned error: %v", err)
 
@@ -344,7 +344,7 @@ func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetUnconfirmedTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), unconfirmed, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactions returned error: %v", err)
 
@@ -372,7 +372,7 @@ func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetUnconfirmedTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), unconfirmed, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactionsByIds returned error: %v", err)
 
@@ -389,7 +389,7 @@ func TestTransactionService_GetPartialTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetPartialTransaction(context.Background(), transactionId)
+	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), partial, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransaction returned error: %v", err)
 
@@ -404,7 +404,7 @@ func TestTransactionService_GetPartialTransactions(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetPartialTransactions(context.Background(), nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), partial, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransactions returned error: %v", err)
 
@@ -432,7 +432,7 @@ func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetPartialTransactionsByIds(context.Background(), []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), partial, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransactionsByIds returned error: %v", err)
 
