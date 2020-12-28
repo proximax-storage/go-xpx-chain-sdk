@@ -32,7 +32,7 @@ func (txs *TransactionService) getTransaction(ctx context.Context, group string,
 	return MapTransaction(&b, txs.client.GenerationHash())
 }
 
-// returns Transaction for passed transaction id or hash
+// GetAnyTransaction returns Transaction for passed transaction id or hash
 func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string) (Transaction, error) {
 	trS, err := txs.GetTransactionStatus(ctx, id)
 	if err != nil {
@@ -42,12 +42,12 @@ func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string)
 	return txs.getTransaction(ctx, trS.Group, id)
 }
 
-// returns Transaction for passed transaction id or hash
+// GetAnyTransactionByGroup returns Transaction for passed transaction id or hash
 func (txs *TransactionService) GetAnyTransactionByGroup(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
 	return txs.getTransaction(ctx, group.String(), id)
 }
 
-// returns an array of Transaction's for passed array of transaction ids or hashes
+// GetTransactions returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
@@ -66,7 +66,7 @@ func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string
 	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
-// returns an array of Transaction's for passed array of transaction ids or hashes
+// GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
@@ -87,7 +87,7 @@ func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group
 	return tspDTO.toStruct(txs.client.GenerationHash())
 }
 
-// returns an array of Transaction's for passed array of transaction ids or hashes
+// GetTransactionsByIds returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group TransactionGroup, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
@@ -111,7 +111,7 @@ func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group T
 	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
-// returns transaction hash after announcing passed SignedTransaction
+// Announce returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
 		tx.EntityType,
@@ -121,7 +121,7 @@ func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransacti
 	return txs.announceTransaction(ctx, &dto, transactionsRoute)
 }
 
-// returns transaction hash after announcing passed aggregate bounded SignedTransaction
+// AnnounceAggregateBonded returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
 		tx.EntityType,
@@ -131,7 +131,7 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 	return txs.announceTransaction(ctx, &dto, fmt.Sprintf(transactionsByGroupRoute, partial.String()))
 }
 
-// returns transaction hash after announcing passed CosignatureSignedTransaction
+// AnnounceAggregateBondedCosignature returns transaction hash after announcing passed CosignatureSignedTransaction
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error) {
 	dto := cosignatureSignedTransactionDto{
 		c.ParentHash.String(),
@@ -141,7 +141,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 	return txs.announceTransaction(ctx, &dto, announceAggregateCosignatureRoute)
 }
 
-// returns TransactionStatus for passed transaction id or hash
+// GetTransactionStatus returns TransactionStatus for passed transaction id or hash
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
@@ -157,7 +157,7 @@ func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id stri
 	return ts.toStruct()
 }
 
-// returns TransactionsStatuses for passed transactions id or hashes
+// GetTransactionsStatuses returns TransactionsStatuses for passed transactions id or hashes
 func (txs *TransactionService) GetTransactionsStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
 	txIds := &TransactionHashesDTO{
 		hashes,
@@ -193,7 +193,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 	return m.Message, nil
 }
 
-// Gets a transaction's effective paid fee
+// GetTransactionEffectiveFee gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
 	tx, err := txs.GetAnyTransaction(ctx, transactionId)
 	if err != nil {
