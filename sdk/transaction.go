@@ -32,6 +32,40 @@ func (txs *TransactionService) getTransaction(ctx context.Context, group string,
 	return MapTransaction(&b, txs.client.GenerationHash())
 }
 
+// returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string) (Transaction, error) {
+	trS, err := txs.GetTransactionStatus(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return txs.getTransaction(ctx, trS.Group, id)
+}
+
+// returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetAnyTransactionByGroup(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
+	return txs.getTransaction(ctx, group.String(), id)
+}
+
+// returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
+	var b bytes.Buffer
+	txIds := &TransactionIdsDTO{
+		ids,
+	}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return MapTransactions(&b, txs.client.GenerationHash())
+}
+
 // returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
@@ -66,40 +100,6 @@ func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group T
 	}
 
 	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, u, txIds, &b)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-		return nil, err
-	}
-
-	return MapTransactions(&b, txs.client.GenerationHash())
-}
-
-// returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetAnyTransactionByGroup(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
-	return txs.getTransaction(ctx, group.String(), id)
-}
-
-// returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string) (Transaction, error) {
-	trS, err := txs.GetTransactionStatus(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return txs.getTransaction(ctx, trS.Group, id)
-}
-
-// returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
-	var b bytes.Buffer
-	txIds := &TransactionIdsDTO{
-		ids,
-	}
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
 	if err != nil {
 		return nil, err
 	}
