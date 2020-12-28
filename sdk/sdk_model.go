@@ -89,15 +89,15 @@ type SortOptions struct {
 	Direction SortDirection
 }
 
-type SortDirection uint8
+type SortDirection string
 
 const (
-	ASC  SortDirection = 0
-	DESC SortDirection = 1
+	ASC  SortDirection = "asc"
+	DESC SortDirection = "desc"
 )
 
 func (sD SortDirection) String() string {
-	return [...]string{"asc", "desc"}[sD]
+	return string(sD)
 }
 
 type PaginationOrderingOptions struct {

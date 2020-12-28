@@ -173,16 +173,16 @@ func (sV StartValue) EncodeValues(key string, v *url.Values) error {
 	return nil
 }
 
-type StartValueType uint8
+type StartValueType string
 
 const (
-	Start     StartValueType = 0
-	FromStart StartValueType = 1
-	ToStart   StartValueType = 2
+	Start     StartValueType = "start"
+	FromStart StartValueType = "fromStart"
+	ToStart   StartValueType = "toStart"
 )
 
 func (vT StartValueType) String() string {
-	return [...]string{"start", "fromStart", "toStart"}[vT]
+	return string(vT)
 }
 
 // Prepare Drive Transaction
