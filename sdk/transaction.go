@@ -43,27 +43,8 @@ func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string)
 }
 
 // GetAnyTransactionByGroup returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetAnyTransactionByGroup(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
+func (txs *TransactionService) GetTransaction(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
 	return txs.getTransaction(ctx, group.String(), id)
-}
-
-// GetTransactions returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
-	var b bytes.Buffer
-	txIds := &TransactionIdsDTO{
-		ids,
-	}
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-		return nil, err
-	}
-
-	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
 // GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
@@ -128,7 +109,7 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 		tx.Payload,
 		tx.Hash.String(),
 	}
-	return txs.announceTransaction(ctx, &dto, fmt.Sprintf(transactionsByGroupRoute, partial.String()))
+	return txs.announceTransaction(ctx, &dto, announceAggregateRoute)
 }
 
 // AnnounceAggregateBondedCosignature returns transaction hash after announcing passed CosignatureSignedTransaction
@@ -195,7 +176,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 
 // GetTransactionEffectiveFee gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetAnyTransaction(ctx, transactionId)
+	tx, err := txs.GetTransaction(ctx, confirmed, transactionId)
 	if err != nil {
 		return -1, err
 	}
