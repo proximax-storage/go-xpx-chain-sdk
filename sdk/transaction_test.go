@@ -269,7 +269,7 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), confirmed, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), confirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransaction returned error: %v", err)
 
@@ -329,7 +329,7 @@ func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), unconfirmed, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), unconfirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransaction returned error: %v", err)
 
@@ -389,7 +389,7 @@ func TestTransactionService_GetPartialTransaction(t *testing.T) {
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetAnyTransactionByGroup(context.Background(), partial, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), partial, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransaction returned error: %v", err)
 
@@ -439,25 +439,6 @@ func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
 	tests.AssertEqual(t, 1, len(txs))
 
 	tests.ValidateStringers(t, confirmedTransactions.Transactions[0], txs[0])
-}
-
-func TestTransactionService_GetTransactions(t *testing.T) {
-	mockServer.AddRouter(&mock.Router{
-		Path:     transactionsRoute,
-		RespBody: "[" + transactionJson + "]",
-	})
-
-	cl := mockServer.getPublicTestClientUnsafe()
-
-	transactions, err := cl.Transaction.GetTransactions(context.Background(), []string{
-		transactionId,
-	})
-
-	assert.Nilf(t, err, "TransactionService.GetTransactions returned error: %v", err)
-
-	for _, tx := range transactions {
-		tests.ValidateStringers(t, transaction, tx)
-	}
 }
 
 func TestTransactionService_GetTransactionStatus(t *testing.T) {
