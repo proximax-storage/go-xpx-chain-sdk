@@ -146,10 +146,6 @@ const (
 	partial     TransactionGroup = "partial"
 )
 
-func (tG TransactionGroup) String() string {
-	return string(tG)
-}
-
 type NamespaceType uint8
 
 const (

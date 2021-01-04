@@ -16,8 +16,8 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
-// returns Transaction for passed transaction group and hash
-func (txs *TransactionService) getTransaction(ctx context.Context, group string, id string) (Transaction, error) {
+// GetTransaction returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetTransaction(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
 	var b bytes.Buffer
 
 	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionsByIdRoute, group, id), nil, &b)
@@ -39,19 +39,14 @@ func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string)
 		return nil, err
 	}
 
-	return txs.getTransaction(ctx, trS.Group, id)
-}
-
-// GetAnyTransactionByGroup returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetTransaction(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
-	return txs.getTransaction(ctx, group.String(), id)
+	return txs.GetTransaction(ctx, trS.Group, id)
 }
 
 // GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
 func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
 	tspDTO := &transactionsPageDTO{}
 
-	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group.String()), tpOpts)
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group), tpOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +70,7 @@ func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group T
 		ids,
 	}
 
-	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group.String()), tpOpts)
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group), tpOpts)
 	if err != nil {
 		return nil, err
 	}
