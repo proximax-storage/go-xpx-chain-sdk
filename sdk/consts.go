@@ -134,6 +134,7 @@ const (
 	transactionsByIdRoute             = "/transactions/%s/%s"
 	transactionStatusRoute            = "/transactionStatus"
 	transactionStatusByIdRoute        = "/transactionStatus/%s"
+	announceAggregateRoute            = "/transaction/partial"
 	announceAggregateCosignatureRoute = "/transactions/cosignature"
 )
 
