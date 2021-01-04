@@ -103,7 +103,7 @@ func (sD SortDirection) String() string {
 type PaginationOrderingOptions struct {
 	PageSize      uint64 `url:"pageSize,omitempty"`
 	PageNumber    uint64 `url:"pageNumber,omitempty"`
-	Offset        string `bson:"offset,omitempty"`
+	Offset        string `url:"offset,omitempty"`
 	SortField     string `url:"sortField,omitempty"`
 	SortDirection string `url:"sortDirection,omitempty"`
 }
