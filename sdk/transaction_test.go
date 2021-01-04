@@ -242,7 +242,7 @@ func TestTransactionService_GetAnyTransactionById_TransferTransaction(t *testing
 	})
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed.String(), transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
@@ -263,7 +263,7 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed.String(), transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
@@ -278,7 +278,7 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 
 func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed),
 		RespBody: confirmedTransactionsJson,
 	})
 
@@ -306,7 +306,7 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed),
 		RespBody: "[" + transactionJson + "]",
 	})
 
@@ -323,7 +323,7 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 
 func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, unconfirmed.String(), transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, unconfirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
@@ -338,7 +338,7 @@ func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 
 func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed),
 		RespBody: confirmedTransactionsJson,
 	})
 
@@ -366,7 +366,7 @@ func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed),
 		RespBody: "[" + transactionJson + "]",
 	})
 
@@ -383,7 +383,7 @@ func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
 
 func TestTransactionService_GetPartialTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, partial.String(), transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, partial, transactionId),
 		RespBody: transactionJson,
 	})
 
@@ -398,7 +398,7 @@ func TestTransactionService_GetPartialTransaction(t *testing.T) {
 
 func TestTransactionService_GetPartialTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, partial.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, partial),
 		RespBody: confirmedTransactionsJson,
 	})
 
@@ -426,7 +426,7 @@ func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, partial.String()),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, partial),
 		RespBody: "[" + transactionJson + "]",
 	})
 

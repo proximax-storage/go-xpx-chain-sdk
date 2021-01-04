@@ -2208,7 +2208,7 @@ func (m *MetadataModification) String() string {
 
 type TransactionStatus struct {
 	Deadline *Deadline
-	Group    string
+	Group    TransactionGroup
 	Status   string
 	Hash     *Hash
 	Height   Height
@@ -2318,7 +2318,7 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
-)	
+)
 
 type EntityType uint16
 

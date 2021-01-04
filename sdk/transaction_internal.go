@@ -1134,7 +1134,7 @@ func (dto *metadataModificationDTO) toStruct(networkType NetworkType) (*Metadata
 }
 
 type transactionStatusDTO struct {
-	Group    string                 `json:"group"`
+	Group    TransactionGroup       `json:"group"`
 	Status   string                 `json:"status"`
 	Hash     hashDto                `json:"hash"`
 	Deadline blockchainTimestampDTO `json:"deadline"`
