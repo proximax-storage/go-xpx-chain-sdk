@@ -105,6 +105,7 @@ const (
 
 // routes for StorageService
 const (
+	drivesRoute               = "/drives"
 	driveRoute                = "/drive/%s"
 	drivesOfAccountRoute      = "/account/%s/drive%s"
 	downloadInfoRoute         = "/downloads/%s"
@@ -128,12 +129,21 @@ const (
 
 // routes for TransactionService
 const (
-	transactionsRoute                 = "/transaction"
-	transactionRoute                  = "/transaction/%s"
-	transactionStatusRoute            = "/transaction/%s/status"
-	transactionsStatusRoute           = "/transaction/statuses"
+	transactionsRoute                 = "/transactions"
+	transactionsByGroupRoute          = "/transactions/%s"
+	transactionsByIdRoute             = "/transactions/%s/%s"
+	transactionStatusRoute            = "/transactionStatus"
+	transactionStatusByIdRoute        = "/transactionStatus/%s"
 	announceAggregateRoute            = "/transaction/partial"
-	announceAggregateCosignatureRoute = "/transaction/cosignature"
+	announceAggregateCosignatureRoute = "/transactions/cosignature"
+)
+
+type TransactionGroup string
+
+const (
+	confirmed   TransactionGroup = "confirmed"
+	unconfirmed TransactionGroup = "unconfirmed"
+	partial     TransactionGroup = "partial"
 )
 
 type NamespaceType uint8

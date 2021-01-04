@@ -6,6 +6,8 @@ package sdk
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 )
 
 type DriveState uint8
@@ -135,6 +137,52 @@ func (drive *Drive) String() string {
 		drive.Replicators,
 		drive.UploadPayments,
 	)
+}
+
+type DrivesPage struct {
+	Drives     []*Drive
+	Pagination Pagination
+}
+
+type DrivesPageOptions struct {
+	DrivesPageFilters
+	PaginationOrderingOptions
+}
+
+type DrivesPageFilters struct {
+	Start  StartValue `url:""`
+	States []uint32   `url:"States,omitempty"`
+}
+
+type StartValue struct {
+	Start          uint64
+	StartValueType StartValueType
+}
+
+func (sV StartValue) EncodeValues(key string, v *url.Values) error {
+	if Start == sV.StartValueType {
+		v.Add(Start.String(), strconv.FormatUint(sV.Start, 10))
+	} else if FromStart == sV.StartValueType {
+		u := uint64DTO(uint64ToArray(sV.Start))
+		v.Add(FromStart.String(), u.toStruct().String())
+	} else if ToStart == sV.StartValueType {
+		u := uint64DTO(uint64ToArray(sV.Start))
+		v.Add(ToStart.String(), u.toStruct().String())
+	}
+
+	return nil
+}
+
+type StartValueType string
+
+const (
+	Start     StartValueType = "start"
+	FromStart StartValueType = "fromStart"
+	ToStart   StartValueType = "toStart"
+)
+
+func (vT StartValueType) String() string {
+	return string(vT)
 }
 
 // Prepare Drive Transaction

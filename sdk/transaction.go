@@ -9,8 +9,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type TransactionService struct {
@@ -18,13 +16,11 @@ type TransactionService struct {
 	BlockchainService *BlockchainService
 }
 
-// returns Transaction for passed transaction id or hash
-func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (Transaction, error) {
+// GetTransaction returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetTransaction(ctx context.Context, group TransactionGroup, id string) (Transaction, error) {
 	var b bytes.Buffer
 
-	url := net.NewUrl(fmt.Sprintf(transactionRoute, id))
-
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &b)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionsByIdRoute, group, id), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -36,26 +32,62 @@ func (txs *TransactionService) GetTransaction(ctx context.Context, id string) (T
 	return MapTransaction(&b, txs.client.GenerationHash())
 }
 
-// returns an array of Transaction's for passed array of transaction ids or hashes
-func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
+// GetAnyTransaction returns Transaction for passed transaction id or hash
+func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string) (Transaction, error) {
+	trS, err := txs.GetTransactionStatus(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return txs.GetTransaction(ctx, trS.Group, id)
+}
+
+// GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, error) {
+	tspDTO := &transactionsPageDTO{}
+
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group), tpOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return tspDTO.toStruct(txs.client.GenerationHash())
+}
+
+// GetTransactionsByIds returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetTransactionsByIds(ctx context.Context, group TransactionGroup, ids []string, tpOpts *TransactionsPageOptions) ([]Transaction, error) {
 	var b bytes.Buffer
 	txIds := &TransactionIdsDTO{
 		ids,
 	}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsRoute, txIds, &b)
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group), tpOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, u, txIds, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err
 	}
 
 	return MapTransactions(&b, txs.client.GenerationHash())
 }
 
-// returns transaction hash after announcing passed SignedTransaction
+// Announce returns transaction hash after announcing passed SignedTransaction
 func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
 		tx.EntityType,
@@ -65,7 +97,7 @@ func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransacti
 	return txs.announceTransaction(ctx, &dto, transactionsRoute)
 }
 
-// returns transaction hash after announcing passed aggregate bounded SignedTransaction
+// AnnounceAggregateBonded returns transaction hash after announcing passed aggregate bounded SignedTransaction
 func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *SignedTransaction) (string, error) {
 	dto := signedTransactionDto{
 		tx.EntityType,
@@ -75,7 +107,7 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 	return txs.announceTransaction(ctx, &dto, announceAggregateRoute)
 }
 
-// returns transaction hash after announcing passed CosignatureSignedTransaction
+// AnnounceAggregateBondedCosignature returns transaction hash after announcing passed CosignatureSignedTransaction
 func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Context, c *CosignatureSignedTransaction) (string, error) {
 	dto := cosignatureSignedTransactionDto{
 		c.ParentHash.String(),
@@ -85,11 +117,11 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 	return txs.announceTransaction(ctx, &dto, announceAggregateCosignatureRoute)
 }
 
-// returns TransactionStatus for passed transaction id or hash
+// GetTransactionStatus returns TransactionStatus for passed transaction id or hash
 func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id string) (*TransactionStatus, error) {
 	ts := &transactionStatusDTO{}
 
-	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusRoute, id), nil, ts)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, fmt.Sprintf(transactionStatusByIdRoute, id), nil, &ts)
 	if err != nil {
 		return nil, err
 	}
@@ -101,14 +133,14 @@ func (txs *TransactionService) GetTransactionStatus(ctx context.Context, id stri
 	return ts.toStruct()
 }
 
-// returns an array of TransactionStatus's for passed transaction ids or hashes
-func (txs *TransactionService) GetTransactionStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
+// GetTransactionsStatuses returns TransactionsStatuses for passed transactions id or hashes
+func (txs *TransactionService) GetTransactionsStatuses(ctx context.Context, hashes []string) ([]*TransactionStatus, error) {
 	txIds := &TransactionHashesDTO{
 		hashes,
 	}
 
 	dtos := transactionStatusDTOs(make([]*transactionStatusDTO, len(hashes)))
-	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionsStatusRoute, txIds, &dtos)
+	resp, err := txs.client.doNewRequest(ctx, http.MethodPost, transactionStatusRoute, txIds, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -137,9 +169,9 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 	return m.Message, nil
 }
 
-// Gets a transaction's effective paid fee
+// GetTransactionEffectiveFee gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetTransaction(ctx, transactionId)
+	tx, err := txs.GetTransaction(ctx, confirmed, transactionId)
 	if err != nil {
 		return -1, err
 	}
