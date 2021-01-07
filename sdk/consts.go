@@ -141,9 +141,9 @@ const (
 type TransactionGroup string
 
 const (
-	confirmed   TransactionGroup = "confirmed"
-	unconfirmed TransactionGroup = "unconfirmed"
-	partial     TransactionGroup = "partial"
+	Confirmed   TransactionGroup = "confirmed"
+	Unconfirmed TransactionGroup = "unconfirmed"
+	Partial     TransactionGroup = "partial"
 )
 
 type NamespaceType uint8
