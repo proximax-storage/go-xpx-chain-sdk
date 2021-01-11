@@ -171,7 +171,7 @@ func (txs *TransactionService) announceTransaction(ctx context.Context, tx inter
 
 // GetTransactionEffectiveFee gets a transaction's effective paid fee
 func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, transactionId string) (int, error) {
-	tx, err := txs.GetTransaction(ctx, confirmed, transactionId)
+	tx, err := txs.GetTransaction(ctx, Confirmed, transactionId)
 	if err != nil {
 		return -1, err
 	}
