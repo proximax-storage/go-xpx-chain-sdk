@@ -242,7 +242,7 @@ func TestTransactionService_GetAnyTransactionById_TransferTransaction(t *testing
 	})
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed, transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, Confirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
@@ -263,13 +263,13 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, confirmed, transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, Confirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetTransaction(context.Background(), confirmed, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), Confirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransaction returned error: %v", err)
 
@@ -278,13 +278,13 @@ func TestTransactionService_GetConfirmedTransaction(t *testing.T) {
 
 func TestTransactionService_GetConfirmedTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Confirmed),
 		RespBody: confirmedTransactionsJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), confirmed, nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), Confirmed, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactions returned error: %v", err)
 
@@ -306,13 +306,13 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, confirmed),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Confirmed),
 		RespBody: "[" + transactionJson + "]",
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), confirmed, []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), Confirmed, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetConfirmedTransactionsByIds returned error: %v", err)
 
@@ -323,13 +323,13 @@ func TestTransactionService_GetConfirmedTransactionsByIds(t *testing.T) {
 
 func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, unconfirmed, transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, Unconfirmed, transactionId),
 		RespBody: transactionJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetTransaction(context.Background(), unconfirmed, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), Unconfirmed, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransaction returned error: %v", err)
 
@@ -338,13 +338,13 @@ func TestTransactionService_GetUnconfirmedTransaction(t *testing.T) {
 
 func TestTransactionService_GetUnconfirmedTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Unconfirmed),
 		RespBody: confirmedTransactionsJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), unconfirmed, nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), Unconfirmed, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactions returned error: %v", err)
 
@@ -366,13 +366,13 @@ func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, unconfirmed),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Unconfirmed),
 		RespBody: "[" + transactionJson + "]",
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), unconfirmed, []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), Unconfirmed, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetUnconfirmedTransactionsByIds returned error: %v", err)
 
@@ -383,13 +383,13 @@ func TestTransactionService_GetUnconfirmedTransactionsByIds(t *testing.T) {
 
 func TestTransactionService_GetPartialTransaction(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByIdRoute, partial, transactionId),
+		Path:     fmt.Sprintf(transactionsByIdRoute, Partial, transactionId),
 		RespBody: transactionJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	tx, err := cl.Transaction.GetTransaction(context.Background(), partial, transactionId)
+	tx, err := cl.Transaction.GetTransaction(context.Background(), Partial, transactionId)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransaction returned error: %v", err)
 
@@ -398,13 +398,13 @@ func TestTransactionService_GetPartialTransaction(t *testing.T) {
 
 func TestTransactionService_GetPartialTransactions(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, partial),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Partial),
 		RespBody: confirmedTransactionsJson,
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), partial, nil)
+	txs, err := cl.Transaction.GetTransactionsByGroup(context.Background(), Partial, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransactions returned error: %v", err)
 
@@ -426,13 +426,13 @@ func TestTransactionService_GetPartialTransactionsByIds(t *testing.T) {
 	mockServer = newSdkMock(5 * time.Minute)
 
 	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf(transactionsByGroupRoute, partial),
+		Path:     fmt.Sprintf(transactionsByGroupRoute, Partial),
 		RespBody: "[" + transactionJson + "]",
 	})
 
 	cl := mockServer.getPublicTestClientUnsafe()
 
-	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), partial, []string{transaction.TransactionHash.String()}, nil)
+	txs, err := cl.Transaction.GetTransactionsByIds(context.Background(), Partial, []string{transaction.TransactionHash.String()}, nil)
 
 	assert.Nilf(t, err, "TransactionService.GetPartialTransactionsByIds returned error: %v", err)
 
