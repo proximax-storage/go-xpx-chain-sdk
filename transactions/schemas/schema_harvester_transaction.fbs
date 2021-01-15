@@ -1,0 +1,13 @@
+namespace Catapult.Buffers;
+
+table HarvesterTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+}
+
+root_type HarvesterTransactionBuffer;
