@@ -6,6 +6,7 @@ import (
 	"errors"
 	blst "github.com/supranational/blst/bindings/go"
 	"io"
+	"reflect"
 	"strings"
 )
 
@@ -27,8 +28,19 @@ type BLSSignature string
 
 var ZeroBLSSignature = BLSSignature(make([]byte, 96))
 
+func isNilFixed(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+	return false
+}
+
 func GeneratePrivateKey(seed io.Reader) BLSPrivateKey {
-	if seed == nil {
+	if isNilFixed(seed) {
 		seed = rand.Reader
 	}
 	var ikm [32]byte
@@ -128,7 +140,7 @@ func AggregatePublicKeys(keys ...BLSPublicKey) (BLSPublicKey, error) {
 		temp[i] = []byte(key)
 	}
 	if !aggregator.AggregateCompressed(temp, true) {
-		return ZeroBLSPublicKey, errors.New("unable to aggregate signature")
+		return ZeroBLSPublicKey, errors.New("unable to aggregate public keys")
 	}
 	return BLSPublicKey(aggregator.ToAffine().Compress()), nil
 }
