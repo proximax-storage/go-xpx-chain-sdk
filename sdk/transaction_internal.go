@@ -812,6 +812,29 @@ func (dto *transferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	}, nil
 }
 
+type harvesterTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *harvesterTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &HarvesterTransaction{
+		*atx,
+	}, nil
+}
+
 type modifyMultisigAccountTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
