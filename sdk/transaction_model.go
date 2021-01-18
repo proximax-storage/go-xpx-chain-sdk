@@ -1518,7 +1518,7 @@ const (
 	RemoveHarvester HarvesterTransactionType = HarvesterTransactionType(RemoveHarvesterEntityType)
 )
 
-// returns a HarvesterTransaction from passed transfer
+// HarvesterTransaction creates new Harvester transaction
 func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, networkType NetworkType) (*HarvesterTransaction, error) {
 	return &HarvesterTransaction{
 		AbstractTransaction: AbstractTransaction{
