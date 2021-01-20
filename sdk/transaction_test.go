@@ -881,6 +881,42 @@ func TestTransferTransactionSigning(t *testing.T) {
 	assert.Equal(t, stringToHashPanic("0f02ba390fdbaf797931c9ac11fdcc308aed8a2e4221eb33ef63267ae7e62eff"), stx.Hash)
 }
 
+func TestAddHarvesterTransactionSigning(t *testing.T) {
+	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
+	htx, err := NewHarvesterTransaction(
+		fakeDeadline,
+		AddHarvester,
+		MijinTest,
+	)
+
+	assert.Nilf(t, err, "NewHarvesterTransaction returned error: %s", err)
+
+	shtx, err := a.Sign(htx)
+	assert.Equal(t, EntityType(AddHarvester), shtx.EntityType)
+	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
+	assert.Equal(t, stringToHashPanic("c712d80ba3d7f0eec4d4f647580818ce0ea9e3e62e874ef7c207a46290817c9c"), shtx.Hash)
+}
+
+func TestRemoveHarvesterTransactionSigning(t *testing.T) {
+	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
+	htx, err := NewHarvesterTransaction(
+		fakeDeadline,
+		RemoveHarvester,
+		MijinTest,
+	)
+
+	assert.Nilf(t, err, "NewHarvesterTransaction returned error: %s", err)
+
+	shtx, err := a.Sign(htx)
+	assert.Equal(t, EntityType(RemoveHarvester), shtx.EntityType)
+	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
+	assert.Equal(t, stringToHashPanic("d052a0b5d9535551e9d9ac51a3a06e2cc0983ce0d39689a6576d93d09c5c2912"), shtx.Hash)
+}
+
 func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
 	acc1, err := NewAccountFromPublicKey("68b3fbb18729c1fde225c57f8ce080fa828f0067e451a3fd81fa628842b0b763", MijinTest)
 

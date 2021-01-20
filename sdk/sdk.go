@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -579,6 +579,15 @@ func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, 
 
 func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
 	tx, err := NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType) (*HarvesterTransaction, error) {
+	tx, err := NewHarvesterTransaction(deadline, htt, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

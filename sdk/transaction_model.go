@@ -1507,6 +1507,63 @@ func (tx *TransferTransaction) MessageSize() int {
 	return len(tx.Message.Payload()) + 1
 }
 
+type HarvesterTransaction struct {
+	AbstractTransaction
+}
+
+type HarvesterTransactionType EntityType
+
+const (
+	AddHarvester    HarvesterTransactionType = HarvesterTransactionType(AddHarvesterEntityType)
+	RemoveHarvester HarvesterTransactionType = HarvesterTransactionType(RemoveHarvesterEntityType)
+)
+
+// HarvesterTransaction creates new Harvester transaction
+func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, networkType NetworkType) (*HarvesterTransaction, error) {
+	return &HarvesterTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     HarvesterVersion,
+			Deadline:    deadline,
+			Type:        EntityType(htt),
+			NetworkType: networkType,
+		},
+	}, nil
+}
+
+func (tx *HarvesterTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *HarvesterTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+		`,
+		tx.AbstractTransaction.String(),
+	)
+}
+
+func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.HarvesterTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return harvesterTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *HarvesterTransaction) Size() int {
+	return TransactionHeaderSize
+}
+
 type ModifyMultisigAccountTransaction struct {
 	AbstractTransaction
 	MinApprovalDelta int8
@@ -2330,8 +2387,10 @@ const (
 	AggregateBonded           EntityType = 0x4241
 	AggregateCompleted        EntityType = 0x4141
 	AddExchangeOffer          EntityType = 0x415D
+	AddHarvesterEntityType    EntityType = 0x4161
 	ExchangeOffer             EntityType = 0x425D
 	RemoveExchangeOffer       EntityType = 0x435D
+	RemoveHarvesterEntityType EntityType = 0x4261
 	Block                     EntityType = 0x8143
 	NemesisBlock              EntityType = 0x8043
 	NetworkConfigEntityType   EntityType = 0x4159
@@ -2417,6 +2476,7 @@ const (
 	EndExecuteVersion                EntityVersion = 1
 	StartOperationVersion            EntityVersion = 1
 	EndOperationVersion              EntityVersion = 1
+	HarvesterVersion                 EntityVersion = 1
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
@@ -2587,6 +2647,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &aggregateTransactionDTO{}
 	case AddExchangeOffer:
 		dto = &addExchangeOfferTransactionDTO{}
+	case AddHarvesterEntityType:
+		dto = &harvesterTransactionDTO{}
 	case ExchangeOffer:
 		dto = &exchangeOfferTransactionDTO{}
 	case RemoveExchangeOffer:
@@ -2617,6 +2679,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &mosaicSupplyChangeTransactionDTO{}
 	case RegisterNamespace:
 		dto = &registerNamespaceTransactionDTO{}
+	case RemoveHarvesterEntityType:
+		dto = &harvesterTransactionDTO{}
 	case SecretLock:
 		dto = &secretLockTransactionDTO{}
 	case SecretProof:
