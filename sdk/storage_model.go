@@ -150,8 +150,8 @@ type DrivesPageOptions struct {
 }
 
 type DrivesPageFilters struct {
-	Start  StartValue `url:""`
-	States []uint32   `url:"States,omitempty"`
+	Start  StartValue   `url:""`
+	States []DriveState `url:"states,omitempty"`
 }
 
 type StartValue struct {
