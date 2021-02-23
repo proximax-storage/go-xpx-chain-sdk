@@ -49,6 +49,14 @@ func main() {
 
 	fmt.Printf("%v\n\n", blockHeight)
 
+	// Get the Block Transactions
+	transactions, err := client.Blockchain.GetBlockTransactions(context.Background(), sdk.Height(1))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n\n", transactions)
+
 	// Get the Blockchain Storage Info
 	blockchainStorageInfo, err := client.Blockchain.GetBlockchainStorage(context.Background())
 	if err != nil {

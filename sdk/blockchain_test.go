@@ -225,3 +225,18 @@ func TestBlockchainService_GetBlockByHeight(t *testing.T) {
 
 	tests.ValidateStringers(t, wantBlockInfo, got)
 }
+
+func TestBlockchainService_GetBlockTransactions(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf(blockGetTransactionRoute, testHeight),
+		RespBody: blockTransactionsJSON,
+	})
+
+	got, err := blockClient.GetBlockTransactions(ctx, testHeight)
+
+	assert.Nilf(t, err, "GetBlockByHeight returned error: %s", err)
+
+	for key, transaction := range got {
+		assert.Equal(t, wantBlockTransactions[key].GetAbstractTransaction().Signature, transaction.GetAbstractTransaction().Signature)
+	}
+}
