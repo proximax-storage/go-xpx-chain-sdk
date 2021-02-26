@@ -78,12 +78,6 @@ const (
 	TRANSACTION_ORDER_DESC TransactionOrder = "-id"
 )
 
-type AccountTransactionsOption struct {
-	PageSize int              `url:"pageSize,omitempty"`
-	Id       string           `url:"id,omitempty"`
-	Ordering TransactionOrder `url:"ordering,omitempty"`
-}
-
 type SortOptions struct {
 	SortField string
 	Direction SortDirection
