@@ -24,7 +24,7 @@ import (
 const (
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
 	DefaultFeeCalculationStrategy       = MiddleCalculationStrategy
-	DefaultMaxFee                       = 75 * 1000000
+	DefaultMaxFee                       = 5 * 1000000
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -38,9 +38,9 @@ type FeeCalculationStrategy uint32
 
 // FeeCalculationStrategy enums
 const (
-	HighCalculationStrategy   FeeCalculationStrategy = 1500000
-	MiddleCalculationStrategy FeeCalculationStrategy = 150000
-	LowCalculationStrategy    FeeCalculationStrategy = 15000
+	HighCalculationStrategy   FeeCalculationStrategy = 2500
+	MiddleCalculationStrategy FeeCalculationStrategy = 250
+	LowCalculationStrategy    FeeCalculationStrategy = 25
 )
 
 // Provides service configuration
