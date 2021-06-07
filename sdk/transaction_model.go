@@ -976,6 +976,260 @@ func (tx *AggregateTransaction) Size() int {
 	return AggregateBondedHeaderSize + sizeOfInnerTransactions
 }
 
+type BasicMetadataTransaction struct {
+	AbstractTransaction
+	TargetPublicAccount *PublicAccount
+	ScopedMetadataKey   ScopedMetadataKey
+	Value               []byte
+	ValueDeltaSize      int16
+}
+
+func (tx *BasicMetadataTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"TargetPublicAccount": %s,
+			"ScopedMetadataKey": %s,
+			"Value": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.TargetPublicAccount,
+		tx.ScopedMetadataKey,
+		tx.Value,
+	)
+}
+
+func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetIdV flatbuffers.UOffsetT, size int) ([]byte, error) {
+
+	targetKeyB, err := hex.DecodeString(tx.TargetPublicAccount.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	targetKeyV := transactions.TransactionBufferCreateByteVector(builder, targetKeyB)
+
+	metadataKeyV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ScopedMetadataKey.toArray())
+	valueV := transactions.TransactionBufferCreateByteVector(builder, tx.Value)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.MetadataTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, size)
+
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.MetadataTransactionBufferAddTargetKey(builder, targetKeyV)
+	transactions.MetadataTransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
+	transactions.MetadataTransactionBufferAddTargetId(builder, targetIdV)
+	transactions.MetadataTransactionBufferAddValueSizeDelta(builder, tx.ValueDeltaSize)
+	transactions.MetadataTransactionBufferAddValueSize(builder, uint16(len(tx.Value)))
+	transactions.MetadataTransactionBufferAddValue(builder, valueV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return metadataTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *BasicMetadataTransaction) Size() int {
+	return MetadataNemHeaderSize + len(tx.Value)
+}
+
+func (tx *BasicMetadataTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+type AccountMetadataTransaction struct {
+	BasicMetadataTransaction
+}
+
+func NewAccountMetadataTransaction(deadline *Deadline,
+	account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string, networkType NetworkType) (*AccountMetadataTransaction, error) {
+	if newValue == oldValue {
+		return nil, errors.New("new value is the same")
+	}
+
+	mmatx := AccountMetadataTransaction{
+		BasicMetadataTransaction: BasicMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     AccountMetadataVersion,
+				Deadline:    deadline,
+				Type:        AccountMetadata,
+				NetworkType: networkType,
+			},
+			TargetPublicAccount: account,
+			ScopedMetadataKey:   scopedKey,
+			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+		},
+	}
+
+	if len(newValue) < len(oldValue) {
+		oldValue, newValue = newValue, oldValue
+	}
+
+	value := make([]byte, len(newValue))
+	copy(value, newValue)
+	for i, c := range []byte(oldValue) {
+		value[i] ^= c
+	}
+
+	mmatx.Value = value
+
+	return &mmatx, nil
+}
+
+func (tx *AccountMetadataTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	emptyB := make([]byte, 0)
+	aV := transactions.TransactionBufferCreateByteVector(builder, emptyB)
+	return tx.BasicMetadataTransaction.Bytes(builder, aV, tx.Size())
+}
+
+type MosaicMetadataTransaction struct {
+	BasicMetadataTransaction
+	TargetMosaicId *MosaicId
+}
+
+func NewMosaicMetadataTransaction(deadline *Deadline,
+	mosaic *MosaicId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string, networkType NetworkType) (*MosaicMetadataTransaction, error) {
+	if newValue == oldValue {
+		return nil, errors.New("new value is the same")
+	}
+
+	mmatx := MosaicMetadataTransaction{
+		BasicMetadataTransaction: BasicMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     MosaicMetadataVersion,
+				Deadline:    deadline,
+				Type:        MosaicMetadata,
+				NetworkType: networkType,
+			},
+			TargetPublicAccount: account,
+			ScopedMetadataKey:   scopedKey,
+			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+		},
+		TargetMosaicId: mosaic,
+	}
+
+	if len(newValue) < len(oldValue) {
+		oldValue, newValue = newValue, oldValue
+	}
+
+	value := make([]byte, len(newValue))
+	copy(value, newValue)
+	for i, c := range []byte(oldValue) {
+		value[i] ^= c
+	}
+
+	mmatx.Value = value
+
+	return &mmatx, nil
+}
+
+func (tx *MosaicMetadataTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	mosaicB := make([]byte, MosaicIdSize)
+	binary.LittleEndian.PutUint64(mosaicB, tx.TargetMosaicId.Id())
+	mV := transactions.TransactionBufferCreateByteVector(builder, mosaicB)
+	return tx.BasicMetadataTransaction.Bytes(builder, mV, tx.Size())
+}
+
+func (tx *MosaicMetadataTransaction) Size() int {
+	return MetadataNemHeaderSize + len(tx.Value) + MosaicIdSize
+}
+
+func (tx *MosaicMetadataTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"TargetPublicAccount": %s,
+			"ScopedMetadataKey": %s,
+			"TargetMosaicId": %s,
+			"Value": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.TargetPublicAccount,
+		tx.ScopedMetadataKey,
+		tx.TargetMosaicId,
+		tx.Value,
+	)
+}
+
+type NamespaceMetadataTransaction struct {
+	BasicMetadataTransaction
+	TargetNamespaceId *NamespaceId
+}
+
+func NewNamespaceMetadataTransaction(deadline *Deadline,
+	namespace *NamespaceId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string, networkType NetworkType) (*NamespaceMetadataTransaction, error) {
+	if newValue == oldValue {
+		return nil, errors.New("new value is the same")
+	}
+
+	mmatx := NamespaceMetadataTransaction{
+		BasicMetadataTransaction: BasicMetadataTransaction{
+			AbstractTransaction: AbstractTransaction{
+				Version:     NamespaceMetadataVersion,
+				Deadline:    deadline,
+				Type:        NamespaceMetadata,
+				NetworkType: networkType,
+			},
+			TargetPublicAccount: account,
+			ScopedMetadataKey:   scopedKey,
+			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+		},
+		TargetNamespaceId: namespace,
+	}
+
+	if len(newValue) < len(oldValue) {
+		oldValue, newValue = newValue, oldValue
+	}
+
+	value := make([]byte, len(newValue))
+	copy(value, newValue)
+	for i, c := range []byte(oldValue) {
+		value[i] ^= c
+	}
+
+	mmatx.Value = value
+
+	return &mmatx, nil
+}
+
+func (tx *NamespaceMetadataTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+	namespaceB := make([]byte, NamespaceSize)
+	binary.LittleEndian.PutUint64(namespaceB, tx.TargetNamespaceId.Id())
+	mV := transactions.TransactionBufferCreateByteVector(builder, namespaceB)
+	return tx.BasicMetadataTransaction.Bytes(builder, mV, tx.Size())
+}
+
+func (tx *NamespaceMetadataTransaction) Size() int {
+	return MetadataNemHeaderSize + len(tx.Value) + NamespaceSize
+}
+
+func (tx *NamespaceMetadataTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"TargetPublicAccount": %s,
+			"ScopedMetadataKey": %s,
+			"TargetNamespaceId": %s,
+			"Value": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.TargetPublicAccount,
+		tx.ScopedMetadataKey,
+		tx.TargetNamespaceId,
+		tx.Value,
+	)
+}
+
 type ModifyMetadataTransaction struct {
 	AbstractTransaction
 	MetadataType  MetadataType
@@ -2327,6 +2581,7 @@ const (
 	LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
 	MetadataHeaderSize                           = TransactionHeaderSize + MetadataTypeSize
+	MetadataNemHeaderSize                        = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2
 	ModificationsSizeSize                    int = 1
 	ModifyContractHeaderSize                     = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
 	MinApprovalSize                          int = 1
@@ -2400,6 +2655,9 @@ const (
 	MetadataAddress           EntityType = 0x413d
 	MetadataMosaic            EntityType = 0x423d
 	MetadataNamespace         EntityType = 0x433d
+	AccountMetadata           EntityType = 0x413f
+	MosaicMetadata            EntityType = 0x423f
+	NamespaceMetadata         EntityType = 0x433f
 	ModifyContract            EntityType = 0x4157
 	ModifyMultisig            EntityType = 0x4155
 	MosaicAlias               EntityType = 0x434e
@@ -2449,6 +2707,9 @@ const (
 	BlockchainUpgradeVersion         EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2
 	LockVersion                      EntityVersion = 1
+	AccountMetadataVersion           EntityVersion = 1
+	MosaicMetadataVersion            EntityVersion = 1
+	NamespaceMetadataVersion         EntityVersion = 1
 	MetadataAddressVersion           EntityVersion = 1
 	MetadataMosaicVersion            EntityVersion = 1
 	MetadataNamespaceVersion         EntityVersion = 1
@@ -2661,6 +2922,12 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &accountLinkTransactionDTO{}
 	case Lock:
 		dto = &lockFundsTransactionDTO{}
+	case AccountMetadata:
+		dto = &accountMetadataTransactionDTO{}
+	case MosaicMetadata:
+		dto = &mosaicMetadataTransactionDTO{}
+	case NamespaceMetadata:
+		dto = &namespaceMetadataTransactionDTO{}
 	case MetadataAddress:
 		dto = &modifyMetadataAddressTransactionDTO{}
 	case MetadataMosaic:

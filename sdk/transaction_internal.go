@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"bytes"
+	"encoding/hex"
 	jsonLib "encoding/json"
 	"sync"
 )
@@ -573,6 +574,150 @@ func (dto *aggregateTransactionDTO) toStruct(generationHash *Hash) (Transaction,
 	}
 
 	return &agtx, agtx.UpdateUniqueAggregateHash(generationHash)
+}
+
+type accountMetadataTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		TargetKey         string    `json:"targetKey"`
+		ScopedMetadataKey uint64DTO `json:"scopedMetadataKey"`
+		ValueSizeDelta    int16     `json:"valueSizeDelta"`
+		Value             string    `json:"value"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *accountMetadataTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := NewAccountFromPublicKey(dto.Tx.TargetKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	value, err := hex.DecodeString(dto.Tx.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := BasicMetadataTransaction{
+		*atx,
+		acc,
+		dto.Tx.ScopedMetadataKey.toStruct(),
+		value,
+		dto.Tx.ValueSizeDelta,
+	}
+
+	return &AccountMetadataTransaction{
+		tx,
+	}, nil
+}
+
+type mosaicMetadataTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		TargetKey         string       `json:"targetKey"`
+		ScopedMetadataKey uint64DTO    `json:"scopedMetadataKey"`
+		MosaicId          *mosaicIdDTO `json:"targetMosaicId"`
+		ValueSizeDelta    int16        `json:"valueSizeDelta"`
+		Value             string       `json:"value"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicMetadataTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := NewAccountFromPublicKey(dto.Tx.TargetKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	value, err := hex.DecodeString(dto.Tx.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := BasicMetadataTransaction{
+		*atx,
+		acc,
+		dto.Tx.ScopedMetadataKey.toStruct(),
+		value,
+		dto.Tx.ValueSizeDelta,
+	}
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicMetadataTransaction{
+		tx,
+		mosaicId,
+	}, nil
+}
+
+type namespaceMetadataTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		TargetKey         string          `json:"targetKey"`
+		ScopedMetadataKey uint64DTO       `json:"scopedMetadataKey"`
+		NamespaceId       *namespaceIdDTO `json:"targetNamespaceId"`
+		ValueSizeDelta    int16           `json:"valueSizeDelta"`
+		Value             string          `json:"value"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *namespaceMetadataTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := NewAccountFromPublicKey(dto.Tx.TargetKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	value, err := hex.DecodeString(dto.Tx.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := BasicMetadataTransaction{
+		*atx,
+		acc,
+		dto.Tx.ScopedMetadataKey.toStruct(),
+		value,
+		dto.Tx.ValueSizeDelta,
+	}
+	namespaceId, err := dto.Tx.NamespaceId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &NamespaceMetadataTransaction{
+		tx,
+		namespaceId,
+	}, nil
 }
 
 type modifyMetadataTransactionDTO struct {

@@ -501,6 +501,39 @@ func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Tr
 	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
+func (c *Client) NewAccountMetadataTransaction(deadline *Deadline,
+	account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*AccountMetadataTransaction, error) {
+	tx, err := NewAccountMetadataTransaction(deadline, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicMetadataTransaction(deadline *Deadline,
+	mosaic *MosaicId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*MosaicMetadataTransaction, error) {
+	tx, err := NewMosaicMetadataTransaction(deadline, mosaic, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewNamespaceMetadataTransaction(deadline *Deadline,
+	namespace *NamespaceId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*NamespaceMetadataTransaction, error) {
+	tx, err := NewNamespaceMetadataTransaction(deadline, namespace, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
 	tx, err := NewModifyMetadataAddressTransaction(deadline, address, modifications, c.config.NetworkType)
 	if tx != nil {

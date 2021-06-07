@@ -123,6 +123,7 @@ type Height = baseInt64
 type Duration = baseInt64
 type Difficulty = baseInt64
 type StorageSize = baseInt64
+type ScopedMetadataKey = baseInt64
 
 type BlockChainVersion uint64
 

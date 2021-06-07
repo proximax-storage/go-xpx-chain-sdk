@@ -863,3 +863,170 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 	}, testAccount)
 	assert.Nil(t, result.error)
 }
+
+func TestAccountMetadataTransaction(t *testing.T) {
+	childAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+	fmt.Println(childAccount)
+	metadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueAccountMetadataId(defaultAccount.Address, childAccount.PublicAccount, 1)
+	println(hash.String())
+}
+
+func TestMosaicMetadataTransaction(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicDefinitionTransaction(
+			sdk.NewDeadline(time.Hour),
+			nonce,
+			defaultAccount.PublicAccount.PublicKey,
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueMosaicMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, mosaicId)
+	println(hash.String())
+}
+
+func TestNamespaceMetadataTransaction(t *testing.T) {
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewRegisterRootNamespaceTransaction(
+			sdk.NewDeadline(time.Hour),
+			nameHex,
+			sdk.Duration(defaultDurationNamespaceAndMosaic),
+		)
+	}, defaultAccount)
+
+	namespaceId, err := sdk.NewNamespaceIdFromName(nameHex)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueNamespaceMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, namespaceId)
+	println(hash.String())
+}
