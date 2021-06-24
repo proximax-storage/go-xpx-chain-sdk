@@ -356,3 +356,41 @@ func secretProofTransactionSchema() *schema {
 		},
 	}
 }
+
+func mosaicModifyLevyTransactionScheme() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("mosaicId", IntSize),
+			newTableAttribute("levy", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ShortSize),
+					newArrayAttribute("recipient", ByteSize),
+					newArrayAttribute("mosaicId", IntSize),
+					newArrayAttribute("fee", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func mosaicRemoveLevyTransactionScheme() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("mosaicId", IntSize),
+		},
+	}
+}

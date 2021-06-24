@@ -239,3 +239,37 @@ func (m *mosaicNameDTOs) toStruct() ([]*MosaicName, error) {
 
 	return mscNames, nil
 }
+
+
+type mosaicLevyDTO struct {
+	Type 		uint16			`json:"type"`
+	Recipient   string			`json:"recipient"`
+	Fee      	*uint64DTO		`json:"fee"`
+	MosaicId	*mosaicIdDTO	`json:"mosaicId"`
+}
+
+
+func (dto *mosaicLevyDTO) toStruct() (MosaicLevy, error) {
+
+	mosaicId, err := dto.MosaicId.toStruct()
+	if err != nil {
+		return MosaicLevy{}, err
+	}
+
+	var f Amount = Amount(0)
+	if dto.Fee != nil {
+		f = dto.Fee.toStruct()
+	}
+
+	a, err := NewAddressFromBase32(dto.Recipient)
+	if err != nil {
+		a = NewAddress("", NotSupportedNet)
+	}
+
+	return MosaicLevy{
+		Type:dto.Type,
+		Recipient: a,
+		MosaicId: mosaicId,
+		Fee: f,
+	}, nil
+}
