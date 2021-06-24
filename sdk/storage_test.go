@@ -171,6 +171,12 @@ var (
 	}
 )
 
+var (
+	testDrivesPage = &DrivesPage{
+		Drives: []*Drive{testDriveInfo, testDriveInfo},
+	}
+)
+
 func TestStorageService_GetDrive(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
 		Path:                fmt.Sprintf(driveRoute, testDriveAccount.PublicKey),
@@ -186,6 +192,23 @@ func TestStorageService_GetDrive(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, drive)
 	assert.Equal(t, testDriveInfo, drive)
+}
+
+func TestStorageService_GetDrives(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                drivesRoute,
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            `{ "data":` + testDriveInfoJsonArr + `}`,
+	})
+	exchangeClient := mock.getPublicTestClientUnsafe().Storage
+
+	defer mock.Close()
+
+	drives, err := exchangeClient.GetDrives(ctx, nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, drives)
+	assert.Equal(t, testDrivesPage, drives)
 }
 
 func TestStorageService_GetAccountDrives(test *testing.T) {

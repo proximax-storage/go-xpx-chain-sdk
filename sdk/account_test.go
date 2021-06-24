@@ -222,28 +222,6 @@ func TestAccountService_GetAccountsInfo(t *testing.T) {
 	}
 }
 
-func TestAccountService_Transactions(t *testing.T) {
-	mockServer.AddRouter(&mock.Router{
-		Path:     fmt.Sprintf("/account/%s/transactions", publicKey1),
-		RespBody: "[" + transactionJson + "]",
-	})
-
-	transactions, err := accountClient.Transactions(
-		context.Background(),
-		&PublicAccount{
-			&Address{MijinTest, nemTestAddress2},
-			publicKey1,
-		},
-		&AccountTransactionsOption{},
-	)
-
-	assert.Nilf(t, err, "AccountService.Transactions returned error: %s", err)
-
-	for _, tx := range transactions {
-		tests.ValidateStringers(t, transaction, tx)
-	}
-}
-
 func TestAccountService_GetAccountsNames(t *testing.T) {
 	mockServer.AddRouter(&mock.Router{
 		Path:     accountNamesRoute,

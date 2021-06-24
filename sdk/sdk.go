@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -46,8 +46,8 @@ const (
 // Provides service configuration
 type Config struct {
 	reputationConfig      *reputationConfig
-	BaseURLs              []*url.URL
-	UsedBaseUrl           *url.URL
+	BaseURLs              []url.URL
+	UsedBaseUrl           url.URL
 	WsReconnectionTimeout time.Duration
 	GenerationHash        *Hash
 	NetworkType
@@ -123,7 +123,7 @@ func NewConfigWithReputation(
 	if len(baseUrls) == 0 {
 		return nil, errors.New("empty base urls")
 	}
-	urls := make([]*url.URL, 0, len(baseUrls))
+	urls := make([]url.URL, 0, len(baseUrls))
 
 	for _, singleUrlStr := range baseUrls {
 		u, err := url.Parse(singleUrlStr)
@@ -131,7 +131,7 @@ func NewConfigWithReputation(
 			return nil, err
 		}
 
-		urls = append(urls, u)
+		urls = append(urls, *u)
 	}
 
 	c := &Config{
@@ -157,6 +157,7 @@ type Client struct {
 	Exchange      *ExchangeService
 	Mosaic        *MosaicService
 	Namespace     *NamespaceService
+	Node          *NodeService
 	Network       *NetworkService
 	Transaction   *TransactionService
 	Resolve       *ResolverService
@@ -178,8 +179,11 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	if httpClient == nil {
 		var netTransport = &http.Transport{
 			DialContext: (&net.Dialer{
-				Timeout: 5 * time.Second,
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
 			}).DialContext,
+			IdleConnTimeout:     90 * time.Second,
+			MaxIdleConnsPerHost: 100,
 			TLSHandshakeTimeout: 5 * time.Second,
 		}
 
@@ -194,6 +198,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Blockchain = (*BlockchainService)(&c.common)
 	c.Mosaic = (*MosaicService)(&c.common)
 	c.Namespace = (*NamespaceService)(&c.common)
+	c.Node = (*NodeService)(&c.common)
 	c.Network = &NetworkService{&c.common, c.Blockchain}
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
@@ -214,6 +219,22 @@ func (c *Client) NetworkType() NetworkType {
 
 func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
+}
+
+//BlockGenerationTime gets value from config. If value not found returns default value - 15s
+func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error) {
+	cfg, err := c.Network.GetNetworkConfig(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if pl, ok := cfg.NetworkConfig.Sections["chain"]; ok {
+		if v, ok := pl.Fields["blockGenerationTargetTime"]; ok {
+			return time.ParseDuration(v.Value)
+		}
+	}
+
+	return time.Second * 15, nil
 }
 
 // AdaptAccount returns a new account with the same network type and generation hash like a Client
@@ -558,6 +579,15 @@ func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, 
 
 func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
 	tx, err := NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType) (*HarvesterTransaction, error) {
+	tx, err := NewHarvesterTransaction(deadline, htt, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

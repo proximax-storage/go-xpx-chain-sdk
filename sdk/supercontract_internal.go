@@ -6,12 +6,13 @@ package sdk
 
 type superContractDTO struct {
 	SuperContract struct {
-		SuperContractKey string    `json:"multisig"`
-		Start            uint64DTO `json:"start"`
-		End              uint64DTO `json:"end"`
-		MainDriveKey     string    `json:"mainDriveKey"`
-		FileHash         hashDto   `json:"fileHash"`
-		Version          uint64DTO `json:"vmVersion"`
+		SuperContractKey string             `json:"multisig"`
+		Start            uint64DTO          `json:"start"`
+		End              uint64DTO          `json:"end"`
+		MainDriveKey     string             `json:"mainDriveKey"`
+		FileHash         hashDto            `json:"fileHash"`
+		Version          uint64DTO          `json:"vmVersion"`
+		State            SuperContractState `json:"state"`
 	}
 }
 
@@ -39,6 +40,7 @@ func (ref *superContractDTO) toStruct(networkType NetworkType) (*SuperContract, 
 	contract.VMVersion = ref.SuperContract.Version.toUint64()
 	contract.Start = ref.SuperContract.Start.toStruct()
 	contract.End = ref.SuperContract.End.toStruct()
+	contract.State = ref.SuperContract.State
 
 	return &contract, nil
 }

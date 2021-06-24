@@ -118,7 +118,12 @@ type namespaceInfoDTO struct {
 
 //toStruct create & return new NamespaceInfo from namespaceInfoDTO
 func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
-	pubAcc, err := NewAccountFromPublicKey(ref.Namespace.Owner, NetworkType(ref.Namespace.Type))
+	address, err := NewAddressFromBase32(ref.Namespace.OwnerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	pubAcc, err := NewAccountFromPublicKey(ref.Namespace.Owner, address.Type)
 	if err != nil {
 		return nil, err
 	}

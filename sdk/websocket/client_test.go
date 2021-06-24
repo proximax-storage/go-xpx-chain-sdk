@@ -246,6 +246,9 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				confirmedAddedSubscribers: tt.fields.confirmedAddedSubscribers,
 				topicHandlers:             tt.fields.topicHandlers,
 				messagePublisher:          tt.fields.messagePublisher,
+				config: &sdk.Config{
+					GenerationHash: nil,
+				},
 			}
 			err := c.AddConfirmedAddedHandlers(tt.args.address, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
@@ -348,7 +351,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
-
+				config:                      &sdk.Config{},
 				UID:                         tt.fields.UID,
 				unconfirmedAddedSubscribers: tt.fields.unconfirmedAddedSubscribers,
 				topicHandlers:               tt.fields.topicHandlers,
@@ -470,6 +473,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
+				config:                        &sdk.Config{},
 				UID:                           tt.fields.UID,
 				topicHandlers:                 tt.fields.topicHandlers,
 				messagePublisher:              tt.fields.messagePublisher,
@@ -591,7 +595,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
-
+				config:                  &sdk.Config{},
 				UID:                     tt.fields.UID,
 				partialAddedSubscribers: tt.fields.partialAddedSubscribers,
 				topicHandlers:           tt.fields.topicHandlers,
@@ -713,6 +717,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
+				config:                    &sdk.Config{},
 				UID:                       tt.fields.UID,
 				partialRemovedSubscribers: tt.fields.partialRemovedSubscribers,
 				topicHandlers:             tt.fields.topicHandlers,
@@ -834,6 +839,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
+				config:            &sdk.Config{},
 				UID:               tt.fields.UID,
 				statusSubscribers: tt.fields.statusSubscribers,
 				topicHandlers:     tt.fields.topicHandlers,
@@ -955,6 +961,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &CatapultWebsocketClientImpl{
+				config:                 &sdk.Config{},
 				UID:                    tt.fields.UID,
 				cosignatureSubscribers: tt.fields.cosignatureSubscribers,
 				topicHandlers:          tt.fields.topicHandlers,
