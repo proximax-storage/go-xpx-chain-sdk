@@ -71,6 +71,9 @@ func (m *NamespaceId) Id() uint64 {
 }
 
 func (m *NamespaceId) String() string {
+	if m == nil {
+		return "nil"
+	}
 	return m.toHexString()
 }
 

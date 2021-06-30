@@ -84,6 +84,13 @@ const (
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
+// routes for MetadataNemService
+const (
+	metadataEntriesRoute = "/metadata_nem"
+	// POST and GET
+	metadataEntryHashRoute = "/metadata_nem/%s"
+)
+
 // routes for NodeService
 const (
 	nodeInfoRoute  = "/node/info"
