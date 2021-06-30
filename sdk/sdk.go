@@ -867,3 +867,21 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 
 	return nil
 }
+
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevytransaction(deadline, c.config.NetworkType, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	tx, err := NewMosaicRemoveLevytransaction(deadline, c.config.NetworkType, mosaicId)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}

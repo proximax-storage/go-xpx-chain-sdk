@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	flatbuffers "github.com/google/flatbuffers/go"
+	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 
 	"github.com/pkg/errors"
 
@@ -266,3 +268,39 @@ func Streaming(amount uint64) *Mosaic {
 func SuperContractMosaic(amount uint64) *Mosaic {
 	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
 }
+
+/// region Levy information
+type MosaicLevy struct {
+	Type 		uint16
+	Recipient   *Address
+	Fee      	Amount
+	*MosaicId
+}
+
+const (
+	Levy_None 					= 0x0
+	Levy_AbsoluteFee 			= 0x1
+	Levy_PercentileFee			= 0x2
+	MosaicLevyDecimalPlace		= 100000
+)
+
+func CreateMosaicLevyFeePercentile(percent float32) Amount {
+	return Amount(percent * MosaicLevyDecimalPlace)
+}
+
+func (levy *MosaicLevy) SetBuffers(builder *flatbuffers.Builder, r[]byte)  flatbuffers.UOffsetT{
+
+	rV := transactions.TransactionBufferCreateByteVector(builder, r)
+	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
+	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
+
+	transactions.MosaicLevyStart(builder)
+	transactions.MosaicLevyAddRecipient(builder, rV)
+	transactions.MosaicLevyAddType(builder, uint16(levy.Type))
+	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
+	transactions.MosaicLevyAddFee(builder, feeV)
+	mL := transactions.TransactionBufferEnd(builder)
+	return mL;
+}
+
+/// end region levy

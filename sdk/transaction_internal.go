@@ -1324,6 +1324,73 @@ func (dto *transactionStatusDTO) toStruct() (*TransactionStatus, error) {
 	}, nil
 }
 
+type mosaicModifyLevyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		MosaicId   *mosaicIdDTO  `json:"mosaicId"`
+		MosaicLevy mosaicLevyDTO `json:"levy"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicModifyLevyTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	levy, err := dto.Tx.MosaicLevy.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicModifyLevyTransaction{
+		*atx,
+		mosaicId,
+		levy,
+	}, nil
+}
+
+type mosaicRemoveLevyTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		MosaicId *mosaicIdDTO `json:"mosaicId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicRemoveLevyTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicRemoveLevyTransaction{
+		*atx,
+		mosaicId,
+	}, nil
+}
+
 type TransactionIdsDTO struct {
 	Ids []string `json:"transactionIds"`
 }

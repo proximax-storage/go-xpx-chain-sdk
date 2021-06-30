@@ -51,6 +51,8 @@ var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
 var nemesisAccount *sdk.Account
 
+var XPXID uint64 = 0x0DC67FBE1CAD29E3
+
 func init() {
 	ctx = context.Background()
 
@@ -1029,4 +1031,41 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 
 	hash, _ := sdk.CalculateUniqueNamespaceMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, namespaceId)
 	println(hash.String())
+}
+
+func TestModifyMosaicLevyTransaction(t *testing.T) {
+
+	// Add levy to XPX mosaic
+	mosaicId, _ := sdk.NewMosaicId(XPXID)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicModifyLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			mosaicId,
+			sdk.MosaicLevy{
+				Type: sdk.Levy_PercentileFee,
+				// supply valid address here for testing
+				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
+				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				// a blank mosaic id levy : use native mosaicId
+				MosaicId : mosaicId,
+			},
+		)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestRemoveMosaicLevyTransaction(t *testing.T) {
+
+	// remove levy to XPX mosaic
+	// Note; Levy for mosaicId should exist for this test to succeed
+	mosaicId, _ := sdk.NewMosaicId(XPXID)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicRemoveLevyTransaction(
+			sdk.NewDeadline(time.Hour),
+			mosaicId,
+		)
+	}, nemesisAccount)
+	assert.Nil(t, result.error)
 }
