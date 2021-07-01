@@ -1,0 +1,15 @@
+namespace Catapult.Buffers;
+
+table NodeLinkTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    remoteAccountKey: [ubyte];
+    linkAction: ubyte;
+}
+
+root_type NodeLinkTransactionBuffer;

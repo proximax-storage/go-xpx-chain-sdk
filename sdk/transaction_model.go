@@ -638,6 +638,140 @@ func (tx *MosaicAliasTransaction) Size() int {
 	return tx.AliasTransaction.Size() + MosaicIdSize
 }
 
+<<<<<<< Updated upstream
+=======
+type mosaicAliasTransactionDTO struct {
+	Tx struct {
+		aliasTransactionDTO
+		MosaicId *mosaicIdDTO `json:"mosaicId"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *mosaicAliasTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.aliasTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	mosaicId, err := dto.Tx.MosaicId.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return &MosaicAliasTransaction{
+		*atx,
+		mosaicId,
+	}, nil
+}
+
+type NodeLinkTransaction struct {
+	AbstractTransaction
+	RemoteAccount *PublicAccount
+	LinkAction    AccountLinkAction
+}
+
+// returns NodeLinkTransaction from passed PublicAccount and NodeLinkAction
+func NewNodeLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*NodeLinkTransaction, error) {
+	if remoteAccount == nil {
+		return nil, errors.New("remoteAccount must not be nil")
+	}
+	return &NodeLinkTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        LinkAccount,
+			Version:     LinkAccountVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		RemoteAccount: remoteAccount,
+		LinkAction:    linkAction,
+	}, nil
+}
+
+func (tx *NodeLinkTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *NodeLinkTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"RemoteAccount": %s,
+			"LinkAction": %d
+		`,
+		tx.AbstractTransaction.String(),
+		tx.RemoteAccount.String(),
+		tx.LinkAction,
+	)
+}
+
+func (tx *NodeLinkTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	b, err := utils.HexDecodeStringOdd(tx.RemoteAccount.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.AccountLinkTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+	transactions.AccountLinkTransactionBufferAddRemoteAccountKey(builder, pV)
+	transactions.AccountLinkTransactionBufferAddLinkAction(builder, uint8(tx.LinkAction))
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return accountLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *NodeLinkTransaction) Size() int {
+	return NodeLinkTransactionSize
+}
+
+type nodeLinkTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		RemoteAccountKey string            `json:"remoteAccountKey"`
+		Action           AccountLinkAction `json:"action"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *nodeLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NodeLinkTransaction{
+		*atx,
+		acc,
+		dto.Tx.Action,
+	}, nil
+}
+
+>>>>>>> Stashed changes
 type AccountLinkTransaction struct {
 	AbstractTransaction
 	RemoteAccount *PublicAccount
@@ -2457,6 +2591,7 @@ const (
 	AccountPropertyEntityTypeHeader              = TransactionHeaderSize + PropertyTypeSize
 	LinkActionSize                           int = 1
 	AccountLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
+	NodeLinkTransactionSize                      = TransactionHeaderSize + KeySize + LinkActionSize
 	AliasActionSize                          int = 1
 	AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
