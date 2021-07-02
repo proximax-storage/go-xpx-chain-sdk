@@ -13,6 +13,7 @@ type MessageType uint8
 const (
 	PlainMessageType MessageType = iota
 	SecureMessageType
+	PersistentHarvestingDelegationMessageType = 0xFE
 )
 
 type Message interface {
@@ -136,4 +137,51 @@ func (m *messageDTO) toStruct() (Message, error) {
 	default:
 		return nil, errors.New("Not supported MessageType")
 	}
+}
+
+type PersistentHarvestingDelegationMessage struct {
+	payload []byte
+}
+
+func (m *PersistentHarvestingDelegationMessage) String() string {
+	return str.StructToString(
+		"PersistentHarvestingDelegationMessage",
+		str.NewField("Type", str.IntPattern, m.Type()),
+		str.NewField("Payload", str.StringPattern, m.Payload()),
+	)
+}
+
+func (m *PersistentHarvestingDelegationMessage) Type() MessageType {
+	return PersistentHarvestingDelegationMessageType
+}
+
+func (m *PersistentHarvestingDelegationMessage) Payload() []byte {
+	return m.payload
+}
+
+func (m *PersistentHarvestingDelegationMessage) Message() string {
+	return string(m.payload)
+}
+
+func NewPersistentHarvestingDelegationMessage(payload string) *PersistentHarvestingDelegationMessage {
+	return &PersistentHarvestingDelegationMessage{[]byte(payload)}
+}
+
+func NewPersistentHarvestingDelegationMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.PrivateKey, sender *xpxcrypto.PublicKey) (*PersistentHarvestingDelegationMessage, error) {
+	rkp, err := xpxcrypto.NewKeyPair(recipient, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	skp, err := xpxcrypto.NewKeyPair(nil, sender, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	plaintText, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Decrypt(encodedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewPersistentHarvestingDelegationMessage(string(plaintText)), nil
 }

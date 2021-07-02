@@ -408,7 +408,14 @@ func (c *Client) NewAccountLinkTransaction(deadline *Deadline, remoteAccount *Pu
 
 	return tx, err
 }
+func (c *Client) NewNodeKeyLinkTransaction(deadline *Deadline, remoteAccount string, linkAction AccountLinkAction) (*NodeKeyLinkTransaction, error) {
+	tx, err := NewNodeKeyLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
 
+	return tx, err
+}
 func (c *Client) NewAccountPropertiesAddressTransaction(deadline *Deadline, propertyType PropertyType, modifications []*AccountPropertiesAddressModification) (*AccountPropertiesAddressTransaction, error) {
 	tx, err := NewAccountPropertiesAddressTransaction(deadline, propertyType, modifications, c.config.NetworkType)
 	if tx != nil {

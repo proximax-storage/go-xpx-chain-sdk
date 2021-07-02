@@ -638,66 +638,34 @@ func (tx *MosaicAliasTransaction) Size() int {
 	return tx.AliasTransaction.Size() + MosaicIdSize
 }
 
-<<<<<<< Updated upstream
-=======
-type mosaicAliasTransactionDTO struct {
-	Tx struct {
-		aliasTransactionDTO
-		MosaicId *mosaicIdDTO `json:"mosaicId"`
-	} `json:"transaction"`
-	TDto transactionInfoDTO `json:"meta"`
-}
-
-func (dto *mosaicAliasTransactionDTO) toStruct(*Hash) (Transaction, error) {
-	info, err := dto.TDto.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
-	atx, err := dto.Tx.aliasTransactionDTO.toStruct(info)
-	if err != nil {
-		return nil, err
-	}
-
-	mosaicId, err := dto.Tx.MosaicId.toStruct()
-	if err != nil {
-		return nil, err
-	}
-
-	return &MosaicAliasTransaction{
-		*atx,
-		mosaicId,
-	}, nil
-}
-
-type NodeLinkTransaction struct {
+type NodeKeyLinkTransaction struct {
 	AbstractTransaction
-	RemoteAccount *PublicAccount
-	LinkAction    AccountLinkAction
+	NodeKey    string
+	LinkAction AccountLinkAction
 }
 
-// returns NodeLinkTransaction from passed PublicAccount and NodeLinkAction
-func NewNodeLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*NodeLinkTransaction, error) {
-	if remoteAccount == nil {
-		return nil, errors.New("remoteAccount must not be nil")
+// returns NodeKeyLinkTransaction from passed PublicAccount and NodeLinkAction
+func NewNodeKeyLinkTransaction(deadline *Deadline, remoteAccount string, linkAction AccountLinkAction, networkType NetworkType) (*NodeKeyLinkTransaction, error) {
+	if len(remoteAccount) == 0 {
+		return nil, errors.New("remoteAccount must not be empty")
 	}
-	return &NodeLinkTransaction{
+	return &NodeKeyLinkTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Type:        LinkAccount,
 			Version:     LinkAccountVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
-		RemoteAccount: remoteAccount,
-		LinkAction:    linkAction,
+		NodeKey:    remoteAccount,
+		LinkAction: linkAction,
 	}, nil
 }
 
-func (tx *NodeLinkTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *NodeKeyLinkTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *NodeLinkTransaction) String() string {
+func (tx *NodeKeyLinkTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
@@ -705,15 +673,15 @@ func (tx *NodeLinkTransaction) String() string {
 			"LinkAction": %d
 		`,
 		tx.AbstractTransaction.String(),
-		tx.RemoteAccount.String(),
+		tx.NodeKey,
 		tx.LinkAction,
 	)
 }
 
-func (tx *NodeLinkTransaction) Bytes() ([]byte, error) {
+func (tx *NodeKeyLinkTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
-	b, err := utils.HexDecodeStringOdd(tx.RemoteAccount.PublicKey)
+	b, err := utils.HexDecodeStringOdd(tx.NodeKey)
 	if err != nil {
 		return nil, err
 	}
@@ -735,11 +703,11 @@ func (tx *NodeLinkTransaction) Bytes() ([]byte, error) {
 	return accountLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func (tx *NodeLinkTransaction) Size() int {
-	return NodeLinkTransactionSize
+func (tx *NodeKeyLinkTransaction) Size() int {
+	return NodeKeyLinkTransactionSize
 }
 
-type nodeLinkTransactionDTO struct {
+type NodeKeyLinkTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		RemoteAccountKey string            `json:"remoteAccountKey"`
@@ -748,7 +716,7 @@ type nodeLinkTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *nodeLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
+func (dto *NodeKeyLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -759,19 +727,13 @@ func (dto *nodeLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	acc, err := NewAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &NodeLinkTransaction{
+	return &NodeKeyLinkTransaction{
 		*atx,
-		acc,
+		dto.Tx.RemoteAccountKey,
 		dto.Tx.Action,
 	}, nil
 }
 
->>>>>>> Stashed changes
 type AccountLinkTransaction struct {
 	AbstractTransaction
 	RemoteAccount *PublicAccount
@@ -2591,7 +2553,7 @@ const (
 	AccountPropertyEntityTypeHeader              = TransactionHeaderSize + PropertyTypeSize
 	LinkActionSize                           int = 1
 	AccountLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
-	NodeLinkTransactionSize                      = TransactionHeaderSize + KeySize + LinkActionSize
+	NodeKeyLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
 	AliasActionSize                          int = 1
 	AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
