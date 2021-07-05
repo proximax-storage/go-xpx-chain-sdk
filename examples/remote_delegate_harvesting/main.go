@@ -16,10 +16,10 @@ import (
 
 var (
 	baseUrls            = []string{"http://127.0.0.1:3000"}
-	Hash, _             = sdk.StringToHash("86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790")
 	HarvesterAccountKey = "7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230"
 	HarvesterNodeKey    = "2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053"
 	NetworkType         = ""
+	TestAccountKey      = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 	wg := new(sync.WaitGroup)
 	go ws.Listen()
 
-	customerAcc, err := client.NewAccount()
+	customerAcc, err := sdk.NewAccountFromPrivateKey(TestAccountKey, actualNetworkType, client.GenerationHash())
 
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
@@ -98,7 +98,7 @@ func main() {
 		panic(err)
 	}
 
-	wg.Add(1)
+	wg.Add(2)
 	err = ws.AddConfirmedAddedHandlers(customerAccRemote.Address, func(transaction sdk.Transaction) bool {
 		defer wg.Done()
 		fmt.Printf("Remote Acc: ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
@@ -113,11 +113,11 @@ func main() {
 	//The status channel notifies when a transaction related to an address rises an error.
 	//The message contains the error message and the transaction hash.
 
-	wg.Add(1)
+	wg.Add(2)
 	err = ws.AddStatusHandlers(customerAcc.Address, func(info *sdk.StatusInfo) bool {
 		defer wg.Done()
 		fmt.Printf("Main Account: Content: %v \n", info.Hash)
-		panic(fmt.Sprint("Status: ", info.Status))
+		fmt.Printf("Status: %s", info.Status)
 		return true
 	})
 
@@ -129,7 +129,7 @@ func main() {
 	err = ws.AddStatusHandlers(customerAccRemote.Address, func(info *sdk.StatusInfo) bool {
 		defer wg.Done()
 		fmt.Printf("Remote Account: Content: %v \n", info.Hash)
-		panic(fmt.Sprint("Status: ", info.Status))
+		fmt.Printf("Status: %s", info.Status)
 		return true
 	})
 
@@ -140,33 +140,57 @@ func main() {
 		customerAccRemote.PublicAccount,
 		sdk.AccountLink)
 
-	_, err = customerAcc.Sign(transaction)
+	signedAccountLinKTransaction, err := customerAcc.Sign(transaction)
 
 	if err != nil {
 		panic(fmt.Errorf("Account link transaction signing returned error: %s", err))
 	}
+	restTx, err := client.Transaction.Announce(context.Background(), signedAccountLinKTransaction)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", restTx)
+
 	nodeLinkTransaction, err := client.NewNodeKeyLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		HarvesterNodeKey,
 		sdk.AccountLink)
 
-	_, err = customerAcc.Sign(nodeLinkTransaction)
+	signedNodeLinkTransaction, err := customerAcc.Sign(nodeLinkTransaction)
 
 	if err != nil {
 		panic(fmt.Errorf("Node link transaction signing returned error: %s", err))
 	}
 
-	harvestingAccount, err := sdk.NewAccountFromPrivateKey("2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053", actualNetworkType, Hash)
-	message := sdk.NewPersistentHarvestingDelegationMessage(HarvesterNodeKey)
-	persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
-		harvestingAccount.Address,
-		[]*sdk.Mosaic{},
-		message)
-
-	_, err = customerAcc.Sign(persistentDelegationLinkTransaction)
-
+	restTx, err = client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
 	if err != nil {
-		panic(fmt.Errorf("Transfer transaction signing returned error: %s", err))
+		panic(fmt.Errorf("Cannot announce node link: %s", err))
 	}
+	fmt.Printf("%s\n", restTx)
 
+	key, err := client.Node.GetNodeUnlockedAccounts(context.Background())
+	if err != nil {
+		panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
+	}
+	fmt.Printf("%s", key)
+	/*
+		harvestingAccount, err := sdk.NewAccountFromPrivateKey("2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053", actualNetworkType, client.GenerationHash())
+		message := sdk.NewPersistentHarvestingDelegationMessage(HarvesterNodeKey)
+		persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
+			harvestingAccount.Address,
+			[]*sdk.Mosaic{},
+			message)
+
+		signedPersistentDelegationLinkTransaction, err := customerAcc.Sign(persistentDelegationLinkTransaction)
+
+		if err != nil {
+			panic(fmt.Errorf("Transfer transaction signing returned error: %s", err))
+		}
+
+		restTx, err = client.Transaction.Announce(context.Background(), signedPersistentDelegationLinkTransaction)
+		if err != nil {
+			panic(fmt.Errorf("Transfer transaction announcing returned error: %s", err))
+		}
+		fmt.Printf("%s\n", restTx)
+	*/
 	wg.Wait()
 }
