@@ -16,6 +16,17 @@ const (
 	Api  nodeRole = 0x02
 )
 
+type NodeUnlockedAccount struct {
+	Account *PublicAccount
+}
+
+func (n *NodeUnlockedAccount) String() string {
+	return fmt.Sprintf(
+		`{ "Account": %s}`,
+		n.Account,
+	)
+}
+
 type NodeInfo struct {
 	Account      *PublicAccount
 	Host         string

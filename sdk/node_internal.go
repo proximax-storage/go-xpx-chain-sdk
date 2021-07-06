@@ -4,6 +4,41 @@
 
 package sdk
 
+type nodeUnlockedAccountDto struct {
+	PublicKey string `json:"publicKey"`
+}
+
+func (ref *nodeUnlockedAccountDto) toStruct(networkType NetworkType) (*NodeUnlockedAccount, error) {
+	account, err := NewAccountFromPublicKey(ref.PublicKey, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NodeUnlockedAccount{
+		Account: account,
+	}, nil
+}
+
+type nodeUnlockedAccountDtos []*nodeUnlockedAccountDto
+
+func (ref *nodeUnlockedAccountDtos) toStruct(networkType NetworkType) ([]*NodeUnlockedAccount, error) {
+	var (
+		dtos  = *ref
+		infos = make([]*NodeUnlockedAccount, 0, len(dtos))
+	)
+
+	for _, dto := range dtos {
+		info, err := dto.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		infos = append(infos, info)
+	}
+
+	return infos, nil
+}
+
 type nodeInfoDTO struct {
 	PublicKey         string      `json:"publicKey"`
 	Host              string      `json:"host"`

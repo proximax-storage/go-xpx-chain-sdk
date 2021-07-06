@@ -86,9 +86,10 @@ const (
 
 // routes for NodeService
 const (
-	nodeInfoRoute  = "/node/info"
-	nodeTimeRoute  = "/node/time"
-	nodePeersRoute = "/node/peers"
+	nodeInfoRoute            = "/node/info"
+	nodeUnlockedAccountRoute = "/node/unlockedaccount"
+	nodeTimeRoute            = "/node/time"
+	nodePeersRoute           = "/node/peers"
 )
 
 // routes for NetworkService

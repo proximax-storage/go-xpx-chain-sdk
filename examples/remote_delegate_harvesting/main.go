@@ -17,7 +17,7 @@ import (
 var (
 	baseUrls            = []string{"http://127.0.0.1:3000"}
 	HarvesterAccountKey = "7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230"
-	HarvesterNodeKey    = "2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053"
+	HarvesterNodeKey    = "D6430327F90FAAD41F4BC69E51EB6C9D4C78B618D0A4B616478BD05E7A480950"
 	NetworkType         = ""
 	TestAccountKey      = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
 )
@@ -46,7 +46,8 @@ func main() {
 	go ws.Listen()
 
 	customerAcc, err := sdk.NewAccountFromPrivateKey(TestAccountKey, actualNetworkType, client.GenerationHash())
-
+	fmt.Printf("Main Acc address: %s \n", customerAcc.Address)
+	fmt.Printf("Main harvester address: %s \n", customerAcc.Address)
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
 	}
@@ -56,7 +57,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
 	}
-
+	fmt.Printf("Customer Acc address: %s \n", customerAccRemote.Address)
 	wg.Add(1)
 	err = ws.AddUnconfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
 		defer wg.Done()
@@ -136,7 +137,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	transaction, err := client.NewAccountLinkTransaction(sdk.NewDeadline(time.Hour*1),
+	/*transaction, err := client.NewAccountLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		customerAccRemote.PublicAccount,
 		sdk.AccountLink)
 
@@ -149,8 +150,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s\n", restTx)
-
+	//fmt.Printf("%s\n", restTx)
+	*/
 	nodeLinkTransaction, err := client.NewNodeKeyLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		HarvesterNodeKey,
 		sdk.AccountLink)
@@ -161,7 +162,7 @@ func main() {
 		panic(fmt.Errorf("Node link transaction signing returned error: %s", err))
 	}
 
-	restTx, err = client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
+	restTx, err := client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
 	if err != nil {
 		panic(fmt.Errorf("Cannot announce node link: %s", err))
 	}
@@ -171,10 +172,11 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
 	}
-	fmt.Printf("%s", key)
-	/*
-		harvestingAccount, err := sdk.NewAccountFromPrivateKey("2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053", actualNetworkType, client.GenerationHash())
-		message := sdk.NewPersistentHarvestingDelegationMessage(HarvesterNodeKey)
+	fmt.Printf("%v", key)
+
+	harvestingAccount, err := sdk.NewAccountFromPrivateKey("2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053", actualNetworkType, client.GenerationHash())
+	fmt.Printf("harvest Acc address: %s \n", harvestingAccount.Address)
+	/*	message := sdk.NewPersistentHarvestingDelegationMessage(HarvesterNodeKey)
 		persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
 			harvestingAccount.Address,
 			[]*sdk.Mosaic{},

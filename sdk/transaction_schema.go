@@ -20,7 +20,7 @@ func accountLinkTransactionSchema() *schema {
 	}
 }
 
-func nodeLinkTransactionSchema() *schema {
+func nodeKeyLinkTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),

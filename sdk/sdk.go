@@ -301,7 +301,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		b := &bytes.Buffer{}
 		b.ReadFrom(resp.Body)
 		httpError := HttpError{
-			fmt.Errorf("sdk do request: %s", b.String()),
+			fmt.Errorf("sdk do request: %s %d", b.String(), resp.StatusCode),
 			resp.StatusCode,
 		}
 		return nil, &httpError

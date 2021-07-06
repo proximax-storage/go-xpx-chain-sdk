@@ -651,8 +651,8 @@ func NewNodeKeyLinkTransaction(deadline *Deadline, remoteAccount string, linkAct
 	}
 	return &NodeKeyLinkTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Type:        LinkAccount,
-			Version:     LinkAccountVersion,
+			Type:        NodeKeyLink,
+			Version:     NodeKeyLinkVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
@@ -2635,6 +2635,7 @@ const (
 	NetworkConfigEntityType   EntityType = 0x4159
 	BlockchainUpgrade         EntityType = 0x4158
 	LinkAccount               EntityType = 0x414c
+	NodeKeyLink               EntityType = 0x424b
 	Lock                      EntityType = 0x4148
 	MetadataAddress           EntityType = 0x413d
 	MetadataMosaic            EntityType = 0x423d
@@ -2689,6 +2690,7 @@ const (
 	NetworkConfigVersion             EntityVersion = 1
 	BlockchainUpgradeVersion         EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2
+	NodeKeyLinkVersion               EntityVersion = 1
 	LockVersion                      EntityVersion = 1
 	MetadataAddressVersion           EntityVersion = 1
 	MetadataMosaicVersion            EntityVersion = 1
