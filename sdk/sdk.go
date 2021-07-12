@@ -880,7 +880,7 @@ func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *Mo
 }
 
 func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
-	tx, err := NewMosaicRemoveLevytransaction(deadline, c.config.NetworkType, mosaicId)
+	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

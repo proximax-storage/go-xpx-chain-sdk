@@ -512,7 +512,7 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 		NewPlainMessage("test-message"),
 		MijinTest,
 	)
-
+	assert.Nil(t, err)
 	ttx.Signer = p
 
 	atx, err := NewCompleteAggregateTransaction(fakeDeadline, []Transaction{ttx}, MijinTest)
@@ -674,6 +674,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 func TestAddressAliasTransaction(t *testing.T) {
 	nsId := newNamespaceIdPanic(6300565133566699912)
 	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
+	assert.Nil(t, err)
 
 	tx, err := NewAddressAliasTransaction(
 		fakeDeadline,
@@ -797,7 +798,7 @@ func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
 		account.PublicAccount.PublicKey,
 		NewMosaicProperties(true, true, 4, Duration(10000)),
 		MijinTest)
-
+	assert.Nil(t, err)
 	tx.MaxFee = Amount(10)
 
 	assert.Nilf(t, err, "NewMosaicDefinitionTransaction returned error: %s", err)
@@ -830,7 +831,7 @@ func TestTransferTransactionSerialization(t *testing.T) {
 		NewPlainMessage(""),
 		MijinTest,
 	)
-
+	assert.Nil(t, err)
 	b, err := tx.Bytes()
 
 	assert.Nilf(t, err, "TransferTransaction.Bytes returned error: %s", err)
@@ -894,6 +895,7 @@ func TestAddHarvesterTransactionSigning(t *testing.T) {
 	assert.Nilf(t, err, "NewHarvesterTransaction returned error: %s", err)
 
 	shtx, err := a.Sign(htx)
+	assert.Nil(t, err)
 	assert.Equal(t, EntityType(AddHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
 	assert.Equal(t, stringToHashPanic("c712d80ba3d7f0eec4d4f647580818ce0ea9e3e62e874ef7c207a46290817c9c"), shtx.Hash)
@@ -912,6 +914,7 @@ func TestRemoveHarvesterTransactionSigning(t *testing.T) {
 	assert.Nilf(t, err, "NewHarvesterTransaction returned error: %s", err)
 
 	shtx, err := a.Sign(htx)
+	assert.Nil(t, err)
 	assert.Equal(t, EntityType(RemoveHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
 	assert.Equal(t, stringToHashPanic("d052a0b5d9535551e9d9ac51a3a06e2cc0983ce0d39689a6576d93d09c5c2912"), shtx.Hash)
