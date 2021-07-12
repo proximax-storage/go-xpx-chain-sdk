@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -94,7 +95,13 @@ func (txs *TransactionService) Announce(ctx context.Context, tx *SignedTransacti
 		tx.Payload,
 		tx.Hash.String(),
 	}
-	return txs.announceTransaction(ctx, &dto, transactionsRoute)
+
+	msg, err := txs.announceTransaction(ctx, &dto, transactionsRoute)
+	if err != nil {
+		return "", errors.Errorf("%s. Message: %s", err, msg)
+	}
+
+	return tx.Hash.String(), nil
 }
 
 // AnnounceAggregateBonded returns transaction hash after announcing passed aggregate bounded SignedTransaction
@@ -104,7 +111,13 @@ func (txs *TransactionService) AnnounceAggregateBonded(ctx context.Context, tx *
 		tx.Payload,
 		tx.Hash.String(),
 	}
-	return txs.announceTransaction(ctx, &dto, announceAggregateRoute)
+
+	msg, err := txs.announceTransaction(ctx, &dto, announceAggregateRoute)
+	if err != nil {
+		return "", errors.Errorf("%s. Message: %s", err, msg)
+	}
+
+	return tx.Hash.String(), nil
 }
 
 // AnnounceAggregateBondedCosignature returns transaction hash after announcing passed CosignatureSignedTransaction
@@ -114,7 +127,13 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 		c.Signature.String(),
 		c.Signer,
 	}
-	return txs.announceTransaction(ctx, &dto, announceAggregateCosignatureRoute)
+
+	msg, err := txs.announceTransaction(ctx, &dto, announceAggregateCosignatureRoute)
+	if err != nil {
+		return "", errors.Errorf("%s. Message: %s", err, msg)
+	}
+
+	return c.ParentHash.String(), nil
 }
 
 // GetTransactionStatus returns TransactionStatus for passed transaction id or hash

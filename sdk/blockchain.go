@@ -5,7 +5,6 @@
 package sdk
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -35,28 +34,6 @@ func (b *BlockchainService) GetBlockByHeight(ctx context.Context, height Height)
 	}
 
 	return dto.toStruct()
-}
-
-// returns Transaction's inside of block at passed height
-func (b *BlockchainService) GetBlockTransactions(ctx context.Context, height Height) ([]Transaction, error) {
-	if height == 0 {
-		return nil, ErrNilOrZeroHeight
-	}
-
-	url := net.NewUrl(fmt.Sprintf(blockGetTransactionRoute, height))
-
-	var data bytes.Buffer
-
-	resp, err := b.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
-		return nil, err
-	}
-
-	return MapTransactions(&data, b.client.GenerationHash())
 }
 
 // returns BlockInfo's for range block height - (block height + limit)

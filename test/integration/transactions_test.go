@@ -178,6 +178,7 @@ func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
+	assert.Nil(t, err)
 	println(tx.Size())
 	assert.Nil(t, err)
 
@@ -361,7 +362,7 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 		transfer.Message.(*sdk.SecureMessage),
 		defaultAccount.PublicAccount,
 	)
-
+	assert.Nil(t, err)
 	assert.Equal(t, message, plainMessage.Message())
 }
 
@@ -505,6 +506,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 
 func TestAggregateBoundedTransaction(t *testing.T) {
 	receiverAccount, err := client.NewAccount()
+	assert.Nil(t, err)
 
 	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -1043,12 +1045,12 @@ func TestModifyMosaicLevyTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
 			sdk.MosaicLevy{
-				Type: sdk.Levy_PercentileFee,
+				Type: sdk.LevyPercentileFee,
 				// supply valid address here for testing
 				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
-				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				Fee:       sdk.CreateMosaicLevyFeePercentile(1.5),
 				// a blank mosaic id levy : use native mosaicId
-				MosaicId : mosaicId,
+				MosaicId: mosaicId,
 			},
 		)
 	}, nemesisAccount)

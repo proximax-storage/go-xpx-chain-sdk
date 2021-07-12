@@ -117,6 +117,7 @@ func TestClient_AdaptAccount(t *testing.T) {
 	client := NewClient(nil, config)
 
 	adaptedAccount, err := client.AdaptAccount(account)
+	assert.Nil(t, err)
 	assert.Equal(t, MijinTest, adaptedAccount.PublicAccount.Address.Type)
 	assert.Equal(t, defaultHash, adaptedAccount.generationHash)
 

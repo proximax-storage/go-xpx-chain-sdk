@@ -78,9 +78,6 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	}
 
 	dV := transactions.TransactionBufferCreateByteVector(builder, dB)
-	if err != nil {
-		return nil, err
-	}
 
 	ownerBytes, err := hex.DecodeString(tx.Owner.PublicKey)
 	if err != nil {
@@ -88,9 +85,6 @@ func (tx *DeployTransaction) Bytes() ([]byte, error) {
 	}
 
 	ownerVector := transactions.TransactionBufferCreateByteVector(builder, ownerBytes)
-	if err != nil {
-		return nil, err
-	}
 	vV := transactions.TransactionBufferCreateUint32Vector(builder, baseInt64(tx.VMVersion).toArray())
 
 	transactions.DeployTransactionBufferStart(builder)
@@ -218,9 +212,6 @@ func (tx *StartExecuteTransaction) Bytes() ([]byte, error) {
 	}
 
 	sV := transactions.TransactionBufferCreateByteVector(builder, sB)
-	if err != nil {
-		return nil, err
-	}
 
 	pB := make([]byte, len(tx.FunctionParameters)*8)
 	for i, b := range tx.FunctionParameters {
@@ -570,7 +561,6 @@ func NewSuperContractFileSystemTransaction(
 	return tx, nil
 }
 
-
 func NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string, networkType NetworkType) (*DeactivateTransaction, error) {
 	if len(sc) != 64 {
 		return nil, errors.New("wrong super contract key")
@@ -586,8 +576,8 @@ func NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string, ne
 			Type:        Deactivate,
 			NetworkType: networkType,
 		},
-		SuperContract:  sc,
-		DriveKey:       driveKey,
+		SuperContract: sc,
+		DriveKey:      driveKey,
 	}
 
 	return &tx, nil
@@ -648,8 +638,8 @@ func (tx *DeactivateTransaction) Bytes() ([]byte, error) {
 type deactivateTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		SuperContract   string  `json:"superContract"`
-		Drive           string  `json:"driveKey"`
+		SuperContract string `json:"superContract"`
+		Drive         string `json:"driveKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

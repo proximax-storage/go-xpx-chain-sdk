@@ -36,8 +36,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		1,
 		1,
 	)
-	driveTx.ToAggregate(driveAccount.PublicAccount)
 	assert.Nil(t, err)
+	driveTx.ToAggregate(driveAccount.PublicAccount)
 
 	transferStorageToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -45,8 +45,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Mosaic{sdk.Storage(storageSize)},
 		sdk.NewPlainMessage(""),
 	)
-	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
+	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
 
 	transferXpxToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -54,8 +54,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Mosaic{sdk.Xpx(10000000)},
 		sdk.NewPlainMessage(""),
 	)
-	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
+	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -90,8 +90,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		},
 		[]*sdk.Action{},
 	)
-	fsTx.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
+	fsTx.ToAggregate(defaultAccount.PublicAccount)
 
 	transferStreamingToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -99,8 +99,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Mosaic{sdk.Streaming(fileSize)},
 		sdk.NewPlainMessage(""),
 	)
-	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
 	assert.Nil(t, err)
+	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -119,8 +119,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		fileHash,
 		123,
 	)
-	deploy.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
+	deploy.ToAggregate(superContract.PublicAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -145,6 +145,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Mosaic{sdk.SuperContractMosaic(1000)},
 		sdk.NewPlainMessage(""),
 	)
+	assert.Nil(t, err)
 	transferSCToInitiator.ToAggregate(defaultAccount.PublicAccount)
 
 	assert.Nil(t, err)
@@ -155,8 +156,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		"GoGoGo",
 		[]int64{},
 	)
-	execute.ToAggregate(initiator.PublicAccount)
 	assert.Nil(t, err)
+	execute.ToAggregate(initiator.PublicAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -178,8 +179,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		operationToken,
 	)
-	operationIdentify.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
+	operationIdentify.ToAggregate(superContract.PublicAccount)
 
 	scFileHash, err := sdk.StringToHash("BA2D2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093")
 	assert.Nil(t, err)
@@ -196,6 +197,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		},
 		[]*sdk.Action{},
 	)
+	assert.Nil(t, err)
 	scFs.ToAggregate(superContract.PublicAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
@@ -211,8 +213,8 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		operationToken,
 		sdk.Success,
 	)
-	endExecute.ToAggregate(superContract.PublicAccount)
 	assert.Nil(t, err)
+	endExecute.ToAggregate(superContract.PublicAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(

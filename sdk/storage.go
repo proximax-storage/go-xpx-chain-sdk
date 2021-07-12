@@ -115,8 +115,6 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 		default:
 			return nil, err
 		}
-
-		return nil, err
 	}
 
 	if lockInfo.HashAlgorithm != Internal_Hash_Type {

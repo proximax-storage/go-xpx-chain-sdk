@@ -85,36 +85,36 @@ func (info *OfferInfo) String() string {
 	)
 }
 
-func (o *OfferInfo) Cost(amount Amount) (Amount, error) {
-	if o.Mosaic.Amount < amount {
+func (info *OfferInfo) Cost(amount Amount) (Amount, error) {
+	if info.Mosaic.Amount < amount {
 		return 0, errors.New("You can't get more mosaics when in offer")
 	}
 
-	switch o.Type {
+	switch info.Type {
 	case SellOffer:
 		// If user want to buy mosaic, we round the cost towards the seller(because we buy part of mosaics)
-		return Amount(math.Ceil(float64(o.PriceNumerator) * float64(amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Ceil(float64(info.PriceNumerator) * float64(amount) / float64(info.PriceDenominator))), nil
 	case BuyOffer:
 		// If user want to sell mosaic, we round the cost towards the buyer(because we sell part of mosaics)
-		return Amount(math.Floor(float64(o.PriceNumerator) * float64(amount) / float64(o.PriceDenominator))), nil
+		return Amount(math.Floor(float64(info.PriceNumerator) * float64(amount) / float64(info.PriceDenominator))), nil
 	default:
 		return 0, errors.New("Unknown offer type")
 	}
 }
 
-func (o *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
-	cost, err := o.Cost(amount)
+func (info *OfferInfo) ConfirmOffer(amount Amount) (*ExchangeConfirmation, error) {
+	cost, err := info.Cost(amount)
 	if err != nil {
 		return nil, err
 	}
 
 	confirmation := &ExchangeConfirmation{
 		Offer{
-			Type:   o.Type,
-			Mosaic: newMosaicPanic(o.Mosaic.AssetId, amount),
+			Type:   info.Type,
+			Mosaic: newMosaicPanic(info.Mosaic.AssetId, amount),
 			Cost:   cost,
 		},
-		o.Owner,
+		info.Owner,
 	}
 
 	return confirmation, nil

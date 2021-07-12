@@ -122,14 +122,14 @@ type TransactionsPage struct {
 }
 
 type TransactionsPageOptions struct {
-	Height           uint   `url:"Height,omitempty"`
-	FromHeight       uint64 `url:"FromHeight,omitempty"`
-	ToHeight         uint64 `url:"ToHeight,omitempty"`
-	Address          string `url:"Address,omitempty"`
-	SignerPublicKey  string `url:"SignerPublicKey,omitempty"`
-	RecipientAddress string `url:"RecipientAddress,omitempty"`
-	Type             []uint `url:"Type,omitempty"`
-	Embedded         bool   `url:"Embedded,omitempty"`
+	Height           uint   `url:"height,omitempty"`
+	FromHeight       uint64 `url:"fromHeight,omitempty"`
+	ToHeight         uint64 `url:"toHeight,omitempty"`
+	Address          string `url:"address,omitempty"`
+	SignerPublicKey  string `url:"signerPublicKey,omitempty"`
+	RecipientAddress string `url:"recipientAddress,omitempty"`
+	Type             []uint `url:"type,omitempty"`
+	Embedded         bool   `url:"embedded,omitempty"`
 	PaginationOrderingOptions
 }
 
@@ -1657,7 +1657,7 @@ func (tx *MosaicModifyLevyTransaction) String() string {
 			"MosaicLevy": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.MosaicId,
+		tx.MosaicId.String(),
 		tx.MosaicLevy.String(),
 	)
 }
@@ -1708,7 +1708,7 @@ type MosaicRemoveLevyTransaction struct {
 	*MosaicId
 }
 
-func NewMosaicRemoveLevytransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+func NewMosaicRemoveLevyTransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
 	return &MosaicRemoveLevyTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Type:        MosaicRemoveLevy,
@@ -1728,11 +1728,10 @@ func (tx *MosaicRemoveLevyTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"MosaicId": %s,
-			"MosaicLevy": %s,
+			"MosaicId": %s
 		`,
 		tx.AbstractTransaction.String(),
-		tx.MosaicId,
+		tx.MosaicId.String(),
 	)
 }
 
