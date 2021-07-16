@@ -151,7 +151,7 @@ func main() {
 		panic(err)
 	}
 	//fmt.Printf("%s\n", restTx)
-	*/
+
 	nodeLinkTransaction, err := client.NewNodeKeyLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		HarvesterNodeKey,
 		sdk.AccountLink)
@@ -162,37 +162,40 @@ func main() {
 		panic(fmt.Errorf("Node link transaction signing returned error: %s", err))
 	}
 
-	restTx, err := client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
+	restTx, err = client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
 	if err != nil {
 		panic(fmt.Errorf("Cannot announce node link: %s", err))
 	}
 	fmt.Printf("%s\n", restTx)
-
-	key, err := client.Node.GetNodeUnlockedAccounts(context.Background())
-	if err != nil {
-		panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
-	}
-	fmt.Printf("%v", key)
-
-	harvestingAccount, err := sdk.NewAccountFromPrivateKey("2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053", actualNetworkType, client.GenerationHash())
-	fmt.Printf("harvest Acc address: %s \n", harvestingAccount.Address)
-	/*	message := sdk.NewPersistentHarvestingDelegationMessage(HarvesterNodeKey)
-		persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
-			harvestingAccount.Address,
-			[]*sdk.Mosaic{},
-			message)
-
-		signedPersistentDelegationLinkTransaction, err := customerAcc.Sign(persistentDelegationLinkTransaction)
-
-		if err != nil {
-			panic(fmt.Errorf("Transfer transaction signing returned error: %s", err))
-		}
-
-		restTx, err = client.Transaction.Announce(context.Background(), signedPersistentDelegationLinkTransaction)
-		if err != nil {
-			panic(fmt.Errorf("Transfer transaction announcing returned error: %s", err))
-		}
-		fmt.Printf("%s\n", restTx)
 	*/
+	/*
+		key, err := client.Node.GetNodeUnlockedAccounts(context.Background())
+		if err != nil {
+			panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
+		}
+		fmt.Printf("%v", key)
+	*/
+
+	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash())
+	fmt.Printf("harvest Acc address: %s \n", harvestingAccount.Address)
+
+	message, err := sdk.NewPersistentHarvestingDelegationMessageFromPlainText(customerAccRemote.PrivateKey, harvestingAccount.KeyPair.PublicKey)
+	persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
+		harvestingAccount.Address,
+		[]*sdk.Mosaic{},
+		message)
+
+	signedPersistentDelegationLinkTransaction, err := customerAcc.Sign(persistentDelegationLinkTransaction)
+
+	if err != nil {
+		panic(fmt.Errorf("Transfer transaction signing returned error: %s", err))
+	}
+
+	restTx, err := client.Transaction.Announce(context.Background(), signedPersistentDelegationLinkTransaction)
+	if err != nil {
+		panic(fmt.Errorf("Transfer transaction announcing returned error: %s", err))
+	}
+	fmt.Printf("%s\n", restTx)
+
 	wg.Wait()
 }

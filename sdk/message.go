@@ -16,6 +16,12 @@ const (
 	PersistentHarvestingDelegationMessageType = 0xFE
 )
 
+type MessageMarker [8]uint8
+
+const (
+	PersistentDelegationUnlockMarker = "E201735761802AFE"
+)
+
 type Message interface {
 	Type() MessageType
 	Payload() []byte
@@ -134,6 +140,8 @@ func (m *messageDTO) toStruct() (Message, error) {
 		return NewPlainMessage(string(b)), nil
 	case SecureMessageType:
 		return NewSecureMessage(b), nil
+	case PersistentHarvestingDelegationMessageType:
+		return NewPersistentHarvestingDelegationMessage(b), nil
 	default:
 		return nil, errors.New("Not supported MessageType")
 	}
@@ -163,25 +171,22 @@ func (m *PersistentHarvestingDelegationMessage) Message() string {
 	return string(m.payload)
 }
 
-func NewPersistentHarvestingDelegationMessage(payload string) *PersistentHarvestingDelegationMessage {
-	return &PersistentHarvestingDelegationMessage{[]byte(payload)}
+func NewPersistentHarvestingDelegationMessage(payload []byte) *PersistentHarvestingDelegationMessage {
+	return &PersistentHarvestingDelegationMessage{payload}
 }
 
-func NewPersistentHarvestingDelegationMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.PrivateKey, sender *xpxcrypto.PublicKey) (*PersistentHarvestingDelegationMessage, error) {
-	rkp, err := xpxcrypto.NewKeyPair(recipient, nil, nil)
+func NewPersistentHarvestingDelegationMessageFromPlainText(harvesterPrivateKey *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey) (*PersistentHarvestingDelegationMessage, error) {
+	ephemeralKeyPair, err := xpxcrypto.NewRandomKeyPair()
 	if err != nil {
 		return nil, err
 	}
-
-	skp, err := xpxcrypto.NewKeyPair(nil, sender, nil)
+	encoded, err := xpxcrypto.EncodeMessageNaCl(ephemeralKeyPair.PrivateKey, recipient, string(harvesterPrivateKey.Raw), nil)
 	if err != nil {
 		return nil, err
 	}
+	marker, err := hex.DecodeString(PersistentDelegationUnlockMarker)
+	encodedBytes, err := hex.DecodeString(encoded)
+	encrypted := append(append(marker, ephemeralKeyPair.PublicKey.Raw...), encodedBytes...)
 
-	plaintText, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Decrypt(encodedData)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewPersistentHarvestingDelegationMessage(string(plaintText)), nil
+	return &PersistentHarvestingDelegationMessage{encrypted}, nil
 }

@@ -1,6 +1,8 @@
 package sdk
 
-import "encoding/hex"
+import (
+	"encoding/hex"
+)
 
 func bytesToHash(bytes []byte) (*Hash, error) {
 	if len(bytes) != 32 {
