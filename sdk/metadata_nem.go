@@ -1,12 +1,65 @@
 package sdk
 
 import (
+	"context"
 	"encoding/hex"
+	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/net"
 	"golang.org/x/crypto/sha3"
+	"net/http"
 )
 
-// TODO: Add NEM's metadata routes. But the problem is that one route can return all 3 types of metadata
-//type MetadataNemService service
+type MetadataNemService service
+
+func (ref *MetadataNemService) GetMetadataNemInfo(ctx context.Context, computedHash *Hash) (*MetadataNemTupleInfo, error) {
+	if computedHash == nil {
+		return nil, ErrNilHash
+	}
+
+	url := net.NewUrl(fmt.Sprintf(metadataEntryHashRoute, computedHash.String()))
+
+	dto := &metadataNemInfoDTO{}
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	mscInfo, err := dto.toStruct(ref.client.config.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return mscInfo, nil
+}
+
+func (ref *MetadataNemService) GetMetadataNemInfos(ctx context.Context, hashes []*Hash) ([]*MetadataNemTupleInfo, error) {
+	if len(hashes) == 0 {
+		return nil, ErrNilHashes
+	}
+
+	dtos := metadataNemInfoDTOs(make([]*metadataNemInfoDTO, 0))
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadataEntriesRoute, &computedHashes{hashes}, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	mscInfos, err := dtos.toStruct(ref.client.config.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return mscInfos, nil
+}
 
 func CalculateUniqueAccountMetadataId(sourceAddress *Address, targetAccount *PublicAccount, key ScopedMetadataKey) (*Hash, error) {
 	return calculate(sourceAddress, targetAccount, key, 0, 0)

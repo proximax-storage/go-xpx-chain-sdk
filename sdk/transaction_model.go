@@ -2969,8 +2969,7 @@ func (t MetadataType) String() string {
 }
 
 const (
-	MetadataNone MetadataType = iota
-	MetadataAddressType
+	MetadataAddressType MetadataType = iota
 	MetadataMosaicType
 	MetadataNamespaceType
 )
