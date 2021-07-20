@@ -2733,7 +2733,7 @@ const (
 	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
-	MosaicLevySize                               = 2 + AddressSize + MosaicIdSize + MaxFeeSize
+	MosaicLevySize                               = 1 + AddressSize + MosaicIdSize + MaxFeeSize
 	MosaicModifyLevyTransactionSize              = TransactionHeaderSize + MosaicLevySize + MosaicIdSize
 	MosaicRemoveLevyTransactionSize              = TransactionHeaderSize + MosaicIdSize
 	NamespaceTypeSize                        int = 1

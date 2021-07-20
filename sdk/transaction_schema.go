@@ -390,7 +390,7 @@ func mosaicModifyLevyTransactionScheme() *schema {
 			newArrayAttribute("mosaicId", IntSize),
 			newTableAttribute("levy", schema{
 				[]schemaAttribute{
-					newScalarAttribute("type", ShortSize),
+					newScalarAttribute("type", ByteSize),
 					newArrayAttribute("recipient", ByteSize),
 					newArrayAttribute("mosaicId", IntSize),
 					newArrayAttribute("fee", IntSize),

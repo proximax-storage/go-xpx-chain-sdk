@@ -1046,9 +1046,9 @@ func TestModifyMosaicLevyTransaction(t *testing.T) {
 				Type: sdk.Levy_PercentileFee,
 				// supply valid address here for testing
 				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
-				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				Fee:       sdk.CreateMosaicLevyFeePercentile(1.5),
 				// a blank mosaic id levy : use native mosaicId
-				MosaicId : mosaicId,
+				MosaicId: mosaicId,
 			},
 		)
 	}, nemesisAccount)
