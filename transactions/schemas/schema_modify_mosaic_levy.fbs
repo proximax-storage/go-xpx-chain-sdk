@@ -1,7 +1,7 @@
 namespace transactions;
 
 table MosaicLevy {
-	type: ushort;
+	type: ubyte;
 	recipient: [ubyte];
 	mosaicId:[uint];
 	fee: [uint];

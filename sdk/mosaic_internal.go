@@ -240,14 +240,12 @@ func (m *mosaicNameDTOs) toStruct() ([]*MosaicName, error) {
 	return mscNames, nil
 }
 
-
 type mosaicLevyDTO struct {
-	Type 		uint16			`json:"type"`
-	Recipient   string			`json:"recipient"`
-	Fee      	*uint64DTO		`json:"fee"`
-	MosaicId	*mosaicIdDTO	`json:"mosaicId"`
+	Type      uint8        `json:"type"`
+	Recipient string       `json:"recipient"`
+	Fee       *uint64DTO   `json:"fee"`
+	MosaicId  *mosaicIdDTO `json:"mosaicId"`
 }
-
 
 func (dto *mosaicLevyDTO) toStruct() (MosaicLevy, error) {
 
@@ -267,9 +265,9 @@ func (dto *mosaicLevyDTO) toStruct() (MosaicLevy, error) {
 	}
 
 	return MosaicLevy{
-		Type:dto.Type,
+		Type:      dto.Type,
 		Recipient: a,
-		MosaicId: mosaicId,
-		Fee: f,
+		MosaicId:  mosaicId,
+		Fee:       f,
 	}, nil
 }
