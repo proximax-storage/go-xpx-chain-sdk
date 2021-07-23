@@ -15,11 +15,12 @@ import (
 )
 
 var (
-	baseUrls            = []string{"http://127.0.0.1:3000"}
-	HarvesterAccountKey = "7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230"
-	HarvesterNodeKey    = "D6430327F90FAAD41F4BC69E51EB6C9D4C78B618D0A4B616478BD05E7A480950"
-	NetworkType         = ""
-	TestAccountKey      = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
+	baseUrls             = []string{"http://127.0.0.1:3000"}
+	HarvesterAccountKey  = "7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230"
+	HarvesterNodeKey     = "D6430327F90FAAD41F4BC69E51EB6C9D4C78B618D0A4B616478BD05E7A480950"
+	NetworkType          = ""
+	TestAccountKey       = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0" //"819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
+	RemoteTestAccountKey = "bf1132005751e82f8cDc54a4961649df3e73dd00054e179f4cf5633e1e4bcb8d"
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	ws, err := websocket.NewClient(ctx, conf)
 	if err != nil {
 		panic(err)
@@ -46,22 +48,20 @@ func main() {
 	go ws.Listen()
 
 	customerAcc, err := sdk.NewAccountFromPrivateKey(TestAccountKey, actualNetworkType, client.GenerationHash())
-	fmt.Printf("Main Acc address: %s \n", customerAcc.Address)
-	fmt.Printf("Main harvester address: %s \n", customerAcc.Address)
-	if err != nil {
-		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
-	}
-
-	customerAccRemote, err := client.NewAccount()
 
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
 	}
-	fmt.Printf("Customer Acc address: %s \n", customerAccRemote.Address)
-	wg.Add(1)
+
+	customerAccRemote, err := sdk.NewAccountFromPrivateKey(RemoteTestAccountKey, actualNetworkType, client.GenerationHash())
+
+	if err != nil {
+		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
+	}
+	wg.Add(12)
 	err = ws.AddUnconfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
 		defer wg.Done()
-		fmt.Printf("Main Acc: UnconfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
+		fmt.Printf("UnconfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
 		return true
 	})
 
@@ -69,28 +69,9 @@ func main() {
 		panic(err)
 	}
 
-	wg.Add(1)
-	err = ws.AddUnconfirmedAddedHandlers(customerAccRemote.Address, func(transaction sdk.Transaction) bool {
-		defer wg.Done()
-		fmt.Printf("Remote acc: UnconfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
-		return true
-	})
-
-	if err != nil {
-		panic(err)
-	}
-	if err != nil {
-		panic(fmt.Errorf("Remote customer account returned error: %s", err))
-	}
-
-	//
-	//// The confirmedAdded channel notifies when a transaction related to an
-	//// address is included in a block. The message contains the transaction.
-
-	wg.Add(1)
 	err = ws.AddConfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
 		defer wg.Done()
-		fmt.Printf("Main Acc: ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
+		fmt.Printf("ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
 		fmt.Println("Successful transfer!")
 		return true
 	})
@@ -99,22 +80,6 @@ func main() {
 		panic(err)
 	}
 
-	wg.Add(2)
-	err = ws.AddConfirmedAddedHandlers(customerAccRemote.Address, func(transaction sdk.Transaction) bool {
-		defer wg.Done()
-		fmt.Printf("Remote Acc: ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
-		fmt.Println("Successful transfer!")
-		return true
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	//The status channel notifies when a transaction related to an address rises an error.
-	//The message contains the error message and the transaction hash.
-
-	wg.Add(2)
 	err = ws.AddStatusHandlers(customerAcc.Address, func(info *sdk.StatusInfo) bool {
 		defer wg.Done()
 		fmt.Printf("Main Account: Content: %v \n", info.Hash)
@@ -126,18 +91,15 @@ func main() {
 		panic(err)
 	}
 
-	wg.Add(1)
-	err = ws.AddStatusHandlers(customerAccRemote.Address, func(info *sdk.StatusInfo) bool {
-		defer wg.Done()
-		fmt.Printf("Remote Account: Content: %v \n", info.Hash)
-		fmt.Printf("Status: %s", info.Status)
-		return true
-	})
+	AnnounceAccountLink(client, customerAcc, customerAccRemote)
+	AnnounceNodeLink(client, customerAcc, actualNetworkType)
+	AnnounceTransferMessage(client, customerAcc, customerAccRemote, actualNetworkType)
+	GetNodeUnlockedAccounts(client)
 
-	if err != nil {
-		panic(err)
-	}
-	/*transaction, err := client.NewAccountLinkTransaction(sdk.NewDeadline(time.Hour*1),
+	wg.Wait()
+}
+func AnnounceAccountLink(client *sdk.Client, customerAcc *sdk.Account, customerAccRemote *sdk.Account) {
+	transaction, err := client.NewAccountLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		customerAccRemote.PublicAccount,
 		sdk.AccountLink)
 
@@ -150,10 +112,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Printf("%s\n", restTx)
+	fmt.Printf("%s\n", restTx)
+}
 
+func AnnounceNodeLink(client *sdk.Client, customerAcc *sdk.Account, actualNetworkType sdk.NetworkType) {
+	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash())
 	nodeLinkTransaction, err := client.NewNodeKeyLinkTransaction(sdk.NewDeadline(time.Hour*1),
-		HarvesterNodeKey,
+		harvestingAccount.PublicAccount.PublicKey,
 		sdk.AccountLink)
 
 	signedNodeLinkTransaction, err := customerAcc.Sign(nodeLinkTransaction)
@@ -162,23 +127,15 @@ func main() {
 		panic(fmt.Errorf("Node link transaction signing returned error: %s", err))
 	}
 
-	restTx, err = client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
+	restTx, err := client.Transaction.Announce(context.Background(), signedNodeLinkTransaction)
 	if err != nil {
 		panic(fmt.Errorf("Cannot announce node link: %s", err))
 	}
 	fmt.Printf("%s\n", restTx)
-	*/
-	/*
-		key, err := client.Node.GetNodeUnlockedAccounts(context.Background())
-		if err != nil {
-			panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
-		}
-		fmt.Printf("%v", key)
-	*/
+}
 
+func AnnounceTransferMessage(client *sdk.Client, customerAcc *sdk.Account, customerAccRemote *sdk.Account, actualNetworkType sdk.NetworkType) {
 	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash())
-	fmt.Printf("harvest Acc address: %s \n", harvestingAccount.Address)
-
 	message, err := sdk.NewPersistentHarvestingDelegationMessageFromPlainText(customerAccRemote.PrivateKey, harvestingAccount.KeyPair.PublicKey)
 	persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
 		harvestingAccount.Address,
@@ -196,6 +153,12 @@ func main() {
 		panic(fmt.Errorf("Transfer transaction announcing returned error: %s", err))
 	}
 	fmt.Printf("%s\n", restTx)
+}
 
-	wg.Wait()
+func GetNodeUnlockedAccounts(client *sdk.Client) {
+	key, err := client.Node.GetNodeUnlockedAccounts(context.Background())
+	if err != nil {
+		panic(fmt.Errorf("Cannot retrieve unlocked accounts: %s", err))
+	}
+	fmt.Printf("%v", key)
 }

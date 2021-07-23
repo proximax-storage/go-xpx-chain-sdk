@@ -19,7 +19,7 @@ const (
 type MessageMarker [8]uint8
 
 const (
-	PersistentDelegationUnlockMarker = "E201735761802AFE"
+	PersistentDelegationUnlockMarker = "2A8061577301E2"
 )
 
 type Message interface {
@@ -185,7 +185,13 @@ func NewPersistentHarvestingDelegationMessageFromPlainText(harvesterPrivateKey *
 		return nil, err
 	}
 	marker, err := hex.DecodeString(PersistentDelegationUnlockMarker)
+	if err != nil {
+		return nil, err
+	}
 	encodedBytes, err := hex.DecodeString(encoded)
+	if err != nil {
+		return nil, err
+	}
 	encrypted := append(append(marker, ephemeralKeyPair.PublicKey.Raw...), encodedBytes...)
 
 	return &PersistentHarvestingDelegationMessage{encrypted}, nil
