@@ -279,9 +279,10 @@ type MosaicLevy struct {
 }
 
 const (
-	LevyNone               = 0x0
-	LevyAbsoluteFee        = 0x1
-	LevyPercentileFee      = 0x2
+	LevyNone          uint8 = 0x0
+	LevyAbsoluteFee   uint8 = 0x1
+	LevyPercentileFee uint8 = 0x2
+
 	MosaicLevyDecimalPlace = 100000
 )
 

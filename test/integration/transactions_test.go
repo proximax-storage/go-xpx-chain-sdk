@@ -1034,25 +1034,46 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 }
 
 func TestModifyMosaicLevyTransaction(t *testing.T) {
+	recipientAccount, err := client.NewAccount()
+
+	// fake transaction for recipientAccount
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			recipientAccount.PublicAccount.Address,
+			[]*sdk.Mosaic{},
+			sdk.NewPlainMessage("fake"),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
 	// Add levy to XPX mosaic
 	mosaicId, err := sdk.NewMosaicId(XPXID)
 	assert.Nil(t, err)
 
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
+	fee := sdk.CreateMosaicLevyFeePercentile(1.5)
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewMosaicModifyLevyTransaction(
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
 			&sdk.MosaicLevy{
 				Type: sdk.LevyPercentileFee,
 				// supply valid address here for testing
-				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
-				Fee:       sdk.CreateMosaicLevyFeePercentile(1.5),
+				Recipient: recipientAccount.Address,
+				Fee:       fee,
 				// a blank mosaic id levy : use native mosaicId
 				MosaicId: mosaicId,
 			},
 		)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
+
+	levy, err := client.Mosaic.GetMosaicLevy(ctx, mosaicId)
+	assert.Nil(t, err)
+	assert.Equal(t, sdk.LevyPercentileFee, levy.Type)
+	assert.Equal(t, recipientAccount.Address, levy.Recipient)
+	assert.Equal(t, fee, levy.Fee)
+	assert.Equal(t, mosaicId, levy.MosaicId)
 }
 
 func TestRemoveMosaicLevyTransaction(t *testing.T) {
