@@ -1632,6 +1632,9 @@ type MosaicModifyLevyTransaction struct {
 }
 
 func NewMosaicModifyLevyTransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	if levy.MosaicId == nil {
+		levy.MosaicId = mosaicId
+	}
 
 	return &MosaicModifyLevyTransaction{
 		AbstractTransaction: AbstractTransaction{

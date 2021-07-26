@@ -592,7 +592,7 @@ func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32
 	return tx, err
 }
 
-func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration) (*MosaicSupplyChangeTransaction, error) {
+func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Amount) (*MosaicSupplyChangeTransaction, error) {
 	tx, err := NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
