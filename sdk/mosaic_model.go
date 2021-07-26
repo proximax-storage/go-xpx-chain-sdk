@@ -270,7 +270,7 @@ func SuperContractMosaic(amount uint64) *Mosaic {
 	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
 }
 
-/// region Levy information
+/// region MosaicLevy information
 type MosaicLevy struct {
 	Type      uint8
 	Recipient *Address
@@ -279,9 +279,9 @@ type MosaicLevy struct {
 }
 
 const (
-	Levy_None              = 0x0
-	Levy_AbsoluteFee       = 0x1
-	Levy_PercentileFee     = 0x2
+	LevyNone               = 0x0
+	LevyAbsoluteFee        = 0x1
+	LevyPercentileFee      = 0x2
 	MosaicLevyDecimalPlace = 100000
 )
 
@@ -290,6 +290,7 @@ func CreateMosaicLevyFeePercentile(percent float32) Amount {
 }
 
 func (levy *MosaicLevy) SetBuffers(builder *flatbuffers.Builder, r []byte) flatbuffers.UOffsetT {
+
 	rV := transactions.TransactionBufferCreateByteVector(builder, r)
 	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
 	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
