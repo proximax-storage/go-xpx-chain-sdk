@@ -2904,6 +2904,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &blockchainUpgradeTransactionDTO{}
 	case LinkAccount:
 		dto = &accountLinkTransactionDTO{}
+	case NodeKeyLink:
+		dto = &NodeKeyLinkTransactionDTO{}
 	case Lock:
 		dto = &lockFundsTransactionDTO{}
 	case MetadataAddress:
