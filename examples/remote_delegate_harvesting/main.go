@@ -53,7 +53,7 @@ func main() {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
 	}
 
-	//customerAccRemote, err := sdk.NewAccountFromPrivateKey(RemoteTestAccountKey, actualNetworkType, client.GenerationHash())
+	customerAccRemote, err := sdk.NewAccountFromPrivateKey(RemoteTestAccountKey, actualNetworkType, client.GenerationHash())
 
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
@@ -94,6 +94,7 @@ func main() {
 	AnnounceAccountLink(client, customerAcc, customerAccRemote)
 	AnnounceNodeLink(client, customerAcc, actualNetworkType)
 	AnnounceTransferMessage(client, customerAcc, customerAccRemote, actualNetworkType)
+	time.Sleep(time.Second * 30)
 	GetNodeUnlockedAccounts(client)
 
 	wg.Wait()
