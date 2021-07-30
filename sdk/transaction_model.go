@@ -2705,7 +2705,7 @@ const (
 	RegisterNamespaceVersion         EntityVersion = 2
 	SecretLockVersion                EntityVersion = 1
 	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 3
+	TransferVersion                  EntityVersion = 4
 	PrepareDriveVersion              EntityVersion = 3
 	JoinToDriveVersion               EntityVersion = 1
 	DriveFileSystemVersion           EntityVersion = 1
