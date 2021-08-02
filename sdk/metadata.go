@@ -129,15 +129,13 @@ func (ref *MetadataService) GetMetadataByAddress(ctx context.Context, address st
 		return nil, err
 	}
 
-	if info.MetadataType == MetadataNone {
-		a, err := NewAddressFromRaw(address)
-		if err != nil {
-			return nil, err
-		}
-
-		info.MetadataType = MetadataAddressType
-		info.Address = a
+	a, err := NewAddressFromRaw(address)
+	if err != nil {
+		return nil, err
 	}
+
+	info.MetadataType = MetadataAddressType
+	info.Address = a
 
 	return info, nil
 }
@@ -162,10 +160,8 @@ func (ref *MetadataService) GetMetadataByMosaicId(ctx context.Context, mosaicId 
 		return nil, err
 	}
 
-	if info.MetadataType == MetadataNone {
-		info.MetadataType = MetadataMosaicType
-		info.MosaicId = mosaicId
-	}
+	info.MetadataType = MetadataMosaicType
+	info.MosaicId = mosaicId
 
 	return info, nil
 }
@@ -190,10 +186,8 @@ func (ref *MetadataService) GetMetadataByNamespaceId(ctx context.Context, namesp
 		return nil, err
 	}
 
-	if info.MetadataType == MetadataNone {
-		info.MetadataType = MetadataNamespaceType
-		info.NamespaceId = namespaceId
-	}
+	info.MetadataType = MetadataNamespaceType
+	info.NamespaceId = namespaceId
 
 	return info, nil
 }
