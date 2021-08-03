@@ -1,0 +1,30 @@
+namespace Catapult.Buffers;
+
+table PrepareBcDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    owner:[ubyte];
+    driveKey:[ubyte];
+    driveSize:[uint];
+    replicatorCount:ushort;
+}
+
+table DriveClosureTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    driveKey:[ubyte];
+}
+
+root_type PrepareBcDriveTransactionBuffer;
+
+root_type DriveClosureTransactionBuffer;

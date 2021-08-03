@@ -163,6 +163,7 @@ type Client struct {
 	Resolve       *ResolverService
 	Account       *AccountService
 	Storage       *StorageService
+	StorageV2     *StorageV2Service
 	SuperContract *SuperContractService
 	Lock          *LockService
 	Contract      *ContractService
@@ -206,6 +207,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Lock = (*LockService)(&c.common)
 	c.Storage = &StorageService{&c.common, c.Lock}
+	c.StorageV2 = (*StorageV2Service)(&c.common)
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
@@ -805,6 +807,26 @@ func (c *Client) NewStartFileDownloadTransaction(deadline *Deadline, drive *Publ
 
 func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *PublicAccount, operationToken *Hash, files []*DownloadFile) (*EndFileDownloadTransaction, error) {
 	tx, err := NewEndFileDownloadTransaction(deadline, recipient, operationToken, files, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, owner *PublicAccount, driveKey string, driveSize StorageSize, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
+
+	tx, err := NewPrepareBcDriveTransaction(deadline, owner, driveKey, driveSize, replicatorCount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string) (*DriveClosureTransaction, error) {
+
+	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
