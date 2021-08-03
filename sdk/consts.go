@@ -115,6 +115,16 @@ const (
 	accountDownloadInfosRoute = "/account/%s/downloads"
 )
 
+// routes for StorageV2Service
+const (
+	drivesRouteV2               = "/drives"
+	driveRouteV2                = "/drive/%s"
+	drivesOfAccountRouteV2      = "/account/%s/drive%s"
+	downloadInfoRouteV2         = "/downloads/%s"
+	driveDownloadInfosRouteV2   = "/drive/%s/downloads"
+	accountDownloadInfosRouteV2 = "/account/%s/downloads"
+)
+
 // routes for SuperContractService
 const (
 	driveSuperContractsRoute = "/drive/%s/supercontracts"

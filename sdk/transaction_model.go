@@ -2782,6 +2782,8 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + KeySize + KeySize + StorageSizeSize + 2
+	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 )
 
 type EntityType uint16
@@ -2839,6 +2841,13 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
+	PrepareBcDrive            EntityType = 0x515A
+	ReplicatorOnboarding      EntityType = 0x525A
+	DataModification          EntityType = 0x535A
+	DataModificationApproval  EntityType = 0x545A
+	DataModificationCancel    EntityType = 0x555A
+	Download                  EntityType = 0x565A
+	DriveClosure              EntityType = 0x575A
 )
 
 func (t EntityType) String() string {
@@ -2897,6 +2906,13 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
+	PrepareBcDriveVersion            EntityVersion = 1
+	ReplicatorOnboardingVersion      EntityVersion = 1
+	DataModificationVersion          EntityVersion = 1
+	DataModificationApprovalVersion  EntityVersion = 1
+	DataModificationCancelVersion    EntityVersion = 1
+	DownloadVersion                  EntityVersion = 1
+	DriveClosureVersion              EntityVersion = 1
 )
 
 type AccountLinkAction uint8
