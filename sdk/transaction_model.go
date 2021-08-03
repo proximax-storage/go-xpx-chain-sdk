@@ -1628,10 +1628,13 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
-	MosaicLevy
+	*MosaicLevy
 }
 
-func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+func NewMosaicModifyLevyTransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	if levy.MosaicId == nil {
+		levy.MosaicId = mosaicId
+	}
 
 	return &MosaicModifyLevyTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -1728,7 +1731,7 @@ func (tx *MosaicRemoveLevyTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"MosaicId": %s
+			"MosaicId": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicId.String(),
@@ -2732,7 +2735,7 @@ const (
 	MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
 	MosaicSupplyDirectionSize                int = 1
 	MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
-	MosaicLevySize                               = 2 + AddressSize + MosaicIdSize + MaxFeeSize
+	MosaicLevySize                               = 1 + AddressSize + MosaicIdSize + MaxFeeSize
 	MosaicModifyLevyTransactionSize              = TransactionHeaderSize + MosaicLevySize + MosaicIdSize
 	MosaicRemoveLevyTransactionSize              = TransactionHeaderSize + MosaicIdSize
 	NamespaceTypeSize                        int = 1
