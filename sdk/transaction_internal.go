@@ -1327,8 +1327,8 @@ func (dto *transactionStatusDTO) toStruct() (*TransactionStatus, error) {
 type mosaicModifyLevyTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		MosaicId   *mosaicIdDTO  `json:"mosaicId"`
-		MosaicLevy mosaicLevyDTO `json:"levy"`
+		MosaicId   *mosaicIdDTO   `json:"mosaicId"`
+		MosaicLevy *mosaicLevyDTO `json:"levy"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

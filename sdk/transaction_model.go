@@ -1628,10 +1628,13 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
-	MosaicLevy
+	*MosaicLevy
 }
 
-func NewMosaicModifyLevytransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+func NewMosaicModifyLevyTransaction(deadline *Deadline, networkType NetworkType, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	if levy.MosaicId == nil {
+		levy.MosaicId = mosaicId
+	}
 
 	return &MosaicModifyLevyTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -1729,7 +1732,6 @@ func (tx *MosaicRemoveLevyTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"MosaicId": %s,
-			"MosaicLevy": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicId,

@@ -48,6 +48,7 @@ const (
 	mosaicsRoute     = "/mosaic"
 	mosaicRoute      = "/mosaic/%s"
 	mosaicNamesRoute = "/mosaic/names"
+	mosaicLevyRoute  = "/mosaic/%s/levy"
 )
 
 // routes for BlockchainService

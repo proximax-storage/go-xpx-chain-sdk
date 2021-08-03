@@ -270,33 +270,56 @@ func SuperContractMosaic(amount uint64) *Mosaic {
 	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
 }
 
-/// region Levy information
+/// region MosaicLevy information
+type LevyType uint8
+
+func (lt LevyType) String() string {
+	return fmt.Sprintf("%d", lt)
+}
+
+const (
+	LevyNone          LevyType = 0x0
+	LevyAbsoluteFee   LevyType = 0x1
+	LevyPercentileFee LevyType = 0x2
+
+	MosaicLevyDecimalPlace = 100000
+)
+
 type MosaicLevy struct {
-	Type      uint8
+	Type      LevyType
 	Recipient *Address
 	Fee       Amount
 	*MosaicId
 }
 
-const (
-	Levy_None              = 0x0
-	Levy_AbsoluteFee       = 0x1
-	Levy_PercentileFee     = 0x2
-	MosaicLevyDecimalPlace = 100000
-)
-
 func CreateMosaicLevyFeePercentile(percent float32) Amount {
 	return Amount(percent * MosaicLevyDecimalPlace)
 }
 
+func (levy *MosaicLevy) String() string {
+	return fmt.Sprintf(
+		`
+			"Type": %s,
+			"Fee": %s,
+			"MosaicId": %s,
+			"Revipient": %s,
+		`,
+		levy.Type.String(),
+		levy.Fee.String(),
+		levy.MosaicId.String(),
+		levy.Recipient.String(),
+	)
+}
+
 func (levy *MosaicLevy) SetBuffers(builder *flatbuffers.Builder, r []byte) flatbuffers.UOffsetT {
+
 	rV := transactions.TransactionBufferCreateByteVector(builder, r)
 	feeV := transactions.TransactionBufferCreateUint32Vector(builder, levy.Fee.toArray())
 	mosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, levy.MosaicId.toArray())
 
 	transactions.MosaicLevyStart(builder)
 	transactions.MosaicLevyAddRecipient(builder, rV)
-	transactions.MosaicLevyAddType(builder, levy.Type)
+	transactions.MosaicLevyAddType(builder, byte(levy.Type))
 	transactions.MosaicLevyAddMosaicId(builder, mosaicIdV)
 	transactions.MosaicLevyAddFee(builder, feeV)
 	mL := transactions.TransactionBufferEnd(builder)
