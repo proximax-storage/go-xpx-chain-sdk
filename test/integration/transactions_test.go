@@ -26,7 +26,7 @@ import (
 // const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "3E86205091D90B661F95E986D7CC63D68FB11227E8AAF469A5612DB62F89606A"
+const privateKey = "28FCECEA252231D2C86E1BCF7DD541552BDBBEFBB09324758B3AC199B4AA7B78"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -178,6 +178,7 @@ func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
+	assert.Nil(t, err)
 	println(tx.Size())
 	assert.Nil(t, err)
 
@@ -361,7 +362,7 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 		transfer.Message.(*sdk.SecureMessage),
 		defaultAccount.PublicAccount,
 	)
-
+	assert.Nil(t, err)
 	assert.Equal(t, message, plainMessage.Message())
 }
 
@@ -505,6 +506,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 
 func TestAggregateBoundedTransaction(t *testing.T) {
 	receiverAccount, err := client.NewAccount()
+	assert.Nil(t, err)
 
 	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
