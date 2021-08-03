@@ -166,7 +166,7 @@ func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, addres
 
 // GetAccountNames Returns friendly names for accounts.
 // post @/account/names
-func (ref *AccountService) GetAccountNames(ctx context.Context, addr ...*Address) ([]*AccountName, error) {
+func (a *AccountService) GetAccountNames(ctx context.Context, addr ...*Address) ([]*AccountName, error) {
 
 	if len(addr) == 0 {
 		return nil, ErrEmptyAddressesIds
@@ -174,7 +174,7 @@ func (ref *AccountService) GetAccountNames(ctx context.Context, addr ...*Address
 
 	dtos := accountNamesDTOs(make([]*accountNamesDTO, 0))
 
-	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, accountNamesRoute, &addresses{addr}, &dtos)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, accountNamesRoute, &addresses{addr}, &dtos)
 	if err != nil {
 		return nil, err
 	}

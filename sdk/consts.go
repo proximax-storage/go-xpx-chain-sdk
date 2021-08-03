@@ -52,12 +52,11 @@ const (
 
 // routes for BlockchainService
 const (
-	blockHeightRoute         = "/chain/height"
-	blockByHeightRoute       = "/block/%s"
-	blockScoreRoute          = "/chain/score"
-	blockGetTransactionRoute = "/block/%s/transactions"
-	blockInfoRoute           = "/blocks/%s/limit/%s"
-	blockStorageRoute        = "/diagnostic/storage"
+	blockHeightRoute   = "/chain/height"
+	blockByHeightRoute = "/block/%s"
+	blockScoreRoute    = "/chain/score"
+	blockInfoRoute     = "/blocks/%s/limit/%s"
+	blockStorageRoute  = "/diagnostic/storage"
 )
 
 // routes for ContractsService
