@@ -53,6 +53,46 @@ func (desc *CompletedDataModification) String() string {
 	)
 }
 
+type BcDrive struct {
+	BcDriveAccount             *PublicAccount
+	OwnerAccount               *PublicAccount
+	RootHash                   *Hash
+	DriveSize                  StorageSize
+	ReplicatorCount            uint16
+	ActiveDataModifications    []*ActiveDataModification
+	CompletedDataModifications []*CompletedDataModification
+	ActiveDownloads            []*Hash
+	CompletedDownloads         []*Hash
+	Replicators                map[int]*PublicAccount
+}
+
+func (drive *BcDrive) String() string {
+	return fmt.Sprintf(
+		`
+		"BcDriveAccount": %s,
+		"OwnerAccount": %s,
+		"RootHash": %s,
+		"DriveSize": %d,
+		"ReplicatorCount": %d,
+		"ActiveDataModifications": %s,
+		"CompletedDataModifications": %s,
+		"ActiveDownloads": %s,
+		"CompletedDownloads": %s,
+		"Replicators": %s,
+		`,
+		drive.BcDriveAccount,
+		drive.OwnerAccount,
+		drive.RootHash,
+		drive.DriveSize,
+		drive.ReplicatorCount,
+		drive.ActiveDataModifications,
+		drive.CompletedDataModifications,
+		drive.ActiveDownloads,
+		drive.CompletedDownloads,
+		drive.Replicators,
+	)
+}
+
 // Prepare Bc Drive Transaction
 type PrepareBcDriveTransaction struct {
 	AbstractTransaction
