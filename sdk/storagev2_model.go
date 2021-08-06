@@ -38,7 +38,7 @@ func (desc *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification ActiveDataModification
+	ActiveDataModification *ActiveDataModification
 	State                  DataModificationState
 }
 
@@ -78,7 +78,7 @@ func (drive *BcDrive) String() string {
 		"CompletedDataModifications": %s,
 		"ActiveDownloads": %s,
 		"CompletedDownloads": %s,
-		"Replicators": %s,
+		"Replicators": %+v,
 		`,
 		drive.BcDriveAccount,
 		drive.OwnerAccount,
