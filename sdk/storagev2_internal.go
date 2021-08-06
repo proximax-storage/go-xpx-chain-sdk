@@ -60,8 +60,8 @@ func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*Ac
 }
 
 type completedDataModificationDTO struct {
-	ActiveDataModification activeDataModificationDTO `json:"activeDataModification"`
-	State                  DataModificationState     `json:"state"`
+	ActiveDataModification *activeDataModificationDTO `json:"activeDataModification"`
+	State                  DataModificationState      `json:"state"`
 }
 
 func (ref *completedDataModificationDTO) toStruct(networkType NetworkType) (*CompletedDataModification, error) {
