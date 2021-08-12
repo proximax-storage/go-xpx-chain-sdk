@@ -32,7 +32,7 @@ type metadataNemInfoDTO struct {
 		TargetKey         hashDto            `json:"targetKey"`
 		ScopedMetadataKey uint64DTO          `json:"scopedMetadataKey"`
 		SourceAddress     string             `json:"sourceAddress"`
-		MetadataType      MetadataType       `json:"metadataType"`
+		MetadataType      MetadataNemType    `json:"metadataType"`
 		Value             string             `json:"value"`
 		TargetId          jsonLib.RawMessage `json:"targetId"`
 	} `json:"metadataEntry"`
@@ -66,7 +66,7 @@ func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTu
 
 	commonMetadata.ScopedKey = ref.Metadata.ScopedMetadataKey.toStruct()
 
-	if commonMetadata.Type == MetadataAddressType {
+	if commonMetadata.Type == MetadataNemAddressType {
 		metadataInfo.Address = &AddressMetadataNemInfo{
 			MetadataNemInfo: commonMetadata,
 			Address:         commonMetadata.SourceAddress,
@@ -110,9 +110,9 @@ func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTu
 		}
 
 		return metadataInfo, nil
-	} else {
-		return nil, errors.New("unknown type of asset id")
 	}
+
+	return nil, errors.New("unknown type of asset id")
 }
 
 type computedHashes struct {
