@@ -1011,6 +1011,14 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	metadataKeyV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ScopedMetadataKey.toArray())
 	valueV := transactions.TransactionBufferCreateByteVector(builder, tx.Value)
 
+	buf := make([]byte, 2)
+	binary.LittleEndian.PutUint16(buf, uint16(len(tx.Value)))
+	valueSizeV := transactions.TransactionBufferCreateByteVector(builder, buf)
+
+	buf = make([]byte, 2)
+	binary.LittleEndian.PutUint16(buf, uint16(tx.ValueDeltaSize))
+	valueDeltaSizeV := transactions.TransactionBufferCreateByteVector(builder, buf)
+
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
 		return nil, err
@@ -1023,8 +1031,8 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	transactions.MetadataTransactionBufferAddTargetKey(builder, targetKeyV)
 	transactions.MetadataTransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
 	transactions.MetadataTransactionBufferAddTargetId(builder, targetIdV)
-	transactions.MetadataTransactionBufferAddValueSizeDelta(builder, tx.ValueDeltaSize)
-	transactions.MetadataTransactionBufferAddValueSize(builder, uint16(len(tx.Value)))
+	transactions.MetadataTransactionBufferAddValueSizeDelta(builder, valueDeltaSizeV)
+	transactions.MetadataTransactionBufferAddValueSize(builder, valueSizeV)
 	transactions.MetadataTransactionBufferAddValue(builder, valueV)
 
 	t := transactions.TransactionBufferEnd(builder)

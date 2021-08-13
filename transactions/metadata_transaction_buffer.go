@@ -6,7 +6,7 @@
 package transactions
 
 import (
-	"github.com/google/flatbuffers/go"
+	flatbuffers "github.com/google/flatbuffers/go"
 )
 
 type MetadataTransactionBuffer struct {
@@ -288,28 +288,72 @@ func (rcv *MetadataTransactionBuffer) MutateTargetId(j int, n byte) bool {
 	return false
 }
 
-func (rcv *MetadataTransactionBuffer) ValueSizeDelta() int16 {
+func (rcv *MetadataTransactionBuffer) ValueSizeDelta(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		return rcv._tab.GetInt16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *MetadataTransactionBuffer) MutateValueSizeDelta(n int16) bool {
-	return rcv._tab.MutateInt16Slot(24, n)
+func (rcv *MetadataTransactionBuffer) ValueSizeDeltaLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
 }
 
-func (rcv *MetadataTransactionBuffer) ValueSize() uint16 {
+func (rcv *MetadataTransactionBuffer) ValueSizeDeltaBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *MetadataTransactionBuffer) MutateValueSizeDelta(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *MetadataTransactionBuffer) ValueSize(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *MetadataTransactionBuffer) MutateValueSize(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(26, n)
+func (rcv *MetadataTransactionBuffer) ValueSizeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *MetadataTransactionBuffer) ValueSizeBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *MetadataTransactionBuffer) MutateValueSize(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *MetadataTransactionBuffer) Value(j int) byte {
@@ -400,11 +444,17 @@ func MetadataTransactionBufferAddTargetId(builder *flatbuffers.Builder, targetId
 func MetadataTransactionBufferStartTargetIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func MetadataTransactionBufferAddValueSizeDelta(builder *flatbuffers.Builder, valueSizeDelta int16) {
-	builder.PrependInt16Slot(10, valueSizeDelta, 0)
+func MetadataTransactionBufferAddValueSizeDelta(builder *flatbuffers.Builder, valueSizeDelta flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(valueSizeDelta), 0)
 }
-func MetadataTransactionBufferAddValueSize(builder *flatbuffers.Builder, valueSize uint16) {
-	builder.PrependUint16Slot(11, valueSize, 0)
+func MetadataTransactionBufferStartValueSizeDeltaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func MetadataTransactionBufferAddValueSize(builder *flatbuffers.Builder, valueSize flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(valueSize), 0)
+}
+func MetadataTransactionBufferStartValueSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func MetadataTransactionBufferAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(value), 0)
