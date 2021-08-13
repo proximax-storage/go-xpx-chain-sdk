@@ -62,23 +62,23 @@ var (
 		StartedHeight: Height(144),
 		NetworkConfig: &NetworkConfig{
 			Sections: map[string]*ConfigBag{
-				"network": &ConfigBag{
+				"network": {
 					Name:    "network",
 					Comment: "",
 					Fields: map[string]*Field{
-						"identifier": &Field{
+						"identifier": {
 							Comment: "\n",
 							Key:     "identifier",
 							Value:   "mijin-test",
 							Index:   0,
 						},
-						"publicKey": &Field{
+						"publicKey": {
 							Comment: "",
 							Key:     "publicKey",
 							Value:   "B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF",
 							Index:   1,
 						},
-						"generationHash": &Field{
+						"generationHash": {
 							Comment: "",
 							Key:     "generationHash",
 							Value:   "86258172F90639811F2ABD055747D1E11B55A64B68AED2CEA9A34FBD6C0BE790",
@@ -90,7 +90,7 @@ var (
 		},
 		SupportedEntityVersions: &SupportedEntities{
 			Entities: map[EntityType]*Entity{
-				Block: &Entity{
+				Block: {
 					Name:              "Block",
 					Type:              Block,
 					SupportedVersions: []EntityVersion{3},

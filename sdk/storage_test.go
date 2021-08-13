@@ -138,7 +138,7 @@ var (
 			*testFileHash: StorageSize(50),
 		},
 		Replicators: map[string]*ReplicatorInfo{
-			testReplicatorAccount.PublicKey: &ReplicatorInfo{
+			testReplicatorAccount.PublicKey: {
 				Start:   Height(2077),
 				End:     Height(0),
 				Account: testReplicatorAccount,
@@ -149,18 +149,18 @@ var (
 			},
 		},
 		UploadPayments: []*PaymentInformation{
-			&PaymentInformation{
+			{
 				Amount:   Amount(9999925),
 				Receiver: testDriveOwnerAccount,
 				Height:   Height(2098),
 			},
 		},
 		BillingHistory: []*BillingDescription{
-			&BillingDescription{
+			{
 				Start: Height(2084),
 				End:   Height(2085),
 				Payments: []*PaymentInformation{
-					&PaymentInformation{
+					{
 						Amount:   Amount(10),
 						Height:   Height(2085),
 						Receiver: testReplicatorAccount,

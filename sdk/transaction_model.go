@@ -1917,8 +1917,8 @@ type HarvesterTransaction struct {
 type HarvesterTransactionType EntityType
 
 const (
-	AddHarvester    HarvesterTransactionType = HarvesterTransactionType(AddHarvesterEntityType)
-	RemoveHarvester HarvesterTransactionType = HarvesterTransactionType(RemoveHarvesterEntityType)
+	AddHarvester    = HarvesterTransactionType(AddHarvesterEntityType)
+	RemoveHarvester = HarvesterTransactionType(RemoveHarvesterEntityType)
 )
 
 // HarvesterTransaction creates new Harvester transaction
@@ -2979,9 +2979,22 @@ func (t MetadataType) String() string {
 }
 
 const (
-	MetadataAddressType MetadataType = iota
+	MetadataNone MetadataType = iota
+	MetadataAddressType
 	MetadataMosaicType
 	MetadataNamespaceType
+)
+
+type MetadataNemType uint8
+
+func (t MetadataNemType) String() string {
+	return fmt.Sprintf("%d", t)
+}
+
+const (
+	MetadataNemAddressType MetadataNemType = iota
+	MetadataNemMosaicType
+	MetadataNemNamespaceType
 )
 
 func ExtractVersion(version int64) EntityVersion {

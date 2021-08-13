@@ -5,7 +5,7 @@ type MetadataNemInfo struct {
 	SourceAddress *Address
 	TargetKey     *Hash
 	ScopedKey     ScopedMetadataKey
-	Type          MetadataType
+	Type          MetadataNemType
 	Value         []byte
 }
 

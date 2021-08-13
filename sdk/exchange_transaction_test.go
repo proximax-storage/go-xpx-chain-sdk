@@ -33,7 +33,7 @@ func TestAddExchangeOfferTransactionSerialization(t *testing.T) {
 	tx, err := NewAddExchangeOfferTransaction(
 		fakeDeadline,
 		[]*AddOffer{
-			&AddOffer{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -57,7 +57,7 @@ func TestAddExchangeOfferTransactionToAggregate(t *testing.T) {
 	tx, err := NewAddExchangeOfferTransaction(
 		fakeDeadline,
 		[]*AddOffer{
-			&AddOffer{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -84,7 +84,7 @@ func TestAddExchangeOfferTransactionSigning(t *testing.T) {
 	tx, err := NewAddExchangeOfferTransaction(
 		fakeDeadline,
 		[]*AddOffer{
-			&AddOffer{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -110,7 +110,7 @@ func TestExchangeOfferTransactionSerialization(t *testing.T) {
 	tx, err := NewExchangeOfferTransaction(
 		fakeDeadline,
 		[]*ExchangeConfirmation{
-			&ExchangeConfirmation{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -138,7 +138,7 @@ func TestExchangeOfferTransactionToAggregate(t *testing.T) {
 	tx, err := NewExchangeOfferTransaction(
 		fakeDeadline,
 		[]*ExchangeConfirmation{
-			&ExchangeConfirmation{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -167,7 +167,7 @@ func TestExchangeOfferTransactionSigning(t *testing.T) {
 	tx, err := NewExchangeOfferTransaction(
 		fakeDeadline,
 		[]*ExchangeConfirmation{
-			&ExchangeConfirmation{
+			{
 				Offer: Offer{
 					Type:   SellOffer,
 					Cost:   Amount(2),
@@ -191,7 +191,7 @@ func TestRemoveExchangeOfferTransactionSerialization(t *testing.T) {
 	tx, err := NewRemoveExchangeOfferTransaction(
 		fakeDeadline,
 		[]*RemoveOffer{
-			&RemoveOffer{
+			{
 				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},
@@ -213,7 +213,7 @@ func TestRemoveExchangeOfferTransactionToAggregate(t *testing.T) {
 	tx, err := NewRemoveExchangeOfferTransaction(
 		fakeDeadline,
 		[]*RemoveOffer{
-			&RemoveOffer{
+			{
 				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},
@@ -236,7 +236,7 @@ func TestRemoveExchangeOfferTransactionSigning(t *testing.T) {
 	tx, err := NewRemoveExchangeOfferTransaction(
 		fakeDeadline,
 		[]*RemoveOffer{
-			&RemoveOffer{
+			{
 				Type:    SellOffer,
 				AssetId: StorageNamespaceId,
 			},

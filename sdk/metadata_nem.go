@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/net"
-	"golang.org/x/crypto/sha3"
 	"net/http"
+
+	"golang.org/x/crypto/sha3"
+
+	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type MetadataNemService service
@@ -53,12 +55,7 @@ func (ref *MetadataNemService) GetMetadataNemInfos(ctx context.Context, hashes [
 		return nil, err
 	}
 
-	mscInfos, err := dtos.toStruct(ref.client.config.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return mscInfos, nil
+	return dtos.toStruct(ref.client.config.NetworkType)
 }
 
 func CalculateUniqueAccountMetadataId(sourceAddress *Address, targetAccount *PublicAccount, key ScopedMetadataKey) (*Hash, error) {
