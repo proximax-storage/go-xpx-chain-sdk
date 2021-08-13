@@ -5,7 +5,6 @@
 package sdk
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -167,7 +166,7 @@ func (a *AccountService) GetMultisigAccountGraphInfo(ctx context.Context, addres
 
 // GetAccountNames Returns friendly names for accounts.
 // post @/account/names
-func (ref *AccountService) GetAccountNames(ctx context.Context, addr ...*Address) ([]*AccountName, error) {
+func (a *AccountService) GetAccountNames(ctx context.Context, addr ...*Address) ([]*AccountName, error) {
 
 	if len(addr) == 0 {
 		return nil, ErrEmptyAddressesIds
@@ -175,7 +174,7 @@ func (ref *AccountService) GetAccountNames(ctx context.Context, addr ...*Address
 
 	dtos := accountNamesDTOs(make([]*accountNamesDTO, 0))
 
-	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, accountNamesRoute, &addresses{addr}, &dtos)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, accountNamesRoute, &addresses{addr}, &dtos)
 	if err != nil {
 		return nil, err
 	}
@@ -185,65 +184,4 @@ func (ref *AccountService) GetAccountNames(ctx context.Context, addr ...*Address
 	}
 
 	return dtos.toStruct()
-}
-
-// returns an array of confirmed Transaction's for which passed account is sender or receiver.
-func (a *AccountService) Transactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
-	return a.findTransactions(ctx, account, opt, accountTransactionsRoute)
-}
-
-// returns an array of Transaction's for which passed account is receiver
-func (a *AccountService) IncomingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
-	return a.findTransactions(ctx, account, opt, incomingTransactionsRoute)
-}
-
-// returns an array of Transaction's for which passed account is sender
-func (a *AccountService) OutgoingTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
-	return a.findTransactions(ctx, account, opt, outgoingTransactionsRoute)
-}
-
-// returns an array of confirmed Transaction's for which passed account is sender or receiver.
-// unconfirmed transactions are those transactions that have not yet been included in a block.
-// they are not guaranteed to be included in any block.
-func (a *AccountService) UnconfirmedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]Transaction, error) {
-	return a.findTransactions(ctx, account, opt, unconfirmedTransactionsRoute)
-}
-
-// returns an array of AggregateTransaction's where passed account is signer or cosigner
-func (a *AccountService) AggregateBondedTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption) ([]*AggregateTransaction, error) {
-	txs, err := a.findTransactions(ctx, account, opt, aggregateTransactionsRoute)
-	if err != nil {
-		return nil, err
-	}
-
-	atxs := make([]*AggregateTransaction, len(txs))
-	for i, tx := range txs {
-		atxs[i] = tx.(*AggregateTransaction)
-	}
-
-	return atxs, nil
-}
-
-func (a *AccountService) findTransactions(ctx context.Context, account *PublicAccount, opt *AccountTransactionsOption, path string) ([]Transaction, error) {
-	if account == nil {
-		return nil, ErrNilAccount
-	}
-
-	var b bytes.Buffer
-
-	u, err := addOptions(fmt.Sprintf(transactionsByAccountRoute, account.PublicKey, path), opt)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := a.client.doNewRequest(ctx, http.MethodGet, u, nil, &b)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponseStatusCode(resp, map[int]error{409: ErrArgumentNotValid}); err != nil {
-		return nil, err
-	}
-
-	return MapTransactions(&b, a.client.GenerationHash())
 }

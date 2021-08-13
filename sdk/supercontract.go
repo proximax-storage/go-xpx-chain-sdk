@@ -44,6 +44,9 @@ func (s *SuperContractService) GetDriveSuperContracts(ctx context.Context, drive
 	dto := &superContractDTOs{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
 
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err
@@ -83,6 +86,9 @@ func (s *SuperContractService) GetOperationsByAccount(ctx context.Context, accou
 	dto := &operationDTOs{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
 
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err

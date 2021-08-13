@@ -110,6 +110,26 @@ func blockchainUpgradeTransactionSchema() *schema {
 	}
 }
 
+func metadataTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("targetKey", ByteSize),
+			newArrayAttribute("scopedMetadataKey", IntSize),
+			newArrayAttribute("targetId", ByteSize),
+			newArrayAttribute("valueSizeDelta", ByteSize),
+			newArrayAttribute("valueSize", ByteSize),
+			newArrayAttribute("value", ByteSize),
+		},
+	}
+}
+
 func modifyMetadataTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
@@ -203,6 +223,20 @@ func transferTransactionSchema() *schema {
 					newArrayAttribute("amount", IntSize),
 				},
 			}.schemaDefinition),
+		},
+	}
+}
+
+func harvesterTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
 		},
 	}
 }
@@ -339,6 +373,44 @@ func secretProofTransactionSchema() *schema {
 			newArrayAttribute("recipient", ByteSize),
 			newScalarAttribute("proofSize", ShortSize),
 			newArrayAttribute("proof", ByteSize),
+		},
+	}
+}
+
+func mosaicModifyLevyTransactionScheme() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("mosaicId", IntSize),
+			newTableAttribute("levy", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ByteSize),
+					newArrayAttribute("recipient", ByteSize),
+					newArrayAttribute("mosaicId", IntSize),
+					newArrayAttribute("fee", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func mosaicRemoveLevyTransactionScheme() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("mosaicId", IntSize),
 		},
 	}
 }

@@ -84,3 +84,30 @@ func (ref *MosaicService) GetMosaicsNames(ctx context.Context, mscIds ...*Mosaic
 
 	return dtos.toStruct()
 }
+
+// GetMosaicLevy returns mosaic levy
+// get @/mosaic/%s/levy
+func (ref *MosaicService) GetMosaicLevy(ctx context.Context, mosaicId *MosaicId) (*MosaicLevy, error) {
+	if mosaicId == nil {
+		return nil, ErrNilMosaicId
+	}
+
+	url := net.NewUrl(fmt.Sprintf(mosaicLevyRoute, mosaicId.toHexString()))
+	mosaicLevyDTO := &mosaicLevyDTO{}
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, mosaicLevyDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	mosaicLevy, err := mosaicLevyDTO.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	return mosaicLevy, nil
+}

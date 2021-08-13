@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -167,6 +167,7 @@ type Client struct {
 	Lock          *LockService
 	Contract      *ContractService
 	Metadata      *MetadataService
+	MetadataNem   *MetadataNemService
 }
 
 type service struct {
@@ -209,6 +210,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
+	c.MetadataNem = (*MetadataNemService)(&c.common)
 
 	return c
 }
@@ -501,6 +503,39 @@ func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Tr
 	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
+func (c *Client) NewAccountMetadataTransaction(deadline *Deadline,
+	account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*AccountMetadataTransaction, error) {
+	tx, err := NewAccountMetadataTransaction(deadline, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicMetadataTransaction(deadline *Deadline,
+	mosaic *MosaicId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*MosaicMetadataTransaction, error) {
+	tx, err := NewMosaicMetadataTransaction(deadline, mosaic, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewNamespaceMetadataTransaction(deadline *Deadline,
+	namespace *NamespaceId, account *PublicAccount, scopedKey ScopedMetadataKey,
+	newValue string, oldValue string) (*NamespaceMetadataTransaction, error) {
+	tx, err := NewNamespaceMetadataTransaction(deadline, namespace, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewModifyMetadataAddressTransaction(deadline *Deadline, address *Address, modifications []*MetadataModification) (*ModifyMetadataAddressTransaction, error) {
 	tx, err := NewModifyMetadataAddressTransaction(deadline, address, modifications, c.config.NetworkType)
 	if tx != nil {
@@ -559,7 +594,7 @@ func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32
 	return tx, err
 }
 
-func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Duration) (*MosaicSupplyChangeTransaction, error) {
+func (c *Client) NewMosaicSupplyChangeTransaction(deadline *Deadline, assetId AssetId, supplyType MosaicSupplyType, delta Amount) (*MosaicSupplyChangeTransaction, error) {
 	tx, err := NewMosaicSupplyChangeTransaction(deadline, assetId, supplyType, delta, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -579,6 +614,15 @@ func (c *Client) NewTransferTransaction(deadline *Deadline, recipient *Address, 
 
 func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipient *NamespaceId, mosaics []*Mosaic, message Message) (*TransferTransaction, error) {
 	tx, err := NewTransferTransactionWithNamespace(deadline, recipient, mosaics, message, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType) (*HarvesterTransaction, error) {
+	tx, err := NewHarvesterTransaction(deadline, htt, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -824,4 +868,22 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 	}
 
 	return nil
+}
+
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
 }

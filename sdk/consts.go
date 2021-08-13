@@ -33,11 +33,6 @@ const (
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
-	accountTransactionsRoute      = "transactions"
-	incomingTransactionsRoute     = "transactions/incoming"
-	outgoingTransactionsRoute     = "transactions/outgoing"
-	unconfirmedTransactionsRoute  = "transactions/unconfirmed"
-	aggregateTransactionsRoute    = "transactions/partial"
 )
 
 // routes for NamespaceService
@@ -53,16 +48,16 @@ const (
 	mosaicsRoute     = "/mosaic"
 	mosaicRoute      = "/mosaic/%s"
 	mosaicNamesRoute = "/mosaic/names"
+	mosaicLevyRoute  = "/mosaic/%s/levy"
 )
 
 // routes for BlockchainService
 const (
-	blockHeightRoute         = "/chain/height"
-	blockByHeightRoute       = "/block/%s"
-	blockScoreRoute          = "/chain/score"
-	blockGetTransactionRoute = "/block/%s/transactions"
-	blockInfoRoute           = "/blocks/%s/limit/%s"
-	blockStorageRoute        = "/diagnostic/storage"
+	blockHeightRoute   = "/chain/height"
+	blockByHeightRoute = "/block/%s"
+	blockScoreRoute    = "/chain/score"
+	blockInfoRoute     = "/blocks/%s/limit/%s"
+	blockStorageRoute  = "/diagnostic/storage"
 )
 
 // routes for ContractsService
@@ -89,6 +84,13 @@ const (
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
 )
 
+// routes for MetadataNemService
+const (
+	metadataEntriesRoute = "/metadata_nem"
+	// POST and GET
+	metadataEntryHashRoute = "/metadata_nem/%s"
+)
+
 // routes for NodeService
 const (
 	nodeInfoRoute  = "/node/info"
@@ -105,6 +107,7 @@ const (
 
 // routes for StorageService
 const (
+	drivesRoute               = "/drives"
 	driveRoute                = "/drive/%s"
 	drivesOfAccountRoute      = "/account/%s/drive%s"
 	downloadInfoRoute         = "/downloads/%s"
@@ -128,12 +131,21 @@ const (
 
 // routes for TransactionService
 const (
-	transactionsRoute                 = "/transaction"
-	transactionRoute                  = "/transaction/%s"
-	transactionStatusRoute            = "/transaction/%s/status"
-	transactionsStatusRoute           = "/transaction/statuses"
-	announceAggregateRoute            = "/transaction/partial"
-	announceAggregateCosignatureRoute = "/transaction/cosignature"
+	transactionsRoute                 = "/transactions"
+	transactionsByGroupRoute          = "/transactions/%s"
+	transactionsByIdRoute             = "/transactions/%s/%s"
+	transactionStatusRoute            = "/transactionStatus"
+	transactionStatusByIdRoute        = "/transactionStatus/%s"
+	announceAggregateRoute            = "/transactions/partial"
+	announceAggregateCosignatureRoute = "/transactions/cosignature"
+)
+
+type TransactionGroup string
+
+const (
+	Confirmed   TransactionGroup = "confirmed"
+	Unconfirmed TransactionGroup = "unconfirmed"
+	Partial     TransactionGroup = "partial"
 )
 
 type NamespaceType uint8

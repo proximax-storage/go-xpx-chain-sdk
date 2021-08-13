@@ -18,71 +18,86 @@ var (
 )
 
 const (
-	testMosaicPathID = "6C55E05D11D19FBD"
+	testMosaicPathID     = "6C55E05D11D19FBD"
+	testMosaicLevyPathID = "72CE6EC3FD67E243"
 
 	testMosaicInfoJson = `
-{
-  "mosaic": {
-    "mosaicId": [
-		298950589,
-		1817567325
-    ],
-    "supply": [
-      3403414400,
-      2095475
-    ],
-    "height": [
-      1,
-      0
-    ],
-    "owner": "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
-	"revision": 1,
-    "properties": [
-	  {
-    	"value": [
-        	2,
-        	0
-      	],
-    	"id": 0
-	  },
-	  {
-    	"value": [
-        	6,
-        	0
-      	],
-    	"id": 1
-	  },
-	  {
-    	"value": [
-        	1,
-        	0
-      	],
-    	"id": 2
-	  }
-    ]
-  }
-}`
+						{
+						  "mosaic": {
+							"mosaicId": [
+								298950589,
+								1817567325
+							],
+							"supply": [
+							  3403414400,
+							  2095475
+							],
+							"height": [
+							  1,
+							  0
+							],
+							"owner": "321DE652C4D3362FC2DDF7800F6582F4A10CFEA134B81F8AB6E4BE78BBA4D18E",
+							"revision": 1,
+							"properties": [
+							  {
+								"value": [
+									2,
+									0
+								],
+								"id": 0
+							  },
+							  {
+								"value": [
+									6,
+									0
+								],
+								"id": 1
+							  },
+							  {
+								"value": [
+									1,
+									0
+								],
+								"id": 2
+							  }
+							]
+						  }
+						}`
 
 	testMosaicNamesJson = `[
-   {
-      "mosaicId":[
-         519256100,
-         642862634
-      ],
-      "names":[
-         "cat.storage"
-      ]
-   },
-   {
-      "mosaicId":[
-         481110499,
-         231112638
-      ],
-      "names":[
-         "cat.currency"
-      ]
-   }
-]`
+							   {
+								  "mosaicId":[
+									 519256100,
+									 642862634
+								  ],
+								  "names":[
+									 "cat.storage"
+								  ]
+							   },
+							   {
+								  "mosaicId":[
+									 481110499,
+									 231112638
+								  ],
+								  "names":[
+									 "cat.currency"
+								  ]
+							   }
+							]`
+
+	testMosaicLevyJson = `
+						{
+							"type": 2,
+							"recipient": "900F83AC9219E406BDFA48132355175F459F9F2C78C55D5673",
+							"mosaicId": [
+								4251443779,
+								1926131395
+							],
+							"fee": [
+								100,
+								0
+							]
+						}`
 )
 
 var (
@@ -116,6 +131,16 @@ var (
 			newMosaicIdPanic(0x0DC67FBE1CAD29E3),
 			[]string{"cat.currency"},
 		},
+	}
+
+	mosaicLevy = &MosaicLevy{
+		Type: 2,
+		Recipient: &Address{
+			Type:    mosaicClient.client.config.NetworkType,
+			Address: "VBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVX36ZFE7",
+		},
+		Fee:      1000,
+		MosaicId: newMosaicIdPanic(0x72CE6EC3FD67E243),
 	}
 )
 
@@ -173,4 +198,15 @@ func TestMosaicService_GetMosaicsNames(t *testing.T) {
 	for i, mscName := range mscNameArr {
 		tests.ValidateStringers(t, mosaicNames[i], mscName)
 	}
+}
+
+func TestMosaicService_GetMosaicsLevy(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf(mosaicLevyRoute, testMosaicLevyPathID),
+		RespBody: testMosaicLevyJson,
+	})
+
+	mscLevy, err := mosaicClient.GetMosaicLevy(ctx, mosaicLevy.MosaicId)
+	assert.Nilf(t, err, "MosaicService.GetMosaicLevy returned error: %s", err)
+	tests.ValidateStringers(t, mosaicLevy, mscLevy)
 }

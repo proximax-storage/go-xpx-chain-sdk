@@ -1,0 +1,22 @@
+namespace transactions;
+
+table MosaicLevy {
+	type: ubyte;
+	recipient: [ubyte];
+	mosaicId:[uint];
+	fee: [uint];
+}
+
+table ModifyMosaicLevyTransactionBuffer {
+	size: uint;
+	signature: [ubyte];
+	signer: [ubyte];
+	version: uint;
+	type: ushort;
+	maxFee: [uint];
+	deadline:[uint];
+	mosaicId:[uint];
+	levy:MosaicLevy;
+}
+
+root_type ModifyMosaicLevyTransactionBuffer;

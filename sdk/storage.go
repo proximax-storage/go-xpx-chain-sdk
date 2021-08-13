@@ -7,9 +7,10 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-utils/net"
-	"net/http"
 )
 
 type StorageService struct {
@@ -36,6 +37,26 @@ func (s *StorageService) GetDrive(ctx context.Context, driveKey *PublicAccount) 
 	}
 
 	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *StorageService) GetDrives(ctx context.Context, dpOpts *DrivesPageOptions) (*DrivesPage, error) {
+	dspDTO := &drivesPageDTO{}
+
+	u, err := addOptions(drivesRoute, dpOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &dspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dspDTO.toStruct(s.client.NetworkType())
 }
 
 type DriveParticipantFilter string
@@ -94,8 +115,6 @@ func (s *StorageService) GetVerificationStatus(ctx context.Context, driveKey *Pu
 		default:
 			return nil, err
 		}
-
-		return nil, err
 	}
 
 	if lockInfo.HashAlgorithm != Internal_Hash_Type {

@@ -7,6 +7,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 )
@@ -51,6 +52,8 @@ func (e *ExchangeService) GetExchangeOfferByAssetId(ctx context.Context, assetId
 		mosaicId = mosaicInfo.MosaicId
 	case MosaicAssetIdType:
 		mosaicId = assetId.(*MosaicId)
+	default:
+		return nil, errors.New("unknown assetID type")
 	}
 
 	url := net.NewUrl(fmt.Sprintf(offersByMosaicRoute, offerType.String(), mosaicId.toHexString()))
