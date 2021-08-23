@@ -15,20 +15,10 @@ import (
 
 func NewPrepareBcDriveTransaction(
 	deadline *Deadline,
-	owner *PublicAccount,
-	driveKey string,
 	driveSize StorageSize,
 	replicatorCount uint16,
 	networkType NetworkType,
 ) (*PrepareBcDriveTransaction, error) {
-
-	if owner == nil {
-		return nil, ErrNilAccount
-	}
-
-	if len(driveKey) == 0 {
-		return nil, ErrNilAccount
-	}
 
 	if driveSize == 0 {
 		return nil, errors.New("driveSize should be positive")
@@ -45,8 +35,6 @@ func NewPrepareBcDriveTransaction(
 			Type:        PrepareBcDrive,
 			NetworkType: networkType,
 		},
-		Owner:           owner,
-		DriveKey:        driveKey,
 		DriveSize:       driveSize,
 		ReplicatorCount: replicatorCount,
 	}
@@ -62,14 +50,10 @@ func (tx *PrepareBcDriveTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"Owner": %s,
-			"DriveKey": %s,
 			"DriveSize": %d,
 			"ReplicatorCount": %d,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.Owner,
-		tx.DriveKey,
 		tx.DriveSize,
 		tx.ReplicatorCount,
 	)
@@ -83,26 +67,12 @@ func (tx *PrepareBcDriveTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	ownerB, err := hex.DecodeString(tx.Owner.PublicKey)
-	if err != nil {
-		return nil, err
-	}
-
-	driveB, err := hex.DecodeString(tx.DriveKey)
-	if err != nil {
-		return nil, err
-	}
-
-	ownerV := transactions.TransactionBufferCreateByteVector(builder, ownerB)
-	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 	driveSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DriveSize.toArray())
 
 	transactions.PrepareBcDriveTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.PrepareBcDriveTransactionBufferAddOwner(builder, ownerV)
-	transactions.PrepareBcDriveTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.PrepareBcDriveTransactionBufferAddDriveSize(builder, driveSizeV)
 
 	transactions.PrepareBcDriveTransactionBufferAddReplicatorCount(builder, tx.ReplicatorCount)
@@ -119,8 +89,6 @@ func (tx *PrepareBcDriveTransaction) Size() int {
 type prepareBcDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Owner           string    `json:"owner"`
-		DriveKey        string    `json:"driveKey"`
 		DriveSize       uint64DTO `json:"driveSize"`
 		ReplicatorCount uint16    `json:"replicatorCount"`
 	} `json:"transaction"`
@@ -138,15 +106,8 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	owner, err := NewAccountFromPublicKey(dto.Tx.Owner, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
 	return &PrepareBcDriveTransaction{
 		*atx,
-		owner,
-		dto.Tx.DriveKey,
 		dto.Tx.DriveSize.toStruct(),
 		dto.Tx.ReplicatorCount,
 	}, nil

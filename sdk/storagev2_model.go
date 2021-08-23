@@ -63,7 +63,7 @@ type BcDrive struct {
 	CompletedDataModifications []*CompletedDataModification
 	ActiveDownloads            []*Hash
 	CompletedDownloads         []*Hash
-	Replicators                map[int]*PublicAccount
+	Replicators                []*PublicAccount
 }
 
 func (drive *BcDrive) String() string {
@@ -96,8 +96,6 @@ func (drive *BcDrive) String() string {
 // Prepare Bc Drive Transaction
 type PrepareBcDriveTransaction struct {
 	AbstractTransaction
-	Owner           *PublicAccount
-	DriveKey        string
 	DriveSize       StorageSize
 	ReplicatorCount uint16
 }

@@ -138,10 +138,10 @@ func (ref *completedDownloadsDTOs) toStruct(networkType NetworkType) ([]*Hash, e
 
 type replicatorDTOs []*PublicAccount
 
-func (ref *replicatorDTOs) toStruct(networkType NetworkType) (map[int]*PublicAccount, error) {
+func (ref *replicatorDTOs) toStruct(networkType NetworkType) ([]*PublicAccount, error) {
 	var (
 		dtos        = *ref
-		replicators = make(map[int]*PublicAccount)
+		replicators = make([]*PublicAccount, 0, len(dtos))
 	)
 
 	for i, dto := range dtos {

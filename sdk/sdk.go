@@ -816,9 +816,9 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
-func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, owner *PublicAccount, driveKey string, driveSize StorageSize, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
+func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
 
-	tx, err := NewPrepareBcDriveTransaction(deadline, owner, driveKey, driveSize, replicatorCount, c.config.NetworkType)
+	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, replicatorCount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
