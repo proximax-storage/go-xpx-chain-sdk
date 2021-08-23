@@ -189,76 +189,8 @@ func (rcv *PrepareBcDriveTransactionBuffer) MutateDeadline(j int, n uint32) bool
 	return false
 }
 
-func (rcv *PrepareBcDriveTransactionBuffer) Owner(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) OwnerLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) OwnerBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) MutateOwner(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) DriveKey(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) DriveKeyLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) DriveKeyBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *PrepareBcDriveTransactionBuffer) MutateDriveKey(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
 func (rcv *PrepareBcDriveTransactionBuffer) DriveSize(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
@@ -267,7 +199,7 @@ func (rcv *PrepareBcDriveTransactionBuffer) DriveSize(j int) uint32 {
 }
 
 func (rcv *PrepareBcDriveTransactionBuffer) DriveSizeLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -275,7 +207,7 @@ func (rcv *PrepareBcDriveTransactionBuffer) DriveSizeLength() int {
 }
 
 func (rcv *PrepareBcDriveTransactionBuffer) MutateDriveSize(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
@@ -284,7 +216,7 @@ func (rcv *PrepareBcDriveTransactionBuffer) MutateDriveSize(j int, n uint32) boo
 }
 
 func (rcv *PrepareBcDriveTransactionBuffer) ReplicatorCount() uint16 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
@@ -292,11 +224,11 @@ func (rcv *PrepareBcDriveTransactionBuffer) ReplicatorCount() uint16 {
 }
 
 func (rcv *PrepareBcDriveTransactionBuffer) MutateReplicatorCount(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(24, n)
+	return rcv._tab.MutateUint16Slot(20, n)
 }
 
 func PrepareBcDriveTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(11)
+	builder.StartObject(9)
 }
 func PrepareBcDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -331,26 +263,14 @@ func PrepareBcDriveTransactionBufferAddDeadline(builder *flatbuffers.Builder, de
 func PrepareBcDriveTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func PrepareBcDriveTransactionBufferAddOwner(builder *flatbuffers.Builder, owner flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(owner), 0)
-}
-func PrepareBcDriveTransactionBufferStartOwnerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
-func PrepareBcDriveTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(driveKey), 0)
-}
-func PrepareBcDriveTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
 func PrepareBcDriveTransactionBufferAddDriveSize(builder *flatbuffers.Builder, driveSize flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(driveSize), 0)
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveSize), 0)
 }
 func PrepareBcDriveTransactionBufferStartDriveSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func PrepareBcDriveTransactionBufferAddReplicatorCount(builder *flatbuffers.Builder, replicatorCount uint16) {
-	builder.PrependUint16Slot(10, replicatorCount, 0)
+	builder.PrependUint16Slot(8, replicatorCount, 0)
 }
 func PrepareBcDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

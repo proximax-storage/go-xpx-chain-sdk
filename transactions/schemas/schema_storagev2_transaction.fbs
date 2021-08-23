@@ -8,8 +8,6 @@ table PrepareBcDriveTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    owner:[ubyte];
-    driveKey:[ubyte];
     driveSize:[uint];
     replicatorCount:ushort;
 }

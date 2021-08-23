@@ -14,8 +14,6 @@ func prepareBcDriveTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newArrayAttribute("owner", ByteSize),
-			newArrayAttribute("driveKey", ByteSize),
 			newArrayAttribute("driveSize", IntSize),
 			newScalarAttribute("replicatorCount", ShortSize),
 		},
