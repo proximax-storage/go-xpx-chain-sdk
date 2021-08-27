@@ -57,7 +57,7 @@ type BcDrive struct {
 	BcDriveAccount             *PublicAccount
 	OwnerAccount               *PublicAccount
 	RootHash                   *Hash
-	DriveSize                  uint64
+	DriveSize                  StorageSize
 	ReplicatorCount            uint16
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
@@ -112,14 +112,13 @@ func (replicator *Replicator) String() string {
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
-	PublicKey *PublicAccount
-	Capacity  Amount
+	Capacity Amount
 }
 
 // Prepare Bc Drive Transaction
 type PrepareBcDriveTransaction struct {
 	AbstractTransaction
-	DriveSize       uint64
+	DriveSize       StorageSize
 	ReplicatorCount uint16
 }
 
