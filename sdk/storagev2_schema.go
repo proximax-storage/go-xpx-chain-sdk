@@ -4,6 +4,22 @@
 
 package sdk
 
+func replicatorOnboardingTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("publicKey", ByteSize),
+			newScalarAttribute("capacity", IntSize),
+		},
+	}
+}
+
 func prepareBcDriveTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{

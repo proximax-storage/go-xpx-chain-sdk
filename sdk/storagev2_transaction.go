@@ -13,9 +13,88 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
+func NewReplicatorOnboardingTransaction(
+	deadline *Deadline,
+	publicKey *PublicAccount,
+	capacity Amount,
+	networkType NetworkType,
+) (*ReplicatorOnboardingTransaction, error) {
+
+	if publicKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if capacity == 0 {
+		return nil, errors.New("capacity should be positive")
+	}
+
+	tx := ReplicatorOnboardingTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     ReplicatorOnboardingVersion,
+			Deadline:    deadline,
+			Type:        ReplicatorOnboarding,
+			NetworkType: networkType,
+		},
+		PublicKey: publicKey,
+		Capacity:  capacity,
+	}
+
+	return &tx, nil
+}
+
+func (tx *ReplicatorOnboardingTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *ReplicatorOnboardingTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"PublicKey": %s,
+			"Capacity": %d,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.PublicKey,
+		tx.Capacity,
+	)
+}
+
+func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	replicatorB, err := hex.DecodeString(tx.PublicKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	replicatorKeyV := transactions.TransactionBufferCreateByteVector(builder, replicatorB)
+	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
+
+	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.ReplicatorOnboardingTransactionBufferAddPublicKey(builder, replicatorKeyV)
+	transactions.ReplicatorOnboardingTransactionBufferAddCapacity(builder, capacityV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return replicatorOnboardingTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *ReplicatorOnboardingTransaction) Size() int {
+	return ReplicatorOnboardingHeaderSize
+}
+
 func NewPrepareBcDriveTransaction(
 	deadline *Deadline,
-	driveSize StorageSize,
+	driveSize uint64,
 	replicatorCount uint16,
 	networkType NetworkType,
 ) (*PrepareBcDriveTransaction, error) {
@@ -28,7 +107,7 @@ func NewPrepareBcDriveTransaction(
 		return nil, errors.New("replicatorCount should be positive")
 	}
 
-	mctx := PrepareBcDriveTransaction{
+	tx := PrepareBcDriveTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     PrepareBcDriveVersion,
 			Deadline:    deadline,
@@ -39,7 +118,7 @@ func NewPrepareBcDriveTransaction(
 		ReplicatorCount: replicatorCount,
 	}
 
-	return &mctx, nil
+	return &tx, nil
 }
 
 func (tx *PrepareBcDriveTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -67,14 +146,11 @@ func (tx *PrepareBcDriveTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DriveSize.toArray())
-
 	transactions.PrepareBcDriveTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.PrepareBcDriveTransactionBufferAddDriveSize(builder, driveSizeV)
-
+	transactions.PrepareBcDriveTransactionBufferAddDriveSize(builder, tx.DriveSize)
 	transactions.PrepareBcDriveTransactionBufferAddReplicatorCount(builder, tx.ReplicatorCount)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -89,8 +165,8 @@ func (tx *PrepareBcDriveTransaction) Size() int {
 type prepareBcDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveSize       uint64DTO `json:"driveSize"`
-		ReplicatorCount uint16    `json:"replicatorCount"`
+		DriveSize       uint64 `json:"driveSize"`
+		ReplicatorCount uint16 `json:"replicatorCount"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -108,18 +184,18 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 	return &PrepareBcDriveTransaction{
 		*atx,
-		dto.Tx.DriveSize.toStruct(),
+		dto.Tx.DriveSize,
 		dto.Tx.ReplicatorCount,
 	}, nil
 }
 
 func NewDriveClosureTransaction(
 	deadline *Deadline,
-	driveKey string,
+	driveKey *PublicAccount,
 	networkType NetworkType,
 ) (*DriveClosureTransaction, error) {
 
-	if len(driveKey) == 0 {
+	if driveKey == nil {
 		return nil, ErrNilAccount
 	}
 
@@ -159,7 +235,7 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveB, err := hex.DecodeString(tx.DriveKey)
+	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -200,8 +276,13 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DriveClosureTransaction{
 		*atx,
-		dto.Tx.DriveKey,
+		driveKey,
 	}, nil
 }
