@@ -2772,6 +2772,7 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + KeySize + AmountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 )

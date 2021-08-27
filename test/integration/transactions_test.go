@@ -10,11 +10,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	math "math/rand"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 
 	"github.com/stretchr/testify/assert"
 
@@ -26,7 +27,7 @@ import (
 // const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "28FCECEA252231D2C86E1BCF7DD541552BDBBEFBB09324758B3AC199B4AA7B78"
+const privateKey = "EDFB348D4AAA333E6D73D9CAD1EA18FE3FE079CC3373E9E4E75A4FBD7D3476E0"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -1046,9 +1047,9 @@ func TestModifyMosaicLevyTransaction(t *testing.T) {
 				Type: sdk.Levy_PercentileFee,
 				// supply valid address here for testing
 				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
-				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				Fee:       sdk.CreateMosaicLevyFeePercentile(1.5),
 				// a blank mosaic id levy : use native mosaicId
-				MosaicId : mosaicId,
+				MosaicId: mosaicId,
 			},
 		)
 	}, nemesisAccount)
