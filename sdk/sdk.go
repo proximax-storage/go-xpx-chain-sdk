@@ -814,9 +814,9 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
-func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, publicKey *PublicAccount, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
+func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
 
-	tx, err := NewReplicatorOnboardingTransaction(deadline, publicKey, capacity, c.config.NetworkType)
+	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -824,7 +824,7 @@ func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, publicKe
 	return tx, err
 }
 
-func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize uint64, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
+func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
 
 	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, replicatorCount, c.config.NetworkType)
 	if tx != nil {

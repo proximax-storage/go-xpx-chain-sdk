@@ -2772,7 +2772,7 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
-	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + KeySize + AmountSize
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 )
@@ -3155,6 +3155,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveFileSystemTransactionDTO{}
 	case Deactivate:
 		dto = &deactivateTransactionDTO{}
+	case ReplicatorOnboarding:
+		dto = &replicatorOnboardingTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DriveClosure:

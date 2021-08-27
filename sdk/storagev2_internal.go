@@ -161,7 +161,7 @@ type bcDriveDTO struct {
 		DriveKey                   string                         `json:"driveKey"`
 		Owner                      string                         `json:"owner"`
 		RootHash                   hashDto                        `json:"rootHash"`
-		DriveSize                  uint64                         `json:"driveSize"`
+		DriveSize                  uint64DTO                      `json:"driveSize"`
 		ReplicatorCount            uint16                         `json:"replicatorCount"`
 		ActiveDataModifications    activeDataModificationsDTOs    `json:"activeDataModifications"`
 		CompletedDataModifications completedDataModificationsDTOs `json:"completedDataModifications"`
@@ -192,7 +192,7 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	bcDrive.BcDriveAccount = bcDriveAccount
 	bcDrive.OwnerAccount = ownerAccount
 	bcDrive.RootHash = rootHash
-	bcDrive.DriveSize = ref.BcDrive.DriveSize
+	bcDrive.DriveSize = ref.BcDrive.DriveSize.toStruct()
 	bcDrive.ReplicatorCount = ref.BcDrive.ReplicatorCount
 
 	activeDataModifications, err := ref.BcDrive.ActiveDataModifications.toStruct(networkType)
