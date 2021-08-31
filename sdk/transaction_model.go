@@ -128,7 +128,7 @@ type TransactionsPageOptions struct {
 	Address          string `url:"address,omitempty"`
 	SignerPublicKey  string `url:"signerPublicKey,omitempty"`
 	RecipientAddress string `url:"recipientAddress,omitempty"`
-	Type             []uint `url:"type,omitempty"`
+	Type             []uint `url:"type[],omitempty"`
 	Embedded         bool   `url:"embedded,omitempty"`
 	PaginationOrderingOptions
 }
