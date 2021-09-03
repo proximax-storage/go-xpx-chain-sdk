@@ -15,6 +15,7 @@ func replicatorOnboardingTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("capacity", IntSize),
+			newArrayAttribute("blsPublicKey", ByteSize),
 		},
 	}
 }
@@ -30,6 +31,7 @@ func prepareBcDriveTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("driveSize", IntSize),
+			newArrayAttribute("verificationFeeAmount", IntSize),
 			newScalarAttribute("replicatorCount", ShortSize),
 		},
 	}

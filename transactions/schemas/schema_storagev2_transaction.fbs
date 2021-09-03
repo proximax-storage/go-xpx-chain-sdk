@@ -9,6 +9,7 @@ table ReplicatorOnboardingTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     capacity: [uint];
+    blsPublicKey: [ubyte];
 }
 
 table PrepareBcDriveTransactionBuffer {
@@ -18,8 +19,9 @@ table PrepareBcDriveTransactionBuffer {
     version: uint;
     type: ushort;
     maxFee: [uint];
-    deadline:[uint];
+    deadline: [uint];
     driveSize: [uint];
+    verificationFeeAmount: [uint];
     replicatorCount: ushort;
 }
 

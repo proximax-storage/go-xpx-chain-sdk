@@ -96,44 +96,29 @@ func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]
 	return completedDataModifications, nil
 }
 
-type activeDownloadsDTOs []*hashDto
-
-func (ref *activeDownloadsDTOs) toStruct(networkType NetworkType) ([]*Hash, error) {
-	var (
-		dtos            = *ref
-		activeDownloads = make([]*Hash, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		activeId, err := dto.Hash()
-		if err != nil {
-			return nil, err
-		}
-
-		activeDownloads = append(activeDownloads, activeId)
-	}
-
-	return activeDownloads, nil
+type usedSizeMapDTO struct {
+	ReplicatorKey string    `json:"replicatorKey"`
+	UsedSize      uint64DTO `json:"usedSize"`
 }
 
-type completedDownloadsDTOs []*hashDto
+type usedSizeMapDTOs []*usedSizeMapDTO
 
-func (ref *completedDownloadsDTOs) toStruct(networkType NetworkType) ([]*Hash, error) {
+func (ref *usedSizeMapDTOs) toStruct(networkType NetworkType) (map[string]StorageSize, error) {
 	var (
-		dtos               = *ref
-		completedDownloads = make([]*Hash, 0, len(dtos))
+		dtos        = *ref
+		usedSizeMap = make(map[string]StorageSize)
 	)
 
 	for _, dto := range dtos {
-		completedId, err := dto.Hash()
+		replicatorAccount, err := NewAccountFromPublicKey(dto.ReplicatorKey, networkType)
 		if err != nil {
 			return nil, err
 		}
 
-		completedDownloads = append(completedDownloads, completedId)
+		usedSizeMap[replicatorAccount.PublicKey] = dto.UsedSize.toStruct()
 	}
 
-	return completedDownloads, nil
+	return usedSizeMap, nil
 }
 
 type replicatorDTOs []*PublicAccount
@@ -145,12 +130,12 @@ func (ref *replicatorDTOs) toStruct(networkType NetworkType) ([]*PublicAccount, 
 	)
 
 	for i, dto := range dtos {
-		replicatorKey, err := NewAccountFromPublicKey(dto.PublicKey, networkType)
+		replicatorKeySet, err := NewAccountFromPublicKey(dto.PublicKey, networkType)
 		if err != nil {
 			return nil, err
 		}
 
-		replicators[i] = replicatorKey
+		replicators[i] = replicatorKeySet
 	}
 
 	return replicators, nil
@@ -165,8 +150,7 @@ type bcDriveDTO struct {
 		ReplicatorCount            uint16                         `json:"replicatorCount"`
 		ActiveDataModifications    activeDataModificationsDTOs    `json:"activeDataModifications"`
 		CompletedDataModifications completedDataModificationsDTOs `json:"completedDataModifications"`
-		ActiveDownloads            activeDownloadsDTOs            `json:"activeDownloads"`
-		CompletedDownloads         completedDownloadsDTOs         `json:"completedDownloads"`
+		UsedSizeMap                usedSizeMapDTOs                `json:"usedSizeMap"`
 		Replicators                replicatorDTOs                 `json:"replicators"`
 	}
 }
@@ -209,19 +193,12 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 
 	bcDrive.CompletedDataModifications = completedDataModifications
 
-	activeDownloads, err := ref.BcDrive.ActiveDownloads.toStruct(networkType)
+	usedSizeMap, err := ref.BcDrive.UsedSizeMap.toStruct(networkType)
 	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.ActiveDownloads.toStruct: %v", err)
+		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.UsedSizeMap.toStruct: %v", err)
 	}
 
-	bcDrive.ActiveDownloads = activeDownloads
-
-	completedDownloads, err := ref.BcDrive.CompletedDownloads.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.CompletedDownloads.toStruct: %v", err)
-	}
-
-	bcDrive.CompletedDownloads = completedDownloads
+	bcDrive.UsedSizeMap = usedSizeMap
 
 	replicators, err := ref.BcDrive.Replicators.toStruct(networkType)
 	if err != nil {
