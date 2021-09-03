@@ -61,8 +61,7 @@ type BcDrive struct {
 	ReplicatorCount            uint16
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
-	ActiveDownloads            []*Hash
-	CompletedDownloads         []*Hash
+	UsedSizeMap                map[string]StorageSize
 	Replicators                []*PublicAccount
 }
 
@@ -76,8 +75,7 @@ func (drive *BcDrive) String() string {
 		"ReplicatorCount": %d,
 		"ActiveDataModifications": %s,
 		"CompletedDataModifications": %s,
-		"ActiveDownloads": %s,
-		"CompletedDownloads": %s,
+		"UsedSizeMap": %+v,
 		"Replicators": %+v,
 		`,
 		drive.BcDriveAccount,
@@ -87,8 +85,7 @@ func (drive *BcDrive) String() string {
 		drive.ReplicatorCount,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
-		drive.ActiveDownloads,
-		drive.CompletedDownloads,
+		drive.UsedSizeMap,
 		drive.Replicators,
 	)
 }
@@ -112,14 +109,16 @@ func (replicator *Replicator) String() string {
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
-	Capacity Amount
+	Capacity     Amount
+	BlsPublicKey *BLSPublicKey
 }
 
 // Prepare Bc Drive Transaction
 type PrepareBcDriveTransaction struct {
 	AbstractTransaction
-	DriveSize       StorageSize
-	ReplicatorCount uint16
+	DriveSize             StorageSize
+	VerificationFeeAmount Amount
+	ReplicatorCount       uint16
 }
 
 // Drive Closure Transaction

@@ -16,6 +16,7 @@ import (
 func NewReplicatorOnboardingTransaction(
 	deadline *Deadline,
 	capacity Amount,
+	blsPublicKey *BLSPublicKey,
 	networkType NetworkType,
 ) (*ReplicatorOnboardingTransaction, error) {
 
@@ -23,14 +24,19 @@ func NewReplicatorOnboardingTransaction(
 		return nil, errors.New("capacity should be positive")
 	}
 
+	if blsPublicKey == nil {
+		return nil, ErrNilAccount
+	}
+
 	tx := ReplicatorOnboardingTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     ReplicatorOnboardingVersion,
 			Deadline:    deadline,
+			Version:     ReplicatorOnboardingVersion,
 			Type:        ReplicatorOnboarding,
 			NetworkType: networkType,
 		},
-		Capacity: capacity,
+		Capacity:     capacity,
+		BlsPublicKey: blsPublicKey,
 	}
 
 	return &tx, nil
@@ -45,9 +51,11 @@ func (tx *ReplicatorOnboardingTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"Capacity": %d,
+			"BlsPublicKey:" %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Capacity,
+		tx.BlsPublicKey,
 	)
 }
 
@@ -60,12 +68,14 @@ func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
 	}
 
 	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
+	blsPublicKeyV := transactions.TransactionBufferCreateByteVector(builder, []byte(*tx.BlsPublicKey))
 
 	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ReplicatorOnboardingTransactionBufferAddCapacity(builder, capacityV)
+	transactions.ReplicatorOnboardingTransactionBufferAddBlsPublicKey(builder, blsPublicKeyV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -80,7 +90,8 @@ func (tx *ReplicatorOnboardingTransaction) Size() int {
 type replicatorOnboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Capacity uint64DTO `json:"capacity"`
+		Capacity     uint64DTO    `json:"capacity"`
+		BlsPublicKey BLSPublicKey `json:"blsPublicKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -99,18 +110,24 @@ func (dto *replicatorOnboardingTransactionDTO) toStruct(*Hash) (Transaction, err
 	return &ReplicatorOnboardingTransaction{
 		*atx,
 		dto.Tx.Capacity.toStruct(),
+		&dto.Tx.BlsPublicKey,
 	}, nil
 }
 
 func NewPrepareBcDriveTransaction(
 	deadline *Deadline,
 	driveSize StorageSize,
+	verificationFeeAmount Amount,
 	replicatorCount uint16,
 	networkType NetworkType,
 ) (*PrepareBcDriveTransaction, error) {
 
 	if driveSize == 0 {
 		return nil, errors.New("driveSize should be positive")
+	}
+
+	if verificationFeeAmount == 0 {
+		return nil, errors.New("verificationFeeAmount should be positive")
 	}
 
 	if replicatorCount == 0 {
@@ -124,8 +141,9 @@ func NewPrepareBcDriveTransaction(
 			Type:        PrepareBcDrive,
 			NetworkType: networkType,
 		},
-		DriveSize:       driveSize,
-		ReplicatorCount: replicatorCount,
+		DriveSize:             driveSize,
+		VerificationFeeAmount: verificationFeeAmount,
+		ReplicatorCount:       replicatorCount,
 	}
 
 	return &tx, nil
@@ -140,10 +158,12 @@ func (tx *PrepareBcDriveTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DriveSize": %d,
+			"VerificationFeeAmount": %d,
 			"ReplicatorCount": %d,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveSize,
+		tx.VerificationFeeAmount,
 		tx.ReplicatorCount,
 	)
 }
@@ -157,12 +177,14 @@ func (tx *PrepareBcDriveTransaction) Bytes() ([]byte, error) {
 	}
 
 	driveSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DriveSize.toArray())
+	verificationFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.VerificationFeeAmount.toArray())
 
 	transactions.PrepareBcDriveTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.PrepareBcDriveTransactionBufferAddDriveSize(builder, driveSizeV)
+	transactions.PrepareBcDriveTransactionBufferAddVerificationFeeAmount(builder, verificationFeeAmountV)
 
 	transactions.PrepareBcDriveTransactionBufferAddReplicatorCount(builder, tx.ReplicatorCount)
 	t := transactions.TransactionBufferEnd(builder)
@@ -178,8 +200,9 @@ func (tx *PrepareBcDriveTransaction) Size() int {
 type prepareBcDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveSize       StorageSize `json:"driveSize"`
-		ReplicatorCount uint16      `json:"replicatorCount"`
+		DriveSize             StorageSize `json:"driveSize"`
+		VerificationFeeAmount uint64DTO   `json:"verificationFeeAmount"`
+		ReplicatorCount       uint16      `json:"replicatorCount"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -198,6 +221,7 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	return &PrepareBcDriveTransaction{
 		*atx,
 		dto.Tx.DriveSize,
+		dto.Tx.VerificationFeeAmount.toStruct(),
 		dto.Tx.ReplicatorCount,
 	}, nil
 }

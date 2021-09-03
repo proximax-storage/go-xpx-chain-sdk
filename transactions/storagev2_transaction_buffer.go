@@ -215,8 +215,42 @@ func (rcv *ReplicatorOnboardingTransactionBuffer) MutateCapacity(j int, n uint32
 	return false
 }
 
+func (rcv *ReplicatorOnboardingTransactionBuffer) BlsPublicKey(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOnboardingTransactionBuffer) BlsPublicKeyLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOnboardingTransactionBuffer) BlsPublicKeyBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *ReplicatorOnboardingTransactionBuffer) MutateBlsPublicKey(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func ReplicatorOnboardingTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(8)
+	builder.StartObject(9)
 }
 func ReplicatorOnboardingTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -256,6 +290,12 @@ func ReplicatorOnboardingTransactionBufferAddCapacity(builder *flatbuffers.Build
 }
 func ReplicatorOnboardingTransactionBufferStartCapacityVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
+}
+func ReplicatorOnboardingTransactionBufferAddBlsPublicKey(builder *flatbuffers.Builder, blsPublicKey flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(blsPublicKey), 0)
+}
+func ReplicatorOnboardingTransactionBufferStartBlsPublicKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func ReplicatorOnboardingTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -470,8 +510,34 @@ func (rcv *PrepareBcDriveTransactionBuffer) MutateDriveSize(j int, n uint32) boo
 	return false
 }
 
-func (rcv *PrepareBcDriveTransactionBuffer) ReplicatorCount() uint16 {
+func (rcv *PrepareBcDriveTransactionBuffer) VerificationFeeAmount(j int) uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *PrepareBcDriveTransactionBuffer) VerificationFeeAmountLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *PrepareBcDriveTransactionBuffer) MutateVerificationFeeAmount(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *PrepareBcDriveTransactionBuffer) ReplicatorCount() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
@@ -479,11 +545,11 @@ func (rcv *PrepareBcDriveTransactionBuffer) ReplicatorCount() uint16 {
 }
 
 func (rcv *PrepareBcDriveTransactionBuffer) MutateReplicatorCount(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(20, n)
+	return rcv._tab.MutateUint16Slot(22, n)
 }
 
 func PrepareBcDriveTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(9)
+	builder.StartObject(10)
 }
 func PrepareBcDriveTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -524,8 +590,14 @@ func PrepareBcDriveTransactionBufferAddDriveSize(builder *flatbuffers.Builder, d
 func PrepareBcDriveTransactionBufferStartDriveSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func PrepareBcDriveTransactionBufferAddVerificationFeeAmount(builder *flatbuffers.Builder, verificationFeeAmount flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(verificationFeeAmount), 0)
+}
+func PrepareBcDriveTransactionBufferStartVerificationFeeAmountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func PrepareBcDriveTransactionBufferAddReplicatorCount(builder *flatbuffers.Builder, replicatorCount uint16) {
-	builder.PrependUint16Slot(8, replicatorCount, 0)
+	builder.PrependUint16Slot(9, replicatorCount, 0)
 }
 func PrepareBcDriveTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
