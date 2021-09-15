@@ -8,66 +8,101 @@ Package sdk provides a client library for the Catapult REST API.
 
 ```go
 const (
-	AddressSize                              int = 25
-	AmountSize                               int = 8
-	KeySize                                  int = 32
-	Hash256                                  int = 32
-	MosaicSize                               int = 8
-	NamespaceSize                            int = 8
-	SizeSize                                 int = 4
-	SignerSize                               int = KeySize
-	SignatureSize                            int = 64
-	VersionSize                              int = 2
-	TypeSize                                 int = 2
-	MaxFeeSize                               int = 8
-	DeadLineSize                             int = 8
-	DurationSize                             int = 8
-	TransactionHeaderSize                    int = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
-	PropertyTypeSize                         int = 2
-	PropertyModificationTypeSize             int = 1
-	AccountPropertiesAddressModificationSize int = PropertyModificationTypeSize + AddressSize
-	AccountPropertiesMosaicModificationSize  int = PropertyModificationTypeSize + MosaicSize
-	AccountPropertiesEntityModificationSize  int = PropertyModificationTypeSize + TypeSize
-	AccountPropertyAddressHeader             int = TransactionHeaderSize + PropertyTypeSize
-	AccountPropertyMosaicHeader              int = TransactionHeaderSize + PropertyTypeSize
-	AccountPropertyEntityTypeHeader          int = TransactionHeaderSize + PropertyTypeSize
-	LinkActionSize                           int = 1
-	AccountLinkTransactionSize               int = TransactionHeaderSize + KeySize + LinkActionSize
-	AliasActionSize                          int = 1
-	AliasTransactionHeader                   int = TransactionHeaderSize + NamespaceSize + AliasActionSize
-	AggregateBondedHeader                    int = TransactionHeaderSize + SizeSize
-	HashTypeSize                             int = 1
-	LockSize                                 int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + Hash256
-	MetadataTypeSize                         int = 1
-	MetadataHeaderSize                       int = TransactionHeaderSize + MetadataTypeSize
-	ModificationsSizeSize                    int = 1
-	ModifyContractHeaderSize                 int = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
-	MinApprovalSize                          int = 1
-	MinRemovalSize                           int = 1
-	ModifyMultisigHeaderSize                 int = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
-	MosaicNonceSize                          int = 4
-	MosaicPropertySize                       int = 4
-	MosaicDefinitionTransactionSize          int = TransactionHeaderSize + MosaicNonceSize + MosaicSize + DurationSize + MosaicPropertySize
-	MosaicSupplyDirectionSize                int = 1
-	MosaicSupplyChangeTransactionSize        int = TransactionHeaderSize + MosaicSize + AmountSize + MosaicSupplyDirectionSize
-	NamespaceTypeSize                        int = 1
-	NamespaceNameSizeSize                    int = 1
-	RegisterNamespaceHeaderSize              int = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
-	SecretLockSize                           int = TransactionHeaderSize + MosaicSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
-	ProofSizeSize                            int = 2
-	SecretProofHeaderSize                    int = TransactionHeaderSize + HashTypeSize + Hash256 + ProofSizeSize
-	MosaicsSizeSize                          int = 1
-	MessageSizeSize                          int = 2
-	TransferHeaderSize                       int = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+    AddressSize                              int = 25
+    BaseInt64Size                            int = 8
+    AmountSize                                   = BaseInt64Size
+    KeySize                                  int = 32
+    Hash256                                  int = 32
+    MosaicIdSize                                 = BaseInt64Size
+    NamespaceSize                                = BaseInt64Size
+    SizeSize                                 int = 4
+    MaxStringSize                            int = 2
+    SignerSize                                   = KeySize
+    SignatureSize                            int = 64
+    HalfOfSignature                              = SignatureSize / 2
+    VersionSize                              int = 4
+    TypeSize                                 int = 2
+    MaxFeeSize                                   = BaseInt64Size
+    DeadLineSize                                 = BaseInt64Size
+    DurationSize                                 = BaseInt64Size
+    StorageSizeSize                              = BaseInt64Size
+    TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
+    PropertyTypeSize                         int = 2
+    PropertyModificationTypeSize             int = 1
+    AccountPropertiesAddressModificationSize     = PropertyModificationTypeSize + AddressSize
+    AccountPropertiesMosaicModificationSize      = PropertyModificationTypeSize + MosaicIdSize
+    AccountPropertiesEntityModificationSize      = PropertyModificationTypeSize + TypeSize
+    AccountPropertyAddressHeader                 = TransactionHeaderSize + PropertyTypeSize
+    AccountPropertyMosaicHeader                  = TransactionHeaderSize + PropertyTypeSize
+    AccountPropertyEntityTypeHeader              = TransactionHeaderSize + PropertyTypeSize
+    LinkActionSize                           int = 1
+    AccountLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
+    AliasActionSize                          int = 1
+    AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
+    AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
+    NetworkConfigHeaderSize                      = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
+    BlockchainUpgradeTransactionSize             = TransactionHeaderSize + DurationSize + BaseInt64Size
+    HashTypeSize                             int = 1
+    LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
+    MetadataTypeSize                         int = 1
+    MetadataHeaderSize                           = TransactionHeaderSize + MetadataTypeSize
+    MetadataNemHeaderSize                        = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2
+    ModificationsSizeSize                    int = 1
+    ModifyContractHeaderSize                     = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
+    MinApprovalSize                          int = 1
+    MinRemovalSize                           int = 1
+    ModifyMultisigHeaderSize                     = TransactionHeaderSize + MinApprovalSize + MinRemovalSize + ModificationsSizeSize
+    MosaicNonceSize                          int = 4
+    MosaicPropertiesHeaderSize               int = 3
+    MosaicPropertyIdSize                     int = 1
+    MosaicOptionalPropertySize                   = MosaicPropertyIdSize + BaseInt64Size
+    MosaicDefinitionTransactionHeaderSize        = TransactionHeaderSize + MosaicNonceSize + MosaicIdSize + MosaicPropertiesHeaderSize
+    MosaicSupplyDirectionSize                int = 1
+    MosaicSupplyChangeTransactionSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + MosaicSupplyDirectionSize
+    MosaicLevySize                               = 1 + AddressSize + MosaicIdSize + MaxFeeSize
+    MosaicModifyLevyTransactionSize              = TransactionHeaderSize + MosaicLevySize + MosaicIdSize
+    MosaicRemoveLevyTransactionSize              = TransactionHeaderSize + MosaicIdSize
+    NamespaceTypeSize                        int = 1
+    NamespaceNameSizeSize                    int = 1
+    RegisterNamespaceHeaderSize                  = TransactionHeaderSize + NamespaceTypeSize + DurationSize + NamespaceSize + NamespaceNameSizeSize
+    SecretLockSize                               = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + HashTypeSize + Hash256 + AddressSize
+    ProofSizeSize                            int = 2
+    SecretProofHeaderSize                        = TransactionHeaderSize + HashTypeSize + Hash256 + AddressSize + ProofSizeSize
+    MosaicsSizeSize                          int = 1
+    MessageSizeSize                          int = 2
+    TransferHeaderSize                           = TransactionHeaderSize + AddressSize + MosaicsSizeSize + MessageSizeSize
+    ReplicasSize                                 = 2
+    MinReplicatorsSize                           = 2
+    PercentApproversSize                         = 1
+    PrepareDriveHeaderSize                       = TransactionHeaderSize + KeySize + DurationSize + DurationSize + AmountSize + StorageSizeSize + ReplicasSize + MinReplicatorsSize + PercentApproversSize
+    JoinToDriveHeaderSize                        = TransactionHeaderSize + KeySize
+    AddActionsSize                               = 2
+    RemoveActionsSize                            = 2
+    DriveFileSystemHeaderSize                    = TransactionHeaderSize + KeySize + Hash256 + Hash256 + AddActionsSize + RemoveActionsSize
+    FilesSizeSize                                = 2
+    FilesDepositHeaderSize                       = TransactionHeaderSize + KeySize + FilesSizeSize
+    EndDriveHeaderSize                           = TransactionHeaderSize + KeySize
+    StartDriveVerificationHeaderSize             = TransactionHeaderSize + KeySize
+    OfferTypeSize                                = 1
+    OffersCountSize                              = 1
+    AddExchangeOfferSize                         = MosaicIdSize + DurationSize + 2*AmountSize + OfferTypeSize
+    AddExchangeOfferHeaderSize                   = TransactionHeaderSize + OffersCountSize
+    ExchangeOfferSize                            = DurationSize + 2*AmountSize + OfferTypeSize + KeySize
+    ExchangeOfferHeaderSize                      = TransactionHeaderSize + OffersCountSize
+    RemoveExchangeOfferSize                      = OfferTypeSize + MosaicIdSize
+    RemoveExchangeOfferHeaderSize                = TransactionHeaderSize + OffersCountSize
+    StartFileDownloadHeaderSize                  = TransactionHeaderSize + 2 + KeySize
+    EndFileDownloadHeaderSize                    = TransactionHeaderSize + 2 + KeySize + Hash256
+    OperationIdentifyHeaderSize                  = TransactionHeaderSize + Hash256
+    EndOperationHeaderSize                       = TransactionHeaderSize + 1 + Hash256 + 2
+    DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
+    StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
+    DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 )
 ```
 
 ```go
 const EmptyPublicKey = "0000000000000000000000000000000000000000000000000000000000000000"
-```
-
-```go
-const LevyMutable = 0x04
 ```
 
 ```go
@@ -91,98 +126,115 @@ const Transferable = 0x02
 ```
 
 ```go
-const WebsocketReconnectionDefaultTimeout = time.Second * 5
-```
-
-```go
-var (
-	ErrResourceNotFound              = newRespError("resource is not found")
-	ErrArgumentNotValid              = newRespError("argument is not valid")
-	ErrInvalidRequest                = newRespError("request is not valid")
-	ErrInternalError                 = newRespError("response is nil")
-	ErrNotAcceptedResponseStatusCode = newRespError("not accepted response status code")
+const (
+    DefaultWebsocketReconnectionTimeout = time.Second * 5
+    DefaultFeeCalculationStrategy       = MiddleCalculationStrategy
+    DefaultMaxFee                       = 5 * 1000000
 )
 ```
+
 Catapult REST API errors
-
 ```go
 var (
-	ErrMetadataEmptyAddresses    = errors.New("list adresses ids must not by empty")
-	ErrMetadataNilAdress         = errors.New("adress must not be blank")
-	ErrMetadataEmptyMosaicIds    = errors.New("list mosaics ids must not by empty")
-	ErrMetadataNilMosaicId       = errors.New("mosaicId must not be nil")
-	ErrMetadataEmptyNamespaceIds = errors.New("list namespaces ids must not by empty")
-	ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
+    ErrResourceNotFound              = newRespError("resource is not found")
+    ErrArgumentNotValid              = newRespError("argument is not valid")
+    ErrInvalidRequest                = newRespError("request is not valid")
+    ErrInternalError                 = newRespError("response is nil")
+    ErrNotAcceptedResponseStatusCode = newRespError("not accepted response status code")
 )
 ```
+
 Metadata errors
-
 ```go
 var (
-	ErrNilAssetId            = errors.New("assetId must not be nil")
-	ErrEmptyAssetIds         = errors.New("list blockchain ids must not by empty")
-	ErrUnknownBlockchainType = errors.New("Not supported Blockchain Type")
+    ErrMetadataEmptyAddresses    = errors.New("list adresses ids must not by empty")
+    ErrMetadataNilAdress         = errors.New("adress must not be blank")
+    ErrMetadataEmptyMosaicIds    = errors.New("list mosaics ids must not by empty")
+    ErrMetadataNilMosaicId       = errors.New("mosaicId must not be nil")
+    ErrMetadataEmptyNamespaceIds = errors.New("list namespaces ids must not by empty")
+    ErrMetadataNilNamespaceId    = errors.New("namespaceId must not be nil")
 )
 ```
+
 Common errors
-
 ```go
 var (
-	ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
-	ErrNilMosaicId           = errors.New("mosaicId must not be nil")
-	ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
-	ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
-	ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
+    ErrNilAssetId             = errors.New("AssetId should not be nil")
+    ErrEmptyAssetIds          = errors.New("AssetId's array should not be empty")
+    ErrUnknownBlockchainType  = errors.New("Not supported Blockchain Type")
+    ErrInvalidHashLength      = errors.New("The length of Hash is invalid")
+    ErrInvalidSignatureLength = errors.New("The length of Signature is invalid")
 )
 ```
+
 Mosaic errors
-
 ```go
 var (
-	ErrNamespaceTooManyPart = errors.New("too many parts")
-	ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
-	ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
-	ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
-	ErrInvalidNamespaceName = errors.New("namespace name is invalid")
+    ErrEmptyMosaicIds        = errors.New("list mosaics ids must not by empty")
+    ErrNilMosaicId           = errors.New("mosaicId must not be nil")
+    ErrWrongBitMosaicId      = errors.New("mosaicId has 64th bit")
+    ErrInvalidOwnerPublicKey = errors.New("public owner key is invalid")
+    ErrNilMosaicProperties   = errors.New("mosaic properties must not be nil")
 )
 ```
+
 Namespace errors
-
 ```go
 var (
-	ErrNilOrZeroHeight = errors.New("block height should not be nil or zero")
-	ErrNilOrZeroLimit  = errors.New("limit should not be nil or zero")
+    ErrNamespaceTooManyPart = errors.New("too many parts")
+    ErrNilNamespaceId       = errors.New("namespaceId is nil or zero")
+    ErrWrongBitNamespaceId  = errors.New("namespaceId doesn't have 64th bit")
+    ErrEmptyNamespaceIds    = errors.New("list namespace ids must not by empty")
+    ErrInvalidNamespaceName = errors.New("namespace name is invalid")
 )
 ```
+
 Blockchain errors
-
 ```go
 var (
-	ErrEmptyAddressesIds = errors.New("list of addresses should not be empty")
-	ErrNilAddress        = errors.New("address is nil")
-	ErrBlankAddress      = errors.New("address is blank")
-	ErrNilAccount        = errors.New("account should not be nil")
-	ErrInvalidAddress    = errors.New("wrong address")
+    ErrNilOrZeroHeight = errors.New("block height should not be nil or zero")
+    ErrNilOrZeroLimit  = errors.New("limit should not be nil or zero")
 )
 ```
+
+Lock errors
+```go
+var (
+    ErrNilSecret = errors.New("Secret should not be nil")
+    ErrNilProof  = errors.New("Proof should not be nil")
+)
+```
+
 plain errors
-
 ```go
 var (
-	ErrInvalidReputationConfig = errors.New("default reputation should be greater than 0 and less than 1")
+    ErrEmptyAddressesIds = errors.New("list of addresses should not be empty")
+    ErrNilAddress        = errors.New("address is nil")
+    ErrNilHash           = errors.New("hash is nil")
+    ErrNilHashes         = errors.New("hashes are nil")
+    ErrBlankAddress      = errors.New("address is blank")
+    ErrNilAccount        = errors.New("account should not be nil")
+    ErrInvalidAddress    = errors.New("wrong address")
+    ErrNoChanges         = errors.New("transaction should contain changes")
 )
 ```
-reputations error
 
+reputations error
+```go
+var (
+    ErrInvalidReputationConfig = errors.New("default reputation should be greater than 0 and less than 1")
+)
+```
+
+mosaic id for XEM mosaic
 ```go
 var XemMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 ```
-mosaic id for XEM mosaic
 
+mosaic id for XPX mosaic
 ```go
 var XpxMosaicId, _ = NewMosaicId(0x0DC67FBE1CAD29E3)
 ```
-mosaic id for XPX mosaic
 
 #### func  ExtractVersion
 
@@ -206,14 +258,14 @@ func NewReputationConfig(minInter uint64, defaultRep float64) (*reputationConfig
 
 ```go
 type AbstractTransaction struct {
-	*TransactionInfo
-	NetworkType NetworkType
-	Deadline    *Deadline
-	Type        EntityType
-	Version     EntityVersion
-	MaxFee      Amount
-	Signature   string
-	Signer      *PublicAccount
+    TransactionInfo
+    NetworkType NetworkType    `json:"network_type"`
+    Deadline    *Deadline      `json:"deadline"`
+    Type        EntityType     `json:"entity_type"`
+    Version     EntityVersion  `json:"version"`
+    MaxFee      Amount         `json:"max_fee"`
+    Signature   string         `json:"signature"`
+    Signer      *PublicAccount `json:"signer"`
 }
 ```
 
@@ -3154,29 +3206,60 @@ func (ts *TransactionStatus) String() string
 type EntityType uint16
 ```
 
-
 ```go
 const (
-	AccountPropertyAddress    EntityType = 0x4150
-	AccountPropertyMosaic     EntityType = 0x4250
-	AccountPropertyEntityType EntityType = 0x4350
-	AddressAlias              EntityType = 0x424e
-	AggregateBonded           EntityType = 0x4241
-	AggregateCompleted        EntityType = 0x4141
-	LinkAccount               EntityType = 0x414c
-	Lock                      EntityType = 0x4148
-	MetadataAddress           EntityType = 0x413d
-	MetadataMosaic            EntityType = 0x423d
-	MetadataNamespace         EntityType = 0x433d
-	ModifyContract            EntityType = 0x4157
-	ModifyMultisig            EntityType = 0x4155
-	MosaicAlias               EntityType = 0x434e
-	MosaicDefinition          EntityType = 0x414d
-	MosaicSupplyChange        EntityType = 0x424d
-	RegisterNamespace         EntityType = 0x414e
-	SecretLock                EntityType = 0x4152
-	SecretProof               EntityType = 0x4252
-	Transfer                  EntityType = 0x4154
+    AccountPropertyAddress    EntityType = 0x4150
+    AccountPropertyMosaic     EntityType = 0x4250
+    AccountPropertyEntityType EntityType = 0x4350
+    AddressAlias              EntityType = 0x424e
+    AggregateBonded           EntityType = 0x4241
+    AggregateCompleted        EntityType = 0x4141
+    AddExchangeOffer          EntityType = 0x415D
+    AddHarvesterEntityType    EntityType = 0x4161
+    ExchangeOffer             EntityType = 0x425D
+    RemoveExchangeOffer       EntityType = 0x435D
+    RemoveHarvesterEntityType EntityType = 0x4261
+    Block                     EntityType = 0x8143
+    NemesisBlock              EntityType = 0x8043
+    NetworkConfigEntityType   EntityType = 0x4159
+    BlockchainUpgrade         EntityType = 0x4158
+    LinkAccount               EntityType = 0x414c
+    Lock                      EntityType = 0x4148
+    MetadataAddress           EntityType = 0x413d
+    MetadataMosaic            EntityType = 0x423d
+    MetadataNamespace         EntityType = 0x433d
+    AccountMetadata           EntityType = 0x413f
+    MosaicMetadata            EntityType = 0x423f
+    NamespaceMetadata         EntityType = 0x433f
+    ModifyContract            EntityType = 0x4157
+    ModifyMultisig            EntityType = 0x4155
+    MosaicAlias               EntityType = 0x434e
+    MosaicDefinition          EntityType = 0x414d
+    MosaicSupplyChange        EntityType = 0x424d
+    MosaicModifyLevy          EntityType = 0x434d
+    MosaicRemoveLevy          EntityType = 0x444d
+    RegisterNamespace         EntityType = 0x414e
+    SecretLock                EntityType = 0x4152
+    SecretProof               EntityType = 0x4252
+    Transfer                  EntityType = 0x4154
+    PrepareDrive              EntityType = 0x415A
+    JoinToDrive               EntityType = 0x425A
+    DriveFileSystem           EntityType = 0x435A
+    FilesDeposit              EntityType = 0x445A
+    EndDrive                  EntityType = 0x455A
+    DriveFilesReward          EntityType = 0x465A
+    StartDriveVerification    EntityType = 0x475A
+    EndDriveVerification      EntityType = 0x485A
+    StartFileDownload         EntityType = 0x495A
+    EndFileDownload           EntityType = 0x4A5A
+    OperationIdentify         EntityType = 0x415F
+    StartOperation            EntityType = 0x425F
+    EndOperation              EntityType = 0x435F
+    Deploy                    EntityType = 0x4160
+    StartExecute              EntityType = 0x4260
+    EndExecute                EntityType = 0x4360
+    SuperContractFileSystem   EntityType = 0x4460
+    Deactivate                EntityType = 0x4560
 )
 ```
 
@@ -3192,29 +3275,57 @@ func (t EntityType) String() string
 type EntityVersion uint8
 ```
 
-
 ```go
 const (
-	AccountPropertyAddressVersion    EntityVersion = 1
-	AccountPropertyMosaicVersion     EntityVersion = 1
-	AccountPropertyEntityTypeVersion EntityVersion = 1
-	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 2
-	AggregateCompletedVersion        EntityVersion = 2
-	LinkAccountVersion               EntityVersion = 2
-	LockVersion                      EntityVersion = 1
-	MetadataAddressVersion           EntityVersion = 1
-	MetadataMosaicVersion            EntityVersion = 1
-	MetadataNamespaceVersion         EntityVersion = 1
-	ModifyContractVersion            EntityVersion = 3
-	ModifyMultisigVersion            EntityVersion = 3
-	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
-	MosaicSupplyChangeVersion        EntityVersion = 2
-	RegisterNamespaceVersion         EntityVersion = 2
-	SecretLockVersion                EntityVersion = 1
-	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 3
+    AccountPropertyAddressVersion    EntityVersion = 1
+    AccountPropertyMosaicVersion     EntityVersion = 1
+    AccountPropertyEntityTypeVersion EntityVersion = 1
+    AddressAliasVersion              EntityVersion = 1
+    AggregateBondedVersion           EntityVersion = 3
+    AggregateCompletedVersion        EntityVersion = 3
+    AddExchangeOfferVersion          EntityVersion = 4
+    ExchangeOfferVersion             EntityVersion = 2
+    RemoveExchangeOfferVersion       EntityVersion = 2
+    NetworkConfigVersion             EntityVersion = 1
+    BlockchainUpgradeVersion         EntityVersion = 1
+    LinkAccountVersion               EntityVersion = 2
+    LockVersion                      EntityVersion = 1
+    AccountMetadataVersion           EntityVersion = 1
+    MosaicMetadataVersion            EntityVersion = 1
+    NamespaceMetadataVersion         EntityVersion = 1
+    MetadataAddressVersion           EntityVersion = 1
+    MetadataMosaicVersion            EntityVersion = 1
+    MetadataNamespaceVersion         EntityVersion = 1
+    ModifyContractVersion            EntityVersion = 3
+    ModifyMultisigVersion            EntityVersion = 3
+    MosaicAliasVersion               EntityVersion = 1
+    MosaicDefinitionVersion          EntityVersion = 3
+    MosaicSupplyChangeVersion        EntityVersion = 2
+    MosaicModifyLevyVersion          EntityVersion = 1
+    MosaicRemoveLevyVersion          EntityVersion = 1
+    RegisterNamespaceVersion         EntityVersion = 2
+    SecretLockVersion                EntityVersion = 1
+    SecretProofVersion               EntityVersion = 1
+    TransferVersion                  EntityVersion = 3
+    PrepareDriveVersion              EntityVersion = 3
+    JoinToDriveVersion               EntityVersion = 1
+    DriveFileSystemVersion           EntityVersion = 1
+    FilesDepositVersion              EntityVersion = 1
+    EndDriveVersion                  EntityVersion = 1
+    DriveFilesRewardVersion          EntityVersion = 1
+    StartDriveVerificationVersion    EntityVersion = 1
+    EndDriveVerificationVersion      EntityVersion = 1
+    StartFileDownloadVersion         EntityVersion = 1
+    EndFileDownloadVersion           EntityVersion = 1
+    DeployVersion                    EntityVersion = 1
+    StartExecuteVersion              EntityVersion = 1
+    EndExecuteVersion                EntityVersion = 1
+    StartOperationVersion            EntityVersion = 1
+    EndOperationVersion              EntityVersion = 1
+    HarvesterVersion                 EntityVersion = 1
+    OperationIdentifyVersion         EntityVersion = 1
+    SuperContractFileSystemVersion   EntityVersion = 1
+    DeactivateVersion                EntityVersion = 1
 )
 ```
 
