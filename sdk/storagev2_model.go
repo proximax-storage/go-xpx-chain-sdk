@@ -110,7 +110,7 @@ func (replicator *Replicator) String() string {
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
 	Capacity     Amount
-	BlsPublicKey *BLSPublicKey
+	BlsPublicKey BLSPublicKey
 }
 
 // Prepare Bc Drive Transaction
