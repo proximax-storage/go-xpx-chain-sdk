@@ -16,7 +16,7 @@ import (
 func NewReplicatorOnboardingTransaction(
 	deadline *Deadline,
 	capacity Amount,
-	blsPublicKey *BLSPublicKey,
+	blsPublicKey BLSPublicKey,
 	networkType NetworkType,
 ) (*ReplicatorOnboardingTransaction, error) {
 
@@ -24,7 +24,7 @@ func NewReplicatorOnboardingTransaction(
 		return nil, errors.New("capacity should be positive")
 	}
 
-	if blsPublicKey == nil {
+	if &blsPublicKey == nil {
 		return nil, ErrNilAccount
 	}
 
@@ -68,7 +68,7 @@ func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
 	}
 
 	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
-	blsPublicKeyV := transactions.TransactionBufferCreateByteVector(builder, []byte(*tx.BlsPublicKey))
+	blsPublicKeyV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.BlsPublicKey))
 
 	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -110,7 +110,7 @@ func (dto *replicatorOnboardingTransactionDTO) toStruct(*Hash) (Transaction, err
 	return &ReplicatorOnboardingTransaction{
 		*atx,
 		dto.Tx.Capacity.toStruct(),
-		&dto.Tx.BlsPublicKey,
+		dto.Tx.BlsPublicKey,
 	}, nil
 }
 
