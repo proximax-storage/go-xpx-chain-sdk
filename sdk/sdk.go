@@ -831,7 +831,7 @@ func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize Stor
 	return tx, err
 }
 
-func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *PublicAccount) (*DriveClosureTransaction, error) {
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string) (*DriveClosureTransaction, error) {
 
 	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {

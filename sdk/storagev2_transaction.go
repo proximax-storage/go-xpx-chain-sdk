@@ -228,11 +228,11 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewDriveClosureTransaction(
 	deadline *Deadline,
-	driveKey *PublicAccount,
+	driveKey string,
 	networkType NetworkType,
 ) (*DriveClosureTransaction, error) {
 
-	if driveKey == nil {
+	if len(driveKey) == 0 {
 		return nil, ErrNilAccount
 	}
 
@@ -272,12 +272,12 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveB)
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 
 	transactions.DriveClosureTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -313,13 +313,8 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
-	if err != nil {
-		return nil, err
-	}
-
 	return &DriveClosureTransaction{
 		*atx,
-		driveKey,
+		dto.Tx.DriveKey,
 	}, nil
 }
