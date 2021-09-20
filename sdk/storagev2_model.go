@@ -58,11 +58,11 @@ type BcDrive struct {
 	OwnerAccount               *PublicAccount
 	RootHash                   *Hash
 	DriveSize                  StorageSize
+	UsedSize                   StorageSize
+	MetaFilesSize              StorageSize
 	ReplicatorCount            uint16
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
-	UsedSizeMap                map[string]StorageSize
-	Replicators                []*PublicAccount
 }
 
 func (drive *BcDrive) String() string {
@@ -72,37 +72,66 @@ func (drive *BcDrive) String() string {
 		"OwnerAccount": %s,
 		"RootHash": %s,
 		"DriveSize": %d,
+		"UsedSize": %d,
+		"MetaFilesSize": %d,
 		"ReplicatorCount": %d,
 		"ActiveDataModifications": %s,
 		"CompletedDataModifications": %s,
-		"UsedSizeMap": %+v,
-		"Replicators": %+v,
 		`,
 		drive.BcDriveAccount,
 		drive.OwnerAccount,
 		drive.RootHash,
 		drive.DriveSize,
+		drive.UsedSize,
+		drive.MetaFilesSize,
 		drive.ReplicatorCount,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
-		drive.UsedSizeMap,
-		drive.Replicators,
+	)
+}
+
+type DriveInfo struct {
+	LastApprovedDataModificationId *Hash
+	DataModificationIdIsValid      bool
+	InitialDownloadWork            uint64
+	Index                          int
+}
+
+func (info *DriveInfo) String() string {
+	return fmt.Sprintf(
+		`
+		    "LastApprovedDataModificationId": %s,
+			"DataModificationIdIsValid": %d,
+			"InitialDownloadWork": %d,
+		`,
+		info.LastApprovedDataModificationId,
+		info.DataModificationIdIsValid,
+		info.InitialDownloadWork,
 	)
 }
 
 type Replicator struct {
-	Capacity Amount
-	DriveKey []*PublicAccount
+	ReplicatorKey *PublicAccount
+	Version       int32
+	Capacity      Amount
+	BLSKey        BLSPublicKey
+	Drives        map[string]*DriveInfo
 }
 
 func (replicator *Replicator) String() string {
 	return fmt.Sprintf(
 		`
+		ReplicatorKey: %s, 
+		Version: %d,
 		Capacity: %d,
-		DriveKey: %s,
+		BLSKey: %s,
+		Drives: %s,
 		`,
+		replicator.ReplicatorKey,
+		replicator.Version,
 		replicator.Capacity,
-		replicator.DriveKey,
+		replicator.BLSKey,
+		replicator.Drives,
 	)
 }
 
@@ -124,5 +153,5 @@ type PrepareBcDriveTransaction struct {
 // Drive Closure Transaction
 type DriveClosureTransaction struct {
 	AbstractTransaction
-	DriveKey *PublicAccount
+	DriveKey string
 }

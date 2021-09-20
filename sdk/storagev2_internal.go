@@ -96,62 +96,17 @@ func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]
 	return completedDataModifications, nil
 }
 
-type usedSizeMapDTO struct {
-	ReplicatorKey string    `json:"replicatorKey"`
-	UsedSize      uint64DTO `json:"usedSize"`
-}
-
-type usedSizeMapDTOs []*usedSizeMapDTO
-
-func (ref *usedSizeMapDTOs) toStruct(networkType NetworkType) (map[string]StorageSize, error) {
-	var (
-		dtos        = *ref
-		usedSizeMap = make(map[string]StorageSize)
-	)
-
-	for _, dto := range dtos {
-		replicatorAccount, err := NewAccountFromPublicKey(dto.ReplicatorKey, networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		usedSizeMap[replicatorAccount.PublicKey] = dto.UsedSize.toStruct()
-	}
-
-	return usedSizeMap, nil
-}
-
-type replicatorDTOs []*PublicAccount
-
-func (ref *replicatorDTOs) toStruct(networkType NetworkType) ([]*PublicAccount, error) {
-	var (
-		dtos        = *ref
-		replicators = make([]*PublicAccount, 0, len(dtos))
-	)
-
-	for i, dto := range dtos {
-		replicatorKeySet, err := NewAccountFromPublicKey(dto.PublicKey, networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		replicators[i] = replicatorKeySet
-	}
-
-	return replicators, nil
-}
-
 type bcDriveDTO struct {
 	BcDrive struct {
-		DriveKey                   string                         `json:"driveKey"`
+		DriveKey                   string                         `json:"multisig"`
 		Owner                      string                         `json:"owner"`
 		RootHash                   hashDto                        `json:"rootHash"`
 		DriveSize                  uint64DTO                      `json:"driveSize"`
+		UsedSize                   uint64DTO                      `json:"usedSize"`
+		MetaFilesSize              uint64DTO                      `json:"metaFilesSize"`
 		ReplicatorCount            uint16                         `json:"replicatorCount"`
 		ActiveDataModifications    activeDataModificationsDTOs    `json:"activeDataModifications"`
 		CompletedDataModifications completedDataModificationsDTOs `json:"completedDataModifications"`
-		UsedSizeMap                usedSizeMapDTOs                `json:"usedSizeMap"`
-		Replicators                replicatorDTOs                 `json:"replicators"`
 	}
 }
 
@@ -177,6 +132,8 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	bcDrive.OwnerAccount = ownerAccount
 	bcDrive.RootHash = rootHash
 	bcDrive.DriveSize = ref.BcDrive.DriveSize.toStruct()
+	bcDrive.UsedSize = ref.BcDrive.UsedSize.toStruct()
+	bcDrive.MetaFilesSize = ref.BcDrive.MetaFilesSize.toStruct()
 	bcDrive.ReplicatorCount = ref.BcDrive.ReplicatorCount
 
 	activeDataModifications, err := ref.BcDrive.ActiveDataModifications.toStruct(networkType)
@@ -193,19 +150,97 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 
 	bcDrive.CompletedDataModifications = completedDataModifications
 
-	usedSizeMap, err := ref.BcDrive.UsedSizeMap.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.UsedSizeMap.toStruct: %v", err)
-	}
-
-	bcDrive.UsedSizeMap = usedSizeMap
-
-	replicators, err := ref.BcDrive.Replicators.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Replicators.toStruct: %v", err)
-	}
-
-	bcDrive.Replicators = replicators
-
 	return &bcDrive, nil
+}
+
+type bcDriveDTOs []*bcDriveDTO
+
+func (ref *bcDriveDTOs) toStruct(networkType NetworkType) ([]*BcDrive, error) {
+	var (
+		dtos     = *ref
+		bcDrives = make([]*BcDrive, 0, len(dtos))
+	)
+
+	for _, dto := range dtos {
+		info, err := dto.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		bcDrives = append(bcDrives, info)
+	}
+
+	return bcDrives, nil
+}
+
+type driveV2DTO struct {
+	Drive                          string    `json:"replicator"`
+	LastApprovedDataModificationId *hashDto  `json:"lastApprovedDataModificationId"`
+	DataModificationIdIsValid      bool      `json:"dataModificationIdIsValid"`
+	InitialDownloadWork            uint64DTO `json:"initialDownloadWork"`
+}
+
+type driveV2DTOs []*driveV2DTO
+
+func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo, error) {
+	var (
+		dtos      = *ref
+		driveInfo = make(map[string]*DriveInfo)
+	)
+
+	for i, dto := range dtos {
+		drive, err := NewAccountFromPublicKey(dto.Drive, networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		lastApprovedDataModificationId, err := dto.LastApprovedDataModificationId.Hash()
+		if err != nil {
+			return nil, err
+		}
+
+		info := DriveInfo{
+			LastApprovedDataModificationId: lastApprovedDataModificationId,
+			DataModificationIdIsValid:      dto.DataModificationIdIsValid,
+			InitialDownloadWork:            dto.InitialDownloadWork.toUint64(),
+			Index:                          i,
+		}
+
+		driveInfo[drive.PublicKey] = &info
+	}
+
+	return driveInfo, nil
+}
+
+type replicatorV2DTO struct {
+	Replicator struct {
+		ReplicatorKey string      `json:"multisig"`
+		Version       int32       `json:"version"`
+		Capacity      uint64DTO   `json:"capacity"`
+		BLSKey        string      `json:"blsKey"`
+		Drives        driveV2DTOs `json:"drives"`
+	}
+}
+
+func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, error) {
+	replicator := Replicator{}
+
+	replicatorAccount, err := NewAccountFromPublicKey(ref.Replicator.ReplicatorKey, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	replicator.ReplicatorKey = replicatorAccount
+	replicator.Version = ref.Replicator.Version
+	replicator.Capacity = ref.Replicator.Capacity.toStruct()
+	replicator.BLSKey = BLSPublicKey(ref.Replicator.BLSKey)
+
+	drives, err := ref.Replicator.Drives.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.replicatorV2DTO.toStruct Replicator.Drives.toStruct: %v", err)
+	}
+
+	replicator.Drives = drives
+
+	return &replicator, nil
 }
