@@ -244,3 +244,77 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 
 	return &replicator, nil
 }
+
+type bcDrivesPageDTO struct {
+	BcDrives []bcDriveDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *bcDrivesPageDTO) toStruct(networkType NetworkType) (*BcDrivesPage, error) {
+	page := &BcDrivesPage{
+		BcDrives: make([]*BcDrive, len(t.BcDrives)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	errs := make([]error, len(t.BcDrives))
+	for i, t := range t.BcDrives {
+		currDr, currErr := t.toStruct(networkType)
+		page.BcDrives[i], errs[i] = currDr, currErr
+	}
+
+	for _, err := range errs {
+		if err != nil {
+			return page, err
+		}
+	}
+
+	return page, nil
+}
+
+type replicatorsPageDTO struct {
+	Replicators []replicatorV2DTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *replicatorsPageDTO) toStruct(networkType NetworkType) (*ReplicatorsPage, error) {
+	page := &ReplicatorsPage{
+		Replicators: make([]*Replicator, len(t.Replicators)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	errs := make([]error, len(t.Replicators))
+	for i, t := range t.Replicators {
+		currDr, currErr := t.toStruct(networkType)
+		page.Replicators[i], errs[i] = currDr, currErr
+	}
+
+	for _, err := range errs {
+		if err != nil {
+			return page, err
+		}
+	}
+
+	return page, nil
+}

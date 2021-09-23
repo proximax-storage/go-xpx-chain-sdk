@@ -35,6 +35,21 @@ func (s *StorageV2Service) GetDrive(ctx context.Context, driveKey *PublicAccount
 	return dto.toStruct(s.client.NetworkType())
 }
 
+func (s *StorageV2Service) GetDrives(ctx context.Context) (*BcDrivesPage, error) {
+	bcdspDTO := &bcDrivesPageDTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, drivesRouteV2, nil, &bcdspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return bcdspDTO.toStruct(s.client.NetworkType())
+}
+
 type DriveV2ParticipantFilter string
 
 const (
@@ -64,4 +79,42 @@ func (s *StorageV2Service) GetAccountDrivesV2(ctx context.Context, driveKey *Pub
 	}
 
 	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *StorageV2Service) GetReplicator(ctx context.Context, replicatorKey *PublicAccount) (*Replicator, error) {
+	if replicatorKey == nil {
+		return nil, ErrNilAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(replicatorRouteV2, replicatorKey.PublicKey))
+
+	dto := &replicatorV2DTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		// Skip ErrResourceNotFound
+		// not return err
+		return nil, nil
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *StorageV2Service) GetReplicators(ctx context.Context) (*ReplicatorsPage, error) {
+	rspDTO := &replicatorsPageDTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, replicatorsRouteV2, nil, &rspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return rspDTO.toStruct(s.client.NetworkType())
 }
