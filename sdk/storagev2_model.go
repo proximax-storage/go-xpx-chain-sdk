@@ -90,6 +90,11 @@ func (drive *BcDrive) String() string {
 	)
 }
 
+type BcDrivesPage struct {
+	BcDrives   []*BcDrive
+	Pagination Pagination
+}
+
 type DriveInfo struct {
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
@@ -133,6 +138,11 @@ func (replicator *Replicator) String() string {
 		replicator.BLSKey,
 		replicator.Drives,
 	)
+}
+
+type ReplicatorsPage struct {
+	Replicators []*Replicator
+	Pagination  Pagination
 }
 
 // Replicator Onboarding Transaction
