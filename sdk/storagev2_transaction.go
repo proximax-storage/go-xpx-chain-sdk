@@ -24,7 +24,7 @@ func NewReplicatorOnboardingTransaction(
 		return nil, errors.New("capacity should be positive")
 	}
 
-	if &blsPublicKey == nil {
+	if len(blsPublicKey) == 0 {
 		return nil, ErrNilAccount
 	}
 
@@ -200,9 +200,9 @@ func (tx *PrepareBcDriveTransaction) Size() int {
 type prepareBcDriveTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveSize             StorageSize `json:"driveSize"`
-		VerificationFeeAmount uint64DTO   `json:"verificationFeeAmount"`
-		ReplicatorCount       uint16      `json:"replicatorCount"`
+		DriveSize             uint64DTO `json:"driveSize"`
+		VerificationFeeAmount uint64DTO `json:"verificationFeeAmount"`
+		ReplicatorCount       uint16    `json:"replicatorCount"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -220,7 +220,7 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 	return &PrepareBcDriveTransaction{
 		*atx,
-		dto.Tx.DriveSize,
+		dto.Tx.DriveSize.toStruct(),
 		dto.Tx.VerificationFeeAmount.toStruct(),
 		dto.Tx.ReplicatorCount,
 	}, nil
