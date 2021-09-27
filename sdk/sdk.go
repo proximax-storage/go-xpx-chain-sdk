@@ -167,7 +167,7 @@ type Client struct {
 	Lock          *LockService
 	Contract      *ContractService
 	Metadata      *MetadataService
-	MetadataNem   *MetadataNemService
+	MetadataV2    *MetadataV2Service
 }
 
 type service struct {
@@ -210,7 +210,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
-	c.MetadataNem = (*MetadataNemService)(&c.common)
+	c.MetadataV2 = (*MetadataV2Service)(&c.common)
 
 	return c
 }

@@ -11,16 +11,16 @@ import (
 	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
-type MetadataNemService service
+type MetadataV2Service service
 
-func (ref *MetadataNemService) GetMetadataNemInfo(ctx context.Context, computedHash *Hash) (*MetadataNemTupleInfo, error) {
+func (ref *MetadataV2Service) GetMetadataV2Info(ctx context.Context, computedHash *Hash) (*MetadataV2TupleInfo, error) {
 	if computedHash == nil {
 		return nil, ErrNilHash
 	}
 
 	url := net.NewUrl(fmt.Sprintf(metadataEntryHashRoute, computedHash.String()))
 
-	dto := &metadataNemInfoDTO{}
+	dto := &metadataV2InfoDTO{}
 
 	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
@@ -39,12 +39,12 @@ func (ref *MetadataNemService) GetMetadataNemInfo(ctx context.Context, computedH
 	return mscInfo, nil
 }
 
-func (ref *MetadataNemService) GetMetadataNemInfos(ctx context.Context, hashes []*Hash) ([]*MetadataNemTupleInfo, error) {
+func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, hashes []*Hash) ([]*MetadataV2TupleInfo, error) {
 	if len(hashes) == 0 {
 		return nil, ErrNilHashes
 	}
 
-	dtos := metadataNemInfoDTOs(make([]*metadataNemInfoDTO, 0))
+	dtos := metadataV2InfoDTOs(make([]*metadataV2InfoDTO, 0))
 
 	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadataEntriesRoute, &computedHashes{hashes}, &dtos)
 	if err != nil {

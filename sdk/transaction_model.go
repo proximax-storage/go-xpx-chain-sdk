@@ -1042,7 +1042,7 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 }
 
 func (tx *BasicMetadataTransaction) Size() int {
-	return MetadataNemHeaderSize + len(tx.Value)
+	return MetadataV2HeaderSize + len(tx.Value)
 }
 
 func (tx *BasicMetadataTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -1147,7 +1147,7 @@ func (tx *MosaicMetadataTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *MosaicMetadataTransaction) Size() int {
-	return MetadataNemHeaderSize + len(tx.Value) + MosaicIdSize
+	return MetadataV2HeaderSize + len(tx.Value) + MosaicIdSize
 }
 
 func (tx *MosaicMetadataTransaction) String() string {
@@ -1218,7 +1218,7 @@ func (tx *NamespaceMetadataTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *NamespaceMetadataTransaction) Size() int {
-	return MetadataNemHeaderSize + len(tx.Value) + NamespaceSize
+	return MetadataV2HeaderSize + len(tx.Value) + NamespaceSize
 }
 
 func (tx *NamespaceMetadataTransaction) String() string {
@@ -2730,7 +2730,7 @@ const (
 	LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
 	MetadataHeaderSize                           = TransactionHeaderSize + MetadataTypeSize
-	MetadataNemHeaderSize                        = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2
+	MetadataV2HeaderSize                         = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2
 	ModificationsSizeSize                    int = 1
 	ModifyContractHeaderSize                     = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
 	MinApprovalSize                          int = 1
@@ -2985,16 +2985,16 @@ const (
 	MetadataNamespaceType
 )
 
-type MetadataNemType uint8
+type MetadataV2Type uint8
 
-func (t MetadataNemType) String() string {
+func (t MetadataV2Type) String() string {
 	return fmt.Sprintf("%d", t)
 }
 
 const (
-	MetadataNemAddressType MetadataNemType = iota
-	MetadataNemMosaicType
-	MetadataNemNamespaceType
+	MetadataV2AddressType MetadataV2Type = iota
+	MetadataV2MosaicType
+	MetadataV2NamespaceType
 )
 
 func ExtractVersion(version int64) EntityVersion {
