@@ -99,7 +99,7 @@ type PaginationOrderingOptions struct {
 	PageNumber    uint64 `url:"pageNumber,omitempty"`
 	Offset        string `url:"offset,omitempty"`
 	SortField     string `url:"sortField,omitempty"`
-	SortDirection string `url:"sortDirection,omitempty"`
+	SortDirection string `url:"order,omitempty"`
 }
 
 type baseInt64 int64
