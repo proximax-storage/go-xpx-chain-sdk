@@ -84,9 +84,8 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		}
 		var ikm [32]byte
 		copy(ikm[:], b[:])
-		sk := sdk.GeneratePrivateKeyFromIKM(ikm)
-		blsKey := sk.Public()
-
+		sk := sdk.GenerateKeyPairFromIKM(ikm)
+		blsKey := sk.PublicKey
 		i--
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
@@ -126,23 +125,25 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		fmt.Printf("ppBcDrive%d: %s\n", j, ppBcDrive[j])
 	}
 
+	agTx, err := client.NewCompleteAggregateTransaction(
+		sdk.NewDeadline(time.Hour),
+		[]sdk.Transaction{ppBcDrive[0], ppBcDrive[1]},
+	)
+	assert.Nil(t, err)
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCompleteAggregateTransaction(
-			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{ppBcDrive[0], ppBcDrive[1]},
-		)
+		return agTx, nil
 	}, replicators[0], replicators[1])
+	assert.Nil(t, result.error)
 
 	// end region
-
-	var driveKey = result.GetAbstractTransaction().TransactionInfo.TransactionHash.String()
-	fmt.Println("driveKey: ", driveKey)
 
 	// drive closure transaction
 
 	var drClosure [replicatorCount]*sdk.DriveClosureTransaction
 	for i := replicatorCount; i != 0; {
 		i--
+		var driveKey = agTx.InnerTransactions[i].GetAbstractTransaction().UniqueAggregateHash.String()
+		fmt.Println("driveKey: ", driveKey)
 		driveClosureTx, err := client.NewDriveClosureTransaction(
 			sdk.NewDeadline(time.Hour),
 			driveKey,
@@ -156,9 +157,9 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{drClosure[0]},
+			[]sdk.Transaction{drClosure[0], drClosure[1]},
 		)
-	}, replicators[0])
+	}, replicators[0], replicators[1])
 	assert.Nil(t, result.error)
 
 	// end

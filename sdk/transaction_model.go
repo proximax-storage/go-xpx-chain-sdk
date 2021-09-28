@@ -2849,7 +2849,7 @@ const (
 	DataModificationApproval  EntityType = 0x4462
 	DataModificationCancel    EntityType = 0x4562
 	ReplicatorOnboarding      EntityType = 0x4662
-	DriveClosure              EntityType = 0x4762
+	DriveClosure              EntityType = 0x4E62
 )
 
 func (t EntityType) String() string {

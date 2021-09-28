@@ -51,7 +51,7 @@ func (tx *ReplicatorOnboardingTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"Capacity": %d,
-			"BlsPublicKey:" %+v,
+			"BlsPublicKey": %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Capacity,
