@@ -29,3 +29,11 @@ type MetadataV2TupleInfo struct {
 	Mosaic    *MosaicMetadataV2Info
 	Namespace *NamespaceMetadataV2Info
 }
+
+type SearchMetadataV2Options struct {
+	SourceAddress *Address          `url:"sourceAddress,omitempty"`
+	TargetKey     *Hash             `url:"targetKey,omitempty"`
+	ScopedKey     ScopedMetadataKey `url:"scopedMetadataKey,omitempty"`
+	TargetId      baseInt64         `url:"targetId,omitempty"`
+	Type          MetadataV2Type    `url:"metadataType,omitempty"`
+}
