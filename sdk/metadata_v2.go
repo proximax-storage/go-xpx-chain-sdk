@@ -58,8 +58,8 @@ func (ref *MetadataV2Service) GetMetadataV2InfosByHashes(ctx context.Context, ha
 	return dtos.toStruct(ref.client.config.NetworkType)
 }
 
-func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, mOpts *SearchMetadataV2Options) ([]*MetadataV2TupleInfo, error) {
-	dtos := metadataV2InfoDTOs(make([]*metadataV2InfoDTO, 0))
+func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, mOpts *MetadataV2PageOptions) (*MetadatasPage, error) {
+	dtos := &metadatasPageDTO{}
 
 	u, err := addOptions(metadataEntriesRoute, mOpts)
 	if err != nil {

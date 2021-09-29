@@ -30,10 +30,15 @@ type MetadataV2TupleInfo struct {
 	Namespace *NamespaceMetadataV2Info
 }
 
-type SearchMetadataV2Options struct {
+type MetadataV2PageOptions struct {
 	SourceAddress *Address          `url:"sourceAddress,omitempty"`
 	TargetKey     *Hash             `url:"targetKey,omitempty"`
 	ScopedKey     ScopedMetadataKey `url:"scopedMetadataKey,omitempty"`
 	TargetId      baseInt64         `url:"targetId,omitempty"`
 	Type          MetadataV2Type    `url:"metadataType,omitempty"`
+}
+
+type MetadatasPage struct {
+	Metadatas  []*MetadataV2TupleInfo
+	Pagination Pagination
 }
