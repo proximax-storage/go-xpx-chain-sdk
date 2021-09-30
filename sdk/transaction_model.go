@@ -1024,16 +1024,16 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 		return nil, err
 	}
 
-	transactions.MetadataTransactionBufferStart(builder)
+	transactions.MetadataV2TransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, size)
 
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.MetadataTransactionBufferAddTargetKey(builder, targetKeyV)
-	transactions.MetadataTransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
-	transactions.MetadataTransactionBufferAddTargetId(builder, targetIdV)
-	transactions.MetadataTransactionBufferAddValueSizeDelta(builder, valueDeltaSizeV)
-	transactions.MetadataTransactionBufferAddValueSize(builder, valueSizeV)
-	transactions.MetadataTransactionBufferAddValue(builder, valueV)
+	transactions.MetadataV2TransactionBufferAddTargetKey(builder, targetKeyV)
+	transactions.MetadataV2TransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
+	transactions.MetadataV2TransactionBufferAddTargetId(builder, targetIdV)
+	transactions.MetadataV2TransactionBufferAddValueSizeDelta(builder, valueDeltaSizeV)
+	transactions.MetadataV2TransactionBufferAddValueSize(builder, valueSizeV)
+	transactions.MetadataV2TransactionBufferAddValue(builder, valueV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
