@@ -106,7 +106,7 @@ func (info *DriveInfo) String() string {
 	return fmt.Sprintf(
 		`
 		    "LastApprovedDataModificationId": %s,
-			"DataModificationIdIsValid": %d,
+			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
 		`,
 		info.LastApprovedDataModificationId,

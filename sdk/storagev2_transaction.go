@@ -91,7 +91,7 @@ type replicatorOnboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		Capacity     uint64DTO    `json:"capacity"`
-		BlsPublicKey BLSPublicKey `json:"blsPublicKey"`
+		BlsPublicKey BLSPublicKey `json:"blsKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

@@ -16,21 +16,6 @@ import (
 )
 
 func TestDriveV2FlowTransaction(t *testing.T) {
-	config, err := client.Network.GetNetworkConfig(ctx)
-	assert.Nil(t, err)
-
-	configDelta := 2
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewNetworkConfigTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.Duration(configDelta),
-			config.NetworkConfig,
-			config.SupportedEntityVersions)
-	}, nemesisAccount)
-	assert.Nil(t, result.error)
-
-	waitForBlocksCount(t, configDelta)
-
 	const replicatorCount uint16 = 2
 	var replicators [replicatorCount]*sdk.Account
 	var storageSize uint64 = 500
@@ -61,7 +46,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		assert.Nil(t, err)
 	}
 
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{transfers[0], transfers[1]},
@@ -77,7 +62,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	for i := replicatorCount; i != 0; {
 		// generate random BLS Public Key
 		b := make([]byte, 32)
-		_, err = rand.Read(b)
+		_, err := rand.Read(b)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
