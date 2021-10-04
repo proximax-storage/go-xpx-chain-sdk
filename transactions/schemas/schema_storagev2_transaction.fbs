@@ -1,5 +1,41 @@
 namespace Catapult.Buffers;
 
+table ReplicatorOnboardingTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    capacity: [uint];
+    blsPublicKey: [ubyte];
+}
+
+table PrepareBcDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveSize: [uint];
+    verificationFeeAmount: [uint];
+    replicatorCount: ushort;
+}
+
+table DriveClosureTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+}
+
 table ReplicatorOffboardingTransactionBuffer {
     size: uint;
     signature: [ubyte];
@@ -9,5 +45,11 @@ table ReplicatorOffboardingTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
 }
+
+root_type ReplicatorOnboardingTransactionBuffer;
+
+root_type PrepareBcDriveTransactionBuffer;
+
+root_type DriveClosureTransactionBuffer;
 
 root_type ReplicatorOffboardingTransactionBuffer;

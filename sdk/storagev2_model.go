@@ -45,10 +45,10 @@ type CompletedDataModification struct {
 func (desc *CompletedDataModification) String() string {
 	return fmt.Sprintf(
 		`
-			"ActiveDataModification:" %s,
+			"ActiveDataModification": %s,
 			"State:" %d,
 		`,
-		desc.ActiveDataModification.String(),
+		desc.ActiveDataModification,
 		desc.State,
 	)
 }
@@ -105,7 +105,7 @@ type DriveInfo struct {
 func (info *DriveInfo) String() string {
 	return fmt.Sprintf(
 		`
-			"LastApprovedDataModificationId": %s,
+		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
 		`,
@@ -143,6 +143,27 @@ func (replicator *Replicator) String() string {
 type ReplicatorsPage struct {
 	Replicators []*Replicator
 	Pagination  Pagination
+}
+
+// Replicator Onboarding Transaction
+type ReplicatorOnboardingTransaction struct {
+	AbstractTransaction
+	Capacity     Amount
+	BlsPublicKey BLSPublicKey
+}
+
+// Prepare Bc Drive Transaction
+type PrepareBcDriveTransaction struct {
+	AbstractTransaction
+	DriveSize             StorageSize
+	VerificationFeeAmount Amount
+	ReplicatorCount       uint16
+}
+
+// Drive Closure Transaction
+type DriveClosureTransaction struct {
+	AbstractTransaction
+	DriveKey string
 }
 
 // Replicator Offboarding Transaction

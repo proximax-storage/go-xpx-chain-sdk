@@ -816,6 +816,33 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
+func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount, blsPublicKey BLSPublicKey) (*ReplicatorOnboardingTransaction, error) {
+
+	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, blsPublicKey, c.config.NetworkType)
+
+	return tx, err
+}
+
+func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, verificationFeeAmount Amount, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
+
+	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, verificationFeeAmount, replicatorCount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string) (*DriveClosureTransaction, error) {
+
+	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline) (*ReplicatorOffboardingTransaction, error) {
 	tx, err := NewReplicatorOffboardingTransaction(deadline, c.config.NetworkType)
 	if tx != nil {

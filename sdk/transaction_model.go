@@ -2782,7 +2782,14 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
+<<<<<<< HEAD
 	ReplicatorOffboardingHeaderSize               = TransactionHeaderSize
+=======
+	BlsKeySize                               int = 48
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + BlsKeySize
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + 2
+	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
+>>>>>>> 8ca5538e63756cc1445037d7db6ba94313c3fa8b
 )
 
 type EntityType uint16
@@ -2840,7 +2847,17 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
+<<<<<<< HEAD
 	ReplicatorOffboarding     EntityType = 0x4762
+=======
+	PrepareBcDrive            EntityType = 0x4162
+	DataModification          EntityType = 0x4262
+	Download                  EntityType = 0x4362
+	DataModificationApproval  EntityType = 0x4462
+	DataModificationCancel    EntityType = 0x4562
+	ReplicatorOnboarding      EntityType = 0x4662
+	DriveClosure              EntityType = 0x4E62
+>>>>>>> 8ca5538e63756cc1445037d7db6ba94313c3fa8b
 )
 
 func (t EntityType) String() string {
@@ -2899,7 +2916,17 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
+<<<<<<< HEAD
 	ReplicatorOffboardingVersion     EntityVersion = 1
+=======
+	PrepareBcDriveVersion            EntityVersion = 1
+	ReplicatorOnboardingVersion      EntityVersion = 1
+	DataModificationVersion          EntityVersion = 1
+	DataModificationApprovalVersion  EntityVersion = 1
+	DataModificationCancelVersion    EntityVersion = 1
+	DownloadVersion                  EntityVersion = 1
+	DriveClosureVersion              EntityVersion = 1
+>>>>>>> 8ca5538e63756cc1445037d7db6ba94313c3fa8b
 )
 
 type AccountLinkAction uint8
@@ -3163,6 +3190,12 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveFileSystemTransactionDTO{}
 	case Deactivate:
 		dto = &deactivateTransactionDTO{}
+	case ReplicatorOnboarding:
+		dto = &replicatorOnboardingTransactionDTO{}
+	case PrepareBcDrive:
+		dto = &prepareBcDriveTransactionDTO{}
+	case DriveClosure:
+		dto = &driveClosureTransactionDTO{}
 	case ReplicatorOffboarding:
 		dto = &replicatorOffboardingTransactionDTO{}
 	}

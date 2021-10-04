@@ -4,6 +4,54 @@
 
 package sdk
 
+func replicatorOnboardingTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("capacity", IntSize),
+			newArrayAttribute("blsPublicKey", ByteSize),
+		},
+	}
+}
+
+func prepareBcDriveTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveSize", IntSize),
+			newArrayAttribute("verificationFeeAmount", IntSize),
+			newScalarAttribute("replicatorCount", ShortSize),
+		},
+	}
+}
+
+func driveClosureTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+		},
+	}
+}
+
 func replicatorOffboardingTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
