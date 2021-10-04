@@ -31,11 +31,11 @@ type MetadataV2TupleInfo struct {
 }
 
 type MetadataV2PageOptions struct {
-	SourceAddress *Address          `url:"sourceAddress,omitempty"`
-	TargetKey     *Hash             `url:"targetKey,omitempty"`
-	ScopedKey     ScopedMetadataKey `url:"scopedMetadataKey,omitempty"`
-	TargetId      baseInt64         `url:"targetId,omitempty"`
-	Type          MetadataV2Type    `url:"metadataType,omitempty"`
+	SourceAddress string `url:"sourceAddress,omitempty"`
+	TargetKey     string `url:"targetKey,omitempty"`
+	ScopedKey     uint64 `url:"scopedMetadataKey,omitempty"`
+	TargetId      uint64 `url:"targetId,omitempty"`
+	Type          uint8  `url:"metadataType,omitempty"`
 }
 
 type MetadatasPage struct {
