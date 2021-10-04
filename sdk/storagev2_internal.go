@@ -125,7 +125,7 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 
 	rootHash, err := ref.BcDrive.RootHash.Hash()
 	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.RootHash.Hash: %v", err)
+		return nil, err
 	}
 
 	bcDrive.BcDriveAccount = bcDriveAccount

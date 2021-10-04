@@ -16,11 +16,11 @@ import (
 func NewReplicatorOnboardingTransaction(
 	deadline *Deadline,
 	capacity Amount,
-	blsPublicKey BLSPublicKey,
+	blsPublicKey string,
 	networkType NetworkType,
 ) (*ReplicatorOnboardingTransaction, error) {
 
-	if capacity == 0 {
+	if capacity <= 0 {
 		return nil, errors.New("capacity should be positive")
 	}
 
@@ -67,15 +67,20 @@ func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
+	blsKeyB, err := hex.DecodeString(tx.BlsPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
 	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
-	blsPublicKeyV := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.BlsPublicKey))
+	blsKeyV := transactions.TransactionBufferCreateByteVector(builder, blsKeyB)
 
 	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ReplicatorOnboardingTransactionBufferAddCapacity(builder, capacityV)
-	transactions.ReplicatorOnboardingTransactionBufferAddBlsPublicKey(builder, blsPublicKeyV)
+	transactions.ReplicatorOnboardingTransactionBufferAddBlsPublicKey(builder, blsKeyV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -90,8 +95,8 @@ func (tx *ReplicatorOnboardingTransaction) Size() int {
 type replicatorOnboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Capacity     uint64DTO    `json:"capacity"`
-		BlsPublicKey BLSPublicKey `json:"blsKey"`
+		Capacity     uint64DTO `json:"capacity"`
+		BlsPublicKey string    `json:"blsKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
