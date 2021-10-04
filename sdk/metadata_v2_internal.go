@@ -6,12 +6,12 @@ import (
 	"errors"
 )
 
-type metadataNemInfoDTOs []*metadataNemInfoDTO
+type metadataV2InfoDTOs []*metadataV2InfoDTO
 
-func (ref *metadataNemInfoDTOs) toStruct(networkType NetworkType) ([]*MetadataNemTupleInfo, error) {
+func (ref *metadataV2InfoDTOs) toStruct(networkType NetworkType) ([]*MetadataV2TupleInfo, error) {
 	var (
 		dtos  = *ref
-		infos = make([]*MetadataNemTupleInfo, 0, len(dtos))
+		infos = make([]*MetadataV2TupleInfo, 0, len(dtos))
 	)
 
 	for _, dto := range dtos {
@@ -26,23 +26,23 @@ func (ref *metadataNemInfoDTOs) toStruct(networkType NetworkType) ([]*MetadataNe
 	return infos, nil
 }
 
-type metadataNemInfoDTO struct {
+type metadataV2InfoDTO struct {
 	Metadata struct {
 		CompositeHash     hashDto            `json:"compositeHash"`
 		TargetKey         hashDto            `json:"targetKey"`
 		ScopedMetadataKey uint64DTO          `json:"scopedMetadataKey"`
 		SourceAddress     string             `json:"sourceAddress"`
-		MetadataType      MetadataNemType    `json:"metadataType"`
+		MetadataType      MetadataV2Type     `json:"metadataType"`
 		Value             string             `json:"value"`
 		TargetId          jsonLib.RawMessage `json:"targetId"`
 	} `json:"metadataEntry"`
 }
 
-func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTupleInfo, error) {
-	metadataInfo := &MetadataNemTupleInfo{}
+func (ref *metadataV2InfoDTO) toStruct(networkType NetworkType) (*MetadataV2TupleInfo, error) {
+	metadataInfo := &MetadataV2TupleInfo{}
 	var err error = nil
 
-	commonMetadata := MetadataNemInfo{}
+	commonMetadata := MetadataV2Info{}
 	commonMetadata.Value, err = hex.DecodeString(ref.Metadata.Value)
 	if err != nil {
 		return nil, err
@@ -66,10 +66,10 @@ func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTu
 
 	commonMetadata.ScopedKey = ref.Metadata.ScopedMetadataKey.toStruct()
 
-	if commonMetadata.Type == MetadataNemAddressType {
-		metadataInfo.Address = &AddressMetadataNemInfo{
-			MetadataNemInfo: commonMetadata,
-			Address:         commonMetadata.SourceAddress,
+	if commonMetadata.Type == MetadataV2AddressType {
+		metadataInfo.Address = &AddressMetadataV2Info{
+			MetadataV2Info: commonMetadata,
+			Address:        commonMetadata.SourceAddress,
 		}
 
 		return metadataInfo, nil
@@ -92,9 +92,9 @@ func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTu
 			return nil, err
 		}
 
-		metadataInfo.Namespace = &NamespaceMetadataNemInfo{
-			MetadataNemInfo: commonMetadata,
-			NamespaceId:     namespaceId,
+		metadataInfo.Namespace = &NamespaceMetadataV2Info{
+			MetadataV2Info: commonMetadata,
+			NamespaceId:    namespaceId,
 		}
 
 		return metadataInfo, nil
@@ -104,9 +104,9 @@ func (ref *metadataNemInfoDTO) toStruct(networkType NetworkType) (*MetadataNemTu
 			return nil, err
 		}
 
-		metadataInfo.Mosaic = &MosaicMetadataNemInfo{
-			MetadataNemInfo: commonMetadata,
-			MosaicId:        mosaicId,
+		metadataInfo.Mosaic = &MosaicMetadataV2Info{
+			MetadataV2Info: commonMetadata,
+			MosaicId:       mosaicId,
 		}
 
 		return metadataInfo, nil
