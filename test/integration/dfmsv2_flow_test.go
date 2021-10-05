@@ -27,8 +27,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Printf("driveAccount: %s\n", driveAccount)
 
-	for i := replicatorCount; i != 0; {
-		i--
+	for i := 0; i < len(replicators); i++ {
 		replicatorAccount, err := client.NewAccount()
 		assert.Nil(t, err)
 		fmt.Printf("replicatorAccount%d: %s\n", i, replicatorAccount)
@@ -59,17 +58,16 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	// add storage, streaming and xpx mosaic to the replicator accounts
 
 	transfers := make([]sdk.Transaction, replicatorCount)
-	for j := replicatorCount; j != 0; {
-		j--
+	for i := 0; i < len(replicators); i++ {
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
-			replicators[j].Address,
+			replicators[i].Address,
 			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(streamingSize), sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 		transferMosaicsToReplicator.ToAggregate(defaultAccount.PublicAccount)
 		assert.NoError(t, err, err)
-		transfers[j] = transferMosaicsToReplicator
+		transfers[i] = transferMosaicsToReplicator
 	}
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
@@ -85,7 +83,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	// replicator onboarding transaction
 
 	rpOnboards := make([]sdk.Transaction, replicatorCount)
-	for i := replicatorCount; i != 0; {
+	for i := 0; i < len(replicators); i++ {
 		// generate random BLS Public Key
 		b := make([]byte, 32)
 		_, err := rand.Read(b)
@@ -97,7 +95,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		copy(ikm[:], b[:])
 		sk := sdk.GenerateKeyPairFromIKM(ikm)
 		blsKey := sk.PublicKey.HexString()
-		i--
+
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Amount(storageSize),
