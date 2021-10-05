@@ -7,6 +7,7 @@ package integration
 import (
 	"crypto/rand"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +23,10 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	var streamingSize uint64 = 100
 	var verificationFee = 100
 
+	driveAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+	fmt.Printf("driveAccount: %s\n", driveAccount)
+
 	for i := replicatorCount; i != 0; {
 		i--
 		replicatorAccount, err := client.NewAccount()
@@ -30,9 +35,30 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		replicators[i] = replicatorAccount
 	}
 
-	// add storage and xpx mosaic to the replicator account
+	// add storage and xpx mosaic to the drive account
 
-	var transfers [replicatorCount]*sdk.TransferTransaction
+	transferMosaicsToDrive, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveAccount.Address,
+		[]*sdk.Mosaic{sdk.Storage(storageSize / 10), sdk.Xpx(10000)},
+		sdk.NewPlainMessage(""),
+	)
+	transferMosaicsToDrive.ToAggregate(defaultAccount.PublicAccount)
+	assert.NoError(t, err, err)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{transferMosaicsToDrive},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	// end region
+
+	// add storage, streaming and xpx mosaic to the replicator accounts
+
+	transfers := make([]sdk.Transaction, replicatorCount)
 	for j := replicatorCount; j != 0; {
 		j--
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
@@ -41,15 +67,15 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(streamingSize), sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
+		transferMosaicsToReplicator.ToAggregate(defaultAccount.PublicAccount)
+		assert.NoError(t, err, err)
 		transfers[j] = transferMosaicsToReplicator
-		transfers[j].ToAggregate(defaultAccount.PublicAccount)
-		assert.Nil(t, err)
 	}
 
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{transfers[0], transfers[1]},
+			transfers,
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -58,7 +84,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// replicator onboarding transaction
 
-	var rpOnboard [replicatorCount]*sdk.ReplicatorOnboardingTransaction
+	rpOnboards := make([]sdk.Transaction, replicatorCount)
 	for i := replicatorCount; i != 0; {
 		// generate random BLS Public Key
 		b := make([]byte, 32)
@@ -70,81 +96,74 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		var ikm [32]byte
 		copy(ikm[:], b[:])
 		sk := sdk.GenerateKeyPairFromIKM(ikm)
-		blsKey := sk.PublicKey
+		blsKey := sk.PublicKey.HexString()
 		i--
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
-			sdk.Amount(50),
+			sdk.Amount(storageSize),
 			blsKey,
 		)
-		rpOnboard[i] = replicatorOnboardingTx
-		rpOnboard[i].ToAggregate(replicators[i].PublicAccount)
-		assert.Nil(t, err)
-		fmt.Printf("rpOnboard%d: %s\n", i, rpOnboard[i])
+		replicatorOnboardingTx.ToAggregate(replicators[i].PublicAccount)
+		assert.NoError(t, err, err)
+		rpOnboards[i] = replicatorOnboardingTx
+		fmt.Printf("rpOnboard%d: %s\n", i, rpOnboards[i])
 	}
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{rpOnboard[0], rpOnboard[1]},
+			rpOnboards,
 		)
-	}, replicators[0], replicators[1])
+	}, replicators[0], replicators[1:]...)
 	assert.Nil(t, result.error)
 
 	// end region
 
 	// prepare bc drive transaction
 
-	var ppBcDrive [replicatorCount]*sdk.PrepareBcDriveTransaction
-	for j := replicatorCount; j != 0; {
-		j--
-		prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.StorageSize(storageSize/10),
-			sdk.Amount(verificationFee),
-			replicatorCount,
-		)
-		ppBcDrive[j] = prepareBcDriveTx
-		ppBcDrive[j].ToAggregate(replicators[j].PublicAccount)
-		assert.Nil(t, err)
-		fmt.Printf("ppBcDrive%d: %s\n", j, ppBcDrive[j])
-	}
+	prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
+		sdk.NewDeadline(time.Hour),
+		sdk.StorageSize(storageSize/10),
+		sdk.Amount(verificationFee),
+		replicatorCount,
+	)
+	prepareBcDriveTx.ToAggregate(driveAccount.PublicAccount)
+	assert.NoError(t, err, err)
+	fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
 
 	agTx, err := client.NewCompleteAggregateTransaction(
 		sdk.NewDeadline(time.Hour),
-		[]sdk.Transaction{ppBcDrive[0], ppBcDrive[1]},
+		[]sdk.Transaction{prepareBcDriveTx},
 	)
 	assert.Nil(t, err)
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return agTx, nil
-	}, replicators[0], replicators[1])
+	}, driveAccount)
 	assert.Nil(t, result.error)
 
 	// end region
 
 	// drive closure transaction
 
-	var drClosure [replicatorCount]*sdk.DriveClosureTransaction
-	for i := replicatorCount; i != 0; {
-		i--
-		var driveKey = agTx.InnerTransactions[i].GetAbstractTransaction().UniqueAggregateHash.String()
+	drClosures := make([]sdk.Transaction, len(agTx.InnerTransactions))
+	for i, agTxIn := range agTx.InnerTransactions {
+		var driveKey = strings.ToUpper(agTxIn.GetAbstractTransaction().UniqueAggregateHash.String())
 		fmt.Println("driveKey: ", driveKey)
 		driveClosureTx, err := client.NewDriveClosureTransaction(
 			sdk.NewDeadline(time.Hour),
 			driveKey,
 		)
-		drClosure[i] = driveClosureTx
-		drClosure[i].ToAggregate(replicators[i].PublicAccount)
-		assert.Nil(t, err)
-		fmt.Printf("drClosure%d: %s\n", i, drClosure[i])
+		driveClosureTx.ToAggregate(driveAccount.PublicAccount)
+		assert.NoError(t, err, err)
+		drClosures[i] = driveClosureTx
+		fmt.Printf("drClosure%d: %s\n", i, drClosures[i])
 	}
-
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{drClosure[0], drClosure[1]},
+			drClosures,
 		)
-	}, replicators[0], replicators[1])
+	}, driveAccount)
 	assert.Nil(t, result.error)
 
 	// end region

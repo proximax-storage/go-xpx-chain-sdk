@@ -22,7 +22,7 @@ type ActiveDataModification struct {
 	UploadSize      StorageSize
 }
 
-func (desc *ActiveDataModification) String() string {
+func (active *ActiveDataModification) String() string {
 	return fmt.Sprintf(
 		`
 			"Id": %s,
@@ -30,10 +30,10 @@ func (desc *ActiveDataModification) String() string {
 			"DownloadDataCdi": %s,
 			"UploadSize": %d,
 		`,
-		desc.Id,
-		desc.Owner,
-		desc.DownloadDataCdi,
-		desc.UploadSize,
+		active.Id.String(),
+		active.Owner.String(),
+		active.DownloadDataCdi.String(),
+		active.UploadSize,
 	)
 }
 
@@ -42,14 +42,14 @@ type CompletedDataModification struct {
 	State                  DataModificationState
 }
 
-func (desc *CompletedDataModification) String() string {
+func (completed *CompletedDataModification) String() string {
 	return fmt.Sprintf(
 		`
 			"ActiveDataModification": %s,
 			"State:" %d,
 		`,
-		desc.ActiveDataModification,
-		desc.State,
+		completed.ActiveDataModification.String(),
+		completed.State,
 	)
 }
 
@@ -75,12 +75,12 @@ func (drive *BcDrive) String() string {
 		"UsedSize": %d,
 		"MetaFilesSize": %d,
 		"ReplicatorCount": %d,
-		"ActiveDataModifications": %s,
-		"CompletedDataModifications": %s,
+		"ActiveDataModifications": %+v,
+		"CompletedDataModifications": %+v,
 		`,
-		drive.BcDriveAccount,
-		drive.OwnerAccount,
-		drive.RootHash,
+		drive.BcDriveAccount.String(),
+		drive.OwnerAccount.String(),
+		drive.RootHash.String(),
 		drive.DriveSize,
 		drive.UsedSize,
 		drive.MetaFilesSize,
@@ -108,10 +108,12 @@ func (info *DriveInfo) String() string {
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
+			"Index": %d
 		`,
-		info.LastApprovedDataModificationId,
+		info.LastApprovedDataModificationId.String(),
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
+		info.Index,
 	)
 }
 
@@ -149,7 +151,7 @@ type ReplicatorsPage struct {
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
 	Capacity     Amount
-	BlsPublicKey BLSPublicKey
+	BlsPublicKey string
 }
 
 // Prepare Bc Drive Transaction
