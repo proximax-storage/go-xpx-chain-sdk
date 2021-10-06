@@ -230,10 +230,10 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 		return nil, err
 	}
 
-	replicator.ReplicatorKey = replicatorAccount
+	replicator.ReplicatorAccount = replicatorAccount
 	replicator.Version = ref.Replicator.Version
 	replicator.Capacity = ref.Replicator.Capacity.toStruct()
-	replicator.BLSKey = BLSPublicKey(ref.Replicator.BLSKey)
+	replicator.BLSKey = ref.Replicator.BLSKey
 
 	drives, err := ref.Replicator.Drives.toStruct(networkType)
 	if err != nil {
@@ -304,13 +304,9 @@ func (t *replicatorsPageDTO) toStruct(networkType NetworkType) (*ReplicatorsPage
 		},
 	}
 
-	errs := make([]error, len(t.Replicators))
 	for i, t := range t.Replicators {
-		currDr, currErr := t.toStruct(networkType)
-		page.Replicators[i], errs[i] = currDr, currErr
-	}
-
-	for _, err := range errs {
+		currDr, err := t.toStruct(networkType)
+		page.Replicators[i] = currDr
 		if err != nil {
 			return page, err
 		}

@@ -13,7 +13,7 @@ var testCompletedDataModification = CompletedDataModification{testActiveDataModi
 var testBcDrive = BcDrive{testDriveAccount, testDriveOwnerAccount, &Hash{3}, 12, 13, 14, 3, []*ActiveDataModification{testActiveDataModification}, []*CompletedDataModification{&testCompletedDataModification}}
 var testDriveInfov2 = &DriveInfo{&Hash{4}, false, 1, 1}
 var driveInfoMap = map[string]*DriveInfo{"CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE" : testDriveInfov2}
-var testReplicator = Replicator{testReplicatorAccount, 2, Amount(10), BLSPublicKey("blskeys"), driveInfoMap}
+var testReplicator = Replicator{testReplicatorAccount, 2, Amount(10), "blskeys", driveInfoMap}
 
 func TestActiveDataModificationString(t *testing.T) {
 	expectedResult := fmt.Sprintf(
@@ -29,7 +29,7 @@ func TestActiveDataModificationString(t *testing.T) {
 func TestCompletedDataModificationString(t *testing.T){
 	expectedResult := fmt.Sprintf(
 		`
-			"ActiveDataModification:" 
+			"ActiveDataModification": 
 			"Id": 0100000000000000000000000000000000000000000000000000000000000000,
 			"Owner": Address:  [Type=168, Address=VBEHMADGUUHQ6ZMCBUYARJ44647BANFFMRKLLUPF], PublicKey: "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
@@ -57,7 +57,7 @@ func TestBcDriveString(t *testing.T){
 			"UploadSize": 12,
 		],
 		"CompletedDataModifications": [
-			"ActiveDataModification:" 
+			"ActiveDataModification": 
 			"Id": 0100000000000000000000000000000000000000000000000000000000000000,
 			"Owner": Address:  [Type=168, Address=VBEHMADGUUHQ6ZMCBUYARJ44647BANFFMRKLLUPF], PublicKey: "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
@@ -72,9 +72,10 @@ func TestBcDriveString(t *testing.T){
 func TestDriveInfoString(t *testing.T){
 	expectedResult := fmt.Sprintf(
 		`
-			"LastApprovedDataModificationId": 0400000000000000000000000000000000000000000000000000000000000000,
+		    "LastApprovedDataModificationId": 0400000000000000000000000000000000000000000000000000000000000000,
 			"DataModificationIdIsValid": false,
 			"InitialDownloadWork": 1,
+			"Index": 1
 		`)
 	assert.Equal(t, expectedResult, testDriveInfov2.String())
 }
@@ -82,14 +83,15 @@ func TestDriveInfoString(t *testing.T){
 func TestReplicatorString(t *testing.T){
 	expectedResult := fmt.Sprintf(
 		`
-		ReplicatorKey: Address:  [Type=168, Address=VDQPWCXBJRL5JW4VAWVWGWXDCLREERSI24PBUSUL], PublicKey: "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", 
+		ReplicatorAccount: Address:  [Type=168, Address=VDQPWCXBJRL5JW4VAWVWGWXDCLREERSI24PBUSUL], PublicKey: "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", 
 		Version: 2,
 		Capacity: 10,
 		BLSKey: blskeys,
 		Drives: map[CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE:
-			"LastApprovedDataModificationId": 0400000000000000000000000000000000000000000000000000000000000000,
+		    "LastApprovedDataModificationId": 0400000000000000000000000000000000000000000000000000000000000000,
 			"DataModificationIdIsValid": false,
 			"InitialDownloadWork": 1,
+			"Index": 1
 		],
 		`)
 	assert.Equal(t, expectedResult, testReplicator.String())

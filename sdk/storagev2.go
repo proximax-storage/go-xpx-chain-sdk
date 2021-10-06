@@ -58,7 +58,7 @@ const (
 	ReplicatorDriveV2 DriveV2ParticipantFilter = "/replicator"
 )
 
-func (s *StorageV2Service) GetAccountDrives(ctx context.Context, driveKey *PublicAccount, filter DriveV2ParticipantFilter) ([]*BcDrive, error) {
+func (s *StorageV2Service) GetAccountDrivesV2(ctx context.Context, driveKey *PublicAccount, filter DriveV2ParticipantFilter) ([]*BcDrive, error) {
 	if driveKey == nil {
 		return nil, ErrNilAddress
 	}

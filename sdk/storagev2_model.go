@@ -118,23 +118,23 @@ func (info *DriveInfo) String() string {
 }
 
 type Replicator struct {
-	ReplicatorKey *PublicAccount
-	Version       int32
-	Capacity      Amount
-	BLSKey        BLSPublicKey
-	Drives        map[string]*DriveInfo
+	ReplicatorAccount *PublicAccount
+	Version           int32
+	Capacity          Amount
+	BLSKey            string
+	Drives            map[string]*DriveInfo
 }
 
 func (replicator *Replicator) String() string {
 	return fmt.Sprintf(
 		`
-		ReplicatorKey: %s, 
+		ReplicatorAccount: %s, 
 		Version: %d,
 		Capacity: %d,
 		BLSKey: %s,
-		Drives: %s,
+		Drives: %+v,
 		`,
-		replicator.ReplicatorKey,
+		replicator.ReplicatorAccount.String(),
 		replicator.Version,
 		replicator.Capacity,
 		replicator.BLSKey,
