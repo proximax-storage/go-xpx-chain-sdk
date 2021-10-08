@@ -2785,7 +2785,7 @@ const (
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize
 	BlsKeySize                               int = 48
 	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + BlsKeySize
-	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + 2
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 )
 
