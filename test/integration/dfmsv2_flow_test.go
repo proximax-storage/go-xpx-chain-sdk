@@ -23,7 +23,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	var streamingSize uint64 = 100
 	var verificationFee = 100
 
-	driveAccount, err := client.NewAccount()
+	driveAccount, err := client.NewAccountFromPrivateKey("EDFB348D4AAA333E6D73D9CAD1EA18FE3FE079CC3373E9E4E75A4FBD7D3476E0")
 	assert.Nil(t, err)
 	fmt.Printf("driveAccount: %s\n", driveAccount)
 
@@ -36,19 +36,12 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// add storage and xpx mosaic to the drive account
 
-	transferMosaicsToDrive, err := client.NewTransferTransaction(
-		sdk.NewDeadline(time.Hour),
-		driveAccount.Address,
-		[]*sdk.Mosaic{sdk.Storage(storageSize / 10), sdk.Xpx(10000)},
-		sdk.NewPlainMessage(""),
-	)
-	transferMosaicsToDrive.ToAggregate(defaultAccount.PublicAccount)
-	assert.NoError(t, err, err)
-
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCompleteAggregateTransaction(
+		return client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
-			[]sdk.Transaction{transferMosaicsToDrive},
+			driveAccount.Address,
+			[]*sdk.Mosaic{sdk.Storage(storageSize / 10), sdk.Xpx(10000)},
+			sdk.NewPlainMessage(""),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -118,74 +111,52 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// prepare bc drive transaction
 
-	prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
-		sdk.NewDeadline(time.Hour),
-		sdk.StorageSize(storageSize/10),
-		sdk.Amount(verificationFee),
-		replicatorCount,
-	)
-	prepareBcDriveTx.ToAggregate(driveAccount.PublicAccount)
-	assert.NoError(t, err, err)
-	fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
+		prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.StorageSize(storageSize/10),
+			sdk.Amount(verificationFee),
+			replicatorCount,
+		)
+		assert.NoError(t, err, err)
+		fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
 
-	agTx, err := client.NewCompleteAggregateTransaction(
-		sdk.NewDeadline(time.Hour),
-		[]sdk.Transaction{prepareBcDriveTx},
-	)
-	assert.Nil(t, err)
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return agTx, nil
-	}, driveAccount)
-	assert.Nil(t, result.error)
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return prepareBcDriveTx, nil
+		}, driveAccount)
+		assert.Nil(t, result.error)
 
 	// end region
 
 	// drive closure transaction
 
-	drClosures := make([]sdk.Transaction, len(agTx.InnerTransactions))
-	for i, agTxIn := range agTx.InnerTransactions {
-		var driveKey = strings.ToUpper(agTxIn.GetAbstractTransaction().UniqueAggregateHash.String())
+		driveKey := strings.ToUpper(prepareBcDriveTx.GetAbstractTransaction().UniqueAggregateHash.String()) 
 		fmt.Println("driveKey: ", driveKey)
 		driveClosureTx, err := client.NewDriveClosureTransaction(
 			sdk.NewDeadline(time.Hour),
 			driveKey,
 		)
-		driveClosureTx.ToAggregate(driveAccount.PublicAccount)
 		assert.NoError(t, err, err)
-		drClosures[i] = driveClosureTx
-		fmt.Printf("drClosure%d: %s\n", i, drClosures[i])
-	}
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCompleteAggregateTransaction(
-			sdk.NewDeadline(time.Hour),
-			drClosures,
-		)
-	}, driveAccount)
-	assert.Nil(t, result.error)
+		fmt.Printf("drClosure: %s\n", driveClosureTx)
+
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return driveClosureTx, nil
+		}, driveAccount)
+		assert.Nil(t, result.error)
 
 	// end region
 
 	// replicator offboarding transaction
 
-    rpOffboards := make([]sdk.Transaction, replicatorCount)
-	for i := 0; i < len(replicators); i++ {
-		
-		replicatorOffboardingTx, err := client.NewReplicatorOffboardingTransaction(
-			sdk.NewDeadline(time.Hour),
-		)
-		replicatorOffboardingTx.ToAggregate(replicators[i].PublicAccount)
-		assert.NoError(t, err, err)
-		rpOnboards[i] = replicatorOffboardingTx
-		fmt.Printf("rpOffboard%d: %s\n", i, rpOffboards[i])
+	for i := 0; i < len(replicators); i++{
+		replicatorOffboardingTx, err := client.NewReplicatorOffboardingTransaction(sdk.NewDeadline(time.Hour))
+		assert.Nil(t, err)
+		fmt.Printf("rpOffboard%d: %s\n", i, replicatorOffboardingTx)
+	
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return replicatorOffboardingTx, nil
+		}, replicators[i])
+		assert.Nil(t, result.error)
 	}
-
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCompleteAggregateTransaction(
-			sdk.NewDeadline(time.Hour),
-			rpOffboards,
-		)
-	}, replicators[0], replicators[1:]...)
-	assert.Nil(t, result.error)
 
     // end region
 
