@@ -111,53 +111,53 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// prepare bc drive transaction
 
-		prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
-			sdk.NewDeadline(time.Hour),
-			sdk.StorageSize(storageSize/10),
-			sdk.Amount(verificationFee),
-			replicatorCount,
-		)
-		assert.NoError(t, err, err)
-		fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
+	prepareBcDriveTx, err := client.NewPrepareBcDriveTransaction(
+		sdk.NewDeadline(time.Hour),
+		sdk.StorageSize(storageSize/10),
+		sdk.Amount(verificationFee),
+		replicatorCount,
+	)
+	assert.NoError(t, err, err)
+	fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
 
-		result = sendTransaction(t, func() (sdk.Transaction, error) {
-			return prepareBcDriveTx, nil
-		}, driveAccount)
-		assert.Nil(t, result.error)
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return prepareBcDriveTx, nil
+	}, driveAccount)
+	assert.Nil(t, result.error)
 
 	// end region
 
 	// drive closure transaction
 
-		driveKey := strings.ToUpper(prepareBcDriveTx.GetAbstractTransaction().UniqueAggregateHash.String()) 
-		fmt.Println("driveKey: ", driveKey)
-		driveClosureTx, err := client.NewDriveClosureTransaction(
-			sdk.NewDeadline(time.Hour),
-			driveKey,
-		)
-		assert.NoError(t, err, err)
-		fmt.Printf("drClosure: %s\n", driveClosureTx)
+	driveKey := strings.ToUpper(prepareBcDriveTx.GetAbstractTransaction().TransactionHash.String())
+	fmt.Println("driveKey: ", driveKey)
+	driveClosureTx, err := client.NewDriveClosureTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveKey,
+	)
+	assert.NoError(t, err, err)
+	fmt.Printf("drClosure: %s\n", driveClosureTx)
 
-		result = sendTransaction(t, func() (sdk.Transaction, error) {
-			return driveClosureTx, nil
-		}, driveAccount)
-		assert.Nil(t, result.error)
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return driveClosureTx, nil
+	}, driveAccount)
+	assert.Nil(t, result.error)
 
 	// end region
 
 	// replicator offboarding transaction
 
-	for i := 0; i < len(replicators); i++{
+	for i := 0; i < len(replicators); i++ {
 		replicatorOffboardingTx, err := client.NewReplicatorOffboardingTransaction(sdk.NewDeadline(time.Hour))
 		assert.Nil(t, err)
 		fmt.Printf("rpOffboard%d: %s\n", i, replicatorOffboardingTx)
-	
+
 		result = sendTransaction(t, func() (sdk.Transaction, error) {
 			return replicatorOffboardingTx, nil
 		}, replicators[i])
 		assert.Nil(t, result.error)
 	}
 
-    // end region
+	// end region
 
 }
