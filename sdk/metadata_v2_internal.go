@@ -134,3 +134,33 @@ func (ref *computedHashes) MarshalJSON() ([]byte, error) {
 
 	return buf, nil
 }
+
+type metadatasPageDTO struct {
+	Metadatas metadataV2InfoDTOs `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (m *metadatasPageDTO) toStruct(networkType NetworkType) (*MetadatasPage, error) {
+	metadatas, err := m.Metadatas.toStruct(networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	page := &MetadatasPage{
+		Metadatas: metadatas,
+		Pagination: Pagination{
+			TotalEntries: m.Pagination.TotalEntries,
+			PageNumber:   m.Pagination.PageNumber,
+			PageSize:     m.Pagination.PageSize,
+			TotalPages:   m.Pagination.TotalPages,
+		},
+	}
+
+	return page, nil
+}

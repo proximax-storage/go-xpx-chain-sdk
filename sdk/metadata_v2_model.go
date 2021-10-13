@@ -29,3 +29,16 @@ type MetadataV2TupleInfo struct {
 	Mosaic    *MosaicMetadataV2Info
 	Namespace *NamespaceMetadataV2Info
 }
+
+type MetadataV2PageOptions struct {
+	SourceAddress string `url:"sourceAddress,omitempty"`
+	TargetKey     string `url:"targetKey,omitempty"`
+	ScopedKey     string `url:"scopedMetadataKey,omitempty"` // uint64 hex
+	TargetId      string `url:"targetId,omitempty"`          // uint64 hex
+	Type          uint8  `url:"metadataType,omitempty"`
+}
+
+type MetadatasPage struct {
+	Metadatas  []*MetadataV2TupleInfo
+	Pagination Pagination
+}

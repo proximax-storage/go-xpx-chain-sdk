@@ -88,7 +88,7 @@ const (
 	testMosaicLevyJson = `
 						{
 							"type": 2,
-							"recipient": "900F83AC9219E406BDFA48132355175F459F9F2C78C55D5673",
+							"recipient": "A88167455099E7676758B38BD8282B2FEC00416C1F4AA6906A",
 							"mosaicId": [
 								4251443779,
 								1926131395
@@ -137,9 +137,9 @@ var (
 		Type: 2,
 		Recipient: &Address{
 			Type:    mosaicClient.client.config.NetworkType,
-			Address: "VBFBW6TUGLEWQIBCMTBMXXQORZKUP3WTVX36ZFE7",
+			Address: "VCAWORKQTHTWOZ2YWOF5QKBLF7WAAQLMD5FKNEDK",
 		},
-		Fee:      1000,
+		Fee:      100,
 		MosaicId: newMosaicIdPanic(0x72CE6EC3FD67E243),
 	}
 )

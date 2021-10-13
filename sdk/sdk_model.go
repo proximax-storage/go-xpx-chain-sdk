@@ -108,6 +108,10 @@ func (m baseInt64) String() string {
 	return fmt.Sprintf("%d", m)
 }
 
+func (m baseInt64) ToHexString() string {
+	return uint64ToHex(uint64(m))
+}
+
 func (m baseInt64) toArray() [2]uint32 {
 	return uint64ToArray(uint64(m))
 }

@@ -39,7 +39,7 @@ func (ref *MetadataV2Service) GetMetadataV2Info(ctx context.Context, computedHas
 	return mscInfo, nil
 }
 
-func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, hashes []*Hash) ([]*MetadataV2TupleInfo, error) {
+func (ref *MetadataV2Service) GetMetadataV2InfosByHashes(ctx context.Context, hashes []*Hash) ([]*MetadataV2TupleInfo, error) {
 	if len(hashes) == 0 {
 		return nil, ErrNilHashes
 	}
@@ -47,6 +47,26 @@ func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, hashes []*
 	dtos := metadataV2InfoDTOs(make([]*metadataV2InfoDTO, 0))
 
 	resp, err := ref.client.doNewRequest(ctx, http.MethodPost, metadataEntriesRoute, &computedHashes{hashes}, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{400: ErrInvalidRequest, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dtos.toStruct(ref.client.config.NetworkType)
+}
+
+func (ref *MetadataV2Service) GetMetadataV2Infos(ctx context.Context, mOpts *MetadataV2PageOptions) (*MetadatasPage, error) {
+	dtos := &metadatasPageDTO{}
+
+	u, err := addOptions(metadataEntriesRoute, mOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, u, nil, &dtos)
 	if err != nil {
 		return nil, err
 	}
