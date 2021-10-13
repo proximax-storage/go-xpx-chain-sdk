@@ -36,6 +36,7 @@ type MetadataV2PageOptions struct {
 	ScopedKey     string `url:"scopedMetadataKey,omitempty"` // uint64 hex
 	TargetId      string `url:"targetId,omitempty"`          // uint64 hex
 	Type          uint8  `url:"metadataType,omitempty"`
+	PaginationOrderingOptions
 }
 
 type MetadatasPage struct {
