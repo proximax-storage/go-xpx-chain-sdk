@@ -167,3 +167,65 @@ type DriveClosureTransaction struct {
 	AbstractTransaction
 	DriveKey string
 }
+
+type VerificationResult struct {
+	Prover *PublicAccount
+	Result bool
+}
+
+func (vr *VerificationResult) String() string {
+	return fmt.Sprintf(
+		`
+		"Prover": %s,
+		"Result": %t
+		`,
+		vr.Prover.String(),
+		vr.Result,
+	)
+}
+
+type VerificationResults []*VerificationResult
+
+func (vrs VerificationResults) String() string {
+	var str string
+	for _, vr := range vrs {
+		str += vr.String()
+	}
+
+	return str
+}
+
+func (vrs VerificationResults) Size() int {
+	return len(vrs) * (KeySize + 1)
+}
+
+type VerificationOpinion struct {
+	Verifier     *PublicAccount
+	BlsSignature BLSSignature
+	Results      VerificationResults
+}
+
+func (vo *VerificationOpinion) String() string {
+	return fmt.Sprintf(
+		`
+		"Verifier": %s,
+		"BlsSignature": %s,
+		"Results": %s
+		`,
+		vo.Verifier.String(),
+		vo.BlsSignature.HexString(),
+		vo.Results.String(),
+	)
+}
+
+func (vo *VerificationOpinion) Size() int {
+	return KeySize + BlsSignatureSize + vo.Results.Size()
+}
+
+type EndDriveVerificationTransactionV2 struct {
+	AbstractTransaction
+	DriveKey             *PublicAccount
+	VerificationTrigger  *Hash
+	Provers              []*PublicAccount
+	VerificationOpinions []*VerificationOpinion
+}

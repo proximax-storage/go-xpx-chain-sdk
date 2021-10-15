@@ -323,3 +323,253 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		dto.Tx.DriveKey,
 	}, nil
 }
+
+func NewEndDriveVerificationTransactionV2(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	verificationTrigger *Hash,
+	provers []*PublicAccount,
+	verificationOpinions []*VerificationOpinion,
+	networkType NetworkType,
+) (*EndDriveVerificationTransactionV2, error) {
+	tx := EndDriveVerificationTransactionV2{
+		AbstractTransaction: AbstractTransaction{
+			Version:     EndDriveVerificationV2Version,
+			Deadline:    deadline,
+			Type:        EndDriveVerificationV2,
+			NetworkType: networkType,
+		},
+		DriveKey:             driveKey,
+		VerificationTrigger:  verificationTrigger,
+		Provers:              provers,
+		VerificationOpinions: verificationOpinions,
+	}
+
+	return &tx, nil
+}
+
+func (tx *EndDriveVerificationTransactionV2) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *EndDriveVerificationTransactionV2) String() string {
+	provers := ""
+	for _, p := range tx.Provers {
+		provers += p.String()
+	}
+
+	verificationOpinions := ""
+	for _, vo := range tx.VerificationOpinions {
+		verificationOpinions += vo.String()
+	}
+
+	return fmt.Sprintf(
+		`
+		"AbstractTransaction": %s,
+		"Drive": %s,
+		"VerificationTrigger": %s,
+		"Provers": %s,
+		"VerificationOpinions": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.VerificationTrigger.String(),
+		provers,
+		verificationOpinions,
+	)
+}
+
+func resultsToArrayToBuffer(builder *flatbuffers.Builder, results VerificationResults) (flatbuffers.UOffsetT, error) {
+	resultsB := make([]flatbuffers.UOffsetT, len(results))
+	for i, r := range results {
+		b, err := hex.DecodeString(r.Prover.PublicKey)
+		if err != nil {
+			return 0, err
+		}
+
+		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+		rB := byte(0)
+		if r.Result {
+			rB = byte(1)
+		}
+
+		transactions.ResultBufferStart(builder)
+		transactions.ResultBufferAddProver(builder, pkV)
+		transactions.ResultBufferAddResult(builder, rB)
+		resultsB[i] = transactions.ResultBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, resultsB), nil
+}
+
+func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificationOpinions []*VerificationOpinion) (flatbuffers.UOffsetT, error) {
+	voB := make([]flatbuffers.UOffsetT, len(verificationOpinions))
+	for i, vo := range verificationOpinions {
+		b, err := hex.DecodeString(vo.Verifier.PublicKey)
+		if err != nil {
+			return 0, err
+		}
+
+		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
+		bsV := transactions.TransactionBufferCreateByteVector(builder, []byte(vo.BlsSignature))
+		rsV, err := resultsToArrayToBuffer(builder, vo.Results)
+		if err != nil {
+			return 0, err
+		}
+
+		transactions.VerificationOpinionBufferStart(builder)
+		transactions.VerificationOpinionBufferAddVerifier(builder, pkV)
+		transactions.VerificationOpinionBufferAddBlsSignature(builder, bsV)
+		transactions.VerificationOpinionBufferAddResults(builder, rsV)
+		voB[i] = transactions.TransactionBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, voB), nil
+}
+
+func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	hV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	vtV := transactions.TransactionBufferCreateByteVector(builder, tx.VerificationTrigger[:])
+
+	provesB := make([]flatbuffers.UOffsetT, len(tx.Provers))
+	for i, prover := range tx.Provers {
+		b, err := hex.DecodeString(prover.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+
+		provesB[i] = transactions.TransactionBufferCreateByteVector(builder, b)
+	}
+	psV := transactions.TransactionBufferCreateUOffsetVector(builder, provesB)
+
+	voV, err := verificationOpinionsToArrayToBuffer(builder, tx.VerificationOpinions)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.EndDriveVerificationTransactionV2BufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, hV)
+	transactions.EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder, vtV)
+	transactions.EndDriveVerificationTransactionV2BufferAddProversCount(builder, uint16(len(tx.Provers)))
+	transactions.EndDriveVerificationTransactionV2BufferAddProvers(builder, psV)
+	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinionsCount(builder, uint16(len(tx.VerificationOpinions)))
+	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinions(builder, voV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return endDriveVerificationV2TransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *EndDriveVerificationTransactionV2) Size() int {
+	size := KeySize + Hash256 + len(tx.Provers)*KeySize
+	for _, f := range tx.VerificationOpinions {
+		size += f.Size()
+	}
+
+	return EndDriveVerificationV2HeaderSize + size
+}
+
+type verificationOpinionDTO struct {
+	Verifier     string          `json:"verifier"`
+	BlsSignature string          `json:"blsSignature"`
+	Results      map[string]bool `json:"results"`
+}
+
+func verificationOpinionDTOArrayToStruct(verificationOpinionDTOs []*verificationOpinionDTO, networkType NetworkType) ([]*VerificationOpinion, error) {
+	verificationOpinions := make([]*VerificationOpinion, 0, len(verificationOpinionDTOs))
+
+	for _, dto := range verificationOpinionDTOs {
+		verifier, err := NewAccountFromPublicKey(dto.Verifier, networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		results := make(VerificationResults, 0, len(dto.Results))
+		for prover, res := range dto.Results {
+			acc, err := NewAccountFromPublicKey(prover, networkType)
+			if err != nil {
+				return nil, err
+			}
+
+			results = append(results, &VerificationResult{acc, res})
+		}
+
+		verificationOpinions = append(verificationOpinions, &VerificationOpinion{
+			verifier,
+			BLSSignature(dto.BlsSignature),
+			results,
+		})
+	}
+
+	return verificationOpinions, nil
+}
+
+type endDriveVerificationTransactionV2DTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey             string                    `json:"driveKey"`
+		VerificationTrigger  hashDto                   `json:"verificationTrigger"`
+		Provers              []string                  `json:"provers"`
+		VerificationOpinions []*verificationOpinionDTO `json:"verificationOpinions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveAccount, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	verificationTrigger, err := dto.Tx.VerificationTrigger.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing VerificationTrigger: %v", err)
+	}
+
+	provers := make([]*PublicAccount, len(dto.Tx.Provers))
+	for i, p := range dto.Tx.Provers {
+		provers[i], err = NewAccountFromPublicKey(p, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	vos, err := verificationOpinionDTOArrayToStruct(dto.Tx.VerificationOpinions, atx.NetworkType)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing VerificationOpinions: %v", err)
+	}
+
+	return &EndDriveVerificationTransactionV2{
+		*atx,
+		driveAccount,
+		verificationTrigger,
+		provers,
+		vos,
+	}, nil
+}
