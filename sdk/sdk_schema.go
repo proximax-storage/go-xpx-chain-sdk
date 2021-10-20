@@ -170,4 +170,5 @@ const (
 	ByteSize  VarSize = 1
 	ShortSize VarSize = 2
 	IntSize   VarSize = 4
+	LongSize  VarSize = 8
 )

@@ -16,10 +16,12 @@ const (
 )
 
 type ActiveDataModification struct {
-	Id              *Hash
-	Owner           *PublicAccount
-	DownloadDataCdi *Hash
-	UploadSize      StorageSize
+	Id                 *Hash
+	Owner              *PublicAccount
+	DownloadDataCdi    *Hash
+	ExpectedUploadSize StorageSize
+	ActualUploadSize   StorageSize
+	Folder             string
 }
 
 func (active *ActiveDataModification) String() string {
@@ -28,12 +30,16 @@ func (active *ActiveDataModification) String() string {
 			"Id": %s,
 			"Owner": %s,
 			"DownloadDataCdi": %s,
-			"UploadSize": %d,
+			"ExpectedUploadSize": %d,
+			"ActualUploadSize": %d,
+			"Folder": %s
 		`,
 		active.Id.String(),
 		active.Owner.String(),
 		active.DownloadDataCdi.String(),
-		active.UploadSize,
+		active.ExpectedUploadSize,
+		active.ActualUploadSize,
+		active.Folder,
 	)
 }
 

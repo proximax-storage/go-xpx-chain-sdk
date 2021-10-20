@@ -169,6 +169,7 @@ type Client struct {
 	Contract      *ContractService
 	Metadata      *MetadataService
 	MetadataNem   *MetadataNemService
+	StreamingV2   *StreamingV2Service
 }
 
 type service struct {
@@ -213,6 +214,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataNem = (*MetadataNemService)(&c.common)
+	c.StreamingV2 = (*StreamingV2Service)(&c.common)
 
 	return c
 }
@@ -919,6 +921,15 @@ func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *Mo
 
 func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
 	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStreamStartTransaction(deadline *Deadline, driveKey string, expectedUploadSize StorageSize, folder string, feedbackFeeAmount Amount) (*StreamStartTransaction, error) {
+	tx, err := NewStreamStartTransaction(deadline, driveKey, expectedUploadSize, folder, feedbackFeeAmount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

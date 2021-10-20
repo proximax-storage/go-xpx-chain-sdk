@@ -1,0 +1,18 @@
+namespace Catapult.Buffers;
+
+table StreamStartTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    expectedUploadSize: uint64;
+    folderSize: ushort;
+    feedbackFeeAmount: uint64;
+    folder: [ubyte];
+}
+
+root_type StreamStartTransactionBuffer;
