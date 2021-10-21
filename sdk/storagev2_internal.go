@@ -5,6 +5,7 @@
 package sdk
 
 import (
+	"encoding/hex"
 	"fmt"
 )
 
@@ -13,7 +14,7 @@ type activeDataModificationDTO struct {
 	Owner              string    `json:"owner"`
 	DownloadDataCdi    hashDto   `json:"downloadDataCdi"`
 	ExpectedUploadSize uint64DTO `json:"ExpectedUploadSize"`
-	ActiveUploadSize   uint64DTO `json:"ActiveUploadSize"`
+	ActualUploadSize   uint64DTO `json:"ActualUploadSize"`
 	Folder             string    `json:"Folder"`
 }
 
@@ -33,13 +34,18 @@ func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*Active
 		return nil, err
 	}
 
+	folderBytes, err := hex.DecodeString(ref.Folder)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ActiveDataModification{
 		Id:                 id,
 		Owner:              owner,
 		DownloadDataCdi:    downloadDataCdi,
 		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
-		ActualUploadSize:   ref.ActiveUploadSize.toStruct(),
-		Folder:             ref.Folder,
+		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
+		Folder:             string(folderBytes[:]),
 	}, nil
 }
 
