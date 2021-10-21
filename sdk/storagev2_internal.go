@@ -5,7 +5,6 @@
 package sdk
 
 import (
-	"encoding/hex"
 	"fmt"
 )
 
@@ -34,18 +33,13 @@ func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*Active
 		return nil, err
 	}
 
-	folderBytes, err := hex.DecodeString(ref.Folder)
-	if err != nil {
-		return nil, err
-	}
-
 	return &ActiveDataModification{
 		Id:                 id,
 		Owner:              owner,
 		DownloadDataCdi:    downloadDataCdi,
 		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
 		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
-		Folder:             string(folderBytes[:]),
+		Folder:             ref.Folder,
 	}, nil
 }
 

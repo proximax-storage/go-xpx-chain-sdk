@@ -109,17 +109,11 @@ func (dto *streamStartTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	folderBytes, err := hex.DecodeString(dto.Tx.Folder)
-	if err != nil {
-		return nil, err
-	}
-
 	return &StreamStartTransaction{
 		*atx,
 		dto.Tx.DriveKey,
 		dto.Tx.ExpectedUploadSize.toStruct(),
-
-		string(folderBytes[:]),
+		dto.Tx.Folder,
 		dto.Tx.FeedbackFeeAmount.toStruct(),
 	}, nil
 }
