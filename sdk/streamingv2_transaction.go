@@ -90,10 +90,10 @@ func (tx *StreamStartTransaction) FolderSize() int {
 type streamStartTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey           string      `json:"driveKey"`
-		ExpectedUploadSize StorageSize `json:"blsKey"`
-		Folder             string      `json:"folder"`
-		FeedbackFeeAmount  Amount      `json:"feedbackFeeAmount"`
+		DriveKey           string    `json:"driveKey"`
+		ExpectedUploadSize uint64DTO `json:"expectedUploadSize"`
+		Folder             string    `json:"folder"`
+		FeedbackFeeAmount  uint64DTO `json:"feedbackFeeAmount"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -109,11 +109,17 @@ func (dto *streamStartTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
+	folderBytes, err := hex.DecodeString(dto.Tx.Folder)
+	if err != nil {
+		return nil, err
+	}
+
 	return &StreamStartTransaction{
 		*atx,
 		dto.Tx.DriveKey,
-		dto.Tx.ExpectedUploadSize,
-		dto.Tx.Folder,
-		dto.Tx.FeedbackFeeAmount,
+		dto.Tx.ExpectedUploadSize.toStruct(),
+
+		string(folderBytes[:]),
+		dto.Tx.FeedbackFeeAmount.toStruct(),
 	}, nil
 }
