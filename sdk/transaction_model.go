@@ -2789,7 +2789,7 @@ const (
 	BlsSignatureSize                         int = 96
 	ProversCountSize                             = 2
 	VerificationOpinionsCountSize                = 2
-	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + ProversCountSize + VerificationOpinionsCountSize
+	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ProversCountSize + VerificationOpinionsCountSize
 )
 
 type EntityType uint16

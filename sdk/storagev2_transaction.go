@@ -403,6 +403,24 @@ func resultsToArrayToBuffer(builder *flatbuffers.Builder, results VerificationRe
 	return transactions.TransactionBufferCreateUOffsetVector(builder, resultsB), nil
 }
 
+func proversToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccount) (flatbuffers.UOffsetT, error) {
+	psB := make([]flatbuffers.UOffsetT, len(provers))
+	for i, p := range provers {
+		b, err := hex.DecodeString(p.PublicKey)
+		if err != nil {
+			return 0, err
+		}
+
+		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+		transactions.ProversBufferStart(builder)
+		transactions.ProversBufferAddProver(builder, pkV)
+		psB[i] = transactions.ProversBufferEnd(builder)
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, psB), nil
+}
+
 func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificationOpinions []*VerificationOpinion) (flatbuffers.UOffsetT, error) {
 	voB := make([]flatbuffers.UOffsetT, len(verificationOpinions))
 	for i, vo := range verificationOpinions {
@@ -422,7 +440,7 @@ func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificat
 		transactions.VerificationOpinionBufferAddVerifier(builder, pkV)
 		transactions.VerificationOpinionBufferAddBlsSignature(builder, bsV)
 		transactions.VerificationOpinionBufferAddResults(builder, rsV)
-		voB[i] = transactions.TransactionBufferEnd(builder)
+		voB[i] = transactions.VerificationOpinionBufferEnd(builder)
 	}
 
 	return transactions.TransactionBufferCreateUOffsetVector(builder, voB), nil
@@ -441,20 +459,13 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	hV := transactions.TransactionBufferCreateByteVector(builder, b)
-
+	dkV := transactions.TransactionBufferCreateByteVector(builder, b)
 	vtV := transactions.TransactionBufferCreateByteVector(builder, tx.VerificationTrigger[:])
 
-	provesB := make([]flatbuffers.UOffsetT, len(tx.Provers))
-	for i, prover := range tx.Provers {
-		b, err := hex.DecodeString(prover.PublicKey)
-		if err != nil {
-			return nil, err
-		}
-
-		provesB[i] = transactions.TransactionBufferCreateByteVector(builder, b)
+	psV, err := proversToArrayToBuffer(builder, tx.Provers)
+	if err != nil {
+		return nil, err
 	}
-	psV := transactions.TransactionBufferCreateUOffsetVector(builder, provesB)
 
 	voV, err := verificationOpinionsToArrayToBuffer(builder, tx.VerificationOpinions)
 	if err != nil {
@@ -464,25 +475,25 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 	transactions.EndDriveVerificationTransactionV2BufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, hV)
+	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, dkV)
 	transactions.EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder, vtV)
 	transactions.EndDriveVerificationTransactionV2BufferAddProversCount(builder, uint16(len(tx.Provers)))
-	transactions.EndDriveVerificationTransactionV2BufferAddProvers(builder, psV)
 	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinionsCount(builder, uint16(len(tx.VerificationOpinions)))
+	transactions.EndDriveVerificationTransactionV2BufferAddProvers(builder, psV)
 	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinions(builder, voV)
-	t := transactions.TransactionBufferEnd(builder)
+	t := transactions.EndDriveVerificationTransactionV2BufferEnd(builder)
 	builder.Finish(t)
 
 	return endDriveVerificationV2TransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
 func (tx *EndDriveVerificationTransactionV2) Size() int {
-	size := KeySize + Hash256 + len(tx.Provers)*KeySize
-	for _, f := range tx.VerificationOpinions {
-		size += f.Size()
+	size := EndDriveVerificationV2HeaderSize + len(tx.Provers)*KeySize
+	for _, vo := range tx.VerificationOpinions {
+		size += vo.Size()
 	}
 
-	return EndDriveVerificationV2HeaderSize + size
+	return size
 }
 
 type verificationOpinionDTO struct {

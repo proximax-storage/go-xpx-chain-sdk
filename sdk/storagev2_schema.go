@@ -62,18 +62,22 @@ func endDriveVerificationV2TransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newScalarAttribute("driveKey", ByteSize),
-			newScalarAttribute("verificationTrigger", ByteSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("verificationTrigger", ByteSize),
 			newScalarAttribute("proversCount", ShortSize),
-			newArrayAttribute("provers", ByteSize),
 			newScalarAttribute("verificationOpinionsCount", ShortSize),
+			newTableArrayAttribute("provers", schema{
+				[]schemaAttribute{
+					newArrayAttribute("prover", ByteSize),
+				},
+			}.schemaDefinition),
 			newTableArrayAttribute("verificationOpinions", schema{
 				[]schemaAttribute{
-					newScalarAttribute("verifier", ByteSize),
-					newScalarAttribute("blsSignature", ByteSize),
+					newArrayAttribute("verifier", ByteSize),
+					newArrayAttribute("blsSignature", ByteSize),
 					newTableArrayAttribute("results", schema{
 						[]schemaAttribute{
-							newScalarAttribute("prover", ByteSize),
+							newArrayAttribute("prover", ByteSize),
 							newScalarAttribute("result", ByteSize),
 						},
 					}.schemaDefinition),

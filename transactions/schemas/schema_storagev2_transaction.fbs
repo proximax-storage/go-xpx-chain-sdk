@@ -36,6 +36,10 @@ table DriveClosureTransactionBuffer {
     driveKey: [ubyte];
 }
 
+table ProversBuffer {
+    prover: [ubyte];
+}
+
 table ResultBuffer {
     prover: [ubyte];
     result: ubyte;
@@ -58,8 +62,8 @@ table EndDriveVerificationTransactionV2Buffer {
     driveKey: [ubyte];
     verificationTrigger: [ubyte];
     proversCount: ushort;
-    provers: [ubyte];
     verificationOpinionsCount: ushort;
+    provers: [ProversBuffer];
     verificationOpinions: [VerificationOpinionBuffer];
 }
 
@@ -68,6 +72,8 @@ root_type ReplicatorOnboardingTransactionBuffer;
 root_type PrepareBcDriveTransactionBuffer;
 
 root_type DriveClosureTransactionBuffer;
+
+root_type ProversBuffer;
 
 root_type ResultBuffer;
 
