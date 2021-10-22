@@ -1,6 +1,6 @@
 namespace Catapult.Buffers;
 
-table MetadataTransactionBuffer {
+table MetadataV2TransactionBuffer {
     size: uint;
     signature: [ubyte];
     signer: [ubyte];
@@ -17,4 +17,4 @@ table MetadataTransactionBuffer {
     value: [ubyte];
 }
 
-root_type MetadataTransactionBuffer;
+root_type MetadataV2TransactionBuffer;
