@@ -9,10 +9,25 @@ table StreamStartTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     driveKey: [ubyte];
-    expectedUploadSize: uint64;
-    folderSize: ushort;
-    feedbackFeeAmount: uint64;
-    folder: [ubyte];
+    expectedUploadSize: [uint];
+    folderNameSize: ushort;
+    feedbackFeeAmount: [uint];
+    folderName: [ubyte];
+}
+
+table StreamFinishTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    streamId: [ubyte];
+    actualUploadSize: [uint];
+    streamStructureCdi: [ubyte];
 }
 
 root_type StreamStartTransactionBuffer;
+root_type StreamFinishTransactionBuffer;

@@ -15,10 +15,28 @@ func streamStartTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("driveKey", ByteSize),
-			newScalarAttribute("expectedUploadSize", LongSize),
-			newScalarAttribute("folderSize", ShortSize),
-			newScalarAttribute("feedbackFeeAmount", LongSize),
-			newArrayAttribute("folder", ByteSize),
+			newArrayAttribute("expectedUploadSize", IntSize),
+			newScalarAttribute("folderNameSize", ShortSize),
+			newArrayAttribute("feedbackFeeAmount", IntSize),
+			newArrayAttribute("folderName", ByteSize),
+		},
+	}
+}
+
+func streamFinishTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("streamId", ByteSize),
+			newArrayAttribute("actualUploadSize", IntSize),
+			newArrayAttribute("streamStructureCdi", ByteSize),
 		},
 	}
 }

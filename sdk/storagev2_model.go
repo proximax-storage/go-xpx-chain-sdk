@@ -21,7 +21,8 @@ type ActiveDataModification struct {
 	DownloadDataCdi    *Hash
 	ExpectedUploadSize StorageSize
 	ActualUploadSize   StorageSize
-	Folder             string
+	FolderName         string
+	ReadyForApproval   bool
 }
 
 func (active *ActiveDataModification) String() string {
@@ -32,14 +33,16 @@ func (active *ActiveDataModification) String() string {
 			"DownloadDataCdi": %s,
 			"ExpectedUploadSize": %d,
 			"ActualUploadSize": %d,
-			"Folder": %s
+			"FolderName": %s,
+			"ReadyForApproval": %v
 		`,
 		active.Id.String(),
 		active.Owner.String(),
 		active.DownloadDataCdi.String(),
 		active.ExpectedUploadSize,
 		active.ActualUploadSize,
-		active.Folder,
+		active.FolderName,
+		active.ReadyForApproval,
 	)
 }
 

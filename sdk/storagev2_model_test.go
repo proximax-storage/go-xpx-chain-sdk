@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testActiveDataModification = &ActiveDataModification{&Hash{1}, testDriveAccount, &Hash{2}, 12, 11, "foo/bar"}
+var testActiveDataModification = &ActiveDataModification{&Hash{1}, testDriveAccount, &Hash{2}, 12, 11, "foo/bar", true}
 var testCompletedDataModification = CompletedDataModification{testActiveDataModification, Succeeded}
 var testBcDrive = BcDrive{testDriveAccount, testDriveOwnerAccount, &Hash{3}, 12, 13, 14, 3, []*ActiveDataModification{testActiveDataModification}, []*CompletedDataModification{&testCompletedDataModification}}
 var testDriveInfov2 = &DriveInfo{&Hash{4}, false, 1, 1}
@@ -22,7 +22,8 @@ func TestActiveDataModificationString(t *testing.T) {
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
 			"ExpectedUploadSize": 12,
 			"ActualUploadSize": 11,
-			"Folder": foo/bar
+			"FolderName": foo/bar,
+			"ReadyForApproval": true
 		`)
 	assert.Equal(t, expectedResult, testActiveDataModification.String())
 }
@@ -36,7 +37,8 @@ func TestCompletedDataModificationString(t *testing.T) {
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
 			"ExpectedUploadSize": 12,
 			"ActualUploadSize": 11,
-			"Folder": foo/bar
+			"FolderName": foo/bar,
+			"ReadyForApproval": true
 		,
 			"State:" 0,
 		`)
@@ -59,7 +61,8 @@ func TestBcDriveString(t *testing.T) {
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
 			"ExpectedUploadSize": 12,
 			"ActualUploadSize": 11,
-			"Folder": foo/bar
+			"FolderName": foo/bar,
+			"ReadyForApproval": true
 		],
 		"CompletedDataModifications": [
 			"ActiveDataModification": 
@@ -68,7 +71,8 @@ func TestBcDriveString(t *testing.T) {
 			"DownloadDataCdi": 0200000000000000000000000000000000000000000000000000000000000000,
 			"ExpectedUploadSize": 12,
 			"ActualUploadSize": 11,
-			"Folder": foo/bar
+			"FolderName": foo/bar,
+			"ReadyForApproval": true
 		,
 			"State:" 0,
 		],

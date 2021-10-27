@@ -8,6 +8,14 @@ type StreamStartTransaction struct {
 	AbstractTransaction
 	DriveKey           string
 	ExpectedUploadSize StorageSize
-	Folder             string
+	FolderName         string
 	FeedbackFeeAmount  Amount
+}
+
+type StreamFinishTransaction struct {
+	AbstractTransaction
+	DriveKey           string
+	StreamId           string
+	ActualUploadSize   StorageSize
+	StreamStructureCdi string
 }

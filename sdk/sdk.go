@@ -936,3 +936,12 @@ func (c *Client) NewStreamStartTransaction(deadline *Deadline, driveKey string, 
 
 	return tx, err
 }
+
+func (c *Client) NewStreamFinishTransaction(deadline *Deadline, driveKey string, streamId string, actualUploadSize StorageSize, streamStructureCdi string) (*StreamFinishTransaction, error) {
+	tx, err := NewStreamFinishTransaction(deadline, driveKey, streamId, actualUploadSize, streamStructureCdi, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}

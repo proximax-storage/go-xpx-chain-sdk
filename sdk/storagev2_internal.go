@@ -14,7 +14,7 @@ type activeDataModificationDTO struct {
 	DownloadDataCdi    hashDto   `json:"downloadDataCdi"`
 	ExpectedUploadSize uint64DTO `json:"ExpectedUploadSize"`
 	ActualUploadSize   uint64DTO `json:"ActualUploadSize"`
-	Folder             string    `json:"Folder"`
+	FolderName         string    `json:"FolderName"`
 }
 
 func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*ActiveDataModification, error) {
@@ -39,7 +39,7 @@ func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*Active
 		DownloadDataCdi:    downloadDataCdi,
 		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
 		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
-		Folder:             ref.Folder,
+		FolderName:         ref.FolderName,
 	}, nil
 }
 
