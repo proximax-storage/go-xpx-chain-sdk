@@ -35,10 +35,15 @@ func (s *StorageV2Service) GetDrive(ctx context.Context, driveKey *PublicAccount
 	return dto.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageV2Service) GetDrives(ctx context.Context) (*BcDrivesPage, error) {
+func (s *StorageV2Service) GetDrives(ctx context.Context, bdpOpts *BcDrivesPageOptions) (*BcDrivesPage, error) {
 	bcdspDTO := &bcDrivesPageDTO{}
 
-	resp, err := s.client.doNewRequest(ctx, http.MethodGet, drivesRouteV2, nil, &bcdspDTO)
+	u, err := addOptions(drivesRouteV2, bdpOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &bcdspDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -50,20 +55,12 @@ func (s *StorageV2Service) GetDrives(ctx context.Context) (*BcDrivesPage, error)
 	return bcdspDTO.toStruct(s.client.NetworkType())
 }
 
-type DriveV2ParticipantFilter string
-
-const (
-	AllDriveV2Roles   DriveV2ParticipantFilter = ""
-	OwnerDriveV2      DriveV2ParticipantFilter = "/owner"
-	ReplicatorDriveV2 DriveV2ParticipantFilter = "/replicator"
-)
-
-func (s *StorageV2Service) GetAccountDrives(ctx context.Context, driveKey *PublicAccount, filter DriveV2ParticipantFilter) ([]*BcDrive, error) {
+func (s *StorageV2Service) GetAccountDrives(ctx context.Context, driveKey *PublicAccount) ([]*BcDrive, error) {
 	if driveKey == nil {
 		return nil, ErrNilAddress
 	}
 
-	url := net.NewUrl(fmt.Sprintf(drivesOfAccountRouteV2, driveKey.PublicKey, filter))
+	url := net.NewUrl(fmt.Sprintf(drivesOfAccountRouteV2, driveKey.PublicKey))
 
 	dto := &bcDriveDTOs{}
 
@@ -104,10 +101,15 @@ func (s *StorageV2Service) GetReplicator(ctx context.Context, replicatorKey *Pub
 	return dto.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageV2Service) GetReplicators(ctx context.Context) (*ReplicatorsPage, error) {
+func (s *StorageV2Service) GetReplicators(ctx context.Context, rpOpts *ReplicatorsPageOptions) (*ReplicatorsPage, error) {
 	rspDTO := &replicatorsPageDTO{}
 
-	resp, err := s.client.doNewRequest(ctx, http.MethodGet, replicatorsRouteV2, nil, &rspDTO)
+	u, err := addOptions(replicatorsRouteV2, rpOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &rspDTO)
 	if err != nil {
 		return nil, err
 	}

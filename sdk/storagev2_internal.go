@@ -60,18 +60,18 @@ func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*Ac
 }
 
 type completedDataModificationDTO struct {
-	ActiveDataModification *activeDataModificationDTO `json:"activeDataModification"`
-	State                  DataModificationState      `json:"state"`
+	ActiveDataModifications activeDataModificationsDTOs `json:"activeDataModifications"`
+	State                   DataModificationState       `json:"state"`
 }
 
 func (ref *completedDataModificationDTO) toStruct(networkType NetworkType) (*CompletedDataModification, error) {
-	activeDataModification, err := ref.ActiveDataModification.toStruct(networkType)
+	activeDataModifications, err := ref.ActiveDataModifications.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
 
 	return &CompletedDataModification{
-		ActiveDataModification: activeDataModification,
+		ActiveDataModification: activeDataModifications,
 		State:                  ref.State,
 	}, nil
 }
@@ -101,7 +101,7 @@ type bcDriveDTO struct {
 		DriveKey                   string                         `json:"multisig"`
 		Owner                      string                         `json:"owner"`
 		RootHash                   hashDto                        `json:"rootHash"`
-		DriveSize                  uint64DTO                      `json:"driveSize"`
+		DriveSize                  uint64DTO                      `json:"size"`
 		UsedSize                   uint64DTO                      `json:"usedSize"`
 		MetaFilesSize              uint64DTO                      `json:"metaFilesSize"`
 		ReplicatorCount            uint16                         `json:"replicatorCount"`
@@ -174,7 +174,7 @@ func (ref *bcDriveDTOs) toStruct(networkType NetworkType) ([]*BcDrive, error) {
 }
 
 type driveV2DTO struct {
-	Drive                          string    `json:"replicator"`
+	Drive                          string    `json:"drive"`
 	LastApprovedDataModificationId *hashDto  `json:"lastApprovedDataModificationId"`
 	DataModificationIdIsValid      bool      `json:"dataModificationIdIsValid"`
 	InitialDownloadWork            uint64DTO `json:"initialDownloadWork"`

@@ -38,7 +38,7 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification *ActiveDataModification
+	ActiveDataModification []*ActiveDataModification
 	State                  DataModificationState
 }
 
@@ -48,7 +48,7 @@ func (completed *CompletedDataModification) String() string {
 			"ActiveDataModification": %s,
 			"State:" %d,
 		`,
-		completed.ActiveDataModification.String(),
+		completed.ActiveDataModification,
 		completed.State,
 	)
 }
@@ -78,9 +78,9 @@ func (drive *BcDrive) String() string {
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
 		`,
-		drive.BcDriveAccount.String(),
-		drive.OwnerAccount.String(),
-		drive.RootHash.String(),
+		drive.BcDriveAccount,
+		drive.OwnerAccount,
+		drive.RootHash,
 		drive.DriveSize,
 		drive.UsedSize,
 		drive.MetaFilesSize,
@@ -93,6 +93,10 @@ func (drive *BcDrive) String() string {
 type BcDrivesPage struct {
 	BcDrives   []*BcDrive
 	Pagination Pagination
+}
+
+type BcDrivesPageOptions struct {
+	PaginationOrderingOptions
 }
 
 type DriveInfo struct {
@@ -145,6 +149,10 @@ func (replicator *Replicator) String() string {
 type ReplicatorsPage struct {
 	Replicators []*Replicator
 	Pagination  Pagination
+}
+
+type ReplicatorsPageOptions struct {
+	PaginationOrderingOptions
 }
 
 // Replicator Onboarding Transaction
