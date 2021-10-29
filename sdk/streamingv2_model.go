@@ -19,3 +19,10 @@ type StreamFinishTransaction struct {
 	ActualUploadSize   StorageSize
 	StreamStructureCdi string
 }
+
+type StreamPaymentTransaction struct {
+	AbstractTransaction
+	DriveKey             string
+	StreamId             string
+	AdditionalUploadSize StorageSize
+}

@@ -2789,6 +2789,7 @@ const (
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	StreamStartHeaderSize                        = TransactionHeaderSize + KeySize + StorageSizeSize + MessageSizeSize + AmountSize
 	StreamFinishHeaderSize                       = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize + Hash256
+	StreamPaymentHeaderSize                      = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize
 )
 
 type EntityType uint16
@@ -2856,6 +2857,7 @@ const (
 	DriveClosure              EntityType = 0x4E62
 	StreamStart               EntityType = 0x4167
 	StreamFinish              EntityType = 0x4267
+	StreamPayment             EntityType = 0x4367
 )
 
 func (t EntityType) String() string {
@@ -2924,6 +2926,7 @@ const (
 	DriveClosureVersion              EntityVersion = 1
 	StreamStartVersion               EntityVersion = 1
 	StreamFinishVersion              EntityVersion = 1
+	StreamPaymentVersion             EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3199,6 +3202,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &streamStartTransactionDTO{}
 	case StreamFinish:
 		dto = &streamFinishTransactionDTO{}
+	case StreamPayment:
+		dto = &streamPaymentTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

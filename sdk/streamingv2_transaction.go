@@ -257,3 +257,114 @@ func (dto *streamFinishTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		dto.Tx.StreamStructureCdi,
 	}, nil
 }
+
+func NewStreamPaymentTransaction(
+	deadline *Deadline,
+	driveKey string,
+	streamId string,
+	additionalUploadSize StorageSize,
+	networkType NetworkType,
+) (*StreamPaymentTransaction, error) {
+
+	tx := StreamPaymentTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Deadline:    deadline,
+			Version:     StreamPaymentVersion,
+			Type:        StreamPayment,
+			NetworkType: networkType,
+		},
+		DriveKey:             driveKey,
+		StreamId:             streamId,
+		AdditionalUploadSize: additionalUploadSize,
+	}
+
+	return &tx, nil
+}
+
+func (tx *StreamPaymentTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *StreamPaymentTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s,
+			"StreamId": %s
+			"AdditionalUploadSize": %d,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey,
+		tx.StreamId,
+		tx.AdditionalUploadSize,
+	)
+}
+
+func (tx *StreamPaymentTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB, err := hex.DecodeString(tx.DriveKey)
+	if err != nil {
+		return nil, err
+	}
+
+	streamIdB, err := hex.DecodeString(tx.StreamId)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
+	streamIdV := transactions.TransactionBufferCreateByteVector(builder, streamIdB)
+	additionalUploadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.AdditionalUploadSize.toArray())
+
+	transactions.StreamPaymentTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.StreamPaymentTransactionBufferAddDriveKey(builder, driveKeyV)
+	transactions.StreamPaymentTransactionBufferAddStreamId(builder, streamIdV)
+	transactions.StreamPaymentTransactionBufferAddAdditionalUploadSize(builder, additionalUploadSizeV)
+
+	t := transactions.StreamPaymentTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return streamPaymentTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *StreamPaymentTransaction) Size() int {
+	return StreamPaymentHeaderSize
+}
+
+type streamPaymentTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey             string    `json:"driveKey"`
+		StreamId             string    `json:"streamId"`
+		AdditionalUploadSize uint64DTO `json:"additionalUploadSize"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *streamPaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StreamPaymentTransaction{
+		*atx,
+		dto.Tx.DriveKey,
+		dto.Tx.StreamId,
+		dto.Tx.AdditionalUploadSize.toStruct(),
+	}, nil
+}
