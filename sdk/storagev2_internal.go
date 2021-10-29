@@ -174,10 +174,10 @@ func (ref *bcDriveDTOs) toStruct(networkType NetworkType) ([]*BcDrive, error) {
 }
 
 type driveV2DTO struct {
-	Drive                          string    `json:"drive"`
-	LastApprovedDataModificationId *hashDto  `json:"lastApprovedDataModificationId"`
-	DataModificationIdIsValid      bool      `json:"dataModificationIdIsValid"`
-	InitialDownloadWork            uint64DTO `json:"initialDownloadWork"`
+	Drive                          string   `json:"drive"`
+	LastApprovedDataModificationId *hashDto `json:"lastApprovedDataModificationId"`
+	DataModificationIdIsValid      bool     `json:"dataModificationIdIsValid"`
+	InitialDownloadWork            uint64   `json:"initialDownloadWork"`
 }
 
 type driveV2DTOs []*driveV2DTO
@@ -202,7 +202,7 @@ func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo
 		info := DriveInfo{
 			LastApprovedDataModificationId: lastApprovedDataModificationId,
 			DataModificationIdIsValid:      dto.DataModificationIdIsValid,
-			InitialDownloadWork:            dto.InitialDownloadWork.toUint64(),
+			InitialDownloadWork:            dto.InitialDownloadWork,
 			Index:                          i,
 		}
 
@@ -214,7 +214,7 @@ func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo
 
 type replicatorV2DTO struct {
 	Replicator struct {
-		ReplicatorKey string      `json:"multisig"`
+		ReplicatorKey string      `json:"key"`
 		Version       int32       `json:"version"`
 		Capacity      uint64DTO   `json:"capacity"`
 		BLSKey        string      `json:"blsKey"`

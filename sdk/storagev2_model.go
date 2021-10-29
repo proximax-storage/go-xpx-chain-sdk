@@ -100,6 +100,7 @@ type BcDrivesPageOptions struct {
 }
 
 type DriveInfo struct {
+	Drive                          *PublicAccount
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
 	InitialDownloadWork            uint64
@@ -109,12 +110,14 @@ type DriveInfo struct {
 func (info *DriveInfo) String() string {
 	return fmt.Sprintf(
 		`
+			"Drive": %s, 
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
 			"Index": %d
 		`,
-		info.LastApprovedDataModificationId.String(),
+		info.Drive,
+		info.LastApprovedDataModificationId,
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
 		info.Index,
@@ -138,7 +141,7 @@ func (replicator *Replicator) String() string {
 		BLSKey: %s,
 		Drives: %+v,
 		`,
-		replicator.ReplicatorAccount.String(),
+		replicator.ReplicatorAccount,
 		replicator.Version,
 		replicator.Capacity,
 		replicator.BLSKey,
