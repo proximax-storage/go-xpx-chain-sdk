@@ -186,6 +186,24 @@ func TestStorageV2Service_GetDrives(t *testing.T) {
 	assert.Equal(t, testBcDrivesPage, bcdrives)
 }
 
+func TestStorageV2Service_GetAccountDrives(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(drivesOfAccountRouteV2, testBcDriveOwnerAccount.PublicKey),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            testBcDriveInfoJsonArr,
+	})
+	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
+
+	defer mock.Close()
+
+	bcdrives, err := exchangeClient.GetAccountDrives(ctx, testBcDriveOwnerAccount)
+	assert.Nil(t, err)
+	assert.NotNil(t, bcdrives)
+	assert.Equal(t, len(bcdrives), 2)
+	assert.Equal(t, []*BcDrive{testBcDriveInfo, testBcDriveInfo}, bcdrives)
+}
+
 func TestStorageV2Service_GetReplicator(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
 		Path:                fmt.Sprintf(replicatorRouteV2, testReplicatorV2Account.PublicKey),
@@ -218,4 +236,22 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, replicators)
 	assert.Equal(t, testReplicatorsPage, replicators)
+}
+
+func TestStorageV2Service_GetAccountReplicators(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(replicatorsOfAccountRouteV2, testReplicatorV2Account.PublicKey),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            testReplicatorInfoJsonArr,
+	})
+	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
+
+	defer mock.Close()
+
+	replicators, err := exchangeClient.GetAccountReplicators(ctx, testReplicatorV2Account)
+	assert.Nil(t, err)
+	assert.NotNil(t, replicators)
+	assert.Equal(t, len(replicators), 2)
+	assert.Equal(t, []*Replicator{testReplicatorInfo, testReplicatorInfo}, replicators)
 }

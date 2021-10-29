@@ -120,3 +120,26 @@ func (s *StorageV2Service) GetReplicators(ctx context.Context, rpOpts *Replicato
 
 	return rspDTO.toStruct(s.client.NetworkType())
 }
+
+func (s *StorageV2Service) GetAccountReplicators(ctx context.Context, replicatorKey *PublicAccount) ([]*Replicator, error) {
+	if replicatorKey == nil {
+		return nil, ErrNilAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(replicatorsOfAccountRouteV2, replicatorKey.PublicKey))
+
+	dto := &replicatorV2DTOs{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		// Skip ErrResourceNotFound
+		// not return err
+		return nil, nil
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
+}

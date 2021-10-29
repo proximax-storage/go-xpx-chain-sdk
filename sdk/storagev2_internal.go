@@ -245,6 +245,26 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	return &replicator, nil
 }
 
+type replicatorV2DTOs []*replicatorV2DTO
+
+func (ref *replicatorV2DTOs) toStruct(networkType NetworkType) ([]*Replicator, error) {
+	var (
+		dtos        = *ref
+		replicators = make([]*Replicator, 0, len(dtos))
+	)
+
+	for _, dto := range dtos {
+		info, err := dto.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		replicators = append(replicators, info)
+	}
+
+	return replicators, nil
+}
+
 type bcDrivesPageDTO struct {
 	BcDrives []bcDriveDTO `json:"data"`
 
