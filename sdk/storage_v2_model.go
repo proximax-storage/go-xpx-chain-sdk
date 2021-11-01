@@ -38,7 +38,7 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification *ActiveDataModification
+	ActiveDataModification []*ActiveDataModification
 	State                  DataModificationState
 }
 
@@ -48,7 +48,7 @@ func (completed *CompletedDataModification) String() string {
 			"ActiveDataModification": %s,
 			"State:" %d,
 		`,
-		completed.ActiveDataModification.String(),
+		completed.ActiveDataModification,
 		completed.State,
 	)
 }
@@ -78,9 +78,9 @@ func (drive *BcDrive) String() string {
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
 		`,
-		drive.BcDriveAccount.String(),
-		drive.OwnerAccount.String(),
-		drive.RootHash.String(),
+		drive.BcDriveAccount,
+		drive.OwnerAccount,
+		drive.RootHash,
 		drive.DriveSize,
 		drive.UsedSize,
 		drive.MetaFilesSize,
@@ -95,7 +95,12 @@ type BcDrivesPage struct {
 	Pagination Pagination
 }
 
+type BcDrivesPageOptions struct {
+	PaginationOrderingOptions
+}
+
 type DriveInfo struct {
+	Drive                          *PublicAccount
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
 	InitialDownloadWork            uint64
@@ -105,12 +110,14 @@ type DriveInfo struct {
 func (info *DriveInfo) String() string {
 	return fmt.Sprintf(
 		`
+			"Drive": %s, 
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
 			"Index": %d
 		`,
-		info.LastApprovedDataModificationId.String(),
+		info.Drive,
+		info.LastApprovedDataModificationId,
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
 		info.Index,
@@ -134,7 +141,7 @@ func (replicator *Replicator) String() string {
 		BLSKey: %s,
 		Drives: %+v,
 		`,
-		replicator.ReplicatorAccount.String(),
+		replicator.ReplicatorAccount,
 		replicator.Version,
 		replicator.Capacity,
 		replicator.BLSKey,
@@ -145,6 +152,10 @@ func (replicator *Replicator) String() string {
 type ReplicatorsPage struct {
 	Replicators []*Replicator
 	Pagination  Pagination
+}
+
+type ReplicatorsPageOptions struct {
+	PaginationOrderingOptions
 }
 
 // Replicator Onboarding Transaction
