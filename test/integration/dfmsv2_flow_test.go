@@ -20,7 +20,6 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	const replicatorCount uint16 = 2
 	var replicators [replicatorCount]*sdk.Account
 	var storageSize uint64 = 500
-	var streamingSize uint64 = 100
 	var verificationFee = 100
 
 	driveAccount, err := client.NewAccountFromPrivateKey("EDFB348D4AAA333E6D73D9CAD1EA18FE3FE079CC3373E9E4E75A4FBD7D3476E0")
@@ -34,13 +33,13 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		replicators[i] = replicatorAccount
 	}
 
-	// add storage and xpx mosaic to the drive account
+	// add xpx mosaic to the drive account
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			driveAccount.Address,
-			[]*sdk.Mosaic{sdk.Storage(storageSize / 10), sdk.Xpx(10000)},
+			[]*sdk.Mosaic{sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 	}, defaultAccount)
@@ -48,14 +47,14 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// end region
 
-	// add storage, streaming and xpx mosaic to the replicator accounts
+	// add xpx mosaic to the replicator accounts
 
 	transfers := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			replicators[i].Address,
-			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(streamingSize), sdk.Xpx(10000)},
+			[]*sdk.Mosaic{sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 		transferMosaicsToReplicator.ToAggregate(defaultAccount.PublicAccount)
