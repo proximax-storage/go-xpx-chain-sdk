@@ -62,6 +62,21 @@ func replicatorOffboardingTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("recipient", ByteSize),
+			newScalarAttribute("messageSize", ShortSize),
+			newScalarAttribute("numMosaics", ByteSize),
+			newTableAttribute("message", schema{
+				[]schemaAttribute{
+					newScalarAttribute("type", ByteSize),
+					newArrayAttribute("payload", ByteSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("mosaics", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
 		},
 	}
 }

@@ -1,0 +1,47 @@
+namespace Catapult.Buffers;
+
+table StreamStartTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    expectedUploadSize: [uint];
+    folderNameSize: ushort;
+    feedbackFeeAmount: [uint];
+    folderName: [ubyte];
+}
+
+table StreamFinishTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    streamId: [ubyte];
+    actualUploadSize: [uint];
+    streamStructureCdi: [ubyte];
+}
+
+table StreamPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    streamId: [ubyte];
+    additionalUploadSize: [uint];
+}
+
+root_type StreamStartTransactionBuffer;
+root_type StreamFinishTransactionBuffer;
+root_type StreamPaymentTransactionBuffer;

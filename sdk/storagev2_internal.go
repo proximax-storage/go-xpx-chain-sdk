@@ -9,10 +9,12 @@ import (
 )
 
 type activeDataModificationDTO struct {
-	Id              hashDto   `json:"id"`
-	Owner           string    `json:"owner"`
-	DownloadDataCdi hashDto   `json:"downloadDataCdi"`
-	UploadSize      uint64DTO `json:"uploadSize"`
+	Id                 hashDto   `json:"id"`
+	Owner              string    `json:"owner"`
+	DownloadDataCdi    hashDto   `json:"downloadDataCdi"`
+	ExpectedUploadSize uint64DTO `json:"ExpectedUploadSize"`
+	ActualUploadSize   uint64DTO `json:"ActualUploadSize"`
+	FolderName         string    `json:"FolderName"`
 }
 
 func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*ActiveDataModification, error) {
@@ -32,10 +34,12 @@ func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*Active
 	}
 
 	return &ActiveDataModification{
-		Id:              id,
-		Owner:           owner,
-		DownloadDataCdi: downloadDataCdi,
-		UploadSize:      ref.UploadSize.toStruct(),
+		Id:                 id,
+		Owner:              owner,
+		DownloadDataCdi:    downloadDataCdi,
+		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
+		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
+		FolderName:         ref.FolderName,
 	}, nil
 }
 
