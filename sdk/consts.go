@@ -117,14 +117,15 @@ const (
 
 // routes for StorageV2Service
 const (
-	drivesRouteV2               = "/drivesV2"
-	driveRouteV2                = "/driveV2/%s"
-	replicatorsRouteV2          = "/replicatorsV2"
-	replicatorRouteV2           = "/replicatorV2/%s"
-	drivesOfAccountRouteV2      = "/accountV2/%s/drive"
-	replicatorsOfAccountRouteV2 = "/accountV2/%s/replicator"
-	downloadChannelsRouteV2     = "/downloadsV2"
-	downloadChannelRouteV2      = "/downloadV2/%s"
+	drivesRouteV2                    = "/drives_v2"
+	driveRouteV2                     = "/drive_v2/%s"
+	replicatorsRouteV2               = "/replicators_v2"
+	replicatorRouteV2                = "/replicator_v2/%s"
+	downloadChannelsRouteV2          = "/downloads_v2"
+	downloadChannelRouteV2           = "/download_v2/%s"
+	drivesOfAccountRouteV2           = "/account/%s/drive_v2"
+	replicatorsOfAccountRouteV2      = "/account/%s/replicator_v2"
+	downloadChannelsOfAccountRouteV2 = "/account/%s/downloads_v2"
 )
 
 // routes for SuperContractService

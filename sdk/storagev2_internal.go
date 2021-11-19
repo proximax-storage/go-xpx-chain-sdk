@@ -215,7 +215,7 @@ func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo
 type replicatorV2DTO struct {
 	Replicator struct {
 		ReplicatorKey string      `json:"key"`
-		Version       int32       `json:"version"`
+		Version       uint32      `json:"version"`
 		Capacity      uint64DTO   `json:"capacity"`
 		BLSKey        string      `json:"blsKey"`
 		Drives        driveV2DTOs `json:"drives"`
