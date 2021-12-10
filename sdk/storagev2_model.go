@@ -6,8 +6,6 @@ package sdk
 
 import (
 	"fmt"
-	"net/url"
-	"strconv"
 )
 
 type DataModificationState uint8
@@ -98,67 +96,7 @@ type BcDrivesPage struct {
 }
 
 type BcDrivesPageOptions struct {
-	BcDrivesPageFilters
 	PaginationOrderingOptions
-}
-
-type BcDrivesPageFilters struct {
-	Size            BcDrivesValue64 `url:""`
-	UsedSize        BcDrivesValue64 `url:""`
-	MetaFilesSize   BcDrivesValue64 `url:""`
-	ReplicatorCount BcDrivesValue16 `url:""`
-}
-
-type BcDrivesValue64 struct {
-	Value64           uint64
-	BcDrivesValueType BcDrivesValueType
-}
-
-func (sV BcDrivesValue64) EncodeValues(key string, v *url.Values) error {
-	if Size == sV.BcDrivesValueType {
-		v.Add(Size.String(), strconv.FormatUint(sV.Value64, 10))
-	} else if FromSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(FromSize.String(), u.toStruct().String())
-	} else if ToSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(ToSize.String(), u.toStruct().String())
-	} else if UsedSize == sV.BcDrivesValueType {
-		v.Add(UsedSize.String(), strconv.FormatUint(sV.Value64, 10))
-	} else if FromUsedSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(FromUsedSize.String(), u.toStruct().String())
-	} else if ToUsedSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(ToUsedSize.String(), u.toStruct().String())
-	} else if MetaFilesSize == sV.BcDrivesValueType {
-		v.Add(MetaFilesSize.String(), strconv.FormatUint(sV.Value64, 10))
-	} else if FromMetaFilesSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(FromMetaFilesSize.String(), u.toStruct().String())
-	} else if ToMetaFilesSize == sV.BcDrivesValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(ToMetaFilesSize.String(), u.toStruct().String())
-	}
-
-	return nil
-}
-
-type BcDrivesValue16 struct {
-	Value16           uint16
-	BcDrivesValueType BcDrivesValueType
-}
-
-func (sV BcDrivesValue16) EncodeValues(key string, v *url.Values) error {
-	if ReplicatorCount == sV.BcDrivesValueType {
-		v.Add(ReplicatorCount.String(), strconv.FormatUint(uint64(sV.Value16), 10))
-	} else if FromReplicatorCount == sV.BcDrivesValueType {
-		v.Add(FromReplicatorCount.String(), strconv.FormatUint(uint64(sV.Value16), 10))
-	} else if ToReplicatorCount == sV.BcDrivesValueType {
-		v.Add(ToReplicatorCount.String(), strconv.FormatUint(uint64(sV.Value16), 10))
-	}
-
-	return nil
 }
 
 type BcDrivesValueType string
@@ -186,7 +124,7 @@ type DriveInfo struct {
 	Drive                          *PublicAccount
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
-	InitialDownloadWork            uint64
+	InitialDownloadWork            StorageSize
 	Index                          int
 }
 
@@ -238,64 +176,7 @@ type ReplicatorsPage struct {
 }
 
 type ReplicatorsPageOptions struct {
-	ReplicatorsPageFilters
 	PaginationOrderingOptions
-}
-
-type ReplicatorsPageFilters struct {
-	Version  ReplicatorsValue32 `url:""`
-	Capacity ReplicatorsValue64 `url:""`
-}
-
-type ReplicatorsValue64 struct {
-	Value64              uint64
-	ReplicatorsValueType ReplicatorsValueType
-}
-
-func (sV ReplicatorsValue64) EncodeValues(key string, v *url.Values) error {
-	if Capacity == sV.ReplicatorsValueType {
-		v.Add(Capacity.String(), strconv.FormatUint(sV.Value64, 10))
-	} else if FromCapacity == sV.ReplicatorsValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(FromCapacity.String(), u.toStruct().String())
-	} else if ToCapacity == sV.ReplicatorsValueType {
-		u := uint64DTO(uint64ToArray(sV.Value64))
-		v.Add(ToCapacity.String(), u.toStruct().String())
-	}
-
-	return nil
-}
-
-type ReplicatorsValue32 struct {
-	Value32              uint32
-	ReplicatorsValueType ReplicatorsValueType
-}
-
-func (sV ReplicatorsValue32) EncodeValues(key string, v *url.Values) error {
-	if Version == sV.ReplicatorsValueType {
-		v.Add(Version.String(), strconv.FormatUint(uint64(sV.Value32), 10))
-	} else if FromVersion == sV.ReplicatorsValueType {
-		v.Add(FromVersion.String(), strconv.FormatUint(uint64(sV.Value32), 10))
-	} else if ToVersion == sV.ReplicatorsValueType {
-		v.Add(ToVersion.String(), strconv.FormatUint(uint64(sV.Value32), 10))
-	}
-
-	return nil
-}
-
-type ReplicatorsValueType string
-
-const (
-	Version      ReplicatorsValueType = "version"
-	FromVersion  ReplicatorsValueType = "fromVersion"
-	ToVersion    ReplicatorsValueType = "toVersion"
-	Capacity     ReplicatorsValueType = "capacity"
-	FromCapacity ReplicatorsValueType = "fromCapacity"
-	ToCapacity   ReplicatorsValueType = "toCapacity"
-)
-
-func (vT ReplicatorsValueType) String() string {
-	return string(vT)
 }
 
 // Replicator Onboarding Transaction
