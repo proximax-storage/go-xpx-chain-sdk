@@ -161,7 +161,7 @@ func (ref *replicatorsListDTOs) toStruct() ([]*Hash, error) {
 
 type verificationOpinionDTO struct {
 	Prover hashDto `json:"prover"`
-	Result uint8   `json:"result"`
+	Result uint16  `json:"result"`
 }
 
 func (ref *verificationOpinionDTO) toStruct(networkType NetworkType) (*VerificationOpinion, error) {

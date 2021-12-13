@@ -38,10 +38,16 @@ const (
           "id": "0100000000000000000000000000000000000000000000000000000000000000",
           "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
           "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-          "uploadSize": [
+          "expectedUploadSize": [
             100,
             0
-          ]
+          ],
+		  "actualUploadSize": [
+			50,
+			0
+		  ],
+		  "folderName": "C://MyStorage",
+		  "readyForApproval": false
         }
       ],
       "completedDataModifications": [
@@ -51,15 +57,46 @@ const (
               "id": "0100000000000000000000000000000000000000000000000000000000000000",
               "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
               "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-              "uploadSize": [
-                100,
-                0
-              ]
+			  "expectedUploadSize": [
+				100,
+				0
+			  ],
+			  "actualUploadSize": [
+				50,
+				0
+			  ],
+			  "folderName": "C://MyStorage",
+			  "readyForApproval": false
             }
           ],
           "state": 0
         }
-      ]
+      ],
+	  "confirmedUsedSizes": [
+		{
+		  "replicator": "0100000000000000000000000000000000000000000000000000000000000000",
+		  "size": [
+			1000,
+			0
+		  ]
+		}
+	  ],
+	  "replicators": [
+		"0100000000000000000000000000000000000000000000000000000000000000",
+		"0100000000000000000000000000000000000000000000000000000000000000"
+	  ],
+	  "verifications": [
+		{
+		  "verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
+		  "state": 0,
+		  "verificationOpinions": [
+			{
+		      "prover": "0100000000000000000000000000000000000000000000000000000000000000",
+		      "result": 0
+			}
+		  ]
+	    }
+	  ]
     }
 }`
 
@@ -81,7 +118,11 @@ const (
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
                     "lastApprovedDataModificationId": "0100000000000000000000000000000000000000000000000000000000000000",
                     "dataModificationIdIsValid": false,
-                    "initialDownloadWork": 0
+                    "initialDownloadWork": [
+					  0,
+					  0
+					],
+					"index": 0
                 }
             ]
         }
@@ -106,23 +147,51 @@ var (
 		ReplicatorCount: 5,
 		ActiveDataModifications: []*ActiveDataModification{
 			{
-				Id:              &Hash{1},
-				Owner:           testBcDriveOwnerAccount,
-				DownloadDataCdi: &Hash{1},
-				UploadSize:      StorageSize(100),
+				Id:                 &Hash{1},
+				Owner:              testBcDriveOwnerAccount,
+				DownloadDataCdi:    &Hash{1},
+				ExpectedUploadSize: StorageSize(100),
+				ActualUploadSize:   StorageSize(50),
+				FolderName:         "C://MyStorage",
+				ReadyForApproval:   false,
 			},
 		},
 		CompletedDataModifications: []*CompletedDataModification{
 			{
 				ActiveDataModification: []*ActiveDataModification{
 					{
-						Id:              &Hash{1},
-						Owner:           testBcDriveOwnerAccount,
-						DownloadDataCdi: &Hash{1},
-						UploadSize:      StorageSize(100),
+						Id:                 &Hash{1},
+						Owner:              testBcDriveOwnerAccount,
+						DownloadDataCdi:    &Hash{1},
+						ExpectedUploadSize: StorageSize(100),
+						ActualUploadSize:   StorageSize(50),
+						FolderName:         "C://MyStorage",
+						ReadyForApproval:   false,
 					},
 				},
 				State: DataModificationState(Succeeded),
+			},
+		},
+		ConfirmedUsedSizes: []*ConfirmedUsedSize{
+			{
+				Replicator: &Hash{1},
+				Size:       StorageSize(1000),
+			},
+		},
+		Replicators: []*Hash{
+			&Hash{1},
+			&Hash{1},
+		},
+		Verifications: []*Verification{
+			{
+				VerificationTrigger: &Hash{1},
+				State:               VerificationState(PendingVerification),
+				VerificationOpinions: []*VerificationOpinion{
+					{
+						Prover: &Hash{1},
+						Result: 0,
+					},
+				},
 			},
 		},
 	}

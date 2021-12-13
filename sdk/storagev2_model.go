@@ -88,7 +88,7 @@ const (
 
 type VerificationOpinion struct {
 	Prover *Hash
-	Result uint8
+	Result uint16
 }
 
 type Verification struct {
