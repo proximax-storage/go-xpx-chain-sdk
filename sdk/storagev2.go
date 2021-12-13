@@ -55,12 +55,12 @@ func (s *StorageV2Service) GetDrives(ctx context.Context, bdpOpts *BcDrivesPageO
 	return bcdspDTO.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageV2Service) GetAccountDrives(ctx context.Context, driveKey *PublicAccount) ([]*BcDrive, error) {
-	if driveKey == nil {
+func (s *StorageV2Service) GetAccountDrives(ctx context.Context, ownerKey *PublicAccount) ([]*BcDrive, error) {
+	if ownerKey == nil {
 		return nil, ErrNilAddress
 	}
 
-	url := net.NewUrl(fmt.Sprintf(drivesOfAccountRouteV2, driveKey.PublicKey))
+	url := net.NewUrl(fmt.Sprintf(drivesOfAccountRouteV2, ownerKey.PublicKey))
 
 	dto := &bcDriveDTOs{}
 
@@ -121,12 +121,12 @@ func (s *StorageV2Service) GetReplicators(ctx context.Context, rpOpts *Replicato
 	return rspDTO.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageV2Service) GetAccountReplicators(ctx context.Context, replicatorKey *PublicAccount) ([]*Replicator, error) {
-	if replicatorKey == nil {
-		return nil, ErrNilAddress
+func (s *StorageV2Service) GetAccountReplicators(ctx context.Context, blsKey string) ([]*Replicator, error) {
+	if len(blsKey) == 0 {
+		return nil, ErrNilAccount
 	}
 
-	url := net.NewUrl(fmt.Sprintf(replicatorsOfAccountRouteV2, replicatorKey.PublicKey))
+	url := net.NewUrl(fmt.Sprintf(replicatorsOfAccountRouteV2, blsKey))
 
 	dto := &replicatorV2DTOs{}
 

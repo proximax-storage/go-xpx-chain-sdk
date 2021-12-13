@@ -309,7 +309,7 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 
 func TestStorageV2Service_GetAccountReplicators(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(replicatorsOfAccountRouteV2, testReplicatorV2Account.PublicKey),
+		Path:                fmt.Sprintf(replicatorsOfAccountRouteV2, testBlsKey),
 		AcceptedHttpMethods: []string{http.MethodGet},
 		RespHttpCode:        200,
 		RespBody:            testReplicatorInfoJsonArr,
@@ -318,7 +318,7 @@ func TestStorageV2Service_GetAccountReplicators(t *testing.T) {
 
 	defer mock.Close()
 
-	replicators, err := exchangeClient.GetAccountReplicators(ctx, testReplicatorV2Account)
+	replicators, err := exchangeClient.GetAccountReplicators(ctx, testBlsKey)
 	assert.Nil(t, err)
 	assert.NotNil(t, replicators)
 	assert.Equal(t, len(replicators), 2)
