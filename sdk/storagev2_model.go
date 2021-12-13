@@ -16,10 +16,13 @@ const (
 )
 
 type ActiveDataModification struct {
-	Id              *Hash
-	Owner           *PublicAccount
-	DownloadDataCdi *Hash
-	UploadSize      StorageSize
+	Id                 *Hash
+	Owner              *PublicAccount
+	DownloadDataCdi    *Hash
+	ExpectedUploadSize StorageSize
+	ActualUploadSize   StorageSize
+	FolderName         string
+	ReadyForApproval   bool
 }
 
 func (active *ActiveDataModification) String() string {
@@ -28,12 +31,18 @@ func (active *ActiveDataModification) String() string {
 			"Id": %s,
 			"Owner": %s,
 			"DownloadDataCdi": %s,
-			"UploadSize": %d,
+			"ExpectedUploadSize": %d,
+			"ActualUploadSize": %d,
+			"FolderName": %s,
+			"ReadyForApproval": %t, 
 		`,
 		active.Id.String(),
 		active.Owner.String(),
 		active.DownloadDataCdi.String(),
-		active.UploadSize,
+		active.ExpectedUploadSize,
+		active.ActualUploadSize,
+		active.FolderName,
+		active.ReadyForApproval,
 	)
 }
 
@@ -53,6 +62,41 @@ func (completed *CompletedDataModification) String() string {
 	)
 }
 
+type ConfirmedUsedSize struct {
+	Replicator *Hash
+	Size       StorageSize
+}
+
+func (confirmed *ConfirmedUsedSize) String() string {
+	return fmt.Sprintf(
+		`
+			"Replicator": %s,
+			"Size:" %d,
+		`,
+		confirmed.Replicator,
+		confirmed.Size,
+	)
+}
+
+type VerificationState uint8
+
+const (
+	PendingVerification VerificationState = iota
+	CanceledVerification
+	FinishedVerification
+)
+
+type VerificationOpinion struct {
+	Prover *Hash
+	Result uint8
+}
+
+type Verification struct {
+	VerificationTrigger  *Hash
+	State                VerificationState
+	VerificationOpinions []*VerificationOpinion
+}
+
 type BcDrive struct {
 	BcDriveAccount             *PublicAccount
 	OwnerAccount               *PublicAccount
@@ -63,6 +107,9 @@ type BcDrive struct {
 	ReplicatorCount            uint16
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
+	ConfirmedUsedSizes         []*ConfirmedUsedSize
+	Replicators                []*Hash
+	Verifications              []*Verification
 }
 
 func (drive *BcDrive) String() string {
@@ -77,6 +124,9 @@ func (drive *BcDrive) String() string {
 		"ReplicatorCount": %d,
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
+		"ConfirmedUsedSizes": %+v,
+		"Replicators": %s,
+		"Verifications": %+v,
 		`,
 		drive.BcDriveAccount,
 		drive.OwnerAccount,
@@ -87,6 +137,9 @@ func (drive *BcDrive) String() string {
 		drive.ReplicatorCount,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
+		drive.ConfirmedUsedSizes,
+		drive.Replicators,
+		drive.Verifications,
 	)
 }
 
@@ -97,27 +150,6 @@ type BcDrivesPage struct {
 
 type BcDrivesPageOptions struct {
 	PaginationOrderingOptions
-}
-
-type BcDrivesValueType string
-
-const (
-	Size                BcDrivesValueType = "size"
-	FromSize            BcDrivesValueType = "fromSize"
-	ToSize              BcDrivesValueType = "toSize"
-	UsedSize            BcDrivesValueType = "usedSize"
-	FromUsedSize        BcDrivesValueType = "fromUsedSize"
-	ToUsedSize          BcDrivesValueType = "toUsedSize"
-	MetaFilesSize       BcDrivesValueType = "metaFilesSize"
-	FromMetaFilesSize   BcDrivesValueType = "fromMetaFilesSize"
-	ToMetaFilesSize     BcDrivesValueType = "toMetaFilesSize"
-	ReplicatorCount     BcDrivesValueType = "replicatorCount"
-	FromReplicatorCount BcDrivesValueType = "fromReplicatorCount"
-	ToReplicatorCount   BcDrivesValueType = "toReplicatorCount"
-)
-
-func (vT BcDrivesValueType) String() string {
-	return string(vT)
 }
 
 type DriveInfo struct {
