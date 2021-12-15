@@ -967,38 +967,16 @@ func (rcv *ResultBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *ResultBuffer) Prover(j int) byte {
+func (rcv *ResultBuffer) Prover() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *ResultBuffer) ProverLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *ResultBuffer) ProverBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *ResultBuffer) MutateProver(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
+func (rcv *ResultBuffer) MutateProver(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(4, n)
 }
 
 func (rcv *ResultBuffer) Result() byte {
@@ -1016,11 +994,8 @@ func (rcv *ResultBuffer) MutateResult(n byte) bool {
 func ResultBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func ResultBufferAddProver(builder *flatbuffers.Builder, prover flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(prover), 0)
-}
-func ResultBufferStartProverVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func ResultBufferAddProver(builder *flatbuffers.Builder, prover uint16) {
+	builder.PrependUint16Slot(0, prover, 0)
 }
 func ResultBufferAddResult(builder *flatbuffers.Builder, result byte) {
 	builder.PrependByteSlot(1, result, 0)
@@ -1056,38 +1031,16 @@ func (rcv *VerificationOpinionBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *VerificationOpinionBuffer) Verifier(j int) byte {
+func (rcv *VerificationOpinionBuffer) Verifier() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *VerificationOpinionBuffer) VerifierLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *VerificationOpinionBuffer) VerifierBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *VerificationOpinionBuffer) MutateVerifier(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
+func (rcv *VerificationOpinionBuffer) MutateVerifier(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(4, n)
 }
 
 func (rcv *VerificationOpinionBuffer) BlsSignature(j int) byte {
@@ -1147,11 +1100,8 @@ func (rcv *VerificationOpinionBuffer) ResultsLength() int {
 func VerificationOpinionBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(3)
 }
-func VerificationOpinionBufferAddVerifier(builder *flatbuffers.Builder, verifier flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(verifier), 0)
-}
-func VerificationOpinionBufferStartVerifierVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func VerificationOpinionBufferAddVerifier(builder *flatbuffers.Builder, verifier uint16) {
+	builder.PrependUint16Slot(0, verifier, 0)
 }
 func VerificationOpinionBufferAddBlsSignature(builder *flatbuffers.Builder, blsSignature flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(blsSignature), 0)

@@ -134,13 +134,13 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// end region
 
-	t.Run("EndDriveVerification", func(t *testing.T) {
+	t.Run("EndDriveVerificationV2", func(t *testing.T) {
 		t.SkipNow()
 
 		// prepare same results for every opinion
 		verificationResults := make(sdk.VerificationResults, len(replicators))
-		for i, rep := range replicators {
-			verificationResults[i] = &sdk.VerificationResult{Prover: rep.PublicAccount, Result: true}
+		for i, _ := range replicators {
+			verificationResults[i] = &sdk.VerificationResult{Prover: uint16(i), Result: true}
 		}
 
 		verificationResultsBuffer := bytes.Buffer{}
@@ -154,7 +154,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			provers[i] = r.PublicAccount
 
 			verificationOpinions[i] = &sdk.VerificationOpinion{
-				Verifier:     r.PublicAccount,
+				Verifier:     uint16(i),
 				BlsSignature: replicatorsBlsKeys[i].Sign(verificationResultsBuffer.String()), //TODO change
 				Results:      verificationResults,
 			}

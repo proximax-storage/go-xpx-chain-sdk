@@ -382,20 +382,13 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 func resultsToArrayToBuffer(builder *flatbuffers.Builder, results VerificationResults) (flatbuffers.UOffsetT, error) {
 	resultsB := make([]flatbuffers.UOffsetT, len(results))
 	for i, r := range results {
-		b, err := hex.DecodeString(r.Prover.PublicKey)
-		if err != nil {
-			return 0, err
-		}
-
-		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
-
 		rB := byte(0)
 		if r.Result {
 			rB = byte(1)
 		}
 
 		transactions.ResultBufferStart(builder)
-		transactions.ResultBufferAddProver(builder, pkV)
+		transactions.ResultBufferAddProver(builder, r.Prover)
 		transactions.ResultBufferAddResult(builder, rB)
 		resultsB[i] = transactions.ResultBufferEnd(builder)
 	}
@@ -424,12 +417,6 @@ func proversToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccou
 func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificationOpinions []*VerificationOpinion) (flatbuffers.UOffsetT, error) {
 	voB := make([]flatbuffers.UOffsetT, len(verificationOpinions))
 	for i, vo := range verificationOpinions {
-		b, err := hex.DecodeString(vo.Verifier.PublicKey)
-		if err != nil {
-			return 0, err
-		}
-
-		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
 		bsV := transactions.TransactionBufferCreateByteVector(builder, []byte(vo.BlsSignature))
 		rsV, err := resultsToArrayToBuffer(builder, vo.Results)
 		if err != nil {
@@ -437,7 +424,7 @@ func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificat
 		}
 
 		transactions.VerificationOpinionBufferStart(builder)
-		transactions.VerificationOpinionBufferAddVerifier(builder, pkV)
+		transactions.VerificationOpinionBufferAddVerifier(builder, vo.Verifier)
 		transactions.VerificationOpinionBufferAddBlsSignature(builder, bsV)
 		transactions.VerificationOpinionBufferAddResults(builder, rsV)
 		voB[i] = transactions.VerificationOpinionBufferEnd(builder)
@@ -497,35 +484,25 @@ func (tx *EndDriveVerificationTransactionV2) Size() int {
 }
 
 type verificationOpinionDTO struct {
-	Verifier     string          `json:"verifier"`
+	Verifier     uint16          `json:"verifier"`
 	BlsSignature string          `json:"blsSignature"`
-	Results      map[string]bool `json:"results"`
+	Results      map[uint16]bool `json:"results"`
 }
 
 func verificationOpinionDTOArrayToStruct(verificationOpinionDTOs []*verificationOpinionDTO, networkType NetworkType) ([]*VerificationOpinion, error) {
-	verificationOpinions := make([]*VerificationOpinion, 0, len(verificationOpinionDTOs))
+	verificationOpinions := make([]*VerificationOpinion, len(verificationOpinionDTOs))
 
-	for _, dto := range verificationOpinionDTOs {
-		verifier, err := NewAccountFromPublicKey(dto.Verifier, networkType)
-		if err != nil {
-			return nil, err
-		}
-
+	for i, dto := range verificationOpinionDTOs {
 		results := make(VerificationResults, 0, len(dto.Results))
 		for prover, res := range dto.Results {
-			acc, err := NewAccountFromPublicKey(prover, networkType)
-			if err != nil {
-				return nil, err
-			}
-
-			results = append(results, &VerificationResult{acc, res})
+			results = append(results, &VerificationResult{prover, res})
 		}
 
-		verificationOpinions = append(verificationOpinions, &VerificationOpinion{
-			verifier,
+		verificationOpinions[i] = &VerificationOpinion{
+			dto.Verifier,
 			BLSSignature(dto.BlsSignature),
 			results,
-		})
+		}
 	}
 
 	return verificationOpinions, nil

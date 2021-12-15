@@ -180,17 +180,18 @@ type DriveClosureTransaction struct {
 }
 
 type VerificationResult struct {
-	Prover *PublicAccount
+	// Prover is a number of Prover from Provers array
+	Prover uint16
 	Result bool
 }
 
 func (vr *VerificationResult) String() string {
 	return fmt.Sprintf(
 		`
-		"Prover": %s,
+		"Prover": %d,
 		"Result": %t
 		`,
-		vr.Prover.String(),
+		vr.Prover,
 		vr.Result,
 	)
 }
@@ -211,7 +212,8 @@ func (vrs VerificationResults) Size() int {
 }
 
 type VerificationOpinion struct {
-	Verifier     *PublicAccount
+	// Verifier is a number of Prover from Provers array
+	Verifier     uint16
 	BlsSignature BLSSignature
 	Results      VerificationResults
 }
@@ -219,11 +221,11 @@ type VerificationOpinion struct {
 func (vo *VerificationOpinion) String() string {
 	return fmt.Sprintf(
 		`
-		"Verifier": %s,
+		"Verifier": %d,
 		"BlsSignature": %s,
 		"Results": %s
 		`,
-		vo.Verifier.String(),
+		vo.Verifier,
 		vo.BlsSignature.HexString(),
 		vo.Results.String(),
 	)

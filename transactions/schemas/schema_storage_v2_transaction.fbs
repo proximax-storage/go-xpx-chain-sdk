@@ -41,12 +41,12 @@ table ProversBuffer {
 }
 
 table ResultBuffer {
-    prover: [ubyte];
+    prover: ushort;
     result: ubyte;
 }
 
 table VerificationOpinionBuffer {
-    verifier: [ubyte];
+    verifier: ushort;
     blsSignature: [ubyte];
     results: [ResultBuffer];
 }

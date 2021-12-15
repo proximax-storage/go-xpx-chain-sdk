@@ -73,11 +73,11 @@ func endDriveVerificationV2TransactionSchema() *schema {
 			}.schemaDefinition),
 			newTableArrayAttribute("verificationOpinions", schema{
 				[]schemaAttribute{
-					newArrayAttribute("verifier", ByteSize),
+					newScalarAttribute("verifier", ShortSize),
 					newArrayAttribute("blsSignature", ByteSize),
 					newTableArrayAttribute("results", schema{
 						[]schemaAttribute{
-							newArrayAttribute("prover", ByteSize),
+							newScalarAttribute("prover", ShortSize),
 							newScalarAttribute("result", ByteSize),
 						},
 					}.schemaDefinition),
