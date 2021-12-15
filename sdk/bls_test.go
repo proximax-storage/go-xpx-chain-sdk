@@ -48,7 +48,7 @@ func TestGeneratePrivateKeyFromIKM(t *testing.T) {
 	ikms := BLS_TEST_DATA["ikm"]
 	sks := BLS_TEST_DATA["privateKey"]
 
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		var ikm [32]byte
 		copy(ikm[:], b[:])
@@ -63,7 +63,7 @@ type ZeroReader struct {
 }
 
 func (z *ZeroReader) Read(p []byte) (n int, err error) {
-	for i, _ := range p {
+	for i := range p {
 		p[i] = z.t[i]
 	}
 	return len(p), nil
@@ -73,7 +73,7 @@ func TestGeneratePrivateKey_Seed(t *testing.T) {
 	ikms := BLS_TEST_DATA["ikm"]
 	sks := BLS_TEST_DATA["privateKey"]
 
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		sk := GeneratePrivateKey(&ZeroReader{b})
 
@@ -91,7 +91,7 @@ func TestPrivateKey_Public(t *testing.T) {
 	ikms := BLS_TEST_DATA["ikm"]
 	sks := BLS_TEST_DATA["publicKey"]
 
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		sk := GeneratePrivateKey(&ZeroReader{b})
 
@@ -104,7 +104,7 @@ func TestPrivateKey_Sign(t *testing.T) {
 	msgs := BLS_TEST_DATA["message"]
 	sigs := BLS_TEST_DATA["signature"]
 
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		sk := GeneratePrivateKey(&ZeroReader{b})
 
@@ -118,7 +118,7 @@ func TestKeyPair_Verify(t *testing.T) {
 	msgs := BLS_TEST_DATA["message"]
 	sigs := BLS_TEST_DATA["signature"]
 
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		kp := GenerateKeyPair(&ZeroReader{b})
 		sig := kp.Sign(msgs[i])
@@ -136,7 +136,7 @@ func TestAggregateVerify(t *testing.T) {
 
 	signatures := make([]BLSSignature, len(ikms))
 	publicKeys := make([]BLSPublicKey, len(ikms))
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		kp := GenerateKeyPair(&ZeroReader{b})
 		publicKeys[i] = kp.PublicKey
@@ -156,7 +156,7 @@ func TestFastAggregateVerify(t *testing.T) {
 
 	signatures := make([]BLSSignature, len(ikms))
 	publicKeys := make([]BLSPublicKey, len(ikms))
-	for i, _ := range ikms {
+	for i := range ikms {
 		b, _ := hex.DecodeString(ikms[i])
 		kp := GenerateKeyPair(&ZeroReader{b})
 		publicKeys[i] = kp.PublicKey

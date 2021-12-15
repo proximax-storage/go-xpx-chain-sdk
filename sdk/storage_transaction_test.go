@@ -179,13 +179,13 @@ func TestDriveFileSystemTransactionSerialization(t *testing.T) {
 		&Hash{0},
 		&Hash{1},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 8,
 				FileHash: &Hash{3},
 			},
 		},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 9,
 				FileHash: &Hash{4},
 			},
@@ -207,13 +207,13 @@ func TestDriveFileSystemTransactionToAggregate(t *testing.T) {
 		&Hash{0},
 		&Hash{1},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 8,
 				FileHash: &Hash{3},
 			},
 		},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 9,
 				FileHash: &Hash{4},
 			},
@@ -236,13 +236,13 @@ func TestDriveFileSystemTransactionSigning(t *testing.T) {
 		&Hash{0},
 		&Hash{1},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 8,
 				FileHash: &Hash{3},
 			},
 		},
 		[]*Action{
-			&Action{
+			{
 				FileSize: 9,
 				FileHash: &Hash{4},
 			},
@@ -263,7 +263,7 @@ func TestFilesDepositTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		testDrive.PublicAccount,
 		[]*File{
-			&File{
+			{
 				FileHash: testFileHash,
 			},
 		},
@@ -282,7 +282,7 @@ func TestFilesDepositTransactionToAggregate(t *testing.T) {
 		fakeDeadline,
 		testDrive.PublicAccount,
 		[]*File{
-			&File{
+			{
 				FileHash: testFileHash,
 			},
 		},
@@ -302,7 +302,7 @@ func TestFilesDepositTransactionSigning(t *testing.T) {
 		fakeDeadline,
 		testDrive.PublicAccount,
 		[]*File{
-			&File{
+			{
 				FileHash: testFileHash,
 			},
 		},
@@ -365,7 +365,7 @@ func TestDriveFilesRewardTransactionSerialization(t *testing.T) {
 	tx, err := NewDriveFilesRewardTransaction(
 		fakeDeadline,
 		[]*UploadInfo{
-			&UploadInfo{
+			{
 				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
@@ -384,7 +384,7 @@ func TestDriveFilesRewardTransactionToAggregate(t *testing.T) {
 	tx, err := NewDriveFilesRewardTransaction(
 		fakeDeadline,
 		[]*UploadInfo{
-			&UploadInfo{
+			{
 				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
@@ -404,7 +404,7 @@ func TestDriveFilesRewardTransactionSigning(t *testing.T) {
 	tx, err := NewDriveFilesRewardTransaction(
 		fakeDeadline,
 		[]*UploadInfo{
-			&UploadInfo{
+			{
 				Participant:  testDrive.PublicAccount,
 				UploadedSize: 99,
 			},
@@ -468,9 +468,9 @@ func TestEndDriveVerificationTransactionSerialization(t *testing.T) {
 	tx, err := NewEndDriveVerificationTransaction(
 		fakeDeadline,
 		[]*FailureVerification{
-			&FailureVerification{
+			{
 				Replicator:  testDrive.PublicAccount,
-				BlochHashes: []*Hash{&Hash{123}},
+				BlochHashes: []*Hash{{123}},
 			},
 		},
 		MijinTest,
@@ -487,9 +487,9 @@ func TestEndDriveVerificationTransactionToAggregate(t *testing.T) {
 	tx, err := NewEndDriveVerificationTransaction(
 		fakeDeadline,
 		[]*FailureVerification{
-			&FailureVerification{
+			{
 				Replicator:  testDrive.PublicAccount,
-				BlochHashes: []*Hash{&Hash{123}},
+				BlochHashes: []*Hash{{123}},
 			},
 		},
 		MijinTest,
@@ -507,9 +507,9 @@ func TestEndDriveVerificationTransactionSigning(t *testing.T) {
 	tx, err := NewEndDriveVerificationTransaction(
 		fakeDeadline,
 		[]*FailureVerification{
-			&FailureVerification{
+			{
 				Replicator:  testDrive.PublicAccount,
-				BlochHashes: []*Hash{&Hash{123}},
+				BlochHashes: []*Hash{{123}},
 			},
 		},
 		MijinTest,

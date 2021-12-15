@@ -20,9 +20,9 @@ func TestCounterOffer(t *testing.T) {
 
 func TestCost_Cost_Overflow(t *testing.T) {
 	offer := &OfferInfo{
-		Owner: exchangeAccount,
-		Type: SellOffer,
-		Mosaic: newMosaicPanic(exchangeMosaicId, Amount(9000000000000000)),
+		Owner:    exchangeAccount,
+		Type:     SellOffer,
+		Mosaic:   newMosaicPanic(exchangeMosaicId, Amount(9000000000000000)),
 		Deadline: Duration(10000023),
 	}
 

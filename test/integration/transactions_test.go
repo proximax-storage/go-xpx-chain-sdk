@@ -178,6 +178,7 @@ func waitTimeout(t *testing.T, wg <-chan Result, timeout time.Duration) Result {
 
 func sendTransaction(t *testing.T, createTransaction CreateTransaction, account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
+	assert.Nil(t, err)
 	println(tx.Size())
 	assert.Nil(t, err)
 
@@ -361,7 +362,7 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 		transfer.Message.(*sdk.SecureMessage),
 		defaultAccount.PublicAccount,
 	)
-
+	assert.Nil(t, err)
 	assert.Equal(t, message, plainMessage.Message())
 }
 
@@ -505,6 +506,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 
 func TestAggregateBoundedTransaction(t *testing.T) {
 	receiverAccount, err := client.NewAccount()
+	assert.Nil(t, err)
 
 	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -866,33 +868,227 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestModifyMosaicLevyTransaction(t *testing.T) {
+func TestAccountMetadataTransaction(t *testing.T) {
+	childAccount, err := client.NewAccount()
+	assert.Nil(t, err)
+	fmt.Println(childAccount)
+	metadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
 
-	// Add levy to XPX mosaic
-	mosaicId, _ := sdk.NewMosaicId(XPXID)
+	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueAccountMetadataId(defaultAccount.Address, childAccount.PublicAccount, 1)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestMosaicMetadataTransaction(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicDefinitionTransaction(
+			sdk.NewDeadline(time.Hour),
+			nonce,
+			defaultAccount.PublicAccount.PublicKey,
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueMosaicMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, mosaicId)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestNamespaceMetadataTransaction(t *testing.T) {
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewRegisterRootNamespaceTransaction(
+			sdk.NewDeadline(time.Hour),
+			nameHex,
+			sdk.Duration(defaultDurationNamespaceAndMosaic),
+		)
+	}, defaultAccount)
+
+	namespaceId, err := sdk.NewNamespaceIdFromName(nameHex)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+
+	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+		return client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueNamespaceMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, namespaceId)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestModifyMosaicLevyTransaction(t *testing.T) {
+	recipientAccount, err := client.NewAccount()
+
+	// fake transaction for recipientAccount
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			recipientAccount.PublicAccount.Address,
+			[]*sdk.Mosaic{},
+			sdk.NewPlainMessage("fake"),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	// Add levy to XPX mosaic
+	mosaicId, err := sdk.NewMosaicId(XPXID)
+	assert.Nil(t, err)
+
+	fee := sdk.CreateMosaicLevyFeePercentile(1.5)
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewMosaicModifyLevyTransaction(
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
-			sdk.MosaicLevy{
-				Type: sdk.Levy_PercentileFee,
+			&sdk.MosaicLevy{
+				Type: sdk.LevyPercentileFee,
 				// supply valid address here for testing
-				Recipient: sdk.NewAddress("SBGVTUFYMSFCNHB2SO33C54UKLFBJAQ5457YSF2O", client.NetworkType()),
-				Fee: sdk.CreateMosaicLevyFeePercentile(1.5),
+				Recipient: recipientAccount.Address,
+				Fee:       fee,
 				// a blank mosaic id levy : use native mosaicId
-				MosaicId : mosaicId,
+				MosaicId: mosaicId,
 			},
 		)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
+
+	levy, err := client.Mosaic.GetMosaicLevy(ctx, mosaicId)
+	assert.Nil(t, err)
+	assert.Equal(t, sdk.LevyPercentileFee, levy.Type)
+	assert.Equal(t, recipientAccount.Address, levy.Recipient)
+	assert.Equal(t, fee, levy.Fee)
+	assert.Equal(t, mosaicId, levy.MosaicId)
 }
 
 func TestRemoveMosaicLevyTransaction(t *testing.T) {
-
 	// remove levy to XPX mosaic
 	// Note; Levy for mosaicId should exist for this test to succeed
-	mosaicId, _ := sdk.NewMosaicId(XPXID)
+	mosaicId, err := sdk.NewMosaicId(XPXID)
+	assert.Nil(t, err)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewMosaicRemoveLevyTransaction(

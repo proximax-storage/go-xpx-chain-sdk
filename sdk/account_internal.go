@@ -285,10 +285,6 @@ func (dto *multisigAccountInfoDTO) toStruct(networkType NetworkType) (*MultisigA
 		}
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	return &MultisigAccountInfo{
 		Account:          *acc,
 		MinApproval:      dto.Multisig.MinApproval,

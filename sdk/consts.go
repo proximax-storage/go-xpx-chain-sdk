@@ -48,16 +48,16 @@ const (
 	mosaicsRoute     = "/mosaic"
 	mosaicRoute      = "/mosaic/%s"
 	mosaicNamesRoute = "/mosaic/names"
+	mosaicLevyRoute  = "/mosaic/%s/levy"
 )
 
 // routes for BlockchainService
 const (
-	blockHeightRoute         = "/chain/height"
-	blockByHeightRoute       = "/block/%s"
-	blockScoreRoute          = "/chain/score"
-	blockGetTransactionRoute = "/block/%s/transactions"
-	blockInfoRoute           = "/blocks/%s/limit/%s"
-	blockStorageRoute        = "/diagnostic/storage"
+	blockHeightRoute   = "/chain/height"
+	blockByHeightRoute = "/block/%s"
+	blockScoreRoute    = "/chain/score"
+	blockInfoRoute     = "/blocks/%s/limit/%s"
+	blockStorageRoute  = "/diagnostic/storage"
 )
 
 // routes for ContractsService
@@ -82,6 +82,13 @@ const (
 	metadataByAccountRoute   = "/account/%s/metadata"
 	metadataByMosaicRoute    = "/mosaic/%s/metadata"
 	metadataByNamespaceRoute = "/namespace/%s/metadata"
+)
+
+// routes for MetadataV2Service
+const (
+	metadataEntriesRoute = "/metadata_v2"
+	// POST and GET
+	metadataEntryHashRoute = "/metadata_v2/%s"
 )
 
 // routes for NodeService

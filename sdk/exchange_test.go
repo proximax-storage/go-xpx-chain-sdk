@@ -89,7 +89,7 @@ var (
 	testUserExchangeInfo = &UserExchangeInfo{
 		Owner: testExchangeAccount,
 		Offers: map[OfferType]map[MosaicId]*OfferInfo{
-			SellOffer: map[MosaicId]*OfferInfo{
+			SellOffer: {
 				*testExchangeMosaicId: testOfferInfo,
 			},
 			BuyOffer: make(map[MosaicId]*OfferInfo),
