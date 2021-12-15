@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/proximax-storage/go-xpx-crypto"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 	"github.com/proximax-storage/go-xpx-utils/str"
 )
 
@@ -73,7 +73,23 @@ const (
 	MainAccount
 	RemoteAccount
 	RemoteUnlinkedAccount
+	LockedAccount
 )
+
+type SupplementalPublicKeys struct {
+	VrfPublicKey    *PublicAccount
+	NodePublicKey   *PublicAccount
+	LinkedPublicKey *PublicAccount
+}
+
+func (a *SupplementalPublicKeys) String() string {
+	return str.StructToString(
+		"SupplementalPublicKeys",
+		str.NewField("VrfPublicKey", str.StringPattern, a.VrfPublicKey),
+		str.NewField("NodePublicKey", str.StringPattern, a.NodePublicKey),
+		str.NewField("LinkedPublicKey", str.StringPattern, a.LinkedPublicKey),
+	)
+}
 
 type AccountProperties struct {
 	Address            *Address
@@ -99,14 +115,15 @@ func (a *AccountProperties) String() string {
 }
 
 type AccountInfo struct {
-	Address         *Address
-	AddressHeight   Height
-	PublicKey       string
-	PublicKeyHeight Height
-	AccountType     AccountType
-	LinkedAccount   *PublicAccount
-	Mosaics         []*Mosaic
-	Reputation      float64
+	Address                *Address
+	AddressHeight          Height
+	PublicKey              string
+	PublicKeyHeight        Height
+	AccountType            AccountType
+	Version                uint32
+	SupplementalPublicKeys *SupplementalPublicKeys
+	Mosaics                []*Mosaic
+	Reputation             float64
 }
 
 func (a *AccountInfo) String() string {
@@ -117,7 +134,8 @@ func (a *AccountInfo) String() string {
 		str.NewField("PublicKey", str.StringPattern, a.PublicKey),
 		str.NewField("PublicKeyHeight", str.StringPattern, a.PublicKeyHeight),
 		str.NewField("AccountType", str.IntPattern, a.AccountType),
-		str.NewField("LinkedAccount", str.StringPattern, a.LinkedAccount),
+		str.NewField("Version", str.IntPattern, a.Version),
+		str.NewField("SupplementalAccountKeys", str.StringPattern, a.SupplementalPublicKeys),
 		str.NewField("Mosaics", str.StringPattern, a.Mosaics),
 		str.NewField("Reputation", str.FloatPattern, a.Reputation),
 	)

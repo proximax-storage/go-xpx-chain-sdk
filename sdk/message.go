@@ -176,11 +176,14 @@ func NewPersistentHarvestingDelegationMessage(payload []byte) *PersistentHarvest
 }
 
 func NewPersistentHarvestingDelegationMessageFromPlainText(harvesterPrivateKey *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey) (*PersistentHarvestingDelegationMessage, error) {
-	ephemeralKeyPair, err := xpxcrypto.NewRandomKeyPair()
+	// Ephemeral keys always use Ed25519 Sha3 Engine
+	ephemeralKeyPair, err := xpxcrypto.NewKeyPairByEngine(xpxcrypto.CryptoEngines.Ed25519Sha3Engine)
 	if err != nil {
 		return nil, err
 	}
-	encoded, err := xpxcrypto.EncodeMessageNaCl(ephemeralKeyPair.PrivateKey, recipient, string(harvesterPrivateKey.Raw), nil)
+	recipientKeyPair, err := xpxcrypto.NewKeyPair(nil, recipient, xpxcrypto.CryptoEngines.Ed25519Sha3Engine)
+	blockCypher := xpxcrypto.NewEd25519Sha3BlockCipher(ephemeralKeyPair, recipientKeyPair, nil)
+	encoded, err := blockCypher.EncryptGCMNacl(harvesterPrivateKey.Raw, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -188,11 +191,7 @@ func NewPersistentHarvestingDelegationMessageFromPlainText(harvesterPrivateKey *
 	if err != nil {
 		return nil, err
 	}
-	encodedBytes, err := hex.DecodeString(encoded)
-	if err != nil {
-		return nil, err
-	}
-	encrypted := append(append(marker, ephemeralKeyPair.PublicKey.Raw...), encodedBytes...)
+	encrypted := append(append(marker, ephemeralKeyPair.PublicKey.Raw...), encoded...)
 
 	return &PersistentHarvestingDelegationMessage{encrypted}, nil
 }
