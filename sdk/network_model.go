@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/proximax-storage/go-xpx-utils/str"
@@ -251,6 +252,14 @@ func (c *NetworkConfig) String() string {
 	s, _ := c.MarshalBinary()
 
 	return string(s)
+}
+
+func (c *NetworkConfig) GetActiveAccountVersion() (uint32, error) {
+	i, err := strconv.Atoi(c.Sections["network"].Fields["accountVersion"].Value)
+	if err != nil {
+		return 0, err
+	}
+	return uint32(i), nil
 }
 
 type SupportedEntities struct {

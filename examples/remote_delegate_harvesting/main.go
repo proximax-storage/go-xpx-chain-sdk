@@ -47,7 +47,8 @@ func main() {
 	wg := new(sync.WaitGroup)
 	go ws.Listen()
 
-	customerAcc, err := sdk.NewAccountFromPrivateKey(TestAccountKey, actualNetworkType, client.GenerationHash())
+	// Test account is version 1
+	customerAcc, err := sdk.NewAccountFromPrivateKey(TestAccountKey, actualNetworkType, client.GenerationHash(), 1)
 
 	if err != nil {
 		panic(fmt.Errorf("Customer account #0 returned error: %s", err))
@@ -117,7 +118,7 @@ func AnnounceAccountLink(client *sdk.Client, customerAcc *sdk.Account, customerA
 }
 
 func AnnounceNodeLink(client *sdk.Client, customerAcc *sdk.Account, actualNetworkType sdk.NetworkType) {
-	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash())
+	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash(), 1)
 	nodeLinkTransaction, err := client.NewNodeKeyLinkTransaction(sdk.NewDeadline(time.Hour*1),
 		harvestingAccount.PublicAccount.PublicKey,
 		sdk.AccountLink)
@@ -136,7 +137,7 @@ func AnnounceNodeLink(client *sdk.Client, customerAcc *sdk.Account, actualNetwor
 }
 
 func AnnounceTransferMessage(client *sdk.Client, customerAcc *sdk.Account, customerAccRemote *sdk.Account, actualNetworkType sdk.NetworkType) {
-	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash())
+	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash(), 1)
 	message, err := sdk.NewPersistentHarvestingDelegationMessageFromPlainText(customerAccRemote.PrivateKey, harvestingAccount.KeyPair.PublicKey)
 	persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
 		harvestingAccount.Address,

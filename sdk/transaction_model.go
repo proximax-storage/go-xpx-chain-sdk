@@ -692,46 +692,88 @@ func (tx *NodeKeyLinkTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	transactions.AccountLinkTransactionBufferStart(builder)
+	transactions.NodeLinkTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
-	transactions.AccountLinkTransactionBufferAddRemoteAccountKey(builder, pV)
-	transactions.AccountLinkTransactionBufferAddLinkAction(builder, uint8(tx.LinkAction))
+	transactions.NodeLinkTransactionBufferAddRemoteAccountKey(builder, pV)
+	transactions.NodeLinkTransactionBufferAddLinkAction(builder, uint8(tx.LinkAction))
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
-	return accountLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return nodeKeyLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
 func (tx *NodeKeyLinkTransaction) Size() int {
 	return NodeKeyLinkTransactionSize
 }
 
-type NodeKeyLinkTransactionDTO struct {
-	Tx struct {
-		abstractTransactionDTO
-		RemoteAccountKey string            `json:"remoteAccountKey"`
-		Action           AccountLinkAction `json:"action"`
-	} `json:"transaction"`
-	TDto transactionInfoDTO `json:"meta"`
+type VrfKeyLinkTransaction struct {
+	AbstractTransaction
+	VrfAccount *PublicAccount
+	LinkAction AccountLinkAction
 }
 
-func (dto *NodeKeyLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
-	info, err := dto.TDto.toStruct()
-	if err != nil {
-		return nil, err
+// returns VrfKeyLinkTransaction from passed PublicAccount and LinkAction
+func NewVrfKeyLinkTransaction(deadline *Deadline, vrfAccount *PublicAccount, linkAction AccountLinkAction, networkType NetworkType) (*VrfKeyLinkTransaction, error) {
+	if vrfAccount == nil {
+		return nil, errors.New("vrfAccount must not be empty")
 	}
-
-	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
-	if err != nil {
-		return nil, err
-	}
-
-	return &NodeKeyLinkTransaction{
-		*atx,
-		dto.Tx.RemoteAccountKey,
-		dto.Tx.Action,
+	return &VrfKeyLinkTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        VrfKeyLink,
+			Version:     VrfKeyLinkVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		VrfAccount: vrfAccount,
+		LinkAction: linkAction,
 	}, nil
+}
+
+func (tx *VrfKeyLinkTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *VrfKeyLinkTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"VrfAccount": %s,
+			"LinkAction": %d
+		`,
+		tx.AbstractTransaction.String(),
+		tx.VrfAccount.String(),
+		tx.LinkAction,
+	)
+}
+
+func (tx *VrfKeyLinkTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	b, err := utils.HexDecodeStringOdd(tx.VrfAccount.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.VrfLinkTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+	transactions.VrfLinkTransactionBufferAddRemoteAccountKey(builder, pV)
+	transactions.VrfLinkTransactionBufferAddLinkAction(builder, uint8(tx.LinkAction))
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return vrfKeyLinkTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *VrfKeyLinkTransaction) Size() int {
+	return VrfKeyLinkTransactionSize
 }
 
 type AccountLinkTransaction struct {
@@ -953,6 +995,68 @@ func (tx *BlockchainUpgradeTransaction) Bytes() ([]byte, error) {
 
 func (tx *BlockchainUpgradeTransaction) Size() int {
 	return BlockchainUpgradeTransactionSize
+}
+
+type AccountV2UpgradeTransaction struct {
+	AbstractTransaction
+	NewAccountPublicKey *PublicAccount
+}
+
+// returns NetworkConfigTransaction from passed ApplyHeightDelta, NetworkConfig and SupportedEntityVersions
+func NewAccountV2UpgradeTransaction(deadline *Deadline, newAccountPublicKey *PublicAccount, networkType NetworkType) (*AccountV2UpgradeTransaction, error) {
+	return &AccountV2UpgradeTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        AccountV2Upgrade,
+			Version:     AccountV2UpgradeVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		NewAccountPublicKey: newAccountPublicKey,
+	}, nil
+}
+
+func (tx *AccountV2UpgradeTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *AccountV2UpgradeTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"NewAccountPublicKey": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.NewAccountPublicKey,
+	)
+}
+
+func (tx *AccountV2UpgradeTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := utils.HexDecodeStringOdd(tx.NewAccountPublicKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
+
+	transactions.AccountV2UpgradeTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+
+	transactions.AccountV2UpgradeTransactionBufferAddNewaccountpublickey(builder, pV)
+	t := transactions.AccountV2UpgradeTransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return accountV2UpgradeTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *AccountV2UpgradeTransaction) Size() int {
+	return AccountV2UpgradeTransactionSize
 }
 
 type AggregateTransaction struct {
@@ -2818,11 +2922,13 @@ const (
 	LinkActionSize                           int = 1
 	AccountLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
 	NodeKeyLinkTransactionSize                   = TransactionHeaderSize + KeySize + LinkActionSize
+	VrfKeyLinkTransactionSize                    = TransactionHeaderSize + KeySize + LinkActionSize
 	AliasActionSize                          int = 1
 	AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
 	NetworkConfigHeaderSize                      = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
 	BlockchainUpgradeTransactionSize             = TransactionHeaderSize + DurationSize + BaseInt64Size
+	AccountV2UpgradeTransactionSize              = TransactionHeaderSize + KeySize
 	HashTypeSize                             int = 1
 	LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
@@ -2899,8 +3005,10 @@ const (
 	NemesisBlock              EntityType = 0x8043
 	NetworkConfigEntityType   EntityType = 0x4159
 	BlockchainUpgrade         EntityType = 0x4158
+	AccountV2Upgrade          EntityType = 0x4258
 	LinkAccount               EntityType = 0x414c
-	NodeKeyLink               EntityType = 0x424b
+	NodeKeyLink               EntityType = 0x424c
+	VrfKeyLink                EntityType = 0x434c
 	Lock                      EntityType = 0x4148
 	MetadataAddress           EntityType = 0x413d
 	MetadataMosaic            EntityType = 0x423d
@@ -2957,8 +3065,10 @@ const (
 	RemoveExchangeOfferVersion       EntityVersion = 2
 	NetworkConfigVersion             EntityVersion = 1
 	BlockchainUpgradeVersion         EntityVersion = 1
+	AccountV2UpgradeVersion          EntityVersion = 1
 	LinkAccountVersion               EntityVersion = 2
 	NodeKeyLinkVersion               EntityVersion = 1
+	VrfKeyLinkVersion                EntityVersion = 1
 	LockVersion                      EntityVersion = 1
 	AccountMetadataVersion           EntityVersion = 1
 	MosaicMetadataVersion            EntityVersion = 1
@@ -3185,10 +3295,14 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &networkConfigTransactionDTO{}
 	case BlockchainUpgrade:
 		dto = &blockchainUpgradeTransactionDTO{}
+	case AccountV2Upgrade:
+		dto = &accountV2UpgradeTransactionDTO{}
 	case LinkAccount:
 		dto = &accountLinkTransactionDTO{}
 	case NodeKeyLink:
-		dto = &NodeKeyLinkTransactionDTO{}
+		dto = &nodeKeyLinkTransactionDTO{}
+	case VrfKeyLink:
+		dto = &vrfKeyLinkTransactionDTO{}
 	case Lock:
 		dto = &lockFundsTransactionDTO{}
 	case AccountMetadata:

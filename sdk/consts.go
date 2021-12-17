@@ -6,6 +6,8 @@ package sdk
 
 import (
 	"regexp"
+
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
 // namespace id for XEM mosaic
@@ -22,6 +24,16 @@ var StreamingNamespaceId, _ = NewNamespaceIdFromName("prx.sm")
 
 // namespace id for suepr contract mosaic
 var SuperContractNamespaceId, _ = NewNamespaceIdFromName("prx.sc")
+
+// cryptoengine associated with each type of key
+
+// default derivation schemes for given ekys
+var (
+	Node_Boot_Key_Derivation_Scheme = crypto.CryptoEngines.Ed25519Sha3Engine
+	Rest_Key_Derivation_Scheme      = crypto.CryptoEngines.Ed25519Sha3Engine
+	Vrf_Key_Derivation_Scheme       = crypto.CryptoEngines.Ed25519Sha2Engine
+	Ephemeral_Key_Derivation_Scheme = crypto.CryptoEngines.Ed25519Sha3Engine
+)
 
 // routes for AccountService
 const (

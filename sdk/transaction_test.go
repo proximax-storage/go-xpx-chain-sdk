@@ -519,11 +519,11 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 
 	assert.Nilf(t, err, "NewCompleteAggregateTransaction returned error: %s", err)
 
-	acc1, err := NewAccountFromPrivateKey("2a2b1f5d366a5dd5dc56c3c757cf4fe6c66e2787087692cf329d7a49a594658b", MijinTest, GenerationHash)
+	acc1, err := NewAccountFromPrivateKey("2a2b1f5d366a5dd5dc56c3c757cf4fe6c66e2787087692cf329d7a49a594658b", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	acc2, err := NewAccountFromPrivateKey("b8afae6f4ad13a1b8aad047b488e0738a437c7389d4ff30c359ac068910c1d59", MijinTest, GenerationHash)
+	acc2, err := NewAccountFromPrivateKey("b8afae6f4ad13a1b8aad047b488e0738a437c7389d4ff30c359ac068910c1d59", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
@@ -547,6 +547,7 @@ func TestCosignatureTransactionSigning(t *testing.T) {
 		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
 		MijinTest,
 		stringToHashPanic("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
+		1,
 	)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
@@ -593,7 +594,7 @@ func TestModifyAddressMetadataTransactionSerialization(t *testing.T) {
 }
 
 func TestAccountPropertiesAddressTransaction(t *testing.T) {
-	blockAccount, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
+	blockAccount, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 
 	tx, err := NewAccountPropertiesAddressTransaction(
@@ -673,7 +674,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 
 func TestAddressAliasTransaction(t *testing.T) {
 	nsId := newNamespaceIdPanic(6300565133566699912)
-	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 
 	tx, err := NewAddressAliasTransaction(
@@ -788,7 +789,7 @@ func TestModifyNamespaceMetadataTransactionSerialization(t *testing.T) {
 }
 
 func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
-	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash)
+	account, err := NewAccountFromPrivateKey("C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
@@ -862,7 +863,7 @@ func TestTransferTransactionToAggregate(t *testing.T) {
 }
 
 func TestTransferTransactionSigning(t *testing.T) {
-	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
 	tx, err := NewTransferTransaction(
@@ -883,7 +884,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 }
 
 func TestAddHarvesterTransactionSigning(t *testing.T) {
-	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
 	htx, err := NewHarvesterTransaction(
@@ -902,7 +903,7 @@ func TestAddHarvesterTransactionSigning(t *testing.T) {
 }
 
 func TestRemoveHarvesterTransactionSigning(t *testing.T) {
-	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
 	htx, err := NewHarvesterTransaction(
@@ -1081,7 +1082,7 @@ func TestLockFundsTransactionToAggregate(t *testing.T) {
 }
 
 func TestLockFundsTransactionSigning(t *testing.T) {
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
@@ -1148,7 +1149,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 	secret, err := NewSecretFromHexString("b778a39a3663719dfc5e48c9d78431b1e45c2af9df538782bf199c189dabeac7", SHA3_256)
 	assert.Nil(t, err)
 
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
@@ -1170,7 +1171,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 func TestSecretProofTransactionSerialization(t *testing.T) {
 	proof, err := NewProofFromHexString("9a493664")
 	assert.Nil(t, err)
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 	tx, err := NewSecretProofTransaction(fakeDeadline, SHA3_256, proof, acc.Address, MijinTest)
 
@@ -1202,7 +1203,7 @@ func TestSecretProofTransactionToAggregate(t *testing.T) {
 }
 
 func TestSecretProofTransactionSigning(t *testing.T) {
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 

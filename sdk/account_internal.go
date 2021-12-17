@@ -165,10 +165,10 @@ func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*Supple
 		linkedAccount, err = NewAccountFromPublicKey(dto.LinkedPublicKey, networkType)
 	}
 	if len(dto.NodePublicKey) > 0 {
-		nodeAccount, err = NewAccountFromPublicKey(dto.LinkedPublicKey, networkType)
+		nodeAccount, err = NewAccountFromPublicKey(dto.NodePublicKey, networkType)
 	}
 	if len(dto.VrfPublicKey) > 0 {
-		vrfAccount, err = NewAccountFromPublicKey(dto.LinkedPublicKey, networkType)
+		vrfAccount, err = NewAccountFromPublicKey(dto.VrfPublicKey, networkType)
 	}
 	if err != nil {
 		return nil, err

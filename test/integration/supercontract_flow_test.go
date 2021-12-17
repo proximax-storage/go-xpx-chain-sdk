@@ -6,18 +6,19 @@ package integration
 
 import (
 	"fmt"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSuperContractFlowTransaction(t *testing.T) {
-	driveAccount, err := client.NewAccount()
+	driveAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(driveAccount)
 
-	replicatorAccount, err := client.NewAccount()
+	replicatorAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(replicatorAccount)
 
@@ -110,7 +111,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	superContract, err := client.NewAccount()
+	superContract, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	deploy, err := client.NewDeployTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -137,7 +138,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, contract, contracts[0])
 
-	initiator, err := client.NewAccount()
+	initiator, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	transferSCToInitiator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),

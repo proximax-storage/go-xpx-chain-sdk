@@ -36,7 +36,7 @@ func main() {
 
 	client := sdk.NewClient(nil, conf)
 
-	customerAcc, err := client.NewAccount()
+	customerAcc, err := client.NewAccount(ctx)
 	wg := new(sync.WaitGroup)
 	go ws.Listen()
 
@@ -88,8 +88,8 @@ func main() {
 
 	time.Sleep(time.Second * 5)
 
-	executorAcc, err := client.NewAccount()
-	verifierAcc, err := client.NewAccount()
+	executorAcc, err := client.NewAccount(ctx)
+	verifierAcc, err := client.NewAccount(ctx)
 	println("Customer PublickKey:", customerAcc.PublicAccount.PublicKey)
 	println("Executor PublickKey:", executorAcc.PublicAccount.PublicKey)
 	println("Verifier PublickKey:", verifierAcc.PublicAccount.PublicKey)

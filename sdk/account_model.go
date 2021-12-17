@@ -19,7 +19,9 @@ const EmptyPublicKey = "00000000000000000000000000000000000000000000000000000000
 type Account struct {
 	*PublicAccount
 	*crypto.KeyPair
+
 	generationHash *Hash
+	Version        uint32
 }
 
 func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
@@ -77,11 +79,19 @@ const (
 )
 
 type SupplementalPublicKeys struct {
-	VrfPublicKey    *PublicAccount
-	NodePublicKey   *PublicAccount
 	LinkedPublicKey *PublicAccount
+	NodePublicKey   *PublicAccount
+	VrfPublicKey    *PublicAccount
 }
 
+func GetDerivationSchemeForAccountVersion(accountVersion uint32) crypto.CryptoEngine {
+	switch accountVersion {
+	case 2:
+		return crypto.CryptoEngines.Ed25519Sha2Engine
+	default:
+		return crypto.CryptoEngines.Ed25519Sha3Engine
+	}
+}
 func (a *SupplementalPublicKeys) String() string {
 	return str.StructToString(
 		"SupplementalPublicKeys",
@@ -207,9 +217,11 @@ func (a *AccountName) String() string {
 	)
 }
 
-// returns new Account generated for passed NetworkType
-func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error) {
-	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
+// returns new Account generated for passed NetworkType for a given AccountVersion
+func NewAccount(networkType NetworkType, generationHash *Hash, accountVersion uint32) (*Account, error) {
+	engine := GetDerivationSchemeForAccountVersion(accountVersion)
+
+	kp, err := crypto.NewKeyPairByEngine(engine)
 	if err != nil {
 		return nil, err
 	}
@@ -219,17 +231,17 @@ func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error)
 		return nil, err
 	}
 
-	return &Account{pa, kp, generationHash}, nil
+	return &Account{pa, kp, generationHash, accountVersion}, nil
 }
 
 // returns new Account from private key for passed NetworkType and generationHash
-func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash *Hash) (*Account, error) {
+func NewAccountFromPrivateKeyByEngine(pKey string, networkType NetworkType, generationHash *Hash, engine crypto.CryptoEngine, accountVersion uint32) (*Account, error) {
 	k, err := crypto.NewPrivateKeyfromHexString(pKey)
 	if err != nil {
 		return nil, err
 	}
 
-	kp, err := crypto.NewKeyPair(k, nil, nil)
+	kp, err := crypto.NewKeyPair(k, nil, engine)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +251,28 @@ func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHa
 		return nil, err
 	}
 
-	return &Account{pa, kp, generationHash}, nil
+	return &Account{pa, kp, generationHash, accountVersion}, nil
+}
+
+// returns new Account from private key for passed NetworkType and generationHash
+func NewAccountFromPrivateKey(pKey string, networkType NetworkType, generationHash *Hash, accountVersion uint32) (*Account, error) {
+	engine := GetDerivationSchemeForAccountVersion(accountVersion)
+	k, err := crypto.NewPrivateKeyfromHexString(pKey)
+	if err != nil {
+		return nil, err
+	}
+
+	kp, err := crypto.NewKeyPair(k, nil, engine)
+	if err != nil {
+		return nil, err
+	}
+
+	pa, err := NewAccountFromPublicKey(kp.PublicKey.String(), networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Account{pa, kp, generationHash, accountVersion}, nil
 }
 
 // returns a PublicAccount from public key for passed NetworkType

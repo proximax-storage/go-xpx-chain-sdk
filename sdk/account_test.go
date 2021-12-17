@@ -60,10 +60,11 @@ const (
       ],
 	  "accountType": 1,
 	  "supplementalPublicKeys": {
-		  linked: "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
-		  node: "",
-		  vrf: ""
-	  }
+		  "linked": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
+		  "node": "",
+		  "vrf": ""
+	  },
+	  "version": 1,
       "mosaics":[  
          {  
             "id":[  

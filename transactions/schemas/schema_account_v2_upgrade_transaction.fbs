@@ -1,0 +1,14 @@
+namespace Catapult.Buffers;
+
+table AccountV2UpgradeTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    newaccountpublickey: [ubyte];
+}
+
+root_type AccountV2UpgradeTransactionBuffer;

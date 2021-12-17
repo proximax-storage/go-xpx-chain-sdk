@@ -21,7 +21,7 @@ const (
 
 func TestAddConfirmedAddedHandlers(t *testing.T) {
 	wg := sync.WaitGroup{}
-	testAccount, err := client.NewAccount()
+	testAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	fmt.Println(testAccount)
@@ -53,9 +53,9 @@ func TestAddConfirmedAddedHandlers(t *testing.T) {
 func TestAddPartialAddedHandlers(t *testing.T) {
 	wg := sync.WaitGroup{}
 
-	acc1, err := client.NewAccount()
+	acc1, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
-	acc2, err := client.NewAccount()
+	acc2, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	wg.Add(1)
@@ -66,7 +66,7 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	multisigAccount, err := client.NewAccount()
+	multisigAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(multisigAccount)
 
@@ -110,9 +110,9 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 func TestAddCosignatureHandlers(t *testing.T) {
 	wg := sync.WaitGroup{}
 
-	acc1, err := client.NewAccount()
+	acc1, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
-	acc2, err := client.NewAccount()
+	acc2, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	wg.Add(1)
@@ -123,7 +123,7 @@ func TestAddCosignatureHandlers(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	multisigAccount, err := client.NewAccount()
+	multisigAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(multisigAccount)
 

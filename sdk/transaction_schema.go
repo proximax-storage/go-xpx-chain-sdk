@@ -36,6 +36,22 @@ func nodeKeyLinkTransactionSchema() *schema {
 	}
 }
 
+func vrfKeyLinkTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("remoteAccountKey", ByteSize),
+			newScalarAttribute("linkAction", ByteSize),
+		},
+	}
+}
+
 func accountPropertyTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
@@ -122,6 +138,21 @@ func blockchainUpgradeTransactionSchema() *schema {
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("upgradePeriod", IntSize),
 			newArrayAttribute("newBlockChainVersion", IntSize),
+		},
+	}
+}
+
+func accountV2UpgradeTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("newAccountPublicKey", ByteSize),
 		},
 	}
 }
