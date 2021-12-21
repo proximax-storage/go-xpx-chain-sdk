@@ -112,7 +112,6 @@ const (
                 1000,
                 0
             ],
-            "blsKey": "B49D90CFC2BF81E908B305DAA7066473E0A8980746B881CA0681D8F04765DEAC60AD9E0100CAA90C5836764DCCCE6552",
             "drives": [
                 {
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
@@ -134,7 +133,6 @@ const (
 var testBcDriveAccount, _ = NewAccountFromPublicKey("415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309", PublicTest)
 var testBcDriveOwnerAccount, _ = NewAccountFromPublicKey("CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE", PublicTest)
 var testReplicatorV2Account, _ = NewAccountFromPublicKey("36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", PublicTest)
-var testBlsKey = "B49D90CFC2BF81E908B305DAA7066473E0A8980746B881CA0681D8F04765DEAC60AD9E0100CAA90C5836764DCCCE6552"
 
 var (
 	testBcDriveInfo = &BcDrive{
@@ -200,7 +198,6 @@ var (
 		ReplicatorAccount: testReplicatorV2Account,
 		Version:           1,
 		Capacity:          StorageSize(1000),
-		BLSKey:            testBlsKey,
 		Drives: map[string]*DriveInfo{
 			testBcDriveAccount.PublicKey: {
 				LastApprovedDataModificationId: &Hash{1},
@@ -255,24 +252,6 @@ func TestStorageV2Service_GetDrives(t *testing.T) {
 	assert.Equal(t, testBcDrivesPage, bcdrives)
 }
 
-func TestStorageV2Service_GetAccountDrives(t *testing.T) {
-	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(drivesOfAccountRouteV2, testBcDriveOwnerAccount.PublicKey),
-		AcceptedHttpMethods: []string{http.MethodGet},
-		RespHttpCode:        200,
-		RespBody:            testBcDriveInfoJsonArr,
-	})
-	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
-
-	defer mock.Close()
-
-	bcdrives, err := exchangeClient.GetAccountDrives(ctx, testBcDriveOwnerAccount)
-	assert.Nil(t, err)
-	assert.NotNil(t, bcdrives)
-	assert.Equal(t, len(bcdrives), 2)
-	assert.Equal(t, []*BcDrive{testBcDriveInfo, testBcDriveInfo}, bcdrives)
-}
-
 func TestStorageV2Service_GetReplicator(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
 		Path:                fmt.Sprintf(replicatorRouteV2, testReplicatorV2Account.PublicKey),
@@ -305,22 +284,4 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, replicators)
 	assert.Equal(t, testReplicatorsPage, replicators)
-}
-
-func TestStorageV2Service_GetAccountReplicators(t *testing.T) {
-	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(replicatorsOfAccountRouteV2, testBlsKey),
-		AcceptedHttpMethods: []string{http.MethodGet},
-		RespHttpCode:        200,
-		RespBody:            testReplicatorInfoJsonArr,
-	})
-	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
-
-	defer mock.Close()
-
-	replicators, err := exchangeClient.GetAccountReplicators(ctx, testBlsKey)
-	assert.Nil(t, err)
-	assert.NotNil(t, replicators)
-	assert.Equal(t, len(replicators), 2)
-	assert.Equal(t, []*Replicator{testReplicatorInfo, testReplicatorInfo}, replicators)
 }
