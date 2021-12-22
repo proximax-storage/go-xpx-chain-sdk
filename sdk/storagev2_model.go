@@ -105,6 +105,7 @@ type BcDrive struct {
 	UsedSize                   StorageSize
 	MetaFilesSize              StorageSize
 	ReplicatorCount            uint16
+	OwnerCumulativeUploadSize  StorageSize
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
@@ -122,6 +123,7 @@ func (drive *BcDrive) String() string {
 		"UsedSize": %d,
 		"MetaFilesSize": %d,
 		"ReplicatorCount": %d,
+		"OwnerCumulativeUploadSize": %d,
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
 		"ConfirmedUsedSizes": %+v,
@@ -135,6 +137,7 @@ func (drive *BcDrive) String() string {
 		drive.UsedSize,
 		drive.MetaFilesSize,
 		drive.ReplicatorCount,
+		drive.OwnerCumulativeUploadSize,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
 		drive.ConfirmedUsedSizes,

@@ -33,6 +33,10 @@ const (
         0
       ],
       "replicatorCount": 5,
+	  "ownerCumulativeUploadSize": [
+		  10,
+		  0
+	  ],
       "activeDataModifications": [
         {
           "id": "0100000000000000000000000000000000000000000000000000000000000000",
@@ -136,13 +140,14 @@ var testReplicatorV2Account, _ = NewAccountFromPublicKey("36E7F50C8B8BC9A4FC6325
 
 var (
 	testBcDriveInfo = &BcDrive{
-		BcDriveAccount:  testBcDriveAccount,
-		OwnerAccount:    testBcDriveOwnerAccount,
-		RootHash:        &Hash{1},
-		DriveSize:       StorageSize(1000),
-		UsedSize:        StorageSize(0),
-		MetaFilesSize:   StorageSize(20),
-		ReplicatorCount: 5,
+		BcDriveAccount:            testBcDriveAccount,
+		OwnerAccount:              testBcDriveOwnerAccount,
+		RootHash:                  &Hash{1},
+		DriveSize:                 StorageSize(1000),
+		UsedSize:                  StorageSize(0),
+		MetaFilesSize:             StorageSize(20),
+		ReplicatorCount:           5,
+		OwnerCumulativeUploadSize: 10,
 		ActiveDataModifications: []*ActiveDataModification{
 			{
 				Id:                 &Hash{1},

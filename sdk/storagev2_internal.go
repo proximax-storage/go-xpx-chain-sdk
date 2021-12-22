@@ -249,6 +249,7 @@ type bcDriveDTO struct {
 		UsedSize                   uint64DTO                      `json:"usedSize"`
 		MetaFilesSize              uint64DTO                      `json:"metaFilesSize"`
 		ReplicatorCount            uint16                         `json:"replicatorCount"`
+		OwnerCumulativeUploadSize  uint64DTO                      `json:"ownerCumulativeUploadSize"`
 		ActiveDataModifications    activeDataModificationsDTOs    `json:"activeDataModifications"`
 		CompletedDataModifications completedDataModificationsDTOs `json:"completedDataModifications"`
 		ConfirmedUsedSizes         confirmedUsedSizesDTOs         `json:"confirmedUsedSizes"`
@@ -282,6 +283,7 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	bcDrive.UsedSize = ref.BcDrive.UsedSize.toStruct()
 	bcDrive.MetaFilesSize = ref.BcDrive.MetaFilesSize.toStruct()
 	bcDrive.ReplicatorCount = ref.BcDrive.ReplicatorCount
+	bcDrive.OwnerCumulativeUploadSize = ref.BcDrive.OwnerCumulativeUploadSize.toStruct()
 
 	activeDataModifications, err := ref.BcDrive.ActiveDataModifications.toStruct(networkType)
 	if err != nil {
