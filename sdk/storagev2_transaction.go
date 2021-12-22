@@ -216,11 +216,11 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewDriveClosureTransaction(
 	deadline *Deadline,
-	driveKey string,
+	drive string,
 	networkType NetworkType,
 ) (*DriveClosureTransaction, error) {
 
-	if len(driveKey) == 0 {
+	if len(drive) == 0 {
 		return nil, ErrNilAccount
 	}
 
@@ -231,7 +231,7 @@ func NewDriveClosureTransaction(
 			Type:        DriveClosure,
 			NetworkType: networkType,
 		},
-		DriveKey: driveKey,
+		Drive: drive,
 	}
 
 	return &tx, nil
@@ -245,10 +245,10 @@ func (tx *DriveClosureTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DriveKey": %s,
+			"Drive": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.DriveKey,
+		tx.Drive,
 	)
 }
 
@@ -260,18 +260,18 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveKeyB, err := hex.DecodeString(tx.DriveKey)
+	driveB, err := hex.DecodeString(tx.Drive)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
+	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 
 	transactions.DriveClosureTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveKeyV)
+	transactions.DriveClosureTransactionBufferAddDrive(builder, driveV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -285,7 +285,7 @@ func (tx *DriveClosureTransaction) Size() int {
 type driveClosureTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey string `json:"driveKey"`
+		Drive string `json:"drive"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -303,6 +303,6 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 	return &DriveClosureTransaction{
 		*atx,
-		dto.Tx.DriveKey,
+		dto.Tx.Drive,
 	}, nil
 }

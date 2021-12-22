@@ -746,7 +746,7 @@ func (rcv *DriveClosureTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	return false
 }
 
-func (rcv *DriveClosureTransactionBuffer) DriveKey(j int) byte {
+func (rcv *DriveClosureTransactionBuffer) Drive(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -755,7 +755,7 @@ func (rcv *DriveClosureTransactionBuffer) DriveKey(j int) byte {
 	return 0
 }
 
-func (rcv *DriveClosureTransactionBuffer) DriveKeyLength() int {
+func (rcv *DriveClosureTransactionBuffer) DriveLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -763,7 +763,7 @@ func (rcv *DriveClosureTransactionBuffer) DriveKeyLength() int {
 	return 0
 }
 
-func (rcv *DriveClosureTransactionBuffer) DriveKeyBytes() []byte {
+func (rcv *DriveClosureTransactionBuffer) DriveBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -771,7 +771,7 @@ func (rcv *DriveClosureTransactionBuffer) DriveKeyBytes() []byte {
 	return nil
 }
 
-func (rcv *DriveClosureTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+func (rcv *DriveClosureTransactionBuffer) MutateDrive(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -816,10 +816,10 @@ func DriveClosureTransactionBufferAddDeadline(builder *flatbuffers.Builder, dead
 func DriveClosureTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func DriveClosureTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
+func DriveClosureTransactionBufferAddDrive(builder *flatbuffers.Builder, drive flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(drive), 0)
 }
-func DriveClosureTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func DriveClosureTransactionBufferStartDriveVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func DriveClosureTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {

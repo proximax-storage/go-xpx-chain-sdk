@@ -32,7 +32,7 @@ table DriveClosureTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline: [uint];
-    driveKey: [ubyte];
+    drive: [ubyte];
 }
 
 root_type ReplicatorOnboardingTransactionBuffer;

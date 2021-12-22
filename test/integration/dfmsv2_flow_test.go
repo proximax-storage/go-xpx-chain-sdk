@@ -5,22 +5,19 @@
 package integration
 
 import (
-	"crypto/rand"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDriveV2FlowTransaction(t *testing.T) {
 	const replicatorCount uint16 = 2
 	var replicators [replicatorCount]*sdk.Account
 	var storageSize uint64 = 500
-	var streamingSize uint64 = 100
 	var verificationFee = 100
 
 	driveAccount, err := client.NewAccount()
@@ -55,14 +52,14 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// end region
 
-	// add storage, streaming and xpx mosaic to the replicator accounts
+	// add storage and xpx mosaic to the replicator accounts
 
 	transfers := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			replicators[i].Address,
-			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(streamingSize), sdk.Xpx(10000)},
+			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 		transferMosaicsToReplicator.ToAggregate(defaultAccount.PublicAccount)
@@ -84,22 +81,9 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	rpOnboards := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
-		// generate random BLS Public Key
-		b := make([]byte, 32)
-		_, err := rand.Read(b)
-		if err != nil {
-			fmt.Println("error:", err)
-			return
-		}
-		var ikm [32]byte
-		copy(ikm[:], b[:])
-		sk := sdk.GenerateKeyPairFromIKM(ikm)
-		blsKey := sk.PublicKey.HexString()
-
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Amount(storageSize),
-			blsKey,
 		)
 		replicatorOnboardingTx.ToAggregate(replicators[i].PublicAccount)
 		assert.NoError(t, err, err)
@@ -125,17 +109,11 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		sdk.Amount(verificationFee),
 		replicatorCount,
 	)
-	prepareBcDriveTx.ToAggregate(driveAccount.PublicAccount)
 	assert.NoError(t, err, err)
 	fmt.Printf("ppBcDrive: %s\n", prepareBcDriveTx)
 
-	agTx, err := client.NewCompleteAggregateTransaction(
-		sdk.NewDeadline(time.Hour),
-		[]sdk.Transaction{prepareBcDriveTx},
-	)
-	assert.Nil(t, err)
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return agTx, nil
+		return prepareBcDriveTx, nil
 	}, driveAccount)
 	assert.Nil(t, result.error)
 
@@ -143,24 +121,17 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// drive closure transaction
 
-	drClosures := make([]sdk.Transaction, len(agTx.InnerTransactions))
-	for i, agTxIn := range agTx.InnerTransactions {
-		var driveKey = strings.ToUpper(agTxIn.GetAbstractTransaction().UniqueAggregateHash.String())
-		fmt.Println("driveKey: ", driveKey)
-		driveClosureTx, err := client.NewDriveClosureTransaction(
-			sdk.NewDeadline(time.Hour),
-			driveKey,
-		)
-		driveClosureTx.ToAggregate(driveAccount.PublicAccount)
-		assert.NoError(t, err, err)
-		drClosures[i] = driveClosureTx
-		fmt.Printf("drClosure%d: %s\n", i, drClosures[i])
-	}
+	driveKey := strings.ToUpper(prepareBcDriveTx.GetAbstractTransaction().TransactionHash.String())
+	fmt.Println("driveKey: ", driveKey)
+	driveClosureTx, err := client.NewDriveClosureTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveKey,
+	)
+	assert.NoError(t, err, err)
+	fmt.Printf("drClosure: %s\n", driveClosureTx)
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCompleteAggregateTransaction(
-			sdk.NewDeadline(time.Hour),
-			drClosures,
-		)
+		return driveClosureTx, nil
 	}, driveAccount)
 	assert.Nil(t, result.error)
 

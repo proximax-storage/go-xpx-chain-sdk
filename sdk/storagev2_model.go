@@ -228,5 +228,5 @@ type PrepareBcDriveTransaction struct {
 // Drive Closure Transaction
 type DriveClosureTransaction struct {
 	AbstractTransaction
-	DriveKey string
+	Drive string
 }
