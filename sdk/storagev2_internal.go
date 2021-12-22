@@ -385,7 +385,6 @@ type replicatorV2DTO struct {
 		ReplicatorKey string      `json:"key"`
 		Version       uint32      `json:"version"`
 		Capacity      uint64DTO   `json:"capacity"`
-		BLSKey        string      `json:"blsKey"`
 		Drives        driveV2DTOs `json:"drives"`
 	}
 }
@@ -401,7 +400,6 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	replicator.ReplicatorAccount = replicatorAccount
 	replicator.Version = ref.Replicator.Version
 	replicator.Capacity = ref.Replicator.Capacity.toStruct()
-	replicator.BLSKey = ref.Replicator.BLSKey
 
 	drives, err := ref.Replicator.Drives.toStruct(networkType)
 	if err != nil {

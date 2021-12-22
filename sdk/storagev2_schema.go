@@ -15,7 +15,6 @@ func replicatorOnboardingTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("capacity", IntSize),
-			newArrayAttribute("blsPublicKey", ByteSize),
 		},
 	}
 }

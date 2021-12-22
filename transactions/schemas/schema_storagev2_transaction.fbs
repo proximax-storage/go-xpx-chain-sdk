@@ -9,7 +9,6 @@ table ReplicatorOnboardingTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     capacity: [uint];
-    blsPublicKey: [ubyte];
 }
 
 table PrepareBcDriveTransactionBuffer {

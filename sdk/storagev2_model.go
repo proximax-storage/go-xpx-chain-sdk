@@ -214,8 +214,7 @@ type ReplicatorsPageOptions struct {
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
-	Capacity     Amount
-	BlsPublicKey string
+	Capacity Amount
 }
 
 // Prepare Bc Drive Transaction

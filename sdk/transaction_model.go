@@ -2783,8 +2783,8 @@ const (
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 	BlsKeySize                               int = 48
-	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + BlsKeySize
-	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + 2
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 )
 

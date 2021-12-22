@@ -16,16 +16,11 @@ import (
 func NewReplicatorOnboardingTransaction(
 	deadline *Deadline,
 	capacity Amount,
-	blsPublicKey string,
 	networkType NetworkType,
 ) (*ReplicatorOnboardingTransaction, error) {
 
 	if capacity <= 0 {
 		return nil, errors.New("capacity should be positive")
-	}
-
-	if len(blsPublicKey) == 0 {
-		return nil, ErrNilAccount
 	}
 
 	tx := ReplicatorOnboardingTransaction{
@@ -35,8 +30,7 @@ func NewReplicatorOnboardingTransaction(
 			Type:        ReplicatorOnboarding,
 			NetworkType: networkType,
 		},
-		Capacity:     capacity,
-		BlsPublicKey: blsPublicKey,
+		Capacity: capacity,
 	}
 
 	return &tx, nil
@@ -51,11 +45,9 @@ func (tx *ReplicatorOnboardingTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"Capacity": %d,
-			"BlsPublicKey": %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Capacity,
-		tx.BlsPublicKey,
 	)
 }
 
@@ -67,20 +59,13 @@ func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	blsKeyB, err := hex.DecodeString(tx.BlsPublicKey)
-	if err != nil {
-		return nil, err
-	}
-
 	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
-	blsKeyV := transactions.TransactionBufferCreateByteVector(builder, blsKeyB)
 
 	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ReplicatorOnboardingTransactionBufferAddCapacity(builder, capacityV)
-	transactions.ReplicatorOnboardingTransactionBufferAddBlsPublicKey(builder, blsKeyV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -95,8 +80,7 @@ func (tx *ReplicatorOnboardingTransaction) Size() int {
 type replicatorOnboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Capacity     uint64DTO `json:"capacity"`
-		BlsPublicKey string    `json:"blsKey"`
+		Capacity uint64DTO `json:"capacity"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -115,7 +99,6 @@ func (dto *replicatorOnboardingTransactionDTO) toStruct(*Hash) (Transaction, err
 	return &ReplicatorOnboardingTransaction{
 		*atx,
 		dto.Tx.Capacity.toStruct(),
-		dto.Tx.BlsPublicKey,
 	}, nil
 }
 
