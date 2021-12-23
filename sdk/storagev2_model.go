@@ -91,10 +91,34 @@ type VerificationOpinion struct {
 	Result uint8
 }
 
+func (verificationOpinion *VerificationOpinion) String() string {
+	return fmt.Sprintf(
+		`
+			"Prover": %s,
+			"Result:" %d,
+		`,
+		verificationOpinion.Prover,
+		verificationOpinion.Result,
+	)
+}
+
 type Verification struct {
 	VerificationTrigger  *Hash
 	State                VerificationState
 	VerificationOpinions []*VerificationOpinion
+}
+
+func (verification *Verification) String() string {
+	return fmt.Sprintf(
+		`
+			"VerificationTrigger": %s,
+			"State:" %d,
+			"VerificationOpinions:" %+v,
+		`,
+		verification.VerificationTrigger,
+		verification.State,
+		verification.VerificationOpinions,
+	)
 }
 
 type BcDrive struct {
@@ -184,7 +208,6 @@ type Replicator struct {
 	ReplicatorAccount *PublicAccount
 	Version           uint32
 	Capacity          Amount
-	BLSKey            string
 	Drives            map[string]*DriveInfo
 }
 
@@ -194,13 +217,11 @@ func (replicator *Replicator) String() string {
 		ReplicatorAccount: %s, 
 		Version: %d,
 		Capacity: %d,
-		BLSKey: %s,
 		Drives: %+v,
 		`,
 		replicator.ReplicatorAccount,
 		replicator.Version,
 		replicator.Capacity,
-		replicator.BLSKey,
 		replicator.Drives,
 	)
 }
