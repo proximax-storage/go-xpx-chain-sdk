@@ -18,33 +18,6 @@ type activeDataModificationDTO struct {
 	ReadyForApproval   bool      `json:"readyForApproval"`
 }
 
-func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*ActiveDataModification, error) {
-	id, err := ref.Id.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	owner, err := NewAccountFromPublicKey(ref.Owner, networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	downloadDataCdi, err := ref.DownloadDataCdi.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ActiveDataModification{
-		Id:                 id,
-		Owner:              owner,
-		DownloadDataCdi:    downloadDataCdi,
-		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
-		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
-		FolderName:         ref.FolderName,
-		ReadyForApproval:   ref.ReadyForApproval,
-	}, nil
-}
-
 type activeDataModificationsDTOs []*activeDataModificationDTO
 
 func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*ActiveDataModification, error) {
@@ -52,14 +25,33 @@ func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*Ac
 		dtos                    = *ref
 		activeDataModifications = make([]*ActiveDataModification, 0, len(dtos))
 	)
-
 	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+		id, err := dto.Id.Hash()
 		if err != nil {
 			return nil, err
 		}
 
-		activeDataModifications = append(activeDataModifications, info)
+		owner, err := NewAccountFromPublicKey(dto.Owner, networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		downloadDataCdi, err := dto.DownloadDataCdi.Hash()
+		if err != nil {
+			return nil, err
+		}
+
+		active := &ActiveDataModification{
+			Id:                 id,
+			Owner:              owner,
+			DownloadDataCdi:    downloadDataCdi,
+			ExpectedUploadSize: dto.ExpectedUploadSize.toStruct(),
+			ActualUploadSize:   dto.ActualUploadSize.toStruct(),
+			FolderName:         dto.FolderName,
+			ReadyForApproval:   dto.ReadyForApproval,
+		}
+
+		activeDataModifications = append(activeDataModifications, active)
 	}
 
 	return activeDataModifications, nil
@@ -70,18 +62,6 @@ type completedDataModificationDTO struct {
 	State                   DataModificationState       `json:"state"`
 }
 
-func (ref *completedDataModificationDTO) toStruct(networkType NetworkType) (*CompletedDataModification, error) {
-	activeDataModifications, err := ref.ActiveDataModifications.toStruct(networkType)
-	if err != nil {
-		return nil, err
-	}
-
-	return &CompletedDataModification{
-		ActiveDataModification: activeDataModifications,
-		State:                  ref.State,
-	}, nil
-}
-
 type completedDataModificationsDTOs []*completedDataModificationDTO
 
 func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]*CompletedDataModification, error) {
@@ -89,14 +69,18 @@ func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]
 		dtos                       = *ref
 		completedDataModifications = make([]*CompletedDataModification, 0, len(dtos))
 	)
-
 	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+		activeDataModifications, err := dto.ActiveDataModifications.toStruct(networkType)
 		if err != nil {
 			return nil, err
 		}
 
-		completedDataModifications = append(completedDataModifications, info)
+		completed := &CompletedDataModification{
+			ActiveDataModification: activeDataModifications,
+			State:                  dto.State,
+		}
+
+		completedDataModifications = append(completedDataModifications, completed)
 	}
 
 	return completedDataModifications, nil
@@ -107,18 +91,6 @@ type confirmedUsedSizeDTO struct {
 	Size       uint64DTO `json:"size"`
 }
 
-func (ref *confirmedUsedSizeDTO) toStruct(networkType NetworkType) (*ConfirmedUsedSize, error) {
-	replicator, err := ref.Replicator.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ConfirmedUsedSize{
-		Replicator: replicator,
-		Size:       ref.Size.toStruct(),
-	}, nil
-}
-
 type confirmedUsedSizesDTOs []*confirmedUsedSizeDTO
 
 func (ref *confirmedUsedSizesDTOs) toStruct(networkType NetworkType) ([]*ConfirmedUsedSize, error) {
@@ -126,14 +98,18 @@ func (ref *confirmedUsedSizesDTOs) toStruct(networkType NetworkType) ([]*Confirm
 		dtos               = *ref
 		confirmedUsedSizes = make([]*ConfirmedUsedSize, 0, len(dtos))
 	)
-
 	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+		replicator, err := dto.Replicator.Hash()
 		if err != nil {
 			return nil, err
 		}
 
-		confirmedUsedSizes = append(confirmedUsedSizes, info)
+		confirmed := &ConfirmedUsedSize{
+			Replicator: replicator,
+			Size:       dto.Size.toStruct(),
+		}
+
+		confirmedUsedSizes = append(confirmedUsedSizes, confirmed)
 	}
 
 	return confirmedUsedSizes, nil
@@ -164,18 +140,6 @@ type verificationOpinionDTO struct {
 	Result uint8   `json:"result"`
 }
 
-func (ref *verificationOpinionDTO) toStruct(networkType NetworkType) (*VerificationOpinion, error) {
-	prover, err := ref.Prover.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	return &VerificationOpinion{
-		Prover: prover,
-		Result: ref.Result,
-	}, nil
-}
-
 type verificationOpinionsDTOs []*verificationOpinionDTO
 
 func (ref *verificationOpinionsDTOs) toStruct(networkType NetworkType) ([]*VerificationOpinion, error) {
@@ -185,12 +149,17 @@ func (ref *verificationOpinionsDTOs) toStruct(networkType NetworkType) ([]*Verif
 	)
 
 	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+		prover, err := dto.Prover.Hash()
 		if err != nil {
 			return nil, err
 		}
 
-		verificationOpinions = append(verificationOpinions, info)
+		opinions := &VerificationOpinion{
+			Prover: prover,
+			Result: dto.Result,
+		}
+
+		verificationOpinions = append(verificationOpinions, opinions)
 	}
 
 	return verificationOpinions, nil
@@ -202,24 +171,6 @@ type verificationDTO struct {
 	VerificationOpinions verificationOpinionsDTOs `json:"verificationOpinions"`
 }
 
-func (ref *verificationDTO) toStruct(networkType NetworkType) (*Verification, error) {
-	verificationTrigger, err := ref.VerificationTrigger.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	verificationOpinions, err := ref.VerificationOpinions.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.verificationDTO.toStruct VerificationOpinions.toStruct: %v", err)
-	}
-
-	return &Verification{
-		VerificationTrigger:  verificationTrigger,
-		State:                ref.State,
-		VerificationOpinions: verificationOpinions,
-	}, nil
-}
-
 type verificationsDTOs []*verificationDTO
 
 func (ref *verificationsDTOs) toStruct(networkType NetworkType) ([]*Verification, error) {
@@ -229,12 +180,23 @@ func (ref *verificationsDTOs) toStruct(networkType NetworkType) ([]*Verification
 	)
 
 	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+		verificationTrigger, err := dto.VerificationTrigger.Hash()
 		if err != nil {
 			return nil, err
 		}
 
-		verifications = append(verifications, info)
+		verificationOpinions, err := dto.VerificationOpinions.toStruct(networkType)
+		if err != nil {
+			return nil, fmt.Errorf("sdk.verificationDTO.toStruct VerificationOpinions.toStruct: %v", err)
+		}
+
+		verification := &Verification{
+			VerificationTrigger:  verificationTrigger,
+			State:                dto.State,
+			VerificationOpinions: verificationOpinions,
+		}
+
+		verifications = append(verifications, verification)
 	}
 
 	return verifications, nil
@@ -323,26 +285,6 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	return &bcDrive, nil
 }
 
-type bcDriveDTOs []*bcDriveDTO
-
-func (ref *bcDriveDTOs) toStruct(networkType NetworkType) ([]*BcDrive, error) {
-	var (
-		dtos     = *ref
-		bcDrives = make([]*BcDrive, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		bcDrives = append(bcDrives, info)
-	}
-
-	return bcDrives, nil
-}
-
 type driveV2DTO struct {
 	Drive                          string    `json:"drive"`
 	LastApprovedDataModificationId *hashDto  `json:"lastApprovedDataModificationId"`
@@ -352,13 +294,13 @@ type driveV2DTO struct {
 
 type driveV2DTOs []*driveV2DTO
 
-func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo, error) {
+func (ref *driveV2DTOs) toStruct(networkType NetworkType) ([]*DriveInfo, error) {
 	var (
 		dtos      = *ref
-		driveInfo = make(map[string]*DriveInfo)
+		driveInfo = make([]*DriveInfo, 0, len(dtos))
 	)
 
-	for i, dto := range dtos {
+	for _, dto := range dtos {
 		drive, err := NewAccountFromPublicKey(dto.Drive, networkType)
 		if err != nil {
 			return nil, err
@@ -369,14 +311,14 @@ func (ref *driveV2DTOs) toStruct(networkType NetworkType) (map[string]*DriveInfo
 			return nil, err
 		}
 
-		info := DriveInfo{
+		info := &DriveInfo{
+			Drive:                          drive,
 			LastApprovedDataModificationId: lastApprovedDataModificationId,
 			DataModificationIdIsValid:      dto.DataModificationIdIsValid,
 			InitialDownloadWork:            dto.InitialDownloadWork.toStruct(),
-			Index:                          i,
 		}
 
-		driveInfo[drive.PublicKey] = &info
+		driveInfo = append(driveInfo, info)
 	}
 
 	return driveInfo, nil
@@ -411,26 +353,6 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	replicator.Drives = drives
 
 	return &replicator, nil
-}
-
-type replicatorV2DTOs []*replicatorV2DTO
-
-func (ref *replicatorV2DTOs) toStruct(networkType NetworkType) ([]*Replicator, error) {
-	var (
-		dtos        = *ref
-		replicators = make([]*Replicator, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		replicators = append(replicators, info)
-	}
-
-	return replicators, nil
 }
 
 type bcDrivesPageDTO struct {

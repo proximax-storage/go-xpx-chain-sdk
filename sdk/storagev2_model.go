@@ -184,7 +184,6 @@ type DriveInfo struct {
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
 	InitialDownloadWork            StorageSize
-	Index                          int
 }
 
 func (info *DriveInfo) String() string {
@@ -194,13 +193,11 @@ func (info *DriveInfo) String() string {
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
-			"Index": %d
 		`,
 		info.Drive,
 		info.LastApprovedDataModificationId,
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
-		info.Index,
 	)
 }
 
@@ -208,7 +205,7 @@ type Replicator struct {
 	ReplicatorAccount *PublicAccount
 	Version           uint32
 	Capacity          Amount
-	Drives            map[string]*DriveInfo
+	Drives            []*DriveInfo
 }
 
 func (replicator *Replicator) String() string {

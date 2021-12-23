@@ -124,8 +124,7 @@ const (
                     "initialDownloadWork": [
 					  0,
 					  0
-					],
-					"index": 0
+					]
                 }
             ]
         }
@@ -203,12 +202,12 @@ var (
 		ReplicatorAccount: testReplicatorV2Account,
 		Version:           1,
 		Capacity:          StorageSize(1000),
-		Drives: map[string]*DriveInfo{
-			testBcDriveAccount.PublicKey: {
+		Drives: []*DriveInfo{
+			{
+				Drive:                          testBcDriveAccount,
 				LastApprovedDataModificationId: &Hash{1},
 				DataModificationIdIsValid:      false,
 				InitialDownloadWork:            0,
-				Index:                          0,
 			},
 		},
 	}
