@@ -203,7 +203,7 @@ func (ref *verificationsDTOs) toStruct(networkType NetworkType) ([]*Verification
 }
 
 type bcDriveDTO struct {
-	BcDrive struct {
+	Drive struct {
 		DriveKey                   string                         `json:"multisig"`
 		Owner                      string                         `json:"owner"`
 		RootHash                   hashDto                        `json:"rootHash"`
@@ -223,17 +223,17 @@ type bcDriveDTO struct {
 func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	bcDrive := BcDrive{}
 
-	bcDriveAccount, err := NewAccountFromPublicKey(ref.BcDrive.DriveKey, networkType)
+	bcDriveAccount, err := NewAccountFromPublicKey(ref.Drive.DriveKey, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	ownerAccount, err := NewAccountFromPublicKey(ref.BcDrive.Owner, networkType)
+	ownerAccount, err := NewAccountFromPublicKey(ref.Drive.Owner, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	rootHash, err := ref.BcDrive.RootHash.Hash()
+	rootHash, err := ref.Drive.RootHash.Hash()
 	if err != nil {
 		return nil, err
 	}
@@ -241,41 +241,41 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 	bcDrive.BcDriveAccount = bcDriveAccount
 	bcDrive.OwnerAccount = ownerAccount
 	bcDrive.RootHash = rootHash
-	bcDrive.DriveSize = ref.BcDrive.DriveSize.toStruct()
-	bcDrive.UsedSize = ref.BcDrive.UsedSize.toStruct()
-	bcDrive.MetaFilesSize = ref.BcDrive.MetaFilesSize.toStruct()
-	bcDrive.ReplicatorCount = ref.BcDrive.ReplicatorCount
-	bcDrive.OwnerCumulativeUploadSize = ref.BcDrive.OwnerCumulativeUploadSize.toStruct()
+	bcDrive.DriveSize = ref.Drive.DriveSize.toStruct()
+	bcDrive.UsedSize = ref.Drive.UsedSize.toStruct()
+	bcDrive.MetaFilesSize = ref.Drive.MetaFilesSize.toStruct()
+	bcDrive.ReplicatorCount = ref.Drive.ReplicatorCount
+	bcDrive.OwnerCumulativeUploadSize = ref.Drive.OwnerCumulativeUploadSize.toStruct()
 
-	activeDataModifications, err := ref.BcDrive.ActiveDataModifications.toStruct(networkType)
+	activeDataModifications, err := ref.Drive.ActiveDataModifications.toStruct(networkType)
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.ActiveDataModifications.toStruct: %v", err)
 	}
 
 	bcDrive.ActiveDataModifications = activeDataModifications
 
-	completedDataModifications, err := ref.BcDrive.CompletedDataModifications.toStruct(networkType)
+	completedDataModifications, err := ref.Drive.CompletedDataModifications.toStruct(networkType)
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.CompletedDataModifications.toStruct: %v", err)
 	}
 
 	bcDrive.CompletedDataModifications = completedDataModifications
 
-	confirmedUsedSizes, err := ref.BcDrive.ConfirmedUsedSizes.toStruct(networkType)
+	confirmedUsedSizes, err := ref.Drive.ConfirmedUsedSizes.toStruct(networkType)
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.ConfirmedUsedSizes.toStruct: %v", err)
 	}
 
 	bcDrive.ConfirmedUsedSizes = confirmedUsedSizes
 
-	replicators, err := ref.BcDrive.Replicators.toStruct()
+	replicators, err := ref.Drive.Replicators.toStruct()
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Replicators.toStruct: %v", err)
 	}
 
 	bcDrive.Replicators = replicators
 
-	verifications, err := ref.BcDrive.Verifications.toStruct(networkType)
+	verifications, err := ref.Drive.Verifications.toStruct(networkType)
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Verifications.toStruct: %v", err)
 	}
