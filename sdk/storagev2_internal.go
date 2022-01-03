@@ -115,12 +115,12 @@ func (ref *confirmedUsedSizesDTOs) toStruct(networkType NetworkType) ([]*Confirm
 	return confirmedUsedSizes, nil
 }
 
-type replicatorsListDTOs []*hashDto
+type publicKeysListDTOs []*hashDto
 
-func (ref *replicatorsListDTOs) toStruct() ([]*Hash, error) {
+func (ref *publicKeysListDTOs) toStruct() ([]*Hash, error) {
 	var (
-		dtos        = *ref
-		replicators = make([]*Hash, 0, len(dtos))
+		dtos       = *ref
+		publicKeys = make([]*Hash, 0, len(dtos))
 	)
 
 	for _, dto := range dtos {
@@ -129,10 +129,10 @@ func (ref *replicatorsListDTOs) toStruct() ([]*Hash, error) {
 			return nil, err
 		}
 
-		replicators = append(replicators, info)
+		publicKeys = append(publicKeys, info)
 	}
 
-	return replicators, nil
+	return publicKeys, nil
 }
 
 type verificationOpinionDTO struct {
@@ -215,7 +215,7 @@ type bcDriveDTO struct {
 		ActiveDataModifications    activeDataModificationsDTOs    `json:"activeDataModifications"`
 		CompletedDataModifications completedDataModificationsDTOs `json:"completedDataModifications"`
 		ConfirmedUsedSizes         confirmedUsedSizesDTOs         `json:"confirmedUsedSizes"`
-		Replicators                replicatorsListDTOs            `json:"replicators"`
+		Replicators                publicKeysListDTOs             `json:"replicators"`
 		Verifications              verificationsDTOs              `json:"verifications"`
 	}
 }
@@ -355,6 +355,81 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	return &replicator, nil
 }
 
+type paymentV2DTO struct {
+	Replicator *hashDto  `json:"replicator"`
+	Payment    uint64DTO `json:"payment"`
+}
+
+type paymentsV2DTOs []*paymentV2DTO
+
+func (ref *paymentsV2DTOs) toStruct() ([]*Payment, error) {
+	var (
+		dtos     = *ref
+		payments = make([]*Payment, 0, len(dtos))
+	)
+
+	for _, dto := range dtos {
+		replicator, err := dto.Replicator.Hash()
+		if err != nil {
+			return nil, err
+		}
+
+		payment := &Payment{
+			Replicator: replicator,
+			Payment:    dto.Payment.toStruct(),
+		}
+
+		payments = append(payments, payment)
+	}
+
+	return payments, nil
+}
+
+type downloadChannelDTO struct {
+	DownloadChannelInfo struct {
+		Id                    hashDto            `json:"id"`
+		Consumer              hashDto            `json:"consumer"`
+		DownloadSize          uint64DTO          `json:"downloadSize"`
+		DownloadApprovalCount uint16             `json:"downloadApprovalCount"`
+		ListOfPublicKeys      publicKeysListDTOs `json:"listOfPublicKeys"`
+		CumulativePayments    paymentsV2DTOs     `json:"cumulativePayments"`
+	}
+}
+
+func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChannel, error) {
+	downloadChannel := DownloadChannel{}
+
+	id, err := ref.DownloadChannelInfo.Id.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	consumer, err := ref.DownloadChannelInfo.Consumer.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	downloadChannel.Id = id
+	downloadChannel.Consumer = consumer
+	downloadChannel.DownloadSize = ref.DownloadChannelInfo.DownloadSize.toStruct()
+
+	listOfPublicKeys, err := ref.DownloadChannelInfo.ListOfPublicKeys.toStruct()
+	if err != nil {
+		return nil, fmt.Errorf("sdk.downloadChannelDTO.toStruct DownloadChannel.ListOfPublicKeys.toStruct: %v", err)
+	}
+
+	downloadChannel.ListOfPublicKeys = listOfPublicKeys
+
+	cumulativePayments, err := ref.DownloadChannelInfo.CumulativePayments.toStruct()
+	if err != nil {
+		return nil, fmt.Errorf("sdk.downloadChannelDTO.toStruct DownloadChannel.CumulativePayments.toStruct: %v", err)
+	}
+
+	downloadChannel.CumulativePayments = cumulativePayments
+
+	return &downloadChannel, nil
+}
+
 type bcDrivesPageDTO struct {
 	BcDrives []bcDriveDTO `json:"data"`
 
@@ -417,6 +492,43 @@ func (t *replicatorsPageDTO) toStruct(networkType NetworkType) (*ReplicatorsPage
 	for i, t := range t.Replicators {
 		currDr, err := t.toStruct(networkType)
 		page.Replicators[i] = currDr
+		if err != nil {
+			return page, err
+		}
+	}
+
+	return page, nil
+}
+
+type downloadChannelsPageDTO struct {
+	DownloadChannels []downloadChannelDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *downloadChannelsPageDTO) toStruct(networkType NetworkType) (*DownloadChannelsPage, error) {
+	page := &DownloadChannelsPage{
+		DownloadChannels: make([]*DownloadChannel, len(t.DownloadChannels)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	errs := make([]error, len(t.DownloadChannels))
+	for i, t := range t.DownloadChannels {
+		currDr, currErr := t.toStruct(networkType)
+		page.DownloadChannels[i], errs[i] = currDr, currErr
+	}
+
+	for _, err := range errs {
 		if err != nil {
 			return page, err
 		}

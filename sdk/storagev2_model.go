@@ -232,6 +232,59 @@ type ReplicatorsPageOptions struct {
 	PaginationOrderingOptions
 }
 
+type Payment struct {
+	Replicator *Hash
+	Payment    Amount
+}
+
+func (payment *Payment) String() string {
+	return fmt.Sprintf(
+		`
+			"Replicator": %s,
+			"Payment:" %d,
+		`,
+		payment.Replicator,
+		payment.Payment,
+	)
+}
+
+type DownloadChannel struct {
+	Id                    *Hash
+	Consumer              *Hash
+	DownloadSize          StorageSize
+	DownloadApprovalCount uint16
+	ListOfPublicKeys      []*Hash
+	CumulativePayments    []*Payment
+}
+
+func (downloadChannel *DownloadChannel) String() string {
+	return fmt.Sprintf(
+		`
+			"Id": %s,
+			"Consumer": %s,
+			"DownloadSize": %d,
+			"DownloadApprovalCount": %d,
+			"ListOfPublicKeys": %s,
+			"CumulativePayments": %+v,
+		`,
+		downloadChannel.Id,
+		downloadChannel.Consumer,
+		downloadChannel.DownloadSize,
+		downloadChannel.DownloadApprovalCount,
+		downloadChannel.ListOfPublicKeys,
+		downloadChannel.CumulativePayments,
+	)
+}
+
+type DownloadChannelsPage struct {
+	DownloadChannels []*DownloadChannel
+	Pagination       Pagination
+}
+
+type DownloadChannelsPageOptions struct {
+	PaginationOrderingOptions
+}
+
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
@@ -250,4 +303,39 @@ type PrepareBcDriveTransaction struct {
 type DriveClosureTransaction struct {
 	AbstractTransaction
 	Drive string
+}
+
+// Download Transaction
+type DownloadTransaction struct {
+	AbstractTransaction
+	DownloadSize      StorageSize
+	FeedbackFeeAmount Amount
+	ListOfPublicKeys  []*Hash
+}
+
+// Download Approval Transaction
+type DownloadApprovalTransaction struct {
+	AbstractTransaction
+	DownloadChannelId                   *Hash
+	SequenceNumber                      uint16
+	ResponseToFinishDownloadTransaction uint8
+	PublicKeys                          []*Hash
+	Signatures                          []*Hash
+	PresentOpinions                     []*uint8
+	Opinions                            []*Opinions
+}
+
+// Download Approval Transaction
+type DownloadPaymentTransaction struct {
+	AbstractTransaction
+	DownloadChannelId *Hash
+	DownloadSize      StorageSize
+	FeedbackFeeAmount Amount
+}
+
+// Finish Download Transaction
+type FinishDownloadTransaction struct {
+	AbstractTransaction
+	DownloadChannelId *Hash
+	FeedbackFeeAmount Amount
 }
