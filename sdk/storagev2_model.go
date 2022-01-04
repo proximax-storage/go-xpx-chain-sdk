@@ -325,7 +325,7 @@ type DownloadApprovalTransaction struct {
 	Opinions                            []*Opinions
 }
 
-// Download Approval Transaction
+// Download Payment Transaction
 type DownloadPaymentTransaction struct {
 	AbstractTransaction
 	DownloadChannelId *Hash
