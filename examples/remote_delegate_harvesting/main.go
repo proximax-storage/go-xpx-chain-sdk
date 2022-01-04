@@ -136,9 +136,9 @@ func AnnounceNodeLink(client *sdk.Client, customerAcc *sdk.Account, actualNetwor
 	fmt.Printf("%s\n", restTx)
 }
 
-func AnnounceTransferMessage(client *sdk.Client, customerAcc *sdk.Account, customerAccRemote *sdk.Account, actualNetworkType sdk.NetworkType) {
+func AnnounceTransferMessage(client *sdk.Client, customerAcc *sdk.Account, customerAccRemote *sdk.Account, customerAccVrf *sdk.Account, actualNetworkType sdk.NetworkType) {
 	harvestingAccount, err := sdk.NewAccountFromPrivateKey(HarvesterNodeKey, actualNetworkType, client.GenerationHash(), 1)
-	message, err := sdk.NewPersistentHarvestingDelegationMessageFromPlainText(customerAccRemote.PrivateKey, harvestingAccount.KeyPair.PublicKey)
+	message, err := sdk.NewPersistentHarvestingDelegationMessageFromPlainText(customerAccRemote.PrivateKey, customerAccVrf.PrivateKey, harvestingAccount.KeyPair.PublicKey)
 	persistentDelegationLinkTransaction, err := client.NewTransferTransaction(sdk.NewDeadline(time.Hour*1),
 		harvestingAccount.Address,
 		[]*sdk.Mosaic{},

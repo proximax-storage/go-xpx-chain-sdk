@@ -3435,6 +3435,9 @@ func toAggregateTransactionBytes(tx Transaction) ([]byte, error) {
 
 func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error) {
 	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
+	derivationScheme := GetDerivationSchemeForAccountVersion(a.Version).EngineDerivationScheme()
+	// Embed signature derivation scheme to version field
+	tx.GetAbstractTransaction().Version = EntityVersion(uint32(tx.GetAbstractTransaction().Version) | (uint32(derivationScheme) << 16))
 	b, err := tx.Bytes()
 	if err != nil {
 		return nil, err
@@ -3449,8 +3452,8 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 	if err != nil {
 		return nil, err
 	}
-
 	p := make([]byte, len(b))
+
 	copy(p[:SizeSize], b[:SizeSize])
 	copy(p[SizeSize:SizeSize+SignatureSize], signature.Bytes())
 	copy(p[SizeSize+SignatureSize:SizeSize+SignatureSize+SignerSize], a.KeyPair.PublicKey.Raw)
