@@ -2785,6 +2785,10 @@ const (
 	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
+	DownloadHeaderSize                           = TransactionHeaderSize + StorageSizeSize + AmountSize
+	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + 2 + 1
+	DownloadPaymentHeaderSize                    = TransactionHeaderSize + Hash256 + StorageSizeSize + AmountSize
+	FinishDownloadHeaderSize                     = TransactionHeaderSize + Hash256 + AmountSize
 )
 
 type EntityType uint16
@@ -2848,6 +2852,9 @@ const (
 	DataModificationApproval  EntityType = 0x4462
 	DataModificationCancel    EntityType = 0x4562
 	ReplicatorOnboarding      EntityType = 0x4662
+	FinishDownload            EntityType = 0x4862
+	DownloadPayment           EntityType = 0x4962
+	DownloadApproval          EntityType = 0x4D62
 	DriveClosure              EntityType = 0x4E62
 )
 
@@ -2914,6 +2921,9 @@ const (
 	DataModificationCancelVersion    EntityVersion = 1
 	DownloadVersion                  EntityVersion = 1
 	DriveClosureVersion              EntityVersion = 1
+	DownloadApprovalVersion          EntityVersion = 1
+	DownloadPaymentVersion           EntityVersion = 1
+	FinishDownloadVersion            EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3183,6 +3193,14 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &prepareBcDriveTransactionDTO{}
 	case DriveClosure:
 		dto = &driveClosureTransactionDTO{}
+	case Download:
+		dto = &downloadTransactionDTO{}
+	case DownloadApproval:
+		dto = &downloadApprovalTransactionDTO{}
+	case DownloadPayment:
+		dto = &downloadPaymentTransactionDTO{}
+	case FinishDownload:
+		dto = &finishDownloadTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

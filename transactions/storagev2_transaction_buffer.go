@@ -1255,40 +1255,23 @@ func (rcv *PresentOpinionsBuffer) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *PresentOpinionsBuffer) Present(j int) uint16 {
+func (rcv *PresentOpinionsBuffer) Present() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint16(a + flatbuffers.UOffsetT(j*2))
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *PresentOpinionsBuffer) PresentLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *PresentOpinionsBuffer) MutatePresent(j int, n uint16) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint16(a+flatbuffers.UOffsetT(j*2), n)
-	}
-	return false
+func (rcv *PresentOpinionsBuffer) MutatePresent(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
 }
 
 func PresentOpinionsBufferStart(builder *flatbuffers.Builder) {
 	builder.StartObject(1)
 }
-func PresentOpinionsBufferAddPresent(builder *flatbuffers.Builder, present flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(present), 0)
-}
-func PresentOpinionsBufferStartPresentVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(2, numElems, 2)
+func PresentOpinionsBufferAddPresent(builder *flatbuffers.Builder, present byte) {
+	builder.PrependByteSlot(0, present, 0)
 }
 func PresentOpinionsBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

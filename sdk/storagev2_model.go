@@ -321,8 +321,8 @@ type DownloadApprovalTransaction struct {
 	ResponseToFinishDownloadTransaction uint8
 	PublicKeys                          []*Hash
 	Signatures                          []*Hash
-	PresentOpinions                     []*uint8
-	Opinions                            []*Opinions
+	PresentOpinions                     []uint8
+	Opinions                            []Opinions
 }
 
 // Download Payment Transaction

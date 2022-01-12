@@ -54,7 +54,7 @@ table DownloadTransactionBuffer {
 }
 
 table PresentOpinionsBuffer {
-    present: [ushort];
+    present: ubyte;
 }
 
 table OpinionsBuffer {
