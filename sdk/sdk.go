@@ -843,6 +843,42 @@ func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string)
 	return tx, err
 }
 
+func (c *Client) NewDownloadTransaction(deadline *Deadline, downloadSize StorageSize, feedbackFeeAmount Amount, listOfPublicKeys []*Hash) (*DownloadTransaction, error) {
+	tx, err := NewDownloadTransaction(deadline, downloadSize, feedbackFeeAmount, listOfPublicKeys, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadApprovalTransaction(deadline *Deadline, downloadChannelId *Hash, sequenceNumber uint16, responseToFinishDownloadTransaction uint8, publicKeys []*Hash, signatures []*Hash, presentOpinions []uint8, opinions []Opinions) (*DownloadApprovalTransaction, error) {
+	tx, err := NewDownloadApprovalTransaction(deadline, downloadChannelId, sequenceNumber, responseToFinishDownloadTransaction, publicKeys, signatures, presentOpinions, opinions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, downloadChannelId *Hash, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
+	tx, err := NewDownloadPaymentTransaction(deadline, downloadChannelId, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewFinishDownloadTransaction(deadline *Deadline, downloadChannelId *Hash, feedbackFeeAmount Amount) (*FinishDownloadTransaction, error) {
+	tx, err := NewFinishDownloadTransaction(deadline, downloadChannelId, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
