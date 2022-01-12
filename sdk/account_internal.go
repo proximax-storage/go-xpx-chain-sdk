@@ -187,6 +187,7 @@ type accountInfoDTO struct {
 		AccountType            AccountType                `json:"accountType"`
 		SupplementalPublicKeys *supplementalPublicKeysDTO `json:"supplementalPublicKeys"`
 		Mosaics                []*mosaicDTO               `json:"mosaics"`
+		LockedMosaics          []*mosaicDTO               `json:"lockedMosaics"`
 		Reputation             *reputationDTO             `json:"reputation"`
 		Version                uint32                     `json:"version"`
 	} `json:"account"`
@@ -195,11 +196,18 @@ type accountInfoDTO struct {
 func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, error) {
 	var (
 		ms  = make([]*Mosaic, len(dto.Account.Mosaics))
+		lms = make([]*Mosaic, len(dto.Account.LockedMosaics))
 		err error
 	)
 
 	for idx, m := range dto.Account.Mosaics {
 		ms[idx], err = m.toStruct()
+		if err != nil {
+			return nil, err
+		}
+	}
+	for idx, m := range dto.Account.LockedMosaics {
+		lms[idx], err = m.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -223,6 +231,7 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		AccountType:            dto.Account.AccountType,
 		SupplementalPublicKeys: supplementalPublicKeys,
 		Mosaics:                ms,
+		LockedMosaics:          lms,
 		Version:                dto.Account.Version,
 		Reputation:             repConfig.defaultReputation,
 	}

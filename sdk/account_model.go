@@ -133,6 +133,7 @@ type AccountInfo struct {
 	Version                uint32
 	SupplementalPublicKeys *SupplementalPublicKeys
 	Mosaics                []*Mosaic
+	LockedMosaics          []*Mosaic
 	Reputation             float64
 }
 
@@ -147,6 +148,7 @@ func (a *AccountInfo) String() string {
 		str.NewField("Version", str.IntPattern, a.Version),
 		str.NewField("SupplementalAccountKeys", str.StringPattern, a.SupplementalPublicKeys),
 		str.NewField("Mosaics", str.StringPattern, a.Mosaics),
+		str.NewField("LockedMosaics", str.StringPattern, a.LockedMosaics),
 		str.NewField("Reputation", str.FloatPattern, a.Reputation),
 	)
 }
