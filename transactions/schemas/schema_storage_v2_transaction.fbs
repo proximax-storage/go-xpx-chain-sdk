@@ -36,19 +36,12 @@ table DriveClosureTransactionBuffer {
     driveKey: [ubyte];
 }
 
-table ProversBuffer {
-    prover: [ubyte];
+table KeysBuffer {
+    key: [ubyte];
 }
 
-table ResultBuffer {
-    prover: ushort;
-    result: ubyte;
-}
-
-table VerificationOpinionBuffer {
-    verifier: ushort;
-    blsSignature: [ubyte];
-    results: [ResultBuffer];
+table SignaturesBuffer {
+    Signature: [ubyte];
 }
 
 table EndDriveVerificationTransactionV2Buffer {
@@ -61,10 +54,12 @@ table EndDriveVerificationTransactionV2Buffer {
     deadline: [uint];
     driveKey: [ubyte];
     verificationTrigger: [ubyte];
-    proversCount: ushort;
-    verificationOpinionsCount: ushort;
-    provers: [ProversBuffer];
-    verificationOpinions: [VerificationOpinionBuffer];
+    shardId: ushort;
+    keyCount: ubyte;
+    judgingKeyCount: ubyte;
+    keys: [KeysBuffer];
+    signatures: [SignaturesBuffer];
+    opinions: [ubyte];
 }
 
 root_type ReplicatorOnboardingTransactionBuffer;
@@ -73,10 +68,8 @@ root_type PrepareBcDriveTransactionBuffer;
 
 root_type DriveClosureTransactionBuffer;
 
-root_type ProversBuffer;
+root_type KeysBuffer;
 
-root_type ResultBuffer;
-
-root_type VerificationOpinionBuffer;
+root_type SignaturesBuffer;
 
 root_type EndDriveVerificationTransactionV2Buffer;

@@ -5,9 +5,7 @@
 package integration
 
 import (
-	"bytes"
 	"crypto/rand"
-	"encoding/gob"
 	"fmt"
 	"strings"
 	"testing"
@@ -137,27 +135,22 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	t.Run("EndDriveVerificationV2", func(t *testing.T) {
 		t.SkipNow()
 
-		// prepare same results for every opinion
-		verificationResults := make(sdk.VerificationResults, len(replicators))
-		for i, _ := range replicators {
-			verificationResults[i] = &sdk.VerificationResult{Prover: uint16(i), Result: true}
+		// prepare same opinions
+		opinions := make([]uint8, len(replicators)*len(replicators))
+		for i, _ := range opinions {
+			opinions[i] = 1
 		}
 
-		verificationResultsBuffer := bytes.Buffer{}
-		enc := gob.NewEncoder(&verificationResultsBuffer)
-		err = enc.Encode(verificationResults)
-		require.NoError(t, err, err)
-
-		provers := make([]*sdk.PublicAccount, len(replicators))
-		verificationOpinions := make([]*sdk.VerificationOpinion, len(replicators))
+		keys := make([]*sdk.PublicAccount, len(replicators))
 		for i, r := range replicators {
-			provers[i] = r.PublicAccount
+			keys[i] = r.PublicAccount
+		}
 
-			verificationOpinions[i] = &sdk.VerificationOpinion{
-				Verifier:     uint16(i),
-				BlsSignature: replicatorsBlsKeys[i].Sign(verificationResultsBuffer.String()), //TODO change
-				Results:      verificationResults,
-			}
+		signatures := make([]string, len(replicators))
+		for i, _ := range replicators {
+			var s [64]byte
+			_, err = rand.Read(s[:])
+			signatures[i] = string(s[:])
 		}
 
 		currHeight, err := client.Blockchain.GetBlockchainHeight(ctx)
@@ -171,8 +164,10 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 				sdk.NewDeadline(time.Hour),
 				driveAcc,
 				block.BlockHash, // TODO get a real verificationTrigger
-				provers,
-				verificationOpinions,
+				1,
+				keys,
+				signatures,
+				opinions,
 			)
 		}, defaultAccount)
 		assert.NoError(t, result.error, result.error)
@@ -189,5 +184,4 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	assert.NoError(t, result.error, result.error)
 
 	// end
-
 }

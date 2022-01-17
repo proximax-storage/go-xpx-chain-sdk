@@ -328,8 +328,10 @@ func NewEndDriveVerificationTransactionV2(
 	deadline *Deadline,
 	driveKey *PublicAccount,
 	verificationTrigger *Hash,
-	provers []*PublicAccount,
-	verificationOpinions []*VerificationOpinion,
+	shardId uint16,
+	keys []*PublicAccount,
+	signatures []string,
+	opinions []uint8,
 	networkType NetworkType,
 ) (*EndDriveVerificationTransactionV2, error) {
 	tx := EndDriveVerificationTransactionV2{
@@ -339,10 +341,12 @@ func NewEndDriveVerificationTransactionV2(
 			Type:        EndDriveVerificationV2,
 			NetworkType: networkType,
 		},
-		DriveKey:             driveKey,
-		VerificationTrigger:  verificationTrigger,
-		Provers:              provers,
-		VerificationOpinions: verificationOpinions,
+		DriveKey:            driveKey,
+		VerificationTrigger: verificationTrigger,
+		ShardId:             shardId,
+		Keys:                keys,
+		Signatures:          signatures,
+		Opinions:            opinions,
 	}
 
 	return &tx, nil
@@ -353,14 +357,14 @@ func (tx *EndDriveVerificationTransactionV2) GetAbstractTransaction() *AbstractT
 }
 
 func (tx *EndDriveVerificationTransactionV2) String() string {
-	provers := ""
-	for _, p := range tx.Provers {
-		provers += p.String()
+	keys := ""
+	for _, k := range tx.Keys {
+		keys += k.String()
 	}
 
-	verificationOpinions := ""
-	for _, vo := range tx.VerificationOpinions {
-		verificationOpinions += vo.String()
+	signatures := ""
+	for _, s := range tx.Signatures {
+		signatures += s
 	}
 
 	return fmt.Sprintf(
@@ -368,35 +372,20 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 		"AbstractTransaction": %s,
 		"Drive": %s,
 		"VerificationTrigger": %s,
+		"ShardId": %d,
+		"Keys": %s,
 		"Provers": %s,
-		"VerificationOpinions": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveKey.String(),
 		tx.VerificationTrigger.String(),
-		provers,
-		verificationOpinions,
+		tx.ShardId,
+		keys,
+		signatures,
 	)
 }
 
-func resultsToArrayToBuffer(builder *flatbuffers.Builder, results VerificationResults) (flatbuffers.UOffsetT, error) {
-	resultsB := make([]flatbuffers.UOffsetT, len(results))
-	for i, r := range results {
-		rB := byte(0)
-		if r.Result {
-			rB = byte(1)
-		}
-
-		transactions.ResultBufferStart(builder)
-		transactions.ResultBufferAddProver(builder, r.Prover)
-		transactions.ResultBufferAddResult(builder, rB)
-		resultsB[i] = transactions.ResultBufferEnd(builder)
-	}
-
-	return transactions.TransactionBufferCreateUOffsetVector(builder, resultsB), nil
-}
-
-func proversToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccount) (flatbuffers.UOffsetT, error) {
+func keysToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccount) (flatbuffers.UOffsetT, error) {
 	psB := make([]flatbuffers.UOffsetT, len(provers))
 	for i, p := range provers {
 		b, err := hex.DecodeString(p.PublicKey)
@@ -406,31 +395,41 @@ func proversToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccou
 
 		pkV := transactions.TransactionBufferCreateByteVector(builder, b)
 
-		transactions.ProversBufferStart(builder)
-		transactions.ProversBufferAddProver(builder, pkV)
-		psB[i] = transactions.ProversBufferEnd(builder)
+		transactions.KeysBufferStart(builder)
+		transactions.KeysBufferAddKey(builder, pkV)
+		psB[i] = transactions.KeysBufferEnd(builder)
 	}
 
 	return transactions.TransactionBufferCreateUOffsetVector(builder, psB), nil
 }
 
-func verificationOpinionsToArrayToBuffer(builder *flatbuffers.Builder, verificationOpinions []*VerificationOpinion) (flatbuffers.UOffsetT, error) {
-	voB := make([]flatbuffers.UOffsetT, len(verificationOpinions))
-	for i, vo := range verificationOpinions {
-		bsV := transactions.TransactionBufferCreateByteVector(builder, []byte(vo.BlsSignature))
-		rsV, err := resultsToArrayToBuffer(builder, vo.Results)
-		if err != nil {
-			return 0, err
-		}
+func signaturesToArrayToBuffer(builder *flatbuffers.Builder, signatures []string) (flatbuffers.UOffsetT, error) {
+	sB := make([]flatbuffers.UOffsetT, len(signatures))
+	for i, s := range signatures {
+		bsV := transactions.TransactionBufferCreateByteVector(builder, []byte(s))
 
-		transactions.VerificationOpinionBufferStart(builder)
-		transactions.VerificationOpinionBufferAddVerifier(builder, vo.Verifier)
-		transactions.VerificationOpinionBufferAddBlsSignature(builder, bsV)
-		transactions.VerificationOpinionBufferAddResults(builder, rsV)
-		voB[i] = transactions.VerificationOpinionBufferEnd(builder)
+		transactions.SignaturesBufferStart(builder)
+		transactions.SignaturesBufferAddSignature(builder, bsV)
+		sB[i] = transactions.SignaturesBufferEnd(builder)
 	}
 
-	return transactions.TransactionBufferCreateUOffsetVector(builder, voB), nil
+	return transactions.TransactionBufferCreateUOffsetVector(builder, sB), nil
+}
+
+func opinionsToArrayToBuffer(builder *flatbuffers.Builder, keyCount, signaturesCount int, opinions []uint8) flatbuffers.UOffsetT {
+	count := (signaturesCount*keyCount + 7) / 8
+	oB := make([]flatbuffers.UOffsetT, count)
+
+	byteNumber := 0
+	for i, o := range opinions {
+		oB[byteNumber] |= o << i % 8
+
+		if i != 0 && i%8 == 0 {
+			byteNumber++
+		}
+	}
+
+	return transactions.TransactionBufferCreateUOffsetVector(builder, oB)
 }
 
 func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
@@ -449,25 +448,28 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 	dkV := transactions.TransactionBufferCreateByteVector(builder, b)
 	vtV := transactions.TransactionBufferCreateByteVector(builder, tx.VerificationTrigger[:])
 
-	psV, err := proversToArrayToBuffer(builder, tx.Provers)
+	pkV, err := keysToArrayToBuffer(builder, tx.Keys)
 	if err != nil {
 		return nil, err
 	}
 
-	voV, err := verificationOpinionsToArrayToBuffer(builder, tx.VerificationOpinions)
+	sV, err := signaturesToArrayToBuffer(builder, tx.Signatures)
 	if err != nil {
 		return nil, err
 	}
+
+	voV := opinionsToArrayToBuffer(builder, len(tx.Keys), len(tx.Signatures), tx.Opinions)
 
 	transactions.EndDriveVerificationTransactionV2BufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, dkV)
 	transactions.EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder, vtV)
-	transactions.EndDriveVerificationTransactionV2BufferAddProversCount(builder, uint16(len(tx.Provers)))
-	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinionsCount(builder, uint16(len(tx.VerificationOpinions)))
-	transactions.EndDriveVerificationTransactionV2BufferAddProvers(builder, psV)
-	transactions.EndDriveVerificationTransactionV2BufferAddVerificationOpinions(builder, voV)
+	transactions.EndDriveVerificationTransactionV2BufferAddKeyCount(builder, uint8(len(tx.Keys)))
+	transactions.EndDriveVerificationTransactionV2BufferAddJudgingKeyCount(builder, uint8(len(tx.Signatures)))
+	transactions.EndDriveVerificationTransactionV2BufferAddKeys(builder, pkV)
+	transactions.EndDriveVerificationTransactionV2BufferAddSignatures(builder, sV)
+	transactions.EndDriveVerificationTransactionV2BufferAddOpinions(builder, voV)
 	t := transactions.EndDriveVerificationTransactionV2BufferEnd(builder)
 	builder.Finish(t)
 
@@ -475,46 +477,37 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 }
 
 func (tx *EndDriveVerificationTransactionV2) Size() int {
-	size := EndDriveVerificationV2HeaderSize + len(tx.Provers)*KeySize
-	for _, vo := range tx.VerificationOpinions {
-		size += vo.Size()
-	}
-
-	return size
+	return EndDriveVerificationV2HeaderSize +
+		len(tx.Keys)*KeySize +
+		len(tx.Signatures)*SignatureSize +
+		(len(tx.Signatures)*len(tx.Keys)+7)/8
 }
 
-type verificationOpinionDTO struct {
-	Verifier     uint16          `json:"verifier"`
-	BlsSignature string          `json:"blsSignature"`
-	Results      map[uint16]bool `json:"results"`
-}
+func parseOpinions(opinions []uint8, keyCount, signaturesCount int) []uint8 {
+	opinionsCount := keyCount * signaturesCount
+	parsedOpinions := make([]uint8, opinionsCount)
 
-func verificationOpinionDTOArrayToStruct(verificationOpinionDTOs []*verificationOpinionDTO, networkType NetworkType) ([]*VerificationOpinion, error) {
-	verificationOpinions := make([]*VerificationOpinion, len(verificationOpinionDTOs))
+	byteNumber := 0
+	for i := 0; i < opinionsCount; i++ {
+		parsedOpinions[i] = opinions[byteNumber] & uint8(i%8)
 
-	for i, dto := range verificationOpinionDTOs {
-		results := make(VerificationResults, 0, len(dto.Results))
-		for prover, res := range dto.Results {
-			results = append(results, &VerificationResult{prover, res})
-		}
-
-		verificationOpinions[i] = &VerificationOpinion{
-			dto.Verifier,
-			BLSSignature(dto.BlsSignature),
-			results,
+		if i != 0 && i%8 == 0 {
+			byteNumber++
 		}
 	}
 
-	return verificationOpinions, nil
+	return parsedOpinions
 }
 
 type endDriveVerificationTransactionV2DTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey             string                    `json:"driveKey"`
-		VerificationTrigger  hashDto                   `json:"verificationTrigger"`
-		Provers              []string                  `json:"provers"`
-		VerificationOpinions []*verificationOpinionDTO `json:"verificationOpinions"`
+		DriveKey            string   `json:"driveKey"`
+		VerificationTrigger hashDto  `json:"verificationTrigger"`
+		ShardId             uint16   `json:"shardId"`
+		Keys                []string `json:"keys"`
+		Signatures          []string `json:"signatures"`
+		Opinions            []uint8  `json:"opinions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -540,24 +533,23 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		return nil, fmt.Errorf("error parsing VerificationTrigger: %v", err)
 	}
 
-	provers := make([]*PublicAccount, len(dto.Tx.Provers))
-	for i, p := range dto.Tx.Provers {
-		provers[i], err = NewAccountFromPublicKey(p, atx.NetworkType)
+	keys := make([]*PublicAccount, len(dto.Tx.Keys))
+	for i, k := range dto.Tx.Keys {
+		keys[i], err = NewAccountFromPublicKey(k, atx.NetworkType)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	vos, err := verificationOpinionDTOArrayToStruct(dto.Tx.VerificationOpinions, atx.NetworkType)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing VerificationOpinions: %v", err)
-	}
+	parsedOpinions := parseOpinions(dto.Tx.Opinions, len(keys), len(dto.Tx.Signatures))
 
 	return &EndDriveVerificationTransactionV2{
 		*atx,
 		driveAccount,
 		verificationTrigger,
-		provers,
-		vos,
+		dto.Tx.ShardId,
+		keys,
+		dto.Tx.Signatures,
+		parsedOpinions,
 	}, nil
 }

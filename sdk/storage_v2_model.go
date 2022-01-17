@@ -179,66 +179,12 @@ type DriveClosureTransaction struct {
 	DriveKey string
 }
 
-type VerificationResult struct {
-	// Prover is a number of Prover from Provers array
-	Prover uint16
-	Result bool
-}
-
-func (vr *VerificationResult) String() string {
-	return fmt.Sprintf(
-		`
-		"Prover": %d,
-		"Result": %t
-		`,
-		vr.Prover,
-		vr.Result,
-	)
-}
-
-type VerificationResults []*VerificationResult
-
-func (vrs VerificationResults) String() string {
-	var str string
-	for _, vr := range vrs {
-		str += vr.String()
-	}
-
-	return str
-}
-
-func (vrs VerificationResults) Size() int {
-	return len(vrs) * (KeySize + 1)
-}
-
-type VerificationOpinion struct {
-	// Verifier is a number of Prover from Provers array
-	Verifier     uint16
-	BlsSignature BLSSignature
-	Results      VerificationResults
-}
-
-func (vo *VerificationOpinion) String() string {
-	return fmt.Sprintf(
-		`
-		"Verifier": %d,
-		"BlsSignature": %s,
-		"Results": %s
-		`,
-		vo.Verifier,
-		vo.BlsSignature.HexString(),
-		vo.Results.String(),
-	)
-}
-
-func (vo *VerificationOpinion) Size() int {
-	return KeySize + BlsSignatureSize + vo.Results.Size()
-}
-
 type EndDriveVerificationTransactionV2 struct {
 	AbstractTransaction
-	DriveKey             *PublicAccount
-	VerificationTrigger  *Hash
-	Provers              []*PublicAccount
-	VerificationOpinions []*VerificationOpinion
+	DriveKey            *PublicAccount
+	VerificationTrigger *Hash
+	ShardId             uint16
+	Keys                []*PublicAccount
+	Signatures          []string
+	Opinions            []uint8
 }
