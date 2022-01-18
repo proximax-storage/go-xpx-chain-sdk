@@ -418,7 +418,7 @@ func signaturesToArrayToBuffer(builder *flatbuffers.Builder, signatures []string
 
 func opinionsToArrayToBuffer(builder *flatbuffers.Builder, keyCount, signaturesCount int, opinions []uint8) flatbuffers.UOffsetT {
 	count := (signaturesCount*keyCount + 7) / 8
-	oB := make([]flatbuffers.UOffsetT, count)
+	oB := make([]byte, count)
 
 	byteNumber := 0
 	for i, o := range opinions {
@@ -429,7 +429,7 @@ func opinionsToArrayToBuffer(builder *flatbuffers.Builder, keyCount, signaturesC
 		}
 	}
 
-	return transactions.TransactionBufferCreateUOffsetVector(builder, oB)
+	return transactions.TransactionBufferCreateByteVector(builder, oB)
 }
 
 func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
