@@ -50,3 +50,33 @@ func driveClosureTransactionSchema() *schema {
 		},
 	}
 }
+
+func endDriveVerificationV2TransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("verificationTrigger", ByteSize),
+			newScalarAttribute("shardId", ShortSize),
+			newScalarAttribute("keyCount", ByteSize),
+			newScalarAttribute("judgingKeyCount", ByteSize),
+			newTableArrayAttribute("keys", schema{
+				[]schemaAttribute{
+					newArrayAttribute("key", ByteSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("signatures", schema{
+				[]schemaAttribute{
+					newArrayAttribute("signature", ByteSize),
+				},
+			}.schemaDefinition),
+			newArrayAttribute("opinions", ByteSize),
+		},
+	}
+}

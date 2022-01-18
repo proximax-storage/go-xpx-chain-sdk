@@ -35,8 +35,40 @@ table DriveClosureTransactionBuffer {
     drive: [ubyte];
 }
 
+table KeysBuffer {
+    key: [ubyte];
+}
+
+table SignaturesBuffer {
+    Signature: [ubyte];
+}
+
+table EndDriveVerificationTransactionV2Buffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    verificationTrigger: [ubyte];
+    shardId: ushort;
+    keyCount: ubyte;
+    judgingKeyCount: ubyte;
+    keys: [KeysBuffer];
+    signatures: [SignaturesBuffer];
+    opinions: [ubyte];
+}
+
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
 
 root_type DriveClosureTransactionBuffer;
+
+root_type KeysBuffer;
+
+root_type SignaturesBuffer;
+
+root_type EndDriveVerificationTransactionV2Buffer;

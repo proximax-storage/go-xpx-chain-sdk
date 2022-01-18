@@ -2785,6 +2785,10 @@ const (
 	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
+	BlsSignatureSize                         int = 96
+	ProversCountSize                             = 2
+	VerificationOpinionsCountSize                = 2
+	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ProversCountSize + VerificationOpinionsCountSize
 )
 
 type EntityType uint16
@@ -2849,6 +2853,7 @@ const (
 	DataModificationCancel    EntityType = 0x4562
 	ReplicatorOnboarding      EntityType = 0x4662
 	DriveClosure              EntityType = 0x4E62
+	EndDriveVerificationV2    EntityType = 0x4F62
 )
 
 func (t EntityType) String() string {
@@ -2914,6 +2919,7 @@ const (
 	DataModificationCancelVersion    EntityVersion = 1
 	DownloadVersion                  EntityVersion = 1
 	DriveClosureVersion              EntityVersion = 1
+	EndDriveVerificationV2Version    EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3183,6 +3189,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &prepareBcDriveTransactionDTO{}
 	case DriveClosure:
 		dto = &driveClosureTransactionDTO{}
+	case EndDriveVerificationV2:
+		dto = &endDriveVerificationTransactionV2DTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

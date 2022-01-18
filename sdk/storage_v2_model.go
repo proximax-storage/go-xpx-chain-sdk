@@ -251,3 +251,13 @@ type DriveClosureTransaction struct {
 	AbstractTransaction
 	Drive string
 }
+
+type EndDriveVerificationTransactionV2 struct {
+	AbstractTransaction
+	DriveKey            *PublicAccount
+	VerificationTrigger *Hash
+	ShardId             uint16
+	Keys                []*PublicAccount
+	Signatures          []string
+	Opinions            []uint8
+}

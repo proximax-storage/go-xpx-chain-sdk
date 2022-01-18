@@ -843,6 +843,15 @@ func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string)
 	return tx, err
 }
 
+func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []string, opinions []uint8) (*EndDriveVerificationTransactionV2, error) {
+	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
@@ -854,6 +863,24 @@ func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, drive
 
 func (c *Client) NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string) (*DeactivateTransaction, error) {
 	tx, err := NewDeactivateTransaction(deadline, sc, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -897,22 +924,4 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 	}
 
 	return nil
-}
-
-func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
-	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
-func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
-	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
 }
