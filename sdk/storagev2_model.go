@@ -47,14 +47,14 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification []*ActiveDataModification
-	State                  DataModificationState
+	ActiveDataModification
+	State DataModificationState
 }
 
 func (completed *CompletedDataModification) String() string {
 	return fmt.Sprintf(
 		`
-			"ActiveDataModification": %s,
+			"ActiveDataModification": %+v,
 			"State:" %d,
 		`,
 		completed.ActiveDataModification,

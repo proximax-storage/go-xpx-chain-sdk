@@ -18,6 +18,33 @@ type activeDataModificationDTO struct {
 	ReadyForApproval   bool      `json:"readyForApproval"`
 }
 
+func (ref *activeDataModificationDTO) toStruct(networkType NetworkType) (*ActiveDataModification, error) {
+	id, err := ref.Id.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	owner, err := NewAccountFromPublicKey(ref.Owner, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadDataCdi, err := ref.DownloadDataCdi.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ActiveDataModification{
+		Id:                 id,
+		Owner:              owner,
+		DownloadDataCdi:    downloadDataCdi,
+		ExpectedUploadSize: ref.ExpectedUploadSize.toStruct(),
+		ActualUploadSize:   ref.ActualUploadSize.toStruct(),
+		FolderName:         ref.FolderName,
+		ReadyForApproval:   ref.ReadyForApproval,
+	}, nil
+}
+
 type activeDataModificationsDTOs []*activeDataModificationDTO
 
 func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*ActiveDataModification, error) {
@@ -26,40 +53,20 @@ func (ref *activeDataModificationsDTOs) toStruct(networkType NetworkType) ([]*Ac
 		activeDataModifications = make([]*ActiveDataModification, 0, len(dtos))
 	)
 	for _, dto := range dtos {
-		id, err := dto.Id.Hash()
+		info, err := dto.toStruct(networkType)
 		if err != nil {
 			return nil, err
 		}
 
-		owner, err := NewAccountFromPublicKey(dto.Owner, networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		downloadDataCdi, err := dto.DownloadDataCdi.Hash()
-		if err != nil {
-			return nil, err
-		}
-
-		active := &ActiveDataModification{
-			Id:                 id,
-			Owner:              owner,
-			DownloadDataCdi:    downloadDataCdi,
-			ExpectedUploadSize: dto.ExpectedUploadSize.toStruct(),
-			ActualUploadSize:   dto.ActualUploadSize.toStruct(),
-			FolderName:         dto.FolderName,
-			ReadyForApproval:   dto.ReadyForApproval,
-		}
-
-		activeDataModifications = append(activeDataModifications, active)
+		activeDataModifications = append(activeDataModifications, info)
 	}
 
 	return activeDataModifications, nil
 }
 
 type completedDataModificationDTO struct {
-	ActiveDataModifications activeDataModificationsDTOs `json:"activeDataModifications"`
-	State                   DataModificationState       `json:"state"`
+	activeDataModificationDTO
+	State DataModificationState `json:"state"`
 }
 
 type completedDataModificationsDTOs []*completedDataModificationDTO
@@ -70,14 +77,14 @@ func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]
 		completedDataModifications = make([]*CompletedDataModification, 0, len(dtos))
 	)
 	for _, dto := range dtos {
-		activeDataModifications, err := dto.ActiveDataModifications.toStruct(networkType)
+		activeDataModifications, err := dto.activeDataModificationDTO.toStruct(networkType)
 		if err != nil {
 			return nil, err
 		}
 
 		completed := &CompletedDataModification{
-			ActiveDataModification: activeDataModifications,
-			State:                  dto.State,
+			*activeDataModifications,
+			dto.State,
 		}
 
 		completedDataModifications = append(completedDataModifications, completed)

@@ -56,23 +56,19 @@ const (
       ],
       "completedDataModifications": [
         {
-          "activeDataModifications": [
-            {
-              "id": "0100000000000000000000000000000000000000000000000000000000000000",
-              "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
-              "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-			  "expectedUploadSize": [
-				100,
-				0
-			  ],
-			  "actualUploadSize": [
-				50,
-				0
-			  ],
-			  "folderName": "C://MyStorage",
-			  "readyForApproval": false
-            }
-          ],
+          "id": "0100000000000000000000000000000000000000000000000000000000000000",
+          "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+          "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
+		  "expectedUploadSize": [
+		    100,
+		    0
+		  ],
+		  "actualUploadSize": [
+		    50,
+		    0
+		  ],
+		  "folderName": "C://MyStorage",
+		  "readyForApproval": false,
           "state": 0
         }
       ],
@@ -160,16 +156,14 @@ var (
 		},
 		CompletedDataModifications: []*CompletedDataModification{
 			{
-				ActiveDataModification: []*ActiveDataModification{
-					{
-						Id:                 &Hash{1},
-						Owner:              testBcDriveOwnerAccount,
-						DownloadDataCdi:    &Hash{1},
-						ExpectedUploadSize: StorageSize(100),
-						ActualUploadSize:   StorageSize(50),
-						FolderName:         "C://MyStorage",
-						ReadyForApproval:   false,
-					},
+				ActiveDataModification: ActiveDataModification{
+					Id:                 &Hash{1},
+					Owner:              testBcDriveOwnerAccount,
+					DownloadDataCdi:    &Hash{1},
+					ExpectedUploadSize: StorageSize(100),
+					ActualUploadSize:   StorageSize(50),
+					FolderName:         "C://MyStorage",
+					ReadyForApproval:   false,
 				},
 				State: DataModificationState(Succeeded),
 			},
