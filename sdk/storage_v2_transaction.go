@@ -231,7 +231,7 @@ func NewDriveClosureTransaction(
 			Type:        DriveClosure,
 			NetworkType: networkType,
 		},
-		Drive: drive,
+		DriveKey: drive,
 	}
 
 	return &tx, nil
@@ -245,10 +245,10 @@ func (tx *DriveClosureTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"Drive": %s,
+			"DriveKey": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.Drive,
+		tx.DriveKey,
 	)
 }
 
@@ -260,7 +260,7 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveB, err := hex.DecodeString(tx.Drive)
+	driveB, err := hex.DecodeString(tx.DriveKey)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DriveClosureTransactionBufferAddDrive(builder, driveV)
+	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -353,7 +353,7 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 	return fmt.Sprintf(
 		`
 		"AbstractTransaction": %s,
-		"Drive": %s,
+		"DriveKey": %s,
 		"VerificationTrigger": %s,
 		"ShardId": %d,
 		"Keys": %s,
@@ -608,4 +608,4 @@ func (dto *replicatorOffboardingTransactionDTO) toStruct(*Hash) (Transaction, er
 	return &ReplicatorOffboardingTransaction{
 		*atx,
 	}, nil
-} 
+}

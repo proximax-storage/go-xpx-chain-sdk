@@ -46,7 +46,7 @@ func driveClosureTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
-			newArrayAttribute("drive", ByteSize),
+			newArrayAttribute("driveKey", ByteSize),
 		},
 	}
 }

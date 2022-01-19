@@ -816,10 +816,10 @@ func DriveClosureTransactionBufferAddDeadline(builder *flatbuffers.Builder, dead
 func DriveClosureTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func DriveClosureTransactionBufferAddDrive(builder *flatbuffers.Builder, drive flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(drive), 0)
+func DriveClosureTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
 }
-func DriveClosureTransactionBufferStartDriveVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func DriveClosureTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func DriveClosureTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {

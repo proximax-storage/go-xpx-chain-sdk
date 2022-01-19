@@ -189,7 +189,7 @@ type DriveInfo struct {
 func (info *DriveInfo) String() string {
 	return fmt.Sprintf(
 		`
-			"Drive": %s, 
+			"DriveKey": %s, 
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
@@ -249,7 +249,7 @@ type PrepareBcDriveTransaction struct {
 // Drive Closure Transaction
 type DriveClosureTransaction struct {
 	AbstractTransaction
-	Drive string
+	DriveKey string
 }
 
 type EndDriveVerificationTransactionV2 struct {
