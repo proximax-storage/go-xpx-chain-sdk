@@ -852,6 +852,15 @@ func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveK
 	return tx, err
 }
 
+func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline) (*ReplicatorOffboardingTransaction, error) {
+	tx, err := NewReplicatorOffboardingTransaction(deadline, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {

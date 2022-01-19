@@ -746,7 +746,7 @@ func (rcv *DriveClosureTransactionBuffer) MutateDeadline(j int, n uint32) bool {
 	return false
 }
 
-func (rcv *DriveClosureTransactionBuffer) Drive(j int) byte {
+func (rcv *DriveClosureTransactionBuffer) DriveKey(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -755,7 +755,7 @@ func (rcv *DriveClosureTransactionBuffer) Drive(j int) byte {
 	return 0
 }
 
-func (rcv *DriveClosureTransactionBuffer) DriveLength() int {
+func (rcv *DriveClosureTransactionBuffer) DriveKeyLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -763,7 +763,7 @@ func (rcv *DriveClosureTransactionBuffer) DriveLength() int {
 	return 0
 }
 
-func (rcv *DriveClosureTransactionBuffer) DriveBytes() []byte {
+func (rcv *DriveClosureTransactionBuffer) DriveKeyBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -771,7 +771,7 @@ func (rcv *DriveClosureTransactionBuffer) DriveBytes() []byte {
 	return nil
 }
 
-func (rcv *DriveClosureTransactionBuffer) MutateDrive(j int, n byte) bool {
+func (rcv *DriveClosureTransactionBuffer) MutateDriveKey(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1411,5 +1411,228 @@ func EndDriveVerificationTransactionV2BufferStartOpinionsVector(builder *flatbuf
 	return builder.StartVector(1, numElems, 1)
 }
 func EndDriveVerificationTransactionV2BufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type ReplicatorOffboardingTransactionBuffer struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsReplicatorOffboardingTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *ReplicatorOffboardingTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &ReplicatorOffboardingTransactionBuffer{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsReplicatorOffboardingTransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *ReplicatorOffboardingTransactionBuffer {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ReplicatorOffboardingTransactionBuffer{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Size() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateSize(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(4, n)
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Signature(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) SignatureLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) SignatureBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Signer(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) SignerLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) SignerBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateSigner(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Version() uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateVersion(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(10, n)
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Type() uint16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateType(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(12, n)
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MaxFee(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MaxFeeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateMaxFee(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) Deadline(j int) uint32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) DeadlineLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ReplicatorOffboardingTransactionBuffer) MutateDeadline(j int, n uint32) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
+	}
+	return false
+}
+
+func ReplicatorOffboardingTransactionBufferStart(builder *flatbuffers.Builder) {
+	builder.StartObject(7)
+}
+func ReplicatorOffboardingTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
+	builder.PrependUint32Slot(0, size, 0)
+}
+func ReplicatorOffboardingTransactionBufferAddSignature(builder *flatbuffers.Builder, signature flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(signature), 0)
+}
+func ReplicatorOffboardingTransactionBufferStartSignatureVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func ReplicatorOffboardingTransactionBufferAddSigner(builder *flatbuffers.Builder, signer flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(signer), 0)
+}
+func ReplicatorOffboardingTransactionBufferStartSignerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
+func ReplicatorOffboardingTransactionBufferAddVersion(builder *flatbuffers.Builder, version uint32) {
+	builder.PrependUint32Slot(3, version, 0)
+}
+func ReplicatorOffboardingTransactionBufferAddType(builder *flatbuffers.Builder, type_ uint16) {
+	builder.PrependUint16Slot(4, type_, 0)
+}
+func ReplicatorOffboardingTransactionBufferAddMaxFee(builder *flatbuffers.Builder, maxFee flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(maxFee), 0)
+}
+func ReplicatorOffboardingTransactionBufferStartMaxFeeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func ReplicatorOffboardingTransactionBufferAddDeadline(builder *flatbuffers.Builder, deadline flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(deadline), 0)
+}
+func ReplicatorOffboardingTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func ReplicatorOffboardingTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

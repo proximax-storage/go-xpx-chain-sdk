@@ -10,12 +10,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	math "math/rand"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 
 	"github.com/stretchr/testify/assert"
 

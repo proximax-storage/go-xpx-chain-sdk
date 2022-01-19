@@ -2782,7 +2782,9 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
-	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
+	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize
+	BlsKeySize                               int = 48
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + BlsKeySize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	BlsSignatureSize                         int = 96
@@ -2846,6 +2848,7 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
+	ReplicatorOffboarding     EntityType = 0x4762
 	PrepareBcDrive            EntityType = 0x4162
 	DataModification          EntityType = 0x4262
 	Download                  EntityType = 0x4362
@@ -2912,6 +2915,7 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
+	ReplicatorOffboardingVersion     EntityVersion = 1
 	PrepareBcDriveVersion            EntityVersion = 1
 	ReplicatorOnboardingVersion      EntityVersion = 1
 	DataModificationVersion          EntityVersion = 1
@@ -3191,6 +3195,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveClosureTransactionDTO{}
 	case EndDriveVerificationV2:
 		dto = &endDriveVerificationTransactionV2DTO{}
+	case ReplicatorOffboarding:
+		dto = &replicatorOffboardingTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

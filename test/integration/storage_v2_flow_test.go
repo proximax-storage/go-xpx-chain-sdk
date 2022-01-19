@@ -62,7 +62,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// end region
 
-	// add storage and xpx mosaic to the replicator accounts
+	// add storage, streaming and xpx mosaic to the replicator accounts
 
 	transfers := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
@@ -181,5 +181,17 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	}, owner)
 	assert.NoError(t, result.error, result.error)
 
-	// end
+	// end region
+
+	// replicator offboarding transaction
+
+	for i := 0; i < len(replicators); i++ {
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return client.NewReplicatorOffboardingTransaction(sdk.NewDeadline(time.Hour))
+		}, replicators[i])
+		assert.Nil(t, result.error)
+	}
+
+	// end region
+
 }

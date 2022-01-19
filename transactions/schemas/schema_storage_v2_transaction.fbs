@@ -61,11 +61,23 @@ table EndDriveVerificationTransactionV2Buffer {
     opinions: [ubyte];
 }
 
+table ReplicatorOffboardingTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+}
+
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
 
 root_type DriveClosureTransactionBuffer;
+
+root_type ReplicatorOffboardingTransactionBuffer;
 
 root_type KeysBuffer;
 

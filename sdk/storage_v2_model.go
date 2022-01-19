@@ -261,3 +261,8 @@ type EndDriveVerificationTransactionV2 struct {
 	Signatures          []string
 	Opinions            []uint8
 }
+
+// Replicator Offboarding Transaction
+type ReplicatorOffboardingTransaction struct {
+	AbstractTransaction
+}
