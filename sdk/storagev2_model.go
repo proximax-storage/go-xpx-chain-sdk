@@ -63,7 +63,7 @@ func (completed *CompletedDataModification) String() string {
 }
 
 type ConfirmedUsedSize struct {
-	Replicator *Hash
+	Replicator *PublicAccount
 	Size       StorageSize
 }
 
@@ -133,7 +133,7 @@ type BcDrive struct {
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
-	Replicators                []*Hash
+	Replicators                []*PublicAccount
 	Verifications              []*Verification
 }
 

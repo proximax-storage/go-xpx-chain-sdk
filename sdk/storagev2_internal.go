@@ -94,7 +94,7 @@ func (ref *completedDataModificationsDTOs) toStruct(networkType NetworkType) ([]
 }
 
 type confirmedUsedSizeDTO struct {
-	Replicator hashDto   `json:"replicator"`
+	Replicator string    `json:"replicator"`
 	Size       uint64DTO `json:"size"`
 }
 
@@ -106,13 +106,13 @@ func (ref *confirmedUsedSizesDTOs) toStruct(networkType NetworkType) ([]*Confirm
 		confirmedUsedSizes = make([]*ConfirmedUsedSize, 0, len(dtos))
 	)
 	for _, dto := range dtos {
-		replicator, err := dto.Replicator.Hash()
+		replicatorAccount, err := NewAccountFromPublicKey(dto.Replicator, networkType)
 		if err != nil {
 			return nil, err
 		}
 
 		confirmed := &ConfirmedUsedSize{
-			Replicator: replicator,
+			Replicator: replicatorAccount,
 			Size:       dto.Size.toStruct(),
 		}
 
@@ -122,20 +122,19 @@ func (ref *confirmedUsedSizesDTOs) toStruct(networkType NetworkType) ([]*Confirm
 	return confirmedUsedSizes, nil
 }
 
-type replicatorsListDTOs []*hashDto
+type replicatorsListDTOs []string
 
-func (ref *replicatorsListDTOs) toStruct() ([]*Hash, error) {
+func (ref *replicatorsListDTOs) toStruct(networkType NetworkType) ([]*PublicAccount, error) {
 	var (
 		dtos        = *ref
-		replicators = make([]*Hash, 0, len(dtos))
+		replicators = make([]*PublicAccount, 0, len(dtos))
 	)
 
 	for _, dto := range dtos {
-		info, err := dto.Hash()
+		info, err := NewAccountFromPublicKey(dto, networkType)
 		if err != nil {
 			return nil, err
 		}
-
 		replicators = append(replicators, info)
 	}
 
@@ -275,7 +274,7 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 
 	bcDrive.ConfirmedUsedSizes = confirmedUsedSizes
 
-	replicators, err := ref.Drive.Replicators.toStruct()
+	replicators, err := ref.Drive.Replicators.toStruct(networkType)
 	if err != nil {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Replicators.toStruct: %v", err)
 	}
