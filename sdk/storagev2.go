@@ -66,9 +66,7 @@ func (s *StorageV2Service) GetReplicator(ctx context.Context, replicatorKey *Pub
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
-		// Skip ErrResourceNotFound
-		// not return err
-		return nil, nil
+		return nil, err
 	}
 
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
