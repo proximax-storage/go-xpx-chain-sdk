@@ -833,7 +833,7 @@ func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize Stor
 	return tx, err
 }
 
-func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string) (*DriveClosureTransaction, error) {
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *PublicAccount) (*DriveClosureTransaction, error) {
 
 	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
@@ -852,8 +852,8 @@ func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveK
 	return tx, err
 }
 
-func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline) (*ReplicatorOffboardingTransaction, error) {
-	tx, err := NewReplicatorOffboardingTransaction(deadline, c.config.NetworkType)
+func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKey *PublicAccount) (*ReplicatorOffboardingTransaction, error) {
+	tx, err := NewReplicatorOffboardingTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

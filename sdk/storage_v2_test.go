@@ -88,13 +88,12 @@ const (
 	  "verifications": [
 		{
 		  "verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
-		  "state": 0,
-		  "verificationOpinions": [
-			{
-		      "prover": "0100000000000000000000000000000000000000000000000000000000000000",
-		      "result": 0
-			}
-		  ]
+		  "expiration": [
+				0,
+				0
+			],
+		  "expired": true,
+		  "shards": [],
 	    }
 	  ]
     }
@@ -136,10 +135,10 @@ var testReplicatorV2Account2, _ = NewAccountFromPublicKey("E01D208E8539FEF6FD2E2
 
 var (
 	testBcDriveInfo = &BcDrive{
-		BcDriveAccount:            testBcDriveAccount,
-		OwnerAccount:              testBcDriveOwnerAccount,
+		MultisigAccount:           testBcDriveAccount,
+		Owner:                     testBcDriveOwnerAccount,
 		RootHash:                  &Hash{1},
-		DriveSize:                 StorageSize(1000),
+		Size:                      StorageSize(1000),
 		UsedSize:                  StorageSize(0),
 		MetaFilesSize:             StorageSize(20),
 		ReplicatorCount:           5,
@@ -157,7 +156,7 @@ var (
 		},
 		CompletedDataModifications: []*CompletedDataModification{
 			{
-				ActiveDataModification: ActiveDataModification{
+				ActiveDataModification: &ActiveDataModification{
 					Id:                 &Hash{1},
 					Owner:              testBcDriveOwnerAccount,
 					DownloadDataCdi:    &Hash{1},
@@ -182,13 +181,9 @@ var (
 		Verifications: []*Verification{
 			{
 				VerificationTrigger: &Hash{1},
-				State:               VerificationState(PendingVerification),
-				VerificationOpinions: []*VerificationOpinion{
-					{
-						Prover: &Hash{1},
-						Result: 0,
-					},
-				},
+				Expiration:          blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+				Expired:             true,
+				Shards:              []*Shard{},
 			},
 		},
 	}
@@ -199,7 +194,7 @@ var (
 		Capacity:          StorageSize(1000),
 		Drives: []*DriveInfo{
 			{
-				Drive:                          testBcDriveAccount,
+				DriveKey:                       testBcDriveAccount,
 				LastApprovedDataModificationId: &Hash{1},
 				DataModificationIdIsValid:      false,
 				InitialDownloadWork:            0,

@@ -117,10 +117,10 @@ const (
 
 // routes for StorageV2Service
 const (
-	drivesRouteV2           = "/drives_v2"
-	driveRouteV2            = "/drives_v2/%s"
-	replicatorsRouteV2      = "/replicators_v2"
-	replicatorRouteV2       = "/replicators_v2/%s"
+	drivesRouteV2           = "/bcdrives"
+	driveRouteV2            = "/bcdrives/%s"
+	replicatorsRouteV2      = "/replicators"
+	replicatorRouteV2       = "/replicators/%s"
 	downloadChannelsRouteV2 = "/downloads_v2"
 	downloadChannelRouteV2  = "/downloads_v2/%s"
 )

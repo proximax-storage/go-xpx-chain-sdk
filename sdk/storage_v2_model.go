@@ -47,7 +47,7 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification
+	*ActiveDataModification
 	State DataModificationState
 }
 
@@ -78,54 +78,38 @@ func (confirmed *ConfirmedUsedSize) String() string {
 	)
 }
 
-type VerificationState uint8
-
-const (
-	PendingVerification VerificationState = iota
-	CanceledVerification
-	FinishedVerification
-)
-
-type VerificationOpinion struct {
-	Prover *Hash
-	Result uint8
-}
-
-func (verificationOpinion *VerificationOpinion) String() string {
-	return fmt.Sprintf(
-		`
-			"Prover": %s,
-			"Result:" %d,
-		`,
-		verificationOpinion.Prover,
-		verificationOpinion.Result,
-	)
+type Shard struct {
+	DownloadChannelId *Hash
+	Replicators       []*PublicAccount
 }
 
 type Verification struct {
-	VerificationTrigger  *Hash
-	State                VerificationState
-	VerificationOpinions []*VerificationOpinion
+	VerificationTrigger *Hash
+	Expiration          *Timestamp
+	Expired             bool
+	Shards              []*Shard
 }
 
 func (verification *Verification) String() string {
 	return fmt.Sprintf(
 		`
 			"VerificationTrigger": %s,
-			"State:" %d,
-			"VerificationOpinions:" %+v,
+			"Expiration:" %s,
+			"VerificationOpinions:" %t,
+			"Shards:" %+v,
 		`,
 		verification.VerificationTrigger,
-		verification.State,
-		verification.VerificationOpinions,
+		verification.Expiration.String(),
+		verification.Expired,
+		verification.Shards,
 	)
 }
 
 type BcDrive struct {
-	BcDriveAccount             *PublicAccount
-	OwnerAccount               *PublicAccount
+	MultisigAccount            *PublicAccount
+	Owner                      *PublicAccount
 	RootHash                   *Hash
-	DriveSize                  StorageSize
+	Size                       StorageSize
 	UsedSize                   StorageSize
 	MetaFilesSize              StorageSize
 	ReplicatorCount            uint16
@@ -134,16 +118,18 @@ type BcDrive struct {
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
 	Replicators                []*PublicAccount
+	OffboardingReplicators     []*PublicAccount
 	Verifications              []*Verification
+	Shards                     []*Shard
 }
 
 func (drive *BcDrive) String() string {
 	return fmt.Sprintf(
 		`
-		"BcDriveAccount": %s,
-		"OwnerAccount": %s,
+		"MultisigAccount": %s,
+		"Owner": %s,
 		"RootHash": %s,
-		"DriveSize": %d,
+		"Size": %d,
 		"UsedSize": %d,
 		"MetaFilesSize": %d,
 		"ReplicatorCount": %d,
@@ -152,12 +138,14 @@ func (drive *BcDrive) String() string {
 		"CompletedDataModifications": %+v,
 		"ConfirmedUsedSizes": %+v,
 		"Replicators": %s,
+		"OffboardingReplicators": %s,
 		"Verifications": %+v,
+		"Shards": %+v,
 		`,
-		drive.BcDriveAccount,
-		drive.OwnerAccount,
+		drive.MultisigAccount,
+		drive.Owner,
 		drive.RootHash,
-		drive.DriveSize,
+		drive.Size,
 		drive.UsedSize,
 		drive.MetaFilesSize,
 		drive.ReplicatorCount,
@@ -166,7 +154,9 @@ func (drive *BcDrive) String() string {
 		drive.CompletedDataModifications,
 		drive.ConfirmedUsedSizes,
 		drive.Replicators,
+		drive.OffboardingReplicators,
 		drive.Verifications,
+		drive.Shards,
 	)
 }
 
@@ -180,10 +170,11 @@ type BcDrivesPageOptions struct {
 }
 
 type DriveInfo struct {
-	Drive                          *PublicAccount
-	LastApprovedDataModificationId *Hash
-	DataModificationIdIsValid      bool
-	InitialDownloadWork            StorageSize
+	DriveKey                            *PublicAccount
+	LastApprovedDataModificationId      *Hash
+	DataModificationIdIsValid           bool
+	InitialDownloadWork                 StorageSize
+	LastCompletedCumulativeDownloadWork StorageSize
 }
 
 func (info *DriveInfo) String() string {
@@ -193,11 +184,13 @@ func (info *DriveInfo) String() string {
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
+			"LastCompletedCumulativeDownloadWork": %d,
 		`,
-		info.Drive,
+		info.DriveKey,
 		info.LastApprovedDataModificationId,
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
+		info.LastCompletedCumulativeDownloadWork,
 	)
 }
 
@@ -246,12 +239,60 @@ type PrepareBcDriveTransaction struct {
 	ReplicatorCount       uint16
 }
 
+// Data Modification Transaction
+type DataModificationTransaction struct {
+	DriveKey          *PublicAccount
+	DownloadDataCdi   *Hash
+	UploadSize        StorageSize
+	FeedbackFeeAmount Amount
+}
+
+// Data Modification Cancel Transaction
+type DataModificationCancelTransaction struct {
+	DriveKey        *PublicAccount
+	DownloadDataCdi *Hash
+}
+
+// Storage Payment Transaction
+type StoragePaymentTransaction struct {
+	DriveKey     *PublicAccount
+	StorageUnits Amount
+}
+
+// Download Payment Transaction
+type DownloadPaymentTransaction struct {
+	DriveKey          *PublicAccount
+	DownloadSize      StorageSize
+	FeedbackFeeAmount Amount
+}
+
+// Download  Transaction
+type DownloadTransaction struct {
+	DriveKey          *PublicAccount
+	DownloadSize      StorageSize
+	FeedbackFeeAmount Amount
+	ListOfPublicKeys  []*PublicAccount
+}
+
+// Finish Download Transaction
+type FinishDownloadTransaction struct {
+	DownloadChannelId Hash
+	FeedbackFeeAmount Amount
+}
+
+// Verification Payment Transaction
+type VerificationPaymentTransaction struct {
+	DriveKey              *PublicAccount
+	VerificationFeeAmount Amount
+}
+
 // Drive Closure Transaction
 type DriveClosureTransaction struct {
 	AbstractTransaction
-	DriveKey string
+	DriveKey *PublicAccount
 }
 
+// End Drive Verification Transaction
 type EndDriveVerificationTransactionV2 struct {
 	AbstractTransaction
 	DriveKey            *PublicAccount
@@ -265,4 +306,5 @@ type EndDriveVerificationTransactionV2 struct {
 // Replicator Offboarding Transaction
 type ReplicatorOffboardingTransaction struct {
 	AbstractTransaction
+	DriveKey *PublicAccount
 }

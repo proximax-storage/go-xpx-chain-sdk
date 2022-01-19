@@ -24,6 +24,99 @@ table PrepareBcDriveTransactionBuffer {
     replicatorCount: ushort;
 }
 
+table DataModificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadDataCdi: [ubyte];
+    uploadSize: [uint];
+    feedbackFeeAmount: [uint];
+}
+
+table DataModificationCancelTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadDataCdi: [ubyte];
+}
+
+table StoragePaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    storageUnits: [uint];
+}
+
+table DownloadPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadSize: [uint];
+    feedbackFeeAmount: [uint];
+}
+
+table KeysBuffer {
+    key: [ubyte];
+}
+
+table DownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadSize: [uint];
+    feedbackFeeAmount: [uint];
+    listOfPublicKeys: [KeysBuffer];
+}
+
+table FinishDownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    downloadChannelId: [ubyte];
+    feedbackFeeAmount: [uint];
+}
+
+table VerificationPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    verificationFeeAmount: [uint];
+}
+
 table DriveClosureTransactionBuffer {
     size: uint;
     signature: [ubyte];
@@ -33,10 +126,6 @@ table DriveClosureTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     driveKey: [ubyte];
-}
-
-table KeysBuffer {
-    key: [ubyte];
 }
 
 table SignaturesBuffer {
@@ -69,18 +158,33 @@ table ReplicatorOffboardingTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline: [uint];
+    driveKey: [ubyte];
 }
 
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
 
-root_type DriveClosureTransactionBuffer;
+root_type DataModificationTransactionBuffer;
 
-root_type ReplicatorOffboardingTransactionBuffer;
+root_type DataModificationCancelTransactionBuffer;
+
+root_type StoragePaymentTransactionBuffer;
+
+root_type DownloadPaymentTransactionBuffer;
 
 root_type KeysBuffer;
+
+root_type DownloadTransactionBuffer;
+
+root_type FinishDownloadTransactionBuffer;
+
+root_type VerificationPaymentTransactionBuffer;
+
+root_type DriveClosureTransactionBuffer;
 
 root_type SignaturesBuffer;
 
 root_type EndDriveVerificationTransactionV2Buffer;
+
+root_type ReplicatorOffboardingTransactionBuffer;

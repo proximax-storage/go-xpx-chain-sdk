@@ -125,8 +125,8 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	assert.NoError(t, result.error, result.error)
 
 	driveKey := strings.ToUpper(result.Transaction.GetAbstractTransaction().TransactionHash.String())
-	driveAcc, err := sdk.NewAccountFromPublicKey(driveKey, client.NetworkType())
-	assert.NoError(t, result.error, result.error)
+	driveAccount, err := sdk.NewAccountFromPublicKey(driveKey, client.NetworkType())
+	assert.NoError(t, err, err)
 
 	// end region
 
@@ -160,7 +160,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		result = sendTransaction(t, func() (sdk.Transaction, error) {
 			return client.NewEndDriveVerificationTransactionV2(
 				sdk.NewDeadline(time.Hour),
-				driveAcc,
+				driveAccount,
 				block.BlockHash, // TODO get a real verificationTrigger
 				1,
 				keys,
@@ -176,7 +176,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewDriveClosureTransaction(
 			sdk.NewDeadline(time.Hour),
-			driveKey,
+			driveAccount,
 		)
 	}, owner)
 	assert.NoError(t, result.error, result.error)
@@ -187,7 +187,10 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	for i := 0; i < len(replicators); i++ {
 		result = sendTransaction(t, func() (sdk.Transaction, error) {
-			return client.NewReplicatorOffboardingTransaction(sdk.NewDeadline(time.Hour))
+			return client.NewReplicatorOffboardingTransaction(
+				sdk.NewDeadline(time.Hour),
+				driveAccount,
+			)
 		}, replicators[i])
 		assert.Nil(t, result.error)
 	}

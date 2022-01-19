@@ -216,11 +216,11 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewDriveClosureTransaction(
 	deadline *Deadline,
-	drive string,
+	driveKey *PublicAccount,
 	networkType NetworkType,
 ) (*DriveClosureTransaction, error) {
 
-	if len(drive) == 0 {
+	if driveKey == nil {
 		return nil, ErrNilAccount
 	}
 
@@ -231,7 +231,7 @@ func NewDriveClosureTransaction(
 			Type:        DriveClosure,
 			NetworkType: networkType,
 		},
-		DriveKey: drive,
+		DriveKey: driveKey,
 	}
 
 	return &tx, nil
@@ -248,7 +248,7 @@ func (tx *DriveClosureTransaction) String() string {
 			"DriveKey": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.DriveKey,
+		tx.DriveKey.String(),
 	)
 }
 
@@ -260,7 +260,7 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveB, err := hex.DecodeString(tx.DriveKey)
+	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (tx *DriveClosureTransaction) Size() int {
 type driveClosureTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Drive string `json:"driveKey"`
+		DriveKey string `json:"driveKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -301,9 +301,14 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DriveClosureTransaction{
 		*atx,
-		dto.Tx.Drive,
+		driveKey,
 	}, nil
 }
 
@@ -342,12 +347,12 @@ func (tx *EndDriveVerificationTransactionV2) GetAbstractTransaction() *AbstractT
 func (tx *EndDriveVerificationTransactionV2) String() string {
 	keys := ""
 	for _, k := range tx.Keys {
-		keys += k.String()
+		keys += k.String() + "\t"
 	}
 
 	signatures := ""
 	for _, s := range tx.Signatures {
-		signatures += s
+		signatures += s + "\t"
 	}
 
 	return fmt.Sprintf(
@@ -358,6 +363,7 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 		"ShardId": %d,
 		"Keys": %s,
 		"Provers": %s,
+		"Opinions": %+v,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveKey.String(),
@@ -365,6 +371,7 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 		tx.ShardId,
 		keys,
 		signatures,
+		tx.Opinions,
 	)
 }
 
@@ -539,6 +546,7 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 
 func NewReplicatorOffboardingTransaction(
 	deadline *Deadline,
+	driveKey *PublicAccount,
 	networkType NetworkType,
 ) (*ReplicatorOffboardingTransaction, error) {
 
@@ -549,6 +557,7 @@ func NewReplicatorOffboardingTransaction(
 			Type:        ReplicatorOffboarding,
 			NetworkType: networkType,
 		},
+		DriveKey: driveKey,
 	}, nil
 }
 
@@ -560,8 +569,10 @@ func (tx *ReplicatorOffboardingTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
+			"DriveKey": %s
 		`,
 		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
 	)
 }
 
@@ -573,10 +584,17 @@ func (tx *ReplicatorOffboardingTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	dkV := transactions.TransactionBufferCreateByteVector(builder, b)
+
 	transactions.ReplicatorOffboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-
+	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, dkV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -590,6 +608,7 @@ func (tx *ReplicatorOffboardingTransaction) Size() int {
 type replicatorOffboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		DriveKey *PublicAccount `json:"driveKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -607,5 +626,6 @@ func (dto *replicatorOffboardingTransactionDTO) toStruct(*Hash) (Transaction, er
 
 	return &ReplicatorOffboardingTransaction{
 		*atx,
+		dto.Tx.DriveKey,
 	}, nil
 }
