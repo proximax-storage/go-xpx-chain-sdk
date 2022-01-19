@@ -47,14 +47,14 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification []*ActiveDataModification
-	State                  DataModificationState
+	ActiveDataModification
+	State DataModificationState
 }
 
 func (completed *CompletedDataModification) String() string {
 	return fmt.Sprintf(
 		`
-			"ActiveDataModification": %s,
+			"ActiveDataModification": %+v,
 			"State:" %d,
 		`,
 		completed.ActiveDataModification,
@@ -63,7 +63,7 @@ func (completed *CompletedDataModification) String() string {
 }
 
 type ConfirmedUsedSize struct {
-	Replicator *Hash
+	Replicator *PublicAccount
 	Size       StorageSize
 }
 
@@ -133,7 +133,7 @@ type BcDrive struct {
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
-	Replicators                []*Hash
+	Replicators                []*PublicAccount
 	Verifications              []*Verification
 }
 
