@@ -377,15 +377,11 @@ func (t *bcDrivesPageDTO) toStruct(networkType NetworkType) (*BcDrivesPage, erro
 		},
 	}
 
-	errs := make([]error, len(t.BcDrives))
+	var err error
 	for i, t := range t.BcDrives {
-		currDr, currErr := t.toStruct(networkType)
-		page.BcDrives[i], errs[i] = currDr, currErr
-	}
-
-	for _, err := range errs {
+		page.BcDrives[i], err = t.toStruct(networkType)
 		if err != nil {
-			return page, err
+			return nil, err
 		}
 	}
 
@@ -414,11 +410,11 @@ func (t *replicatorsPageDTO) toStruct(networkType NetworkType) (*ReplicatorsPage
 		},
 	}
 
+	var err error
 	for i, t := range t.Replicators {
-		currDr, err := t.toStruct(networkType)
-		page.Replicators[i] = currDr
+		page.Replicators[i], err = t.toStruct(networkType)
 		if err != nil {
-			return page, err
+			return nil, err
 		}
 	}
 
