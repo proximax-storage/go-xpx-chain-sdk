@@ -285,7 +285,7 @@ func (tx *DriveClosureTransaction) Size() int {
 type driveClosureTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Drive string `json:"drive"`
+		Drive string `json:"driveKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }

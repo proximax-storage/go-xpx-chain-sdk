@@ -5,6 +5,7 @@
 package integration
 
 import (
+	"crypto/rand"
 	"fmt"
 	"strings"
 	"testing"
@@ -94,7 +95,6 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Amount(storageSize),
-			replicatorsBlsKeys[i].PublicKey.HexString(),
 		)
 		assert.NoError(t, err, err)
 		replicatorOnboardingTx.ToAggregate(replicators[i].PublicAccount)
@@ -131,7 +131,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	// end region
 
 	t.Run("EndDriveVerificationV2", func(t *testing.T) {
-		t.SkipNow()
+		//t.SkipNow()
 
 		// prepare same opinions
 		opinions := make([]uint8, len(replicators)*len(replicators))
