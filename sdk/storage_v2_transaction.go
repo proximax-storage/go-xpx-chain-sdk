@@ -44,10 +44,10 @@ func (tx *ReplicatorOnboardingTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"Capacity": %d,
+			"Capacity": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.Capacity,
+		tx.Capacity.String(),
 	)
 }
 
@@ -145,13 +145,13 @@ func (tx *PrepareBcDriveTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DriveSize": %d,
-			"VerificationFeeAmount": %d,
+			"DriveSize": %s,
+			"VerificationFeeAmount": %s,
 			"ReplicatorCount": %d,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.DriveSize,
-		tx.VerificationFeeAmount,
+		tx.DriveSize.String(),
+		tx.VerificationFeeAmount.String(),
 		tx.ReplicatorCount,
 	)
 }
@@ -214,45 +214,68 @@ func (dto *prepareBcDriveTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	}, nil
 }
 
-func NewDriveClosureTransaction(
+func NewDataModificationTransaction(
 	deadline *Deadline,
 	driveKey *PublicAccount,
+	downloadDataCdi *Hash,
+	uploadSize StorageSize,
+	feedbackFeeAmount Amount,
 	networkType NetworkType,
-) (*DriveClosureTransaction, error) {
-
+) (*DataModificationTransaction, error) {
 	if driveKey == nil {
 		return nil, ErrNilAccount
 	}
 
-	tx := DriveClosureTransaction{
+	if downloadDataCdi == nil {
+		return nil, ErrNilHash
+	}
+
+	if uploadSize <= 0 {
+		return nil, errors.New("uploadSize should be positive")
+	}
+
+	if feedbackFeeAmount <= 0 {
+		return nil, errors.New("feedbackFeeAmount should be positive")
+	}
+
+	tx := DataModificationTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     DriveClosureVersion,
+			Version:     DataModificationVersion,
 			Deadline:    deadline,
-			Type:        DriveClosure,
+			Type:        DataModification,
 			NetworkType: networkType,
 		},
-		DriveKey: driveKey,
+		DriveKey:          driveKey,
+		DownloadDataCdi:   downloadDataCdi,
+		UploadSize:        uploadSize,
+		FeedbackFeeAmount: feedbackFeeAmount,
 	}
 
 	return &tx, nil
 }
 
-func (tx *DriveClosureTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *DataModificationTransaction) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *DriveClosureTransaction) String() string {
+func (tx *DataModificationTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DriveKey": %s,
+			"DriveKey": %s
+			"DownloadDataCdi": %s
+			"UploadSize": %s
+			"FeedbackFeeAmount": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveKey.String(),
+		tx.DownloadDataCdi.String(),
+		tx.UploadSize.String(),
+		tx.FeedbackFeeAmount.String(),
 	)
 }
 
-func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
+func (tx *DataModificationTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -260,37 +283,47 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
+	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	downloadDataCdiV := hashToBuffer(builder, tx.DownloadDataCdi)
+	uploadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.UploadSize.toArray())
+	feedbackFeeAmount := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
 
-	transactions.DriveClosureTransactionBufferStart(builder)
+	transactions.DataModificationTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveV)
+	transactions.DataModificationTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DataModificationTransactionBufferAddDownloadDataCdi(builder, downloadDataCdiV)
+	transactions.DataModificationTransactionBufferAddUploadSize(builder, uploadSizeV)
+	transactions.DataModificationTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmount)
+
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
-	return driveClosureTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return dataModificationTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func (tx *DriveClosureTransaction) Size() int {
-	return DriveClosureHeaderSize
+func (tx *DataModificationTransaction) Size() int {
+	return DataModificationHeaderSize
 }
 
-type driveClosureTransactionDTO struct {
+type dataModificationTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey string `json:"driveKey"`
+		DriveKey          string    `json:"driveKey"`
+		DownloadDataCdi   hashDto   `json:"downloadDataCdi"`
+		UploadSize        uint64DTO `json:"uploadSize"`
+		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
+func (dto *dataModificationTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -306,9 +339,722 @@ func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	return &DriveClosureTransaction{
+	downloadDataCdi, err := dto.Tx.DownloadDataCdi.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &DataModificationTransaction{
 		*atx,
 		driveKey,
+		downloadDataCdi,
+		dto.Tx.UploadSize.toStruct(),
+		dto.Tx.FeedbackFeeAmount.toStruct(),
+	}, nil
+}
+
+func NewDataModificationCancelTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	downloadDataCdi *Hash,
+	networkType NetworkType,
+) (*DataModificationCancelTransaction, error) {
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if downloadDataCdi == nil {
+		return nil, ErrNilHash
+	}
+
+	tx := DataModificationCancelTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DataModificationCancelVersion,
+			Deadline:    deadline,
+			Type:        DataModificationCancel,
+			NetworkType: networkType,
+		},
+		DriveKey:        driveKey,
+		DownloadDataCdi: downloadDataCdi,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DataModificationCancelTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DataModificationCancelTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s
+			"DownloadDataCdi": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.DownloadDataCdi.String(),
+	)
+}
+
+func (tx *DataModificationCancelTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	downloadDataCdiV := hashToBuffer(builder, tx.DownloadDataCdi)
+
+	transactions.DataModificationCancelTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DataModificationCancelTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DataModificationCancelTransactionBufferAddDownloadDataCdi(builder, downloadDataCdiV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return dataModificationCancelTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *DataModificationCancelTransaction) Size() int {
+	return DataModificationCancelHeaderSize
+}
+
+type dataModificationCancelTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey        string  `json:"driveKey"`
+		DownloadDataCdi hashDto `json:"downloadDataCdi"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *dataModificationCancelTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadDataCdi, err := dto.Tx.DownloadDataCdi.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &DataModificationCancelTransaction{
+		*atx,
+		driveKey,
+		downloadDataCdi,
+	}, nil
+}
+
+func NewStoragePaymentTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	storageUnits Amount,
+	networkType NetworkType,
+) (*StoragePaymentTransaction, error) {
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if storageUnits <= 0 {
+		return nil, errors.New("storageUnits should be positive")
+	}
+
+	tx := StoragePaymentTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     StoragePaymentVersion,
+			Deadline:    deadline,
+			Type:        StoragePayment,
+			NetworkType: networkType,
+		},
+		DriveKey:     driveKey,
+		StorageUnits: storageUnits,
+	}
+
+	return &tx, nil
+}
+
+func (tx *StoragePaymentTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *StoragePaymentTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s
+			"StorageUnits": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.StorageUnits.String(),
+	)
+}
+
+func (tx *StoragePaymentTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	storageUnitsV := transactions.TransactionBufferCreateUint32Vector(builder, tx.StorageUnits.toArray())
+
+	transactions.StoragePaymentTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.StoragePaymentTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.StoragePaymentTransactionBufferAddStorageUnits(builder, storageUnitsV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return storagePaymentTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *StoragePaymentTransaction) Size() int {
+	return StoragePaymentHeaderSize
+}
+
+type storagePaymentTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey     string    `json:"driveKey"`
+		StorageUnits uint64DTO `json:"storageUnits"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *storagePaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StoragePaymentTransaction{
+		*atx,
+		driveKey,
+		dto.Tx.StorageUnits.toStruct(),
+	}, nil
+}
+
+func NewDownloadPaymentTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	downloadSize StorageSize,
+	feedbackFeeAmount Amount,
+	networkType NetworkType,
+) (*DownloadPaymentTransaction, error) {
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if downloadSize <= 0 {
+		return nil, errors.New("downloadSize should be positive")
+	}
+
+	if feedbackFeeAmount <= 0 {
+		return nil, errors.New("downloadSize should be positive")
+	}
+
+	tx := DownloadPaymentTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DownloadPaymentVersion,
+			Deadline:    deadline,
+			Type:        DownloadPayment,
+			NetworkType: networkType,
+		},
+		DriveKey:          driveKey,
+		DownloadSize:      downloadSize,
+		FeedbackFeeAmount: feedbackFeeAmount,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DownloadPaymentTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DownloadPaymentTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s
+			"StorageUnits": %s
+			"FeedbackFeeAmount": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.DownloadSize.String(),
+		tx.FeedbackFeeAmount.String(),
+	)
+}
+
+func (tx *DownloadPaymentTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	downloadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadSize.toArray())
+	feedbackFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
+
+	transactions.DownloadPaymentTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DownloadPaymentTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DownloadPaymentTransactionBufferAddDownloadSize(builder, downloadSizeV)
+	transactions.DownloadPaymentTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmountV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return downloadPaymentTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *DownloadPaymentTransaction) Size() int {
+	return DownloadPaymentHeaderSize
+}
+
+type downloadPaymentTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey          string    `json:"driveKey"`
+		DownloadSize      uint64DTO `json:"downloadSize"`
+		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *downloadPaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DownloadPaymentTransaction{
+		*atx,
+		driveKey,
+		dto.Tx.DownloadSize.toStruct(),
+		dto.Tx.FeedbackFeeAmount.toStruct(),
+	}, nil
+}
+
+func NewDownloadTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	downloadSize StorageSize,
+	feedbackFeeAmount Amount,
+	listOfPublicKeys []*PublicAccount,
+	networkType NetworkType,
+) (*DownloadTransaction, error) {
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if downloadSize <= 0 {
+		return nil, errors.New("downloadSize should be positive")
+	}
+
+	if feedbackFeeAmount <= 0 {
+		return nil, errors.New("feedbackFeeAmount should be positive")
+	}
+
+	tx := DownloadTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DownloadVersion,
+			Deadline:    deadline,
+			Type:        Download,
+			NetworkType: networkType,
+		},
+		DriveKey:          driveKey,
+		DownloadSize:      downloadSize,
+		FeedbackFeeAmount: feedbackFeeAmount,
+		ListOfPublicKeys:  listOfPublicKeys,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DownloadTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DownloadTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s,
+			"DownloadSize": %s,
+			"FeedbackFeeAmount": %s,
+			"ListOfPublicKeys": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.DownloadSize.String(),
+		tx.FeedbackFeeAmount.String(),
+		tx.ListOfPublicKeys,
+	)
+}
+
+func (tx *DownloadTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
+	downloadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadSize.toArray())
+	feedbackFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
+	keysV, err := keysToArrayToBuffer(builder, tx.ListOfPublicKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.DownloadTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DownloadTransactionBufferAddDriveKey(builder, driveKeyV)
+	transactions.DownloadTransactionBufferAddDownloadSize(builder, downloadSizeV)
+	transactions.DownloadTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmountV)
+	transactions.DownloadTransactionBufferAddListOfPublicKeysSize(builder, uint16(len(tx.ListOfPublicKeys)))
+	transactions.DownloadTransactionBufferAddListOfPublicKeys(builder, keysV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return downloadTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *DownloadTransaction) Size() int {
+	return DownloadHeaderSize + KeySize*len(tx.ListOfPublicKeys)
+}
+
+type downloadTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey          string    `json:"driveKey"`
+		DownloadSize      uint64DTO `json:"downloadSize"`
+		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
+		ListOfPublicKeys  []string  `json:"listOfPublicKeys"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *downloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]*PublicAccount, len(dto.Tx.ListOfPublicKeys))
+	for i, k := range dto.Tx.ListOfPublicKeys {
+		key, err := NewAccountFromPublicKey(k, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+
+		keys[i] = key
+	}
+
+	return &DownloadTransaction{
+		*atx,
+		driveKey,
+		dto.Tx.DownloadSize.toStruct(),
+		dto.Tx.FeedbackFeeAmount.toStruct(),
+		keys,
+	}, nil
+}
+
+func NewFinishDownloadTransaction(
+	deadline *Deadline,
+	downloadChannelId *Hash,
+	feedbackFeeAmount Amount,
+	networkType NetworkType,
+) (*FinishDownloadTransaction, error) {
+	if downloadChannelId == nil {
+		return nil, ErrNilHash
+	}
+
+	if feedbackFeeAmount <= 0 {
+		return nil, errors.New("downloadSize should be positive")
+	}
+
+	tx := FinishDownloadTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DownloadPaymentVersion,
+			Deadline:    deadline,
+			Type:        DownloadPayment,
+			NetworkType: networkType,
+		},
+		DownloadChannelId: downloadChannelId,
+		FeedbackFeeAmount: feedbackFeeAmount,
+	}
+
+	return &tx, nil
+}
+
+func (tx *FinishDownloadTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *FinishDownloadTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DownloadChannelId": %s
+			"FeedbackFeeAmount": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DownloadChannelId.String(),
+		tx.FeedbackFeeAmount.String(),
+	)
+}
+
+func (tx *FinishDownloadTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadChannelIdV := hashToBuffer(builder, tx.DownloadChannelId)
+	feedbackFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
+
+	transactions.FinishDownloadTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.FinishDownloadTransactionBufferAddDownloadChannelId(builder, downloadChannelIdV)
+	transactions.FinishDownloadTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmountV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return finishDownloadTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *FinishDownloadTransaction) Size() int {
+	return FinishDownloadHeaderSize
+}
+
+type finishDownloadTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DownloadChannelId hashDto   `json:"downloadChannelId"`
+		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *finishDownloadTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadChannelId, err := dto.Tx.DownloadChannelId.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &FinishDownloadTransaction{
+		*atx,
+		downloadChannelId,
+		dto.Tx.FeedbackFeeAmount.toStruct(),
+	}, nil
+}
+
+func NewVerificationPaymentTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	verificationFeeAmount Amount,
+	networkType NetworkType,
+) (*VerificationPaymentTransaction, error) {
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if verificationFeeAmount <= 0 {
+		return nil, errors.New("verificationFeeAmount should be positive")
+	}
+
+	tx := VerificationPaymentTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DownloadPaymentVersion,
+			Deadline:    deadline,
+			Type:        DownloadPayment,
+			NetworkType: networkType,
+		},
+		DriveKey:              driveKey,
+		VerificationFeeAmount: verificationFeeAmount,
+	}
+
+	return &tx, nil
+}
+
+func (tx *VerificationPaymentTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *VerificationPaymentTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s
+			"CerificationFeeAmount": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+		tx.VerificationFeeAmount.String(),
+	)
+}
+
+func (tx *VerificationPaymentTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
+	verificationFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.VerificationFeeAmount.toArray())
+
+	transactions.VerificationPaymentTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.VerificationPaymentTransactionBufferAddDriveKey(builder, driveKeyV)
+	transactions.VerificationPaymentTransactionBufferAddVerificationFeeAmount(builder, verificationFeeAmountV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return verificationPaymentTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *VerificationPaymentTransaction) Size() int {
+	return VerificationPaymentHeaderSize
+}
+
+type verificationPaymentTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey              string    `json:"driveKey"`
+		VerificationFeeAmount uint64DTO `json:"verificationFeeAmount"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *verificationPaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &VerificationPaymentTransaction{
+		*atx,
+		driveKey,
+		dto.Tx.VerificationFeeAmount.toStruct(),
 	}, nil
 }
 
@@ -375,9 +1121,9 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 	)
 }
 
-func keysToArrayToBuffer(builder *flatbuffers.Builder, provers []*PublicAccount) (flatbuffers.UOffsetT, error) {
-	psB := make([]flatbuffers.UOffsetT, len(provers))
-	for i, p := range provers {
+func keysToArrayToBuffer(builder *flatbuffers.Builder, keys []*PublicAccount) (flatbuffers.UOffsetT, error) {
+	psB := make([]flatbuffers.UOffsetT, len(keys))
+	for i, p := range keys {
 		b, err := hex.DecodeString(p.PublicKey)
 		if err != nil {
 			return 0, err
@@ -544,6 +1290,104 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 	}, nil
 }
 
+func NewDriveClosureTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	networkType NetworkType,
+) (*DriveClosureTransaction, error) {
+
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	tx := DriveClosureTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Version:     DriveClosureVersion,
+			Deadline:    deadline,
+			Type:        DriveClosure,
+			NetworkType: networkType,
+		},
+		DriveKey: driveKey,
+	}
+
+	return &tx, nil
+}
+
+func (tx *DriveClosureTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DriveClosureTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"DriveKey": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.DriveKey.String(),
+	)
+}
+
+func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
+
+	transactions.DriveClosureTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return driveClosureTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *DriveClosureTransaction) Size() int {
+	return DriveClosureHeaderSize
+}
+
+type driveClosureTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey string `json:"driveKey"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *driveClosureTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DriveClosureTransaction{
+		*atx,
+		driveKey,
+	}, nil
+}
+
 func NewReplicatorOffboardingTransaction(
 	deadline *Deadline,
 	driveKey *PublicAccount,
@@ -594,7 +1438,9 @@ func (tx *ReplicatorOffboardingTransaction) Bytes() ([]byte, error) {
 	transactions.ReplicatorOffboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
 	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, dkV)
+
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 

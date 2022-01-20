@@ -90,6 +90,7 @@ table DownloadTransactionBuffer {
     driveKey: [ubyte];
     downloadSize: [uint];
     feedbackFeeAmount: [uint];
+    listOfPublicKeysSize: ushort;
     listOfPublicKeys: [KeysBuffer];
 }
 

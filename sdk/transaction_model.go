@@ -2782,15 +2782,21 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
-	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize
 	BlsKeySize                               int = 48
-	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + BlsKeySize
-	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
-	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	BlsSignatureSize                         int = 96
-	ProversCountSize                             = 2
-	VerificationOpinionsCountSize                = 2
-	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ProversCountSize + VerificationOpinionsCountSize
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
+	DataModificationHeaderSize                   = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize + AmountSize
+	DataModificationCancelHeaderSize             = TransactionHeaderSize + KeySize + Hash256
+	StoragePaymentHeaderSize                     = TransactionHeaderSize + KeySize + AmountSize
+	DownloadPaymentHeaderSize                    = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize
+	DownloadHeaderSize                           = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize
+	FinishDownloadHeaderSize                     = TransactionHeaderSize + Hash256 + AmountSize
+	VerificationPaymentHeaderSize                = TransactionHeaderSize + KeySize + AmountSize
+	ShardIdSize                                  = 2
+	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + 2 // KeyCountSize and JudgingKeyCountSize
+	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
+	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
 )
 
 type EntityType uint16
@@ -2848,15 +2854,19 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
-	ReplicatorOffboarding     EntityType = 0x4762
+	ReplicatorOnboarding      EntityType = 0x4662
 	PrepareBcDrive            EntityType = 0x4162
 	DataModification          EntityType = 0x4262
-	Download                  EntityType = 0x4362
-	DataModificationApproval  EntityType = 0x4462
+	DataModificationApproval  EntityType = 0x4462 // TODO delete?
 	DataModificationCancel    EntityType = 0x4562
-	ReplicatorOnboarding      EntityType = 0x4662
-	DriveClosure              EntityType = 0x4E62
+	StoragePayment            EntityType = 0x4A62
+	DownloadPayment           EntityType = 0x4962
+	Download                  EntityType = 0x4362
+	FinishDownload            EntityType = 0x4862
+	VerificationPayment       EntityType = 0x4C62
 	EndDriveVerificationV2    EntityType = 0x4F62
+	DriveClosure              EntityType = 0x4E62
+	ReplicatorOffboarding     EntityType = 0x4762
 )
 
 func (t EntityType) String() string {
@@ -2915,15 +2925,19 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
-	ReplicatorOffboardingVersion     EntityVersion = 1
-	PrepareBcDriveVersion            EntityVersion = 1
 	ReplicatorOnboardingVersion      EntityVersion = 1
+	PrepareBcDriveVersion            EntityVersion = 1
 	DataModificationVersion          EntityVersion = 1
-	DataModificationApprovalVersion  EntityVersion = 1
+	DataModificationApprovalVersion  EntityVersion = 1 // TODO delete?
 	DataModificationCancelVersion    EntityVersion = 1
+	StoragePaymentVersion            EntityVersion = 1
+	DownloadPaymentVersion           EntityVersion = 1
 	DownloadVersion                  EntityVersion = 1
-	DriveClosureVersion              EntityVersion = 1
+	FinishDownloadVersion            EntityVersion = 1
+	VerificationPaymentVersion       EntityVersion = 1
 	EndDriveVerificationV2Version    EntityVersion = 1
+	DriveClosureVersion              EntityVersion = 1
+	ReplicatorOffboardingVersion     EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3191,10 +3205,26 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOnboardingTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
-	case DriveClosure:
-		dto = &driveClosureTransactionDTO{}
+	case DataModification:
+		dto = &dataModificationTransactionDTO{}
+	//case DataModificationApproval:
+	//	dto = &dataModificationApprovalTransactionDTO{}
+	case DataModificationCancel:
+		dto = &dataModificationCancelTransactionDTO{}
+	case StoragePayment:
+		dto = &storagePaymentTransactionDTO{}
+	case DownloadPayment:
+		dto = &downloadPaymentTransactionDTO{}
+	case Download:
+		dto = &downloadTransactionDTO{}
+	case FinishDownload:
+		dto = &finishDownloadTransactionDTO{}
+	case VerificationPayment:
+		dto = &verificationPaymentTransactionDTO{}
 	case EndDriveVerificationV2:
 		dto = &endDriveVerificationTransactionV2DTO{}
+	case DriveClosure:
+		dto = &driveClosureTransactionDTO{}
 	case ReplicatorOffboarding:
 		dto = &replicatorOffboardingTransactionDTO{}
 	}

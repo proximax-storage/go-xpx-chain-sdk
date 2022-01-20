@@ -2198,8 +2198,20 @@ func (rcv *DownloadTransactionBuffer) MutateFeedbackFeeAmount(j int, n uint32) b
 	return false
 }
 
-func (rcv *DownloadTransactionBuffer) ListOfPublicKeys(obj *KeysBuffer, j int) bool {
+func (rcv *DownloadTransactionBuffer) ListOfPublicKeysSize() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DownloadTransactionBuffer) MutateListOfPublicKeysSize(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(24, n)
+}
+
+func (rcv *DownloadTransactionBuffer) ListOfPublicKeys(obj *KeysBuffer, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -2211,7 +2223,7 @@ func (rcv *DownloadTransactionBuffer) ListOfPublicKeys(obj *KeysBuffer, j int) b
 }
 
 func (rcv *DownloadTransactionBuffer) ListOfPublicKeysLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -2219,7 +2231,7 @@ func (rcv *DownloadTransactionBuffer) ListOfPublicKeysLength() int {
 }
 
 func DownloadTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(11)
+	builder.StartObject(12)
 }
 func DownloadTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -2272,8 +2284,11 @@ func DownloadTransactionBufferAddFeedbackFeeAmount(builder *flatbuffers.Builder,
 func DownloadTransactionBufferStartFeedbackFeeAmountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func DownloadTransactionBufferAddListOfPublicKeysSize(builder *flatbuffers.Builder, listOfPublicKeysSize uint16) {
+	builder.PrependUint16Slot(10, listOfPublicKeysSize, 0)
+}
 func DownloadTransactionBufferAddListOfPublicKeys(builder *flatbuffers.Builder, listOfPublicKeys flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(listOfPublicKeys), 0)
+	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(listOfPublicKeys), 0)
 }
 func DownloadTransactionBufferStartListOfPublicKeysVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

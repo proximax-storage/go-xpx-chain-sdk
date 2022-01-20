@@ -241,6 +241,7 @@ type PrepareBcDriveTransaction struct {
 
 // Data Modification Transaction
 type DataModificationTransaction struct {
+	AbstractTransaction
 	DriveKey          *PublicAccount
 	DownloadDataCdi   *Hash
 	UploadSize        StorageSize
@@ -249,18 +250,21 @@ type DataModificationTransaction struct {
 
 // Data Modification Cancel Transaction
 type DataModificationCancelTransaction struct {
+	AbstractTransaction
 	DriveKey        *PublicAccount
 	DownloadDataCdi *Hash
 }
 
 // Storage Payment Transaction
 type StoragePaymentTransaction struct {
+	AbstractTransaction
 	DriveKey     *PublicAccount
 	StorageUnits Amount
 }
 
 // Download Payment Transaction
 type DownloadPaymentTransaction struct {
+	AbstractTransaction
 	DriveKey          *PublicAccount
 	DownloadSize      StorageSize
 	FeedbackFeeAmount Amount
@@ -268,6 +272,7 @@ type DownloadPaymentTransaction struct {
 
 // Download  Transaction
 type DownloadTransaction struct {
+	AbstractTransaction
 	DriveKey          *PublicAccount
 	DownloadSize      StorageSize
 	FeedbackFeeAmount Amount
@@ -276,20 +281,16 @@ type DownloadTransaction struct {
 
 // Finish Download Transaction
 type FinishDownloadTransaction struct {
-	DownloadChannelId Hash
+	AbstractTransaction
+	DownloadChannelId *Hash
 	FeedbackFeeAmount Amount
 }
 
 // Verification Payment Transaction
 type VerificationPaymentTransaction struct {
+	AbstractTransaction
 	DriveKey              *PublicAccount
 	VerificationFeeAmount Amount
-}
-
-// Drive Closure Transaction
-type DriveClosureTransaction struct {
-	AbstractTransaction
-	DriveKey *PublicAccount
 }
 
 // End Drive Verification Transaction
@@ -301,6 +302,12 @@ type EndDriveVerificationTransactionV2 struct {
 	Keys                []*PublicAccount
 	Signatures          []string
 	Opinions            []uint8
+}
+
+// Drive Closure Transaction
+type DriveClosureTransaction struct {
+	AbstractTransaction
+	DriveKey *PublicAccount
 }
 
 // Replicator Offboarding Transaction

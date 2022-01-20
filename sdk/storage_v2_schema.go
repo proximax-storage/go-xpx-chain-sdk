@@ -36,7 +36,7 @@ func prepareBcDriveTransactionSchema() *schema {
 	}
 }
 
-func driveClosureTransactionSchema() *schema {
+func dataModificationTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{
 			newScalarAttribute("size", IntSize),
@@ -47,6 +47,114 @@ func driveClosureTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("downloadDataCdi", ByteSize),
+			newArrayAttribute("driveSize", IntSize),
+			newArrayAttribute("uploadSize", IntSize),
+			newArrayAttribute("feedbackFeeAmount", IntSize),
+		},
+	}
+}
+
+func dataModificationCancelTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("downloadDataCdi", ByteSize),
+		},
+	}
+}
+
+func storagePaymentTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("storageUnits", IntSize),
+		},
+	}
+}
+
+func downloadPaymentTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("downloadSize", IntSize),
+			newArrayAttribute("feedbackFeeAmount", IntSize),
+		},
+	}
+}
+
+func downloadTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("downloadSize", IntSize),
+			newArrayAttribute("feedbackFeeAmount", IntSize),
+			newScalarAttribute("listOfPublicKeysSize", ShortSize),
+			newTableArrayAttribute("listOfPublicKeys", schema{
+				[]schemaAttribute{
+					newArrayAttribute("key", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func finishDownloadTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("downloadChannelId", ByteSize),
+			newArrayAttribute("feedbackFeeAmount", IntSize),
+		},
+	}
+}
+
+func verificationPaymentTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
+			newArrayAttribute("VerificationFeeAmount", IntSize),
 		},
 	}
 }
@@ -77,6 +185,21 @@ func endDriveVerificationV2TransactionSchema() *schema {
 				},
 			}.schemaDefinition),
 			newArrayAttribute("opinions", ByteSize),
+		},
+	}
+}
+
+func driveClosureTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
 		},
 	}
 }

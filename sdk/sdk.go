@@ -817,15 +817,88 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 }
 
 func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
-
 	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
 
 	return tx, err
 }
 
 func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, verificationFeeAmount Amount, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
-
 	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, verificationFeeAmount, replicatorCount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDataModificationTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash, uploadSize StorageSize, feedbackFeeAmount Amount) (*DataModificationTransaction, error) {
+	tx, err := NewDataModificationTransaction(deadline, driveKey, downloadDataCdi, uploadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDataModificationCancelTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash) (*DataModificationCancelTransaction, error) {
+	tx, err := NewDataModificationCancelTransaction(deadline, driveKey, downloadDataCdi, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStoragePaymentTransaction(deadline *Deadline, driveKey *PublicAccount, storageUnits Amount) (*StoragePaymentTransaction, error) {
+	tx, err := NewStoragePaymentTransaction(deadline, driveKey, storageUnits, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
+	tx, err := NewDownloadPaymentTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount, listOfPublicKeys []*PublicAccount) (*DownloadTransaction, error) {
+	tx, err := NewDownloadTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, listOfPublicKeys, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewFinishDownloadTransaction(deadline *Deadline, downloadChannelId *Hash, feedbackFeeAmount Amount) (*FinishDownloadTransaction, error) {
+	tx, err := NewFinishDownloadTransaction(deadline, downloadChannelId, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewVerificationPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, verificationFeeAmount Amount) (*VerificationPaymentTransaction, error) {
+	tx, err := NewVerificationPaymentTransaction(deadline, driveKey, verificationFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []string, opinions []uint8) (*EndDriveVerificationTransactionV2, error) {
+	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -836,15 +909,6 @@ func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize Stor
 func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *PublicAccount) (*DriveClosureTransaction, error) {
 
 	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
-func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []string, opinions []uint8) (*EndDriveVerificationTransactionV2, error) {
-	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
