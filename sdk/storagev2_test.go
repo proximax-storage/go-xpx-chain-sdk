@@ -15,7 +15,7 @@ import (
 
 const (
 	testBcDriveInfoJson = `{
-    "bcdrive": {
+    "drive": {
       "multisig": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
       "multisigAddress": "9048760066A50F0F65820D3008A79CF73E1034A564BF44AB3E",
       "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
@@ -33,6 +33,10 @@ const (
         0
       ],
       "replicatorCount": 5,
+	  "ownerCumulativeUploadSize": [
+		  10,
+		  0
+	  ],
       "activeDataModifications": [
         {
           "id": "0100000000000000000000000000000000000000000000000000000000000000",
@@ -52,29 +56,25 @@ const (
       ],
       "completedDataModifications": [
         {
-          "activeDataModifications": [
-            {
-              "id": "0100000000000000000000000000000000000000000000000000000000000000",
-              "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
-              "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-			  "expectedUploadSize": [
-				100,
-				0
-			  ],
-			  "actualUploadSize": [
-				50,
-				0
-			  ],
-			  "folderName": "C://MyStorage",
-			  "readyForApproval": false
-            }
-          ],
+          "id": "0100000000000000000000000000000000000000000000000000000000000000",
+          "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+          "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
+		  "expectedUploadSize": [
+		    100,
+		    0
+		  ],
+		  "actualUploadSize": [
+		    50,
+		    0
+		  ],
+		  "folderName": "C://MyStorage",
+		  "readyForApproval": false,
           "state": 0
         }
       ],
 	  "confirmedUsedSizes": [
 		{
-		  "replicator": "0100000000000000000000000000000000000000000000000000000000000000",
+		  "replicator": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
 		  "size": [
 			1000,
 			0
@@ -82,8 +82,8 @@ const (
 		}
 	  ],
 	  "replicators": [
-		"0100000000000000000000000000000000000000000000000000000000000000",
-		"0100000000000000000000000000000000000000000000000000000000000000"
+		"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+		"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
 	  ],
 	  "verifications": [
 		{
@@ -112,7 +112,6 @@ const (
                 1000,
                 0
             ],
-            "blsKey": "B49D90CFC2BF81E908B305DAA7066473E0A8980746B881CA0681D8F04765DEAC60AD9E0100CAA90C5836764DCCCE6552",
             "drives": [
                 {
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
@@ -121,8 +120,7 @@ const (
                     "initialDownloadWork": [
 					  0,
 					  0
-					],
-					"index": 0
+					]
                 }
             ]
         }
@@ -133,18 +131,19 @@ const (
 
 var testBcDriveAccount, _ = NewAccountFromPublicKey("415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309", PublicTest)
 var testBcDriveOwnerAccount, _ = NewAccountFromPublicKey("CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE", PublicTest)
-var testReplicatorV2Account, _ = NewAccountFromPublicKey("36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", PublicTest)
-var testBlsKey = "B49D90CFC2BF81E908B305DAA7066473E0A8980746B881CA0681D8F04765DEAC60AD9E0100CAA90C5836764DCCCE6552"
+var testReplicatorV2Account1, _ = NewAccountFromPublicKey("36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", PublicTest)
+var testReplicatorV2Account2, _ = NewAccountFromPublicKey("E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64", PublicTest)
 
 var (
 	testBcDriveInfo = &BcDrive{
-		BcDriveAccount:  testBcDriveAccount,
-		OwnerAccount:    testBcDriveOwnerAccount,
-		RootHash:        &Hash{1},
-		DriveSize:       StorageSize(1000),
-		UsedSize:        StorageSize(0),
-		MetaFilesSize:   StorageSize(20),
-		ReplicatorCount: 5,
+		BcDriveAccount:            testBcDriveAccount,
+		OwnerAccount:              testBcDriveOwnerAccount,
+		RootHash:                  &Hash{1},
+		DriveSize:                 StorageSize(1000),
+		UsedSize:                  StorageSize(0),
+		MetaFilesSize:             StorageSize(20),
+		ReplicatorCount:           5,
+		OwnerCumulativeUploadSize: 10,
 		ActiveDataModifications: []*ActiveDataModification{
 			{
 				Id:                 &Hash{1},
@@ -158,29 +157,27 @@ var (
 		},
 		CompletedDataModifications: []*CompletedDataModification{
 			{
-				ActiveDataModification: []*ActiveDataModification{
-					{
-						Id:                 &Hash{1},
-						Owner:              testBcDriveOwnerAccount,
-						DownloadDataCdi:    &Hash{1},
-						ExpectedUploadSize: StorageSize(100),
-						ActualUploadSize:   StorageSize(50),
-						FolderName:         "C://MyStorage",
-						ReadyForApproval:   false,
-					},
+				ActiveDataModification: ActiveDataModification{
+					Id:                 &Hash{1},
+					Owner:              testBcDriveOwnerAccount,
+					DownloadDataCdi:    &Hash{1},
+					ExpectedUploadSize: StorageSize(100),
+					ActualUploadSize:   StorageSize(50),
+					FolderName:         "C://MyStorage",
+					ReadyForApproval:   false,
 				},
 				State: DataModificationState(Succeeded),
 			},
 		},
 		ConfirmedUsedSizes: []*ConfirmedUsedSize{
 			{
-				Replicator: &Hash{1},
+				Replicator: testReplicatorV2Account2,
 				Size:       StorageSize(1000),
 			},
 		},
-		Replicators: []*Hash{
-			&Hash{1},
-			&Hash{1},
+		Replicators: []*PublicAccount{
+			testReplicatorV2Account1,
+			testReplicatorV2Account2,
 		},
 		Verifications: []*Verification{
 			{
@@ -197,16 +194,15 @@ var (
 	}
 
 	testReplicatorInfo = &Replicator{
-		ReplicatorAccount: testReplicatorV2Account,
+		ReplicatorAccount: testReplicatorV2Account1,
 		Version:           1,
 		Capacity:          StorageSize(1000),
-		BLSKey:            testBlsKey,
-		Drives: map[string]*DriveInfo{
-			testBcDriveAccount.PublicKey: {
+		Drives: []*DriveInfo{
+			{
+				Drive:                          testBcDriveAccount,
 				LastApprovedDataModificationId: &Hash{1},
 				DataModificationIdIsValid:      false,
 				InitialDownloadWork:            0,
-				Index:                          0,
 			},
 		},
 	}
@@ -255,27 +251,9 @@ func TestStorageV2Service_GetDrives(t *testing.T) {
 	assert.Equal(t, testBcDrivesPage, bcdrives)
 }
 
-func TestStorageV2Service_GetAccountDrives(t *testing.T) {
-	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(drivesOfAccountRouteV2, testBcDriveOwnerAccount.PublicKey),
-		AcceptedHttpMethods: []string{http.MethodGet},
-		RespHttpCode:        200,
-		RespBody:            testBcDriveInfoJsonArr,
-	})
-	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
-
-	defer mock.Close()
-
-	bcdrives, err := exchangeClient.GetAccountDrives(ctx, testBcDriveOwnerAccount)
-	assert.Nil(t, err)
-	assert.NotNil(t, bcdrives)
-	assert.Equal(t, len(bcdrives), 2)
-	assert.Equal(t, []*BcDrive{testBcDriveInfo, testBcDriveInfo}, bcdrives)
-}
-
 func TestStorageV2Service_GetReplicator(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(replicatorRouteV2, testReplicatorV2Account.PublicKey),
+		Path:                fmt.Sprintf(replicatorRouteV2, testReplicatorV2Account1.PublicKey),
 		AcceptedHttpMethods: []string{http.MethodGet},
 		RespHttpCode:        200,
 		RespBody:            testReplicatorInfoJson,
@@ -284,7 +262,7 @@ func TestStorageV2Service_GetReplicator(t *testing.T) {
 
 	defer mock.Close()
 
-	replicator, err := exchangeClient.GetReplicator(ctx, testReplicatorV2Account)
+	replicator, err := exchangeClient.GetReplicator(ctx, testReplicatorV2Account1)
 	assert.Nil(t, err)
 	assert.NotNil(t, replicator)
 	assert.Equal(t, testReplicatorInfo, replicator)
@@ -305,22 +283,4 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, replicators)
 	assert.Equal(t, testReplicatorsPage, replicators)
-}
-
-func TestStorageV2Service_GetAccountReplicators(t *testing.T) {
-	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(replicatorsOfAccountRouteV2, testBlsKey),
-		AcceptedHttpMethods: []string{http.MethodGet},
-		RespHttpCode:        200,
-		RespBody:            testReplicatorInfoJsonArr,
-	})
-	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
-
-	defer mock.Close()
-
-	replicators, err := exchangeClient.GetAccountReplicators(ctx, testBlsKey)
-	assert.Nil(t, err)
-	assert.NotNil(t, replicators)
-	assert.Equal(t, len(replicators), 2)
-	assert.Equal(t, []*Replicator{testReplicatorInfo, testReplicatorInfo}, replicators)
 }

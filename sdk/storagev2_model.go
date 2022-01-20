@@ -47,14 +47,14 @@ func (active *ActiveDataModification) String() string {
 }
 
 type CompletedDataModification struct {
-	ActiveDataModification []*ActiveDataModification
-	State                  DataModificationState
+	ActiveDataModification
+	State DataModificationState
 }
 
 func (completed *CompletedDataModification) String() string {
 	return fmt.Sprintf(
 		`
-			"ActiveDataModification": %s,
+			"ActiveDataModification": %+v,
 			"State:" %d,
 		`,
 		completed.ActiveDataModification,
@@ -63,7 +63,7 @@ func (completed *CompletedDataModification) String() string {
 }
 
 type ConfirmedUsedSize struct {
-	Replicator *Hash
+	Replicator *PublicAccount
 	Size       StorageSize
 }
 
@@ -88,13 +88,37 @@ const (
 
 type VerificationOpinion struct {
 	Prover *Hash
-	Result uint16
+	Result uint8
+}
+
+func (verificationOpinion *VerificationOpinion) String() string {
+	return fmt.Sprintf(
+		`
+			"Prover": %s,
+			"Result:" %d,
+		`,
+		verificationOpinion.Prover,
+		verificationOpinion.Result,
+	)
 }
 
 type Verification struct {
 	VerificationTrigger  *Hash
 	State                VerificationState
 	VerificationOpinions []*VerificationOpinion
+}
+
+func (verification *Verification) String() string {
+	return fmt.Sprintf(
+		`
+			"VerificationTrigger": %s,
+			"State:" %d,
+			"VerificationOpinions:" %+v,
+		`,
+		verification.VerificationTrigger,
+		verification.State,
+		verification.VerificationOpinions,
+	)
 }
 
 type BcDrive struct {
@@ -105,10 +129,11 @@ type BcDrive struct {
 	UsedSize                   StorageSize
 	MetaFilesSize              StorageSize
 	ReplicatorCount            uint16
+	OwnerCumulativeUploadSize  StorageSize
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
-	Replicators                []*Hash
+	Replicators                []*PublicAccount
 	Verifications              []*Verification
 }
 
@@ -122,6 +147,7 @@ func (drive *BcDrive) String() string {
 		"UsedSize": %d,
 		"MetaFilesSize": %d,
 		"ReplicatorCount": %d,
+		"OwnerCumulativeUploadSize": %d,
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
 		"ConfirmedUsedSizes": %+v,
@@ -135,6 +161,7 @@ func (drive *BcDrive) String() string {
 		drive.UsedSize,
 		drive.MetaFilesSize,
 		drive.ReplicatorCount,
+		drive.OwnerCumulativeUploadSize,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
 		drive.ConfirmedUsedSizes,
@@ -157,7 +184,6 @@ type DriveInfo struct {
 	LastApprovedDataModificationId *Hash
 	DataModificationIdIsValid      bool
 	InitialDownloadWork            StorageSize
-	Index                          int
 }
 
 func (info *DriveInfo) String() string {
@@ -167,13 +193,11 @@ func (info *DriveInfo) String() string {
 		    "LastApprovedDataModificationId": %s,
 			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
-			"Index": %d
 		`,
 		info.Drive,
 		info.LastApprovedDataModificationId,
 		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
-		info.Index,
 	)
 }
 
@@ -181,8 +205,7 @@ type Replicator struct {
 	ReplicatorAccount *PublicAccount
 	Version           uint32
 	Capacity          Amount
-	BLSKey            string
-	Drives            map[string]*DriveInfo
+	Drives            []*DriveInfo
 }
 
 func (replicator *Replicator) String() string {
@@ -191,13 +214,11 @@ func (replicator *Replicator) String() string {
 		ReplicatorAccount: %s, 
 		Version: %d,
 		Capacity: %d,
-		BLSKey: %s,
 		Drives: %+v,
 		`,
 		replicator.ReplicatorAccount,
 		replicator.Version,
 		replicator.Capacity,
-		replicator.BLSKey,
 		replicator.Drives,
 	)
 }
@@ -214,8 +235,7 @@ type ReplicatorsPageOptions struct {
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
-	Capacity     Amount
-	BlsPublicKey string
+	Capacity Amount
 }
 
 // Prepare Bc Drive Transaction
@@ -229,7 +249,7 @@ type PrepareBcDriveTransaction struct {
 // Drive Closure Transaction
 type DriveClosureTransaction struct {
 	AbstractTransaction
-	DriveKey string
+	Drive string
 }
 
 // Replicator Offboarding Transaction

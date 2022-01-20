@@ -5,15 +5,13 @@
 package integration
 
 import (
-	"crypto/rand"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDriveV2FlowTransaction(t *testing.T) {
@@ -47,14 +45,14 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// end region
 
-	// add xpx mosaic to the replicator accounts
+	// add storage and xpx mosaic to the replicator accounts
 
 	transfers := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			replicators[i].Address,
-			[]*sdk.Mosaic{sdk.Xpx(10000)},
+			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 		transferMosaicsToReplicator.ToAggregate(defaultAccount.PublicAccount)
@@ -76,21 +74,9 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	rpOnboards := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
-		// generate random BLS Public Key
-		b := make([]byte, 32)
-		_, err := rand.Read(b)
-		if err != nil {
-			fmt.Println("error:", err)
-			return
-		}
-		var ikm [32]byte
-		copy(ikm[:], b[:])
-		sk := sdk.GenerateKeyPairFromIKM(ikm)
-		blsKey := sk.PublicKey.HexString()
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Amount(storageSize),
-			blsKey,
 		)
 		replicatorOnboardingTx.ToAggregate(replicators[i].PublicAccount)
 		assert.NoError(t, err, err)

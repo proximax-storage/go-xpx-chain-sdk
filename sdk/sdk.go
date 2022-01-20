@@ -816,9 +816,9 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
-func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount, blsPublicKey string) (*ReplicatorOnboardingTransaction, error) {
+func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
 
-	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, blsPublicKey, c.config.NetworkType)
+	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
 
 	return tx, err
 }
