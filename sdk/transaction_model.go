@@ -2790,11 +2790,14 @@ const (
 	DataModificationCancelHeaderSize             = TransactionHeaderSize + KeySize + Hash256
 	StoragePaymentHeaderSize                     = TransactionHeaderSize + KeySize + AmountSize
 	DownloadPaymentHeaderSize                    = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize
-	DownloadHeaderSize                           = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize
+	ListOfPublicKeysSize                         = 2
+	DownloadHeaderSize                           = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize + ListOfPublicKeysSize
 	FinishDownloadHeaderSize                     = TransactionHeaderSize + Hash256 + AmountSize
 	VerificationPaymentHeaderSize                = TransactionHeaderSize + KeySize + AmountSize
 	ShardIdSize                                  = 2
-	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + 2 // KeyCountSize and JudgingKeyCountSize
+	KeyCountSize                                 = 2
+	JudgingKeyCountSize                          = 2
+	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
 )

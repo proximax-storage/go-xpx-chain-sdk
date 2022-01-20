@@ -2198,16 +2198,38 @@ func (rcv *DownloadTransactionBuffer) MutateFeedbackFeeAmount(j int, n uint32) b
 	return false
 }
 
-func (rcv *DownloadTransactionBuffer) ListOfPublicKeysSize() uint16 {
+func (rcv *DownloadTransactionBuffer) ListOfPublicKeysSize(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *DownloadTransactionBuffer) MutateListOfPublicKeysSize(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(24, n)
+func (rcv *DownloadTransactionBuffer) ListOfPublicKeysSizeLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DownloadTransactionBuffer) ListOfPublicKeysSizeBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *DownloadTransactionBuffer) MutateListOfPublicKeysSize(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *DownloadTransactionBuffer) ListOfPublicKeys(obj *KeysBuffer, j int) bool {
@@ -2284,8 +2306,11 @@ func DownloadTransactionBufferAddFeedbackFeeAmount(builder *flatbuffers.Builder,
 func DownloadTransactionBufferStartFeedbackFeeAmountVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func DownloadTransactionBufferAddListOfPublicKeysSize(builder *flatbuffers.Builder, listOfPublicKeysSize uint16) {
-	builder.PrependUint16Slot(10, listOfPublicKeysSize, 0)
+func DownloadTransactionBufferAddListOfPublicKeysSize(builder *flatbuffers.Builder, listOfPublicKeysSize flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(listOfPublicKeysSize), 0)
+}
+func DownloadTransactionBufferStartListOfPublicKeysSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func DownloadTransactionBufferAddListOfPublicKeys(builder *flatbuffers.Builder, listOfPublicKeys flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(listOfPublicKeys), 0)
@@ -3475,16 +3500,38 @@ func (rcv *EndDriveVerificationTransactionV2Buffer) MutateVerificationTrigger(j 
 	return false
 }
 
-func (rcv *EndDriveVerificationTransactionV2Buffer) ShardId() uint16 {
+func (rcv *EndDriveVerificationTransactionV2Buffer) ShardId(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
-func (rcv *EndDriveVerificationTransactionV2Buffer) MutateShardId(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(22, n)
+func (rcv *EndDriveVerificationTransactionV2Buffer) ShardIdLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *EndDriveVerificationTransactionV2Buffer) ShardIdBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *EndDriveVerificationTransactionV2Buffer) MutateShardId(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *EndDriveVerificationTransactionV2Buffer) KeyCount() byte {
@@ -3633,8 +3680,11 @@ func EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder *flat
 func EndDriveVerificationTransactionV2BufferStartVerificationTriggerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func EndDriveVerificationTransactionV2BufferAddShardId(builder *flatbuffers.Builder, shardId uint16) {
-	builder.PrependUint16Slot(9, shardId, 0)
+func EndDriveVerificationTransactionV2BufferAddShardId(builder *flatbuffers.Builder, shardId flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(shardId), 0)
+}
+func EndDriveVerificationTransactionV2BufferStartShardIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func EndDriveVerificationTransactionV2BufferAddKeyCount(builder *flatbuffers.Builder, keyCount byte) {
 	builder.PrependByteSlot(10, keyCount, 0)

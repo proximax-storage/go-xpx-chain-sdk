@@ -117,7 +117,7 @@ func downloadTransactionSchema() *schema {
 			newArrayAttribute("driveKey", ByteSize),
 			newArrayAttribute("downloadSize", IntSize),
 			newArrayAttribute("feedbackFeeAmount", IntSize),
-			newScalarAttribute("listOfPublicKeysSize", ShortSize),
+			newArrayAttribute("listOfPublicKeysSize", ByteSize),
 			newTableArrayAttribute("listOfPublicKeys", schema{
 				[]schemaAttribute{
 					newArrayAttribute("key", ByteSize),
@@ -171,7 +171,7 @@ func endDriveVerificationV2TransactionSchema() *schema {
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("driveKey", ByteSize),
 			newArrayAttribute("verificationTrigger", ByteSize),
-			newScalarAttribute("shardId", ShortSize),
+			newArrayAttribute("shardId", ByteSize),
 			newScalarAttribute("keyCount", ByteSize),
 			newScalarAttribute("judgingKeyCount", ByteSize),
 			newTableArrayAttribute("keys", schema{

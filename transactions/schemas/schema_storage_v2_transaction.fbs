@@ -90,7 +90,8 @@ table DownloadTransactionBuffer {
     driveKey: [ubyte];
     downloadSize: [uint];
     feedbackFeeAmount: [uint];
-    listOfPublicKeysSize: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    listOfPublicKeysSize: [ubyte];
     listOfPublicKeys: [KeysBuffer];
 }
 
@@ -143,7 +144,8 @@ table EndDriveVerificationTransactionV2Buffer {
     deadline: [uint];
     driveKey: [ubyte];
     verificationTrigger: [ubyte];
-    shardId: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    shardId: [ubyte];
     keyCount: ubyte;
     judgingKeyCount: ubyte;
     keys: [KeysBuffer];

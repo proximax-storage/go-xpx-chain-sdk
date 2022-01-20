@@ -5,6 +5,7 @@
 package sdk
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -778,6 +779,10 @@ func (tx *DownloadTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
+	listOfPublicKeysSizeB := make([]byte, ListOfPublicKeysSize)
+	binary.LittleEndian.PutUint16(listOfPublicKeysSizeB, uint16(len(tx.ListOfPublicKeys)))
+	listOfPublicKeysSizeV := transactions.TransactionBufferCreateByteVector(builder, listOfPublicKeysSizeB)
+
 	transactions.DownloadTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
@@ -785,7 +790,7 @@ func (tx *DownloadTransaction) Bytes() ([]byte, error) {
 	transactions.DownloadTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.DownloadTransactionBufferAddDownloadSize(builder, downloadSizeV)
 	transactions.DownloadTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmountV)
-	transactions.DownloadTransactionBufferAddListOfPublicKeysSize(builder, uint16(len(tx.ListOfPublicKeys)))
+	transactions.DownloadTransactionBufferAddListOfPublicKeysSize(builder, listOfPublicKeysSizeV)
 	transactions.DownloadTransactionBufferAddListOfPublicKeys(builder, keysV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -800,10 +805,11 @@ func (tx *DownloadTransaction) Size() int {
 type downloadTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey          string    `json:"driveKey"`
-		DownloadSize      uint64DTO `json:"downloadSize"`
-		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
-		ListOfPublicKeys  []string  `json:"listOfPublicKeys"`
+		DriveKey             string    `json:"driveKey"`
+		DownloadSize         uint64DTO `json:"downloadSize"`
+		FeedbackFeeAmount    uint64DTO `json:"feedbackFeeAmount"`
+		ListOfPublicKeysSize uint16    `json:"listOfPublicKeysSize"`
+		ListOfPublicKeys     []string  `json:"listOfPublicKeys"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1176,36 +1182,41 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	dkV := transactions.TransactionBufferCreateByteVector(builder, b)
-	vtV := transactions.TransactionBufferCreateByteVector(builder, tx.VerificationTrigger[:])
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
+	verificationTriggerV := hashToBuffer(builder, tx.VerificationTrigger)
 
-	pkV, err := keysToArrayToBuffer(builder, tx.Keys)
+	shardIdB := make([]byte, ShardIdSize)
+	binary.LittleEndian.PutUint16(shardIdB, tx.ShardId)
+	shardIdV := transactions.TransactionBufferCreateByteVector(builder, shardIdB)
+
+	keysV, err := keysToArrayToBuffer(builder, tx.Keys)
 	if err != nil {
 		return nil, err
 	}
 
-	sV, err := signaturesToArrayToBuffer(builder, tx.Signatures)
+	signaturesV, err := signaturesToArrayToBuffer(builder, tx.Signatures)
 	if err != nil {
 		return nil, err
 	}
 
-	voV := opinionsToArrayToBuffer(builder, len(tx.Keys), len(tx.Signatures), tx.Opinions)
+	opinionsV := opinionsToArrayToBuffer(builder, len(tx.Keys), len(tx.Signatures), tx.Opinions)
 
 	transactions.EndDriveVerificationTransactionV2BufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, dkV)
-	transactions.EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder, vtV)
+	transactions.EndDriveVerificationTransactionV2BufferAddDriveKey(builder, driveKeyV)
+	transactions.EndDriveVerificationTransactionV2BufferAddVerificationTrigger(builder, verificationTriggerV)
+	transactions.EndDriveVerificationTransactionV2BufferAddShardId(builder, shardIdV)
 	transactions.EndDriveVerificationTransactionV2BufferAddKeyCount(builder, uint8(len(tx.Keys)))
 	transactions.EndDriveVerificationTransactionV2BufferAddJudgingKeyCount(builder, uint8(len(tx.Signatures)))
-	transactions.EndDriveVerificationTransactionV2BufferAddKeys(builder, pkV)
-	transactions.EndDriveVerificationTransactionV2BufferAddSignatures(builder, sV)
-	transactions.EndDriveVerificationTransactionV2BufferAddOpinions(builder, voV)
+	transactions.EndDriveVerificationTransactionV2BufferAddKeys(builder, keysV)
+	transactions.EndDriveVerificationTransactionV2BufferAddSignatures(builder, signaturesV)
+	transactions.EndDriveVerificationTransactionV2BufferAddOpinions(builder, opinionsV)
 	t := transactions.EndDriveVerificationTransactionV2BufferEnd(builder)
 	builder.Finish(t)
 
