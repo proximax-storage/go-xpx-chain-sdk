@@ -48,7 +48,6 @@ func dataModificationTransactionSchema() *schema {
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("driveKey", ByteSize),
 			newArrayAttribute("downloadDataCdi", ByteSize),
-			newArrayAttribute("driveSize", IntSize),
 			newArrayAttribute("uploadSize", IntSize),
 			newArrayAttribute("feedbackFeeAmount", IntSize),
 		},
@@ -214,6 +213,7 @@ func replicatorOffboardingTransactionSchema() *schema {
 			newScalarAttribute("type", ShortSize),
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("driveKey", ByteSize),
 		},
 	}
 }

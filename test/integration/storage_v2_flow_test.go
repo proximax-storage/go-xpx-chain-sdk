@@ -20,7 +20,6 @@ import (
 func TestDriveV2FlowTransaction(t *testing.T) {
 	const replicatorCount uint16 = 2
 	var replicators [replicatorCount]*sdk.Account
-	var replicatorsBlsKeys [replicatorCount]*sdk.KeyPair
 	var storageSize uint64 = 500
 	var verificationFee = 100
 
@@ -32,21 +31,13 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		replicators[i], err = client.NewAccount()
 		require.NoError(t, err, err)
 		fmt.Printf("replicatorAccount[%d]: %s\n", i, replicators[i])
-
-		var ikm [32]byte
-		_, err = rand.Read(ikm[:])
-		require.NoError(t, err, err)
-
-		replicatorsBlsKeys[i] = sdk.GenerateKeyPairFromIKM(ikm)
-		fmt.Printf("replicatorsBlsKeys[%d]: %s\n", i, replicatorsBlsKeys[i])
 	}
 
-	// add storage and xpx mosaic to the drive account
-
+	// add storage and xpx mosaic to the drive owner
 	transferMosaicsToDrive, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
 		owner.Address,
-		[]*sdk.Mosaic{sdk.Storage(storageSize / 10), sdk.Xpx(10000)},
+		[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(storageSize * 2), sdk.Xpx(10000)},
 		sdk.NewPlainMessage(""),
 	)
 	assert.NoError(t, err, err)
@@ -58,18 +49,17 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			[]sdk.Transaction{transferMosaicsToDrive},
 		)
 	}, defaultAccount)
-	assert.NoError(t, result.error, result.error)
+	require.NoError(t, result.error, result.error)
 
 	// end region
 
 	// add storage, streaming and xpx mosaic to the replicator accounts
-
 	transfers := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
 		transferMosaicsToReplicator, err := client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			replicators[i].Address,
-			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Xpx(10000)},
+			[]*sdk.Mosaic{sdk.Storage(storageSize), sdk.Streaming(storageSize * 2), sdk.Xpx(10000)},
 			sdk.NewPlainMessage(""),
 		)
 		assert.NoError(t, err, err)
@@ -84,7 +74,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			transfers,
 		)
 	}, defaultAccount)
-	assert.NoError(t, result.error, result.error)
+	require.NoError(t, result.error, result.error)
 
 	// end region
 
@@ -108,12 +98,11 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			rpOnboards,
 		)
 	}, replicators[0], replicators[1:]...)
-	assert.NoError(t, result.error, result.error)
+	require.NoError(t, result.error, result.error)
 
 	// end region
 
 	// prepare bc drive transaction
-
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewPrepareBcDriveTransaction(
 			sdk.NewDeadline(time.Hour),
@@ -122,11 +111,110 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			replicatorCount,
 		)
 	}, owner)
-	assert.NoError(t, result.error, result.error)
+	require.NoError(t, result.error, result.error)
 
 	driveKey := strings.ToUpper(result.Transaction.GetAbstractTransaction().TransactionHash.String())
 	driveAccount, err := sdk.NewAccountFromPublicKey(driveKey, client.NetworkType())
 	assert.NoError(t, err, err)
+	fmt.Printf("Drive Account: %s", driveAccount.String())
+
+	// end region
+
+	// Data Modification
+
+	downloadDataCdi := &sdk.Hash{}
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDataModificationTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			downloadDataCdi,
+			10,
+			10,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// Data Modification Cancel
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDataModificationCancelTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			downloadDataCdi,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// Storage Payment
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewStoragePaymentTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			10,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// Download
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDownloadTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			sdk.StorageSize(storageSize),
+			100,
+			[]*sdk.PublicAccount{},
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// Download Payment
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDownloadPaymentTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			10,
+			10,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// Finish Download
+
+	downloadChannelId := &sdk.Hash{1} // TODO add real downloadChannelId
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewFinishDownloadTransaction(
+			sdk.NewDeadline(time.Hour),
+			downloadChannelId,
+			100,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
+
+	// end region
+
+	// VerificationPayment
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewVerificationPaymentTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+			100,
+		)
+	}, owner)
+	assert.NoError(t, result.error, result.error)
 
 	// end region
 
@@ -171,18 +259,6 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		assert.NoError(t, result.error, result.error)
 	})
 
-	// drive closure transaction
-
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewDriveClosureTransaction(
-			sdk.NewDeadline(time.Hour),
-			driveAccount,
-		)
-	}, owner)
-	assert.NoError(t, result.error, result.error)
-
-	// end region
-
 	// replicator offboarding transaction
 
 	for i := 0; i < len(replicators); i++ {
@@ -192,9 +268,20 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 				driveAccount,
 			)
 		}, replicators[i])
-		assert.Nil(t, result.error)
+		assert.NoError(t, result.error, result.error)
 	}
 
 	// end region
 
+	// drive closure transaction
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewDriveClosureTransaction(
+			sdk.NewDeadline(time.Hour),
+			driveAccount,
+		)
+	}, owner)
+	require.NoError(t, result.error, result.error)
+
+	// end region
 }

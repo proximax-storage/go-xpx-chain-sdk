@@ -2795,8 +2795,8 @@ const (
 	FinishDownloadHeaderSize                     = TransactionHeaderSize + Hash256 + AmountSize
 	VerificationPaymentHeaderSize                = TransactionHeaderSize + KeySize + AmountSize
 	ShardIdSize                                  = 2
-	KeyCountSize                                 = 2
-	JudgingKeyCountSize                          = 2
+	KeyCountSize                                 = 1
+	JudgingKeyCountSize                          = 1
 	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize

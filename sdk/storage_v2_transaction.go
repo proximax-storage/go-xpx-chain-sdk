@@ -865,9 +865,9 @@ func NewFinishDownloadTransaction(
 
 	tx := FinishDownloadTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     DownloadPaymentVersion,
+			Version:     FinishDownloadVersion,
 			Deadline:    deadline,
-			Type:        DownloadPayment,
+			Type:        FinishDownload,
 			NetworkType: networkType,
 		},
 		DownloadChannelId: downloadChannelId,
@@ -970,9 +970,9 @@ func NewVerificationPaymentTransaction(
 
 	tx := VerificationPaymentTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     DownloadPaymentVersion,
+			Version:     VerificationPaymentVersion,
 			Deadline:    deadline,
-			Type:        DownloadPayment,
+			Type:        VerificationPayment,
 			NetworkType: networkType,
 		},
 		DriveKey:              driveKey,
