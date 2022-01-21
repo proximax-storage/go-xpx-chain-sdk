@@ -332,6 +332,18 @@ type DownloadTransaction struct {
 	ListOfPublicKeys  []*PublicAccount
 }
 
+// Download Approval Transaction
+type DownloadApprovalTransaction struct {
+	AbstractTransaction
+	DownloadChannelId                   *Hash
+	SequenceNumber                      uint16
+	ResponseToFinishDownloadTransaction uint8
+	PublicKeys                          []*Hash
+	Signatures                          []*Hash
+	PresentOpinions                     []uint8
+	Opinions                            []Opinions
+}
+
 // Finish Download Transaction
 type FinishDownloadTransaction struct {
 	AbstractTransaction
@@ -367,39 +379,4 @@ type DriveClosureTransaction struct {
 type ReplicatorOffboardingTransaction struct {
 	AbstractTransaction
 	DriveKey *PublicAccount
-}
-
-// Download Transaction
-type DownloadTransaction struct {
-	AbstractTransaction
-	DownloadSize      StorageSize
-	FeedbackFeeAmount Amount
-	ListOfPublicKeys  []*Hash
-}
-
-// Download Approval Transaction
-type DownloadApprovalTransaction struct {
-	AbstractTransaction
-	DownloadChannelId                   *Hash
-	SequenceNumber                      uint16
-	ResponseToFinishDownloadTransaction uint8
-	PublicKeys                          []*Hash
-	Signatures                          []*Hash
-	PresentOpinions                     []uint8
-	Opinions                            []Opinions
-}
-
-// Download Payment Transaction
-type DownloadPaymentTransaction struct {
-	AbstractTransaction
-	DownloadChannelId *Hash
-	DownloadSize      StorageSize
-	FeedbackFeeAmount Amount
-}
-
-// Finish Download Transaction
-type FinishDownloadTransaction struct {
-	AbstractTransaction
-	DownloadChannelId *Hash
-	FeedbackFeeAmount Amount
 }
