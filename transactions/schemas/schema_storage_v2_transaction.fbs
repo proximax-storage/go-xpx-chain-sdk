@@ -1,0 +1,193 @@
+namespace Catapult.Buffers;
+
+table ReplicatorOnboardingTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    capacity: [uint];
+}
+
+table PrepareBcDriveTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveSize: [uint];
+    verificationFeeAmount: [uint];
+    replicatorCount: ushort;
+}
+
+table DataModificationTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadDataCdi: [ubyte];
+    uploadSize: [uint];
+    feedbackFeeAmount: [uint];
+}
+
+table DataModificationCancelTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadDataCdi: [ubyte];
+}
+
+table StoragePaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    storageUnits: [uint];
+}
+
+table DownloadPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadSize: [uint];
+    feedbackFeeAmount: [uint];
+}
+
+table KeysBuffer {
+    key: [ubyte];
+}
+
+table DownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    downloadSize: [uint];
+    feedbackFeeAmount: [uint];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    listOfPublicKeysSize: [ubyte];
+    listOfPublicKeys: [KeysBuffer];
+}
+
+table FinishDownloadTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    downloadChannelId: [ubyte];
+    feedbackFeeAmount: [uint];
+}
+
+table VerificationPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    verificationFeeAmount: [uint];
+}
+
+table DriveClosureTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+}
+
+table SignaturesBuffer {
+    Signature: [ubyte];
+}
+
+table EndDriveVerificationTransactionV2Buffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    verificationTrigger: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    shardId: [ubyte];
+    keyCount: ubyte;
+    judgingKeyCount: ubyte;
+    keys: [KeysBuffer];
+    signatures: [SignaturesBuffer];
+    opinions: [ubyte];
+}
+
+table ReplicatorOffboardingTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+}
+
+root_type ReplicatorOnboardingTransactionBuffer;
+
+root_type PrepareBcDriveTransactionBuffer;
+
+root_type DataModificationTransactionBuffer;
+
+root_type DataModificationCancelTransactionBuffer;
+
+root_type StoragePaymentTransactionBuffer;
+
+root_type DownloadPaymentTransactionBuffer;
+
+root_type KeysBuffer;
+
+root_type DownloadTransactionBuffer;
+
+root_type FinishDownloadTransactionBuffer;
+
+root_type VerificationPaymentTransactionBuffer;
+
+root_type DriveClosureTransactionBuffer;
+
+root_type SignaturesBuffer;
+
+root_type EndDriveVerificationTransactionV2Buffer;
+
+root_type ReplicatorOffboardingTransactionBuffer;

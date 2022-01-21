@@ -817,14 +817,15 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 }
 
 func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
-
 	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
 
 	return tx, err
 }
 
 func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, verificationFeeAmount Amount, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
-
 	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, verificationFeeAmount, replicatorCount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -833,9 +834,8 @@ func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize Stor
 	return tx, err
 }
 
-func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string) (*DriveClosureTransaction, error) {
-
-	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
+func (c *Client) NewDataModificationTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash, uploadSize StorageSize, feedbackFeeAmount Amount) (*DataModificationTransaction, error) {
+	tx, err := NewDataModificationTransaction(deadline, driveKey, downloadDataCdi, uploadSize, feedbackFeeAmount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -843,8 +843,8 @@ func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey string)
 	return tx, err
 }
 
-func (c *Client) NewDownloadTransaction(deadline *Deadline, downloadSize StorageSize, feedbackFeeAmount Amount, listOfPublicKeys []*Hash) (*DownloadTransaction, error) {
-	tx, err := NewDownloadTransaction(deadline, downloadSize, feedbackFeeAmount, listOfPublicKeys, c.config.NetworkType)
+func (c *Client) NewDataModificationCancelTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash) (*DataModificationCancelTransaction, error) {
+	tx, err := NewDataModificationCancelTransaction(deadline, driveKey, downloadDataCdi, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -852,8 +852,8 @@ func (c *Client) NewDownloadTransaction(deadline *Deadline, downloadSize Storage
 	return tx, err
 }
 
-func (c *Client) NewDownloadApprovalTransaction(deadline *Deadline, downloadChannelId *Hash, sequenceNumber uint16, responseToFinishDownloadTransaction uint8, publicKeys []*Hash, signatures []*Hash, presentOpinions []uint8, opinions []Opinions) (*DownloadApprovalTransaction, error) {
-	tx, err := NewDownloadApprovalTransaction(deadline, downloadChannelId, sequenceNumber, responseToFinishDownloadTransaction, publicKeys, signatures, presentOpinions, opinions, c.config.NetworkType)
+func (c *Client) NewStoragePaymentTransaction(deadline *Deadline, driveKey *PublicAccount, storageUnits Amount) (*StoragePaymentTransaction, error) {
+	tx, err := NewStoragePaymentTransaction(deadline, driveKey, storageUnits, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -861,8 +861,17 @@ func (c *Client) NewDownloadApprovalTransaction(deadline *Deadline, downloadChan
 	return tx, err
 }
 
-func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, downloadChannelId *Hash, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
-	tx, err := NewDownloadPaymentTransaction(deadline, downloadChannelId, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
+	tx, err := NewDownloadPaymentTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount, listOfPublicKeys []*PublicAccount) (*DownloadTransaction, error) {
+	tx, err := NewDownloadTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, listOfPublicKeys, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -872,6 +881,43 @@ func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, downloadChann
 
 func (c *Client) NewFinishDownloadTransaction(deadline *Deadline, downloadChannelId *Hash, feedbackFeeAmount Amount) (*FinishDownloadTransaction, error) {
 	tx, err := NewFinishDownloadTransaction(deadline, downloadChannelId, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewVerificationPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, verificationFeeAmount Amount) (*VerificationPaymentTransaction, error) {
+	tx, err := NewVerificationPaymentTransaction(deadline, driveKey, verificationFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []string, opinions []uint8) (*EndDriveVerificationTransactionV2, error) {
+	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *PublicAccount) (*DriveClosureTransaction, error) {
+
+	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKey *PublicAccount) (*ReplicatorOffboardingTransaction, error) {
+	tx, err := NewReplicatorOffboardingTransaction(deadline, driveKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -890,6 +936,24 @@ func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, drive
 
 func (c *Client) NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string) (*DeactivateTransaction, error) {
 	tx, err := NewDeactivateTransaction(deadline, sc, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -933,22 +997,4 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 	}
 
 	return nil
-}
-
-func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
-	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
-func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
-	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
 }
