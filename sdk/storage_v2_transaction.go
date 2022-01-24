@@ -284,12 +284,12 @@ func (tx *DataModificationTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 	downloadDataCdiV := hashToBuffer(builder, tx.DownloadDataCdi)
 	uploadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.UploadSize.toArray())
 	feedbackFeeAmount := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
@@ -298,7 +298,7 @@ func (tx *DataModificationTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DataModificationTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DataModificationTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.DataModificationTransactionBufferAddDownloadDataCdi(builder, downloadDataCdiV)
 	transactions.DataModificationTransactionBufferAddUploadSize(builder, uploadSizeV)
 	transactions.DataModificationTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmount)
@@ -407,19 +407,19 @@ func (tx *DataModificationCancelTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 	downloadDataCdiV := hashToBuffer(builder, tx.DownloadDataCdi)
 
 	transactions.DataModificationCancelTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DataModificationCancelTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DataModificationCancelTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.DataModificationCancelTransactionBufferAddDownloadDataCdi(builder, downloadDataCdiV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -522,19 +522,19 @@ func (tx *StoragePaymentTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveKeyB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 	storageUnitsV := transactions.TransactionBufferCreateUint32Vector(builder, tx.StorageUnits.toArray())
 
 	transactions.StoragePaymentTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.StoragePaymentTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.StoragePaymentTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.StoragePaymentTransactionBufferAddStorageUnits(builder, storageUnitsV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -1064,7 +1064,7 @@ func NewEndDriveVerificationTransactionV2(
 	verificationTrigger *Hash,
 	shardId uint16,
 	keys []*PublicAccount,
-	signatures []string,
+	signatures []*Signature,
 	opinions []uint8,
 	networkType NetworkType,
 ) (*EndDriveVerificationTransactionV2, error) {
@@ -1098,7 +1098,7 @@ func (tx *EndDriveVerificationTransactionV2) String() string {
 
 	signatures := ""
 	for _, s := range tx.Signatures {
-		signatures += s + "\t"
+		signatures += s.String() + "\t"
 	}
 
 	return fmt.Sprintf(
@@ -1139,10 +1139,10 @@ func keysToArrayToBuffer(builder *flatbuffers.Builder, keys []*PublicAccount) (f
 	return transactions.TransactionBufferCreateUOffsetVector(builder, psB), nil
 }
 
-func signaturesToArrayToBuffer(builder *flatbuffers.Builder, signatures []string) (flatbuffers.UOffsetT, error) {
+func signaturesToArrayToBuffer(builder *flatbuffers.Builder, signatures []*Signature) (flatbuffers.UOffsetT, error) {
 	sB := make([]flatbuffers.UOffsetT, len(signatures))
 	for i, s := range signatures {
-		bsV := transactions.TransactionBufferCreateByteVector(builder, []byte(s))
+		bsV := transactions.TransactionBufferCreateByteVector(builder, s[:])
 
 		transactions.SignaturesBufferStart(builder)
 		transactions.SignaturesBufferAddSignature(builder, bsV)
@@ -1243,12 +1243,12 @@ func parseOpinions(opinions []uint8, keyCount, signaturesCount int) []uint8 {
 type endDriveVerificationTransactionV2DTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey            string   `json:"driveKey"`
-		VerificationTrigger hashDto  `json:"verificationTrigger"`
-		ShardId             uint16   `json:"shardId"`
-		Keys                []string `json:"keys"`
-		Signatures          []string `json:"signatures"`
-		Opinions            []uint8  `json:"opinions"`
+		DriveKey            string         `json:"driveKey"`
+		VerificationTrigger hashDto        `json:"verificationTrigger"`
+		ShardId             uint16         `json:"shardId"`
+		Keys                []string       `json:"keys"`
+		Signatures          []signatureDto `json:"signatures"`
+		Opinions            []uint8        `json:"opinions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1282,6 +1282,14 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		}
 	}
 
+	signatures := make([]*Signature, len(dto.Tx.Signatures))
+	for i, s := range dto.Tx.Signatures {
+		signatures[i], err = s.Signature()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	parsedOpinions := parseOpinions(dto.Tx.Opinions, len(keys), len(dto.Tx.Signatures))
 
 	return &EndDriveVerificationTransactionV2{
@@ -1290,7 +1298,7 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		verificationTrigger,
 		dto.Tx.ShardId,
 		keys,
-		dto.Tx.Signatures,
+		signatures,
 		parsedOpinions,
 	}, nil
 }

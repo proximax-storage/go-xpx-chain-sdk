@@ -237,11 +237,11 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 			keys[i] = r.PublicAccount
 		}
 
-		signatures := make([]string, len(replicators))
+		signatures := make([]*sdk.Signature, len(replicators))
 		for i, _ := range replicators {
-			var s [64]byte
+			var s *sdk.Signature
 			_, err = rand.Read(s[:])
-			signatures[i] = string(s[:])
+			signatures[i] = s
 		}
 
 		currHeight, err := client.Blockchain.GetBlockchainHeight(ctx)

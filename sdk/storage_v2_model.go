@@ -198,7 +198,7 @@ type Replicator struct {
 	ReplicatorAccount *PublicAccount
 	Version           uint32
 	Capacity          Amount
-	Drives            []*DriveInfo
+	Drives            []*DriveInfo // TODO make map
 }
 
 func (replicator *Replicator) String() string {
@@ -300,7 +300,7 @@ type EndDriveVerificationTransactionV2 struct {
 	VerificationTrigger *Hash
 	ShardId             uint16
 	Keys                []*PublicAccount
-	Signatures          []string
+	Signatures          []*Signature
 	Opinions            []uint8
 }
 
