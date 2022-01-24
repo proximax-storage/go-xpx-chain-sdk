@@ -164,14 +164,18 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// Download
 
+	downloadTx, err := client.NewDownloadTransaction(
+		sdk.NewDeadline(time.Hour),
+		driveAccount,
+		sdk.StorageSize(storageSize),
+		100,
+		[]*sdk.PublicAccount{},
+	)
+	assert.NoError(t, err, err)
+	fmt.Printf("download: %s\n", downloadTx)
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewDownloadTransaction(
-			sdk.NewDeadline(time.Hour),
-			driveAccount,
-			sdk.StorageSize(storageSize),
-			100,
-			[]*sdk.PublicAccount{},
-		)
+		return downloadTx, nil
 	}, owner)
 	assert.NoError(t, result.error, result.error)
 
@@ -179,10 +183,12 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// Download Payment
 
+	downloadChannelId := downloadTx.GetAbstractTransaction().TransactionHash
+
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewDownloadPaymentTransaction(
 			sdk.NewDeadline(time.Hour),
-			driveAccount,
+			downloadChannelId,
 			10,
 			10,
 		)
@@ -193,7 +199,6 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	// Finish Download
 
-	downloadChannelId := &sdk.Hash{1} // TODO add real downloadChannelId
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewFinishDownloadTransaction(
 			sdk.NewDeadline(time.Hour),

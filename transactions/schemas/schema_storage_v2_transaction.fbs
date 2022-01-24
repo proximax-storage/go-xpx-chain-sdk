@@ -70,7 +70,7 @@ table DownloadPaymentTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline: [uint];
-    driveKey: [ubyte];
+    downloadChannelId: [ubyte];
     downloadSize: [uint];
     feedbackFeeAmount: [uint];
 }

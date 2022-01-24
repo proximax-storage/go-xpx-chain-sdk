@@ -861,8 +861,8 @@ func (c *Client) NewStoragePaymentTransaction(deadline *Deadline, driveKey *Publ
 	return tx, err
 }
 
-func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
-	tx, err := NewDownloadPaymentTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, downloadChannelId *Hash, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
+	tx, err := NewDownloadPaymentTransaction(deadline, downloadChannelId, downloadSize, feedbackFeeAmount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

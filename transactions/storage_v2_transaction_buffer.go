@@ -1711,7 +1711,7 @@ func (rcv *DownloadPaymentTransactionBuffer) MutateDeadline(j int, n uint32) boo
 	return false
 }
 
-func (rcv *DownloadPaymentTransactionBuffer) DriveKey(j int) byte {
+func (rcv *DownloadPaymentTransactionBuffer) DownloadChannelId(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1720,7 +1720,7 @@ func (rcv *DownloadPaymentTransactionBuffer) DriveKey(j int) byte {
 	return 0
 }
 
-func (rcv *DownloadPaymentTransactionBuffer) DriveKeyLength() int {
+func (rcv *DownloadPaymentTransactionBuffer) DownloadChannelIdLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -1728,7 +1728,7 @@ func (rcv *DownloadPaymentTransactionBuffer) DriveKeyLength() int {
 	return 0
 }
 
-func (rcv *DownloadPaymentTransactionBuffer) DriveKeyBytes() []byte {
+func (rcv *DownloadPaymentTransactionBuffer) DownloadChannelIdBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1736,7 +1736,7 @@ func (rcv *DownloadPaymentTransactionBuffer) DriveKeyBytes() []byte {
 	return nil
 }
 
-func (rcv *DownloadPaymentTransactionBuffer) MutateDriveKey(j int, n byte) bool {
+func (rcv *DownloadPaymentTransactionBuffer) MutateDownloadChannelId(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -1833,10 +1833,10 @@ func DownloadPaymentTransactionBufferAddDeadline(builder *flatbuffers.Builder, d
 func DownloadPaymentTransactionBufferStartDeadlineVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func DownloadPaymentTransactionBufferAddDriveKey(builder *flatbuffers.Builder, driveKey flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(driveKey), 0)
+func DownloadPaymentTransactionBufferAddDownloadChannelId(builder *flatbuffers.Builder, downloadChannelId flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(downloadChannelId), 0)
 }
-func DownloadPaymentTransactionBufferStartDriveKeyVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func DownloadPaymentTransactionBufferStartDownloadChannelIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func DownloadPaymentTransactionBufferAddDownloadSize(builder *flatbuffers.Builder, downloadSize flatbuffers.UOffsetT) {

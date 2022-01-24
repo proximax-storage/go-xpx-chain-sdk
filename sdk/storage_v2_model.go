@@ -265,7 +265,7 @@ type StoragePaymentTransaction struct {
 // Download Payment Transaction
 type DownloadPaymentTransaction struct {
 	AbstractTransaction
-	DriveKey          *PublicAccount
+	DownloadChannelId *Hash
 	DownloadSize      StorageSize
 	FeedbackFeeAmount Amount
 }

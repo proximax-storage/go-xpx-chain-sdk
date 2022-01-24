@@ -581,15 +581,14 @@ func (dto *storagePaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
 
 func NewDownloadPaymentTransaction(
 	deadline *Deadline,
-	driveKey *PublicAccount,
+	downloadChannelId *Hash,
 	downloadSize StorageSize,
 	feedbackFeeAmount Amount,
 	networkType NetworkType,
 ) (*DownloadPaymentTransaction, error) {
-	if driveKey == nil {
-		return nil, ErrNilAccount
+	if downloadChannelId == nil {
+		return nil, ErrNilHash
 	}
-
 	if downloadSize <= 0 {
 		return nil, errors.New("downloadSize should be positive")
 	}
@@ -605,7 +604,7 @@ func NewDownloadPaymentTransaction(
 			Type:        DownloadPayment,
 			NetworkType: networkType,
 		},
-		DriveKey:          driveKey,
+		DownloadChannelId: downloadChannelId,
 		DownloadSize:      downloadSize,
 		FeedbackFeeAmount: feedbackFeeAmount,
 	}
@@ -621,12 +620,12 @@ func (tx *DownloadPaymentTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DriveKey": %s
+			"DownloadChannelId": %s
 			"StorageUnits": %s
 			"FeedbackFeeAmount": %s
 		`,
 		tx.AbstractTransaction.String(),
-		tx.DriveKey.String(),
+		tx.DownloadChannelId.String(),
 		tx.DownloadSize.String(),
 		tx.FeedbackFeeAmount.String(),
 	)
@@ -640,12 +639,7 @@ func (tx *DownloadPaymentTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
-	if err != nil {
-		return nil, err
-	}
-
-	driveKeyB := transactions.TransactionBufferCreateByteVector(builder, b)
+	downloadChannelIdV := hashToBuffer(builder, tx.DownloadChannelId)
 	downloadSizeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadSize.toArray())
 	feedbackFeeAmountV := transactions.TransactionBufferCreateUint32Vector(builder, tx.FeedbackFeeAmount.toArray())
 
@@ -653,7 +647,7 @@ func (tx *DownloadPaymentTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DownloadPaymentTransactionBufferAddDriveKey(builder, driveKeyB)
+	transactions.DownloadPaymentTransactionBufferAddDownloadChannelId(builder, downloadChannelIdV)
 	transactions.DownloadPaymentTransactionBufferAddDownloadSize(builder, downloadSizeV)
 	transactions.DownloadPaymentTransactionBufferAddFeedbackFeeAmount(builder, feedbackFeeAmountV)
 
@@ -670,7 +664,7 @@ func (tx *DownloadPaymentTransaction) Size() int {
 type downloadPaymentTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey          string    `json:"driveKey"`
+		DownloadChannelId hashDto   `json:"downloadChannelId"`
 		DownloadSize      uint64DTO `json:"downloadSize"`
 		FeedbackFeeAmount uint64DTO `json:"feedbackFeeAmount"`
 	} `json:"transaction"`
@@ -688,14 +682,14 @@ func (dto *downloadPaymentTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	downloadChannelId, err := dto.Tx.DownloadChannelId.Hash()
 	if err != nil {
 		return nil, err
 	}
 
 	return &DownloadPaymentTransaction{
 		*atx,
-		driveKey,
+		downloadChannelId,
 		dto.Tx.DownloadSize.toStruct(),
 		dto.Tx.FeedbackFeeAmount.toStruct(),
 	}, nil
