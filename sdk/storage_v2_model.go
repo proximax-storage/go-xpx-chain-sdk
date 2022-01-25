@@ -243,7 +243,7 @@ func (payment *Payment) String() string {
 
 type DownloadChannel struct {
 	Id                    *Hash
-	Consumer              *Hash
+	Consumer              *PublicAccount
 	Drive                 *PublicAccount
 	DownloadSize          StorageSize
 	DownloadApprovalCount uint16
