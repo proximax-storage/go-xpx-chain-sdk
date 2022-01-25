@@ -225,6 +225,62 @@ type ReplicatorsPageOptions struct {
 	PaginationOrderingOptions
 }
 
+type Payment struct {
+	Replicator *Hash
+	Payment    Amount
+}
+
+func (payment *Payment) String() string {
+	return fmt.Sprintf(
+		`
+			"Replicator": %s,
+			"Payment:" %d,
+		`,
+		payment.Replicator,
+		payment.Payment,
+	)
+}
+
+type DownloadChannel struct {
+	Id                    *Hash
+	Consumer              *Hash
+	Drive                 *PublicAccount
+	DownloadSize          StorageSize
+	DownloadApprovalCount uint16
+	ListOfPublicKeys      []*PublicAccount
+	CumulativePayments    []*Payment
+}
+
+func (downloadChannel *DownloadChannel) String() string {
+	return fmt.Sprintf(
+		`
+			"Id": %s,
+			"Consumer": %s,
+			"Drive": %s,
+			"DownloadSize": %d,
+			"DownloadApprovalCount": %d,
+			"ListOfPublicKeys": %s,
+			"CumulativePayments": %+v,
+		`,
+		downloadChannel.Id,
+		downloadChannel.Consumer,
+		downloadChannel.Drive,
+		downloadChannel.DownloadSize,
+		downloadChannel.DownloadApprovalCount,
+		downloadChannel.ListOfPublicKeys,
+		downloadChannel.CumulativePayments,
+	)
+}
+
+type DownloadChannelsPage struct {
+	DownloadChannels []*DownloadChannel
+	Pagination       Pagination
+}
+
+type DownloadChannelsPageOptions struct {
+	PaginationOrderingOptions
+}
+
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
