@@ -129,7 +129,40 @@ const (
 )
 
 const (
-	testDownloadChannelInfoJson = `{
+	testDownloadChannel1InfoJson = `{
+		"downloadChannelInfo": {
+			"id": "0100000000000000000000000000000000000000000000000000000000000000",
+			"consumer": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
+			"drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
+			"downloadSize": [
+				500,
+				0
+			],
+			"downloadApprovalCount": 0,
+			"listOfPublicKeys": [
+				"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+				"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
+			],
+			"cumulativePayments": [
+				{
+					"replicator": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+					"payment": [
+						300,
+						0
+					]
+				},
+				{
+					"replicator": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
+					"payment": [
+						300,
+						0
+					]
+				}
+			]
+		}
+	}`
+
+	testDownloadChannel2InfoJson = `{
 		"downloadChannelInfo": {
 			"id": "0200000000000000000000000000000000000000000000000000000000000000",
 			"consumer": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
@@ -162,7 +195,9 @@ const (
 		}
 	}`
 
-	testDownloadChannelInfoJsonArr = "[" + testDownloadChannelInfoJson + ", " + testDownloadChannelInfoJson + "]"
+	testSameDownloadChannelIdJsonArr = "[" + testDownloadChannel2InfoJson + ", " + testDownloadChannel2InfoJson + "]"
+
+	testDownloadChannelInfoJsonArr = "[" + testDownloadChannel1InfoJson + ", " + testDownloadChannel2InfoJson + ", " + testDownloadChannel2InfoJson + "]"
 )
 
 var testBcDriveAccount, _ = NewAccountFromPublicKey("415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309", PublicTest)
@@ -240,7 +275,29 @@ var (
 		},
 	}
 
-	testDownloadChannelInfo = &DownloadChannel{
+	testDownloadChannel1Info = &DownloadChannel{
+		Id:                    &Hash{1},
+		Consumer:              testConsumerAccount,
+		Drive:                 testBcDriveAccount,
+		DownloadSize:          StorageSize(500),
+		DownloadApprovalCount: 0,
+		ListOfPublicKeys: []*PublicAccount{
+			testReplicatorV2Account1,
+			testReplicatorV2Account2,
+		},
+		CumulativePayments: []*Payment{
+			{
+				Replicator: testReplicatorV2Account1,
+				Payment:    Amount(300),
+			},
+			{
+				Replicator: testReplicatorV2Account2,
+				Payment:    Amount(300),
+			},
+		},
+	}
+
+	testDownloadChannel2Info = &DownloadChannel{
 		Id:                    &Hash{2},
 		Consumer:              testConsumerAccount,
 		Drive:                 testBcDriveAccount,
@@ -270,8 +327,9 @@ var (
 	testReplicatorsPage = &ReplicatorsPage{
 		Replicators: []*Replicator{testReplicatorInfo, testReplicatorInfo},
 	}
-	testDownloadChannelsPage = &DownloadChannelsPage{
-		DownloadChannels: []*DownloadChannel{testDownloadChannelInfo, testDownloadChannelInfo},
+	testSameDownloadChannelId = []*DownloadChannel{testDownloadChannel2Info, testDownloadChannel2Info}
+	testDownloadChannelsPage  = &DownloadChannelsPage{
+		DownloadChannels: []*DownloadChannel{testDownloadChannel1Info, testDownloadChannel2Info, testDownloadChannel2Info},
 	}
 )
 
@@ -345,19 +403,19 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 
 func TestStorageV2Service_GetDownloadChannelInfo(t *testing.T) {
 	mock := newSdkMockWithRouter(&mock.Router{
-		Path:                fmt.Sprintf(downloadChannelRouteV2, testDownloadChannelInfo.Id),
+		Path:                fmt.Sprintf(downloadChannelRouteV2, testDownloadChannel2Info.Id),
 		AcceptedHttpMethods: []string{http.MethodGet},
 		RespHttpCode:        200,
-		RespBody:            testDownloadChannelInfoJson,
+		RespBody:            testSameDownloadChannelIdJsonArr,
 	})
 	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
 
 	defer mock.Close()
 
-	downloadChannelInfo, err := exchangeClient.GetDownloadChannelInfo(ctx, testDownloadChannelInfo.Id)
+	downloadChannelInfo, err := exchangeClient.GetDownloadChannelInfo(ctx, testDownloadChannel2Info.Id)
 	assert.Nil(t, err)
 	assert.NotNil(t, downloadChannelInfo)
-	assert.Equal(t, testDownloadChannelInfo, downloadChannelInfo)
+	assert.Equal(t, testSameDownloadChannelId, downloadChannelInfo)
 }
 
 func TestStorageV2Service_GetDownloadChannels(t *testing.T) {
