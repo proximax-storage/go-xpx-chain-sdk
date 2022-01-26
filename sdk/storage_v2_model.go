@@ -226,7 +226,7 @@ type ReplicatorsPageOptions struct {
 }
 
 type Payment struct {
-	Replicator *Hash
+	Replicator *PublicAccount
 	Payment    Amount
 }
 

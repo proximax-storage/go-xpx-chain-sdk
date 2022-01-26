@@ -412,6 +412,88 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	return &replicator, nil
 }
 
+type paymentV2DTO struct {
+	Replicator string    `json:"replicator"`
+	Payment    uint64DTO `json:"payment"`
+}
+
+type paymentsV2DTOs []*paymentV2DTO
+
+func (ref *paymentsV2DTOs) toStruct(networkType NetworkType) ([]*Payment, error) {
+	var (
+		dtos     = *ref
+		payments = make([]*Payment, 0, len(dtos))
+	)
+
+	for _, dto := range dtos {
+		replicator, err := NewAccountFromPublicKey(dto.Replicator, networkType)
+		if err != nil {
+			return nil, err
+		}
+
+		payment := &Payment{
+			Replicator: replicator,
+			Payment:    dto.Payment.toStruct(),
+		}
+
+		payments = append(payments, payment)
+	}
+
+	return payments, nil
+}
+
+type downloadChannelDTO struct {
+	DownloadChannelInfo struct {
+		Id                    hashDto             `json:"id"`
+		Consumer              string              `json:"consumer"`
+		Drive                 string              `json:"drive"`
+		DownloadSize          uint64DTO           `json:"downloadSize"`
+		DownloadApprovalCount uint16              `json:"downloadApprovalCount"`
+		ListOfPublicKeys      replicatorsListDTOs `json:"listOfPublicKeys"`
+		CumulativePayments    paymentsV2DTOs      `json:"cumulativePayments"`
+	}
+}
+
+func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChannel, error) {
+	downloadChannel := DownloadChannel{}
+
+	id, err := ref.DownloadChannelInfo.Id.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	consumer, err := NewAccountFromPublicKey(ref.DownloadChannelInfo.Consumer, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	drive, err := NewAccountFromPublicKey(ref.DownloadChannelInfo.Drive, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadChannel.Id = id
+	downloadChannel.Consumer = consumer
+	downloadChannel.Drive = drive
+	downloadChannel.DownloadSize = ref.DownloadChannelInfo.DownloadSize.toStruct()
+
+	listOfPublicKeys, err := ref.DownloadChannelInfo.ListOfPublicKeys.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.downloadChannelDTO.toStruct DownloadChannel.ListOfPublicKeys.toStruct: %v", err)
+	}
+
+	downloadChannel.ListOfPublicKeys = listOfPublicKeys
+
+	cumulativePayments, err := ref.DownloadChannelInfo.CumulativePayments.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.downloadChannelDTO.toStruct DownloadChannel.CumulativePayments.toStruct: %v", err)
+	}
+
+	downloadChannel.CumulativePayments = cumulativePayments
+
+	return &downloadChannel, nil
+}
+
 type bcDrivesPageDTO struct {
 	BcDrives []bcDriveDTO `json:"data"`
 
@@ -470,6 +552,39 @@ func (t *replicatorsPageDTO) toStruct(networkType NetworkType) (*ReplicatorsPage
 	var err error
 	for i, t := range t.Replicators {
 		page.Replicators[i], err = t.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return page, nil
+}
+
+type downloadChannelsPageDTO struct {
+	DownloadChannels []downloadChannelDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *downloadChannelsPageDTO) toStruct(networkType NetworkType) (*DownloadChannelsPage, error) {
+	page := &DownloadChannelsPage{
+		DownloadChannels: make([]*DownloadChannel, len(t.DownloadChannels)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	var err error
+	for i, t := range t.DownloadChannels {
+		page.DownloadChannels[i], err = t.toStruct(networkType)
 		if err != nil {
 			return nil, err
 		}

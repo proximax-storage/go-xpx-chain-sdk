@@ -121,8 +121,8 @@ const (
 	driveRouteV2            = "/bcdrives/%s"
 	replicatorsRouteV2      = "/replicators"
 	replicatorRouteV2       = "/replicators/%s"
-	downloadChannelsRouteV2 = "/downloads_v2"
-	downloadChannelRouteV2  = "/downloads_v2/%s"
+	downloadChannelsRouteV2 = "/download_channels"
+	downloadChannelRouteV2  = "/download_channels/%s"
 )
 
 // routes for SuperContractService

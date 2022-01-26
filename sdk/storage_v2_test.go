@@ -128,10 +128,48 @@ const (
 	testReplicatorInfoJsonArr = "[" + testReplicatorInfoJson + ", " + testReplicatorInfoJson + "]"
 )
 
+const (
+	testDownloadChannelInfoJson = `{
+		"downloadChannelInfo": {
+			"id": "0200000000000000000000000000000000000000000000000000000000000000",
+			"consumer": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
+			"drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
+			"downloadSize": [
+				500,
+				0
+			],
+			"downloadApprovalCount": 0,
+			"listOfPublicKeys": [
+				"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+				"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
+			],
+			"cumulativePayments": [
+				{
+					"replicator": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+					"payment": [
+						300,
+						0
+					]
+				},
+				{
+					"replicator": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
+					"payment": [
+						300,
+						0
+					]
+				}
+			]
+		}
+	}`
+
+	testDownloadChannelInfoJsonArr = "[" + testDownloadChannelInfoJson + ", " + testDownloadChannelInfoJson + "]"
+)
+
 var testBcDriveAccount, _ = NewAccountFromPublicKey("415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309", PublicTest)
 var testBcDriveOwnerAccount, _ = NewAccountFromPublicKey("CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE", PublicTest)
 var testReplicatorV2Account1, _ = NewAccountFromPublicKey("36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691", PublicTest)
 var testReplicatorV2Account2, _ = NewAccountFromPublicKey("E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64", PublicTest)
+var testConsumerAccount, _ = NewAccountFromPublicKey("5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB", PublicTest)
 
 var (
 	testBcDriveInfo = &BcDrive{
@@ -201,6 +239,28 @@ var (
 			},
 		},
 	}
+
+	testDownloadChannelInfo = &DownloadChannel{
+		Id:                    &Hash{2},
+		Consumer:              testConsumerAccount,
+		Drive:                 testBcDriveAccount,
+		DownloadSize:          StorageSize(500),
+		DownloadApprovalCount: 0,
+		ListOfPublicKeys: []*PublicAccount{
+			testReplicatorV2Account1,
+			testReplicatorV2Account2,
+		},
+		CumulativePayments: []*Payment{
+			{
+				Replicator: testReplicatorV2Account1,
+				Payment:    Amount(300),
+			},
+			{
+				Replicator: testReplicatorV2Account2,
+				Payment:    Amount(300),
+			},
+		},
+	}
 )
 
 var (
@@ -209,6 +269,9 @@ var (
 	}
 	testReplicatorsPage = &ReplicatorsPage{
 		Replicators: []*Replicator{testReplicatorInfo, testReplicatorInfo},
+	}
+	testDownloadChannelsPage = &DownloadChannelsPage{
+		DownloadChannels: []*DownloadChannel{testDownloadChannelInfo, testDownloadChannelInfo},
 	}
 )
 
@@ -278,4 +341,38 @@ func TestStorageV2Service_GetReplicators(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, replicators)
 	assert.Equal(t, testReplicatorsPage, replicators)
+}
+
+func TestStorageV2Service_GetDownloadChannelInfo(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                fmt.Sprintf(downloadChannelRouteV2, testDownloadChannelInfo.Id),
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            testDownloadChannelInfoJson,
+	})
+	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
+
+	defer mock.Close()
+
+	downloadChannelInfo, err := exchangeClient.GetDownloadChannelInfo(ctx, testDownloadChannelInfo.Id)
+	assert.Nil(t, err)
+	assert.NotNil(t, downloadChannelInfo)
+	assert.Equal(t, testDownloadChannelInfo, downloadChannelInfo)
+}
+
+func TestStorageV2Service_GetDownloadChannels(t *testing.T) {
+	mock := newSdkMockWithRouter(&mock.Router{
+		Path:                downloadChannelsRouteV2,
+		AcceptedHttpMethods: []string{http.MethodGet},
+		RespHttpCode:        200,
+		RespBody:            `{ "data":` + testDownloadChannelInfoJsonArr + `}`,
+	})
+	exchangeClient := mock.getPublicTestClientUnsafe().StorageV2
+
+	defer mock.Close()
+
+	downloadChannels, err := exchangeClient.GetDownloadChannels(ctx, nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, downloadChannels)
+	assert.Equal(t, testDownloadChannelsPage, downloadChannels)
 }

@@ -95,3 +95,44 @@ func (s *StorageV2Service) GetReplicators(ctx context.Context, rpOpts *Replicato
 
 	return rspDTO.toStruct(s.client.NetworkType())
 }
+
+func (s *StorageV2Service) GetDownloadChannelInfo(ctx context.Context, downloadChannelId *Hash) (*DownloadChannel, error) {
+	if downloadChannelId == nil {
+		return nil, ErrNilAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(downloadChannelRouteV2, downloadChannelId))
+
+	dto := &downloadChannelDTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *StorageV2Service) GetDownloadChannels(ctx context.Context, rpOpts *DownloadChannelsPageOptions) (*DownloadChannelsPage, error) {
+	dcspDTO := &downloadChannelsPageDTO{}
+
+	u, err := addOptions(downloadChannelsRouteV2, rpOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &dcspDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dcspDTO.toStruct(s.client.NetworkType())
+}
