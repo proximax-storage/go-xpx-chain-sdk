@@ -96,14 +96,14 @@ func (s *StorageV2Service) GetReplicators(ctx context.Context, rpOpts *Replicato
 	return rspDTO.toStruct(s.client.NetworkType())
 }
 
-func (s *StorageV2Service) GetDownloadChannelInfo(ctx context.Context, downloadChannelId *Hash) ([]*DownloadChannel, error) {
+func (s *StorageV2Service) GetDownloadChannelInfo(ctx context.Context, downloadChannelId *Hash) (*DownloadChannel, error) {
 	if downloadChannelId == nil {
 		return nil, ErrNilAddress
 	}
 
 	url := net.NewUrl(fmt.Sprintf(downloadChannelRouteV2, downloadChannelId))
 
-	dto := &downloadChannelDTOs{}
+	dto := &downloadChannelDTO{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {

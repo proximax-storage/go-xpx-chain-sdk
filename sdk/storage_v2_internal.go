@@ -494,26 +494,6 @@ func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChann
 	return &downloadChannel, nil
 }
 
-type downloadChannelDTOs []*downloadChannelDTO
-
-func (ref *downloadChannelDTOs) toStruct(networkType NetworkType) ([]*DownloadChannel, error) {
-	var (
-		dtos    = *ref
-		objects = make([]*DownloadChannel, len(dtos))
-	)
-
-	for i, dto := range dtos {
-		object, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		objects[i] = object
-	}
-
-	return objects, nil
-}
-
 type bcDrivesPageDTO struct {
 	BcDrives []bcDriveDTO `json:"data"`
 
