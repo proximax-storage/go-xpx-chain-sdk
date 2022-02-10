@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	baseUrls = []string{"http://localhost:3000"}
+	baseUrls = []string{"http://127.0.0.1:3000"}
 )
 
 // Simple Blockchain API request

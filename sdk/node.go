@@ -6,8 +6,9 @@ package sdk
 
 import (
 	"context"
-	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
+
+	"github.com/proximax-storage/go-xpx-utils/net"
 )
 
 type NodeService service
@@ -16,6 +17,23 @@ func (s *NodeService) GetNodeInfo(ctx context.Context) (*NodeInfo, error) {
 	url := net.NewUrl(nodeInfoRoute)
 
 	dto := &nodeInfoDTO{}
+
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(s.client.NetworkType())
+}
+
+func (s *NodeService) GetNodeUnlockedAccounts(ctx context.Context) ([]*NodeUnlockedAccount, error) {
+	url := net.NewUrl(nodeUnlockedAccountRoute)
+
+	dto := &nodeUnlockedAccountDtos{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {

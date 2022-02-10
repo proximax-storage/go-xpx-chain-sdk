@@ -65,6 +65,18 @@ func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*BlockchainCon
 	return ref.GetNetworkConfigAtHeight(ctx, height)
 }
 
+func (ref *NetworkService) GetActiveAccountVersion(ctx context.Context) (uint32, error) {
+	config, err := ref.GetNetworkConfig(ctx)
+	if err != nil {
+		return 0, err
+	}
+	accountVersion, err := config.NetworkConfig.GetActiveAccountVersion()
+	if err != nil {
+		return 0, err
+	}
+	return accountVersion, nil
+}
+
 func (ref *NetworkService) GetNetworkVersionAtHeight(ctx context.Context, height Height) (*NetworkVersion, error) {
 	netDTO := &networkVersionDTO{}
 

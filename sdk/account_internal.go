@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/proximax-storage/go-xpx-crypto"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
 var addressNet = map[uint8]NetworkType{
@@ -150,27 +150,64 @@ func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
 	return float64(rep)
 }
 
+type supplementalPublicKeysDTO struct {
+	LinkedPublicKey string `json:"linked"`
+	NodePublicKey   string `json:"node"`
+	VrfPublicKey    string `json:"vrf"`
+}
+
+func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*SupplementalPublicKeys, error) {
+	var err error
+	var linkedAccount *PublicAccount = nil
+	var nodeAccount *PublicAccount = nil
+	var vrfAccount *PublicAccount = nil
+	if len(dto.LinkedPublicKey) > 0 {
+		linkedAccount, err = NewAccountFromPublicKey(dto.LinkedPublicKey, networkType)
+	}
+	if len(dto.NodePublicKey) > 0 {
+		nodeAccount, err = NewAccountFromPublicKey(dto.NodePublicKey, networkType)
+	}
+	if len(dto.VrfPublicKey) > 0 {
+		vrfAccount, err = NewAccountFromPublicKey(dto.VrfPublicKey, networkType)
+	}
+	if err != nil {
+		return nil, err
+	}
+	supplementalPublicKeys := SupplementalPublicKeys{linkedAccount, nodeAccount, vrfAccount}
+
+	return &supplementalPublicKeys, nil
+}
+
 type accountInfoDTO struct {
 	Account struct {
-		Address                string         `json:"address"`
-		AddressHeight          uint64DTO      `json:"addressHeight"`
-		PublicKey              string         `json:"publicKey"`
-		PublicKeyHeight        uint64DTO      `json:"publicKeyHeight"`
-		AccountType            AccountType    `json:"accountType"`
-		LinkedAccountPublicKey string         `json:"linkedAccountKey"`
-		Mosaics                []*mosaicDTO   `json:"mosaics"`
-		Reputation             *reputationDTO `json:"reputation"`
+		Address                string                     `json:"address"`
+		AddressHeight          uint64DTO                  `json:"addressHeight"`
+		PublicKey              string                     `json:"publicKey"`
+		PublicKeyHeight        uint64DTO                  `json:"publicKeyHeight"`
+		AccountType            AccountType                `json:"accountType"`
+		SupplementalPublicKeys *supplementalPublicKeysDTO `json:"supplementalPublicKeys"`
+		Mosaics                []*mosaicDTO               `json:"mosaics"`
+		LockedMosaics          []*mosaicDTO               `json:"lockedMosaics"`
+		Reputation             *reputationDTO             `json:"reputation"`
+		Version                uint32                     `json:"version"`
 	} `json:"account"`
 }
 
 func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, error) {
 	var (
 		ms  = make([]*Mosaic, len(dto.Account.Mosaics))
+		lms = make([]*Mosaic, len(dto.Account.LockedMosaics))
 		err error
 	)
 
 	for idx, m := range dto.Account.Mosaics {
 		ms[idx], err = m.toStruct()
+		if err != nil {
+			return nil, err
+		}
+	}
+	for idx, m := range dto.Account.LockedMosaics {
+		lms[idx], err = m.toStruct()
 		if err != nil {
 			return nil, err
 		}
@@ -181,24 +218,22 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		return nil, err
 	}
 
-	var linkedAccount *PublicAccount = nil
-
-	if dto.Account.AccountType != UnlinkedAccount && dto.Account.AccountType != RemoteUnlinkedAccount {
-		linkedAccount, err = NewAccountFromPublicKey(dto.Account.LinkedAccountPublicKey, add.Type)
-		if err != nil {
-			return nil, err
-		}
+	supplementalPublicKeys, err := dto.Account.SupplementalPublicKeys.toStruct(add.Type)
+	if err != nil {
+		return nil, err
 	}
 
 	acc := &AccountInfo{
-		Address:         add,
-		AddressHeight:   dto.Account.AddressHeight.toStruct(),
-		PublicKey:       dto.Account.PublicKey,
-		PublicKeyHeight: dto.Account.PublicKeyHeight.toStruct(),
-		AccountType:     dto.Account.AccountType,
-		LinkedAccount:   linkedAccount,
-		Mosaics:         ms,
-		Reputation:      repConfig.defaultReputation,
+		Address:                add,
+		AddressHeight:          dto.Account.AddressHeight.toStruct(),
+		PublicKey:              dto.Account.PublicKey,
+		PublicKeyHeight:        dto.Account.PublicKeyHeight.toStruct(),
+		AccountType:            dto.Account.AccountType,
+		SupplementalPublicKeys: supplementalPublicKeys,
+		Mosaics:                ms,
+		LockedMosaics:          lms,
+		Version:                dto.Account.Version,
+		Reputation:             repConfig.defaultReputation,
 	}
 
 	if dto.Account.Reputation != nil {

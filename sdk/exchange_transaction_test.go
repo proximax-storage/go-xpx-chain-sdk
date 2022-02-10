@@ -5,8 +5,9 @@
 package sdk
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -78,7 +79,7 @@ func TestAddExchangeOfferTransactionToAggregate(t *testing.T) {
 }
 
 func TestAddExchangeOfferTransactionSigning(t *testing.T) {
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 
 	tx, err := NewAddExchangeOfferTransaction(
@@ -159,7 +160,7 @@ func TestExchangeOfferTransactionToAggregate(t *testing.T) {
 }
 
 func TestExchangeOfferTransactionSigning(t *testing.T) {
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 
 	owner, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
@@ -230,7 +231,7 @@ func TestRemoveExchangeOfferTransactionToAggregate(t *testing.T) {
 }
 
 func TestRemoveExchangeOfferTransactionSigning(t *testing.T) {
-	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
 	assert.Nil(t, err)
 
 	tx, err := NewRemoveExchangeOfferTransaction(

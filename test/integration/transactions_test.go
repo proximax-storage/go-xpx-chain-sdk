@@ -10,11 +10,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	math "math/rand"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 
 	"github.com/stretchr/testify/assert"
 
@@ -69,12 +70,12 @@ func init() {
 		panic(err)
 	}
 
-	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey)
+	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey, 1)
 	if err != nil {
 		panic(err)
 	}
 
-	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey)
+	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -232,10 +233,10 @@ func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.Aggre
 }
 
 func TestAccountLinkTransaction(t *testing.T) {
-	rootAccount, err := client.NewAccount()
+	rootAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(rootAccount)
-	childAccount, err := client.NewAccount()
+	childAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(childAccount)
 
@@ -341,7 +342,7 @@ func TestTransferTransaction(t *testing.T) {
 
 func TestTransferTransaction_SecureMessage(t *testing.T) {
 	const message = "I love you forever"
-	recipientAccount, err := client.NewAccount()
+	recipientAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	secureMessage, err := sdk.NewSecureMessageFromPlaintText(message, defaultAccount.PrivateKey, recipientAccount.KeyPair.PublicKey)
@@ -367,12 +368,12 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 }
 
 func TestModifyMultisigTransaction(t *testing.T) {
-	acc1, err := client.NewAccount()
+	acc1, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
-	acc2, err := client.NewAccount()
+	acc2, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
-	multisigAccount, err := client.NewAccount()
+	multisigAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(multisigAccount)
 
@@ -483,7 +484,7 @@ func TestSecretTransaction(t *testing.T) {
 }
 
 func TestCompleteAggregateTransaction(t *testing.T) {
-	acc, err := client.NewAccount()
+	acc, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	ttx, err := client.NewTransferTransaction(
@@ -505,7 +506,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 }
 
 func TestAggregateBoundedTransaction(t *testing.T) {
-	receiverAccount, err := client.NewAccount()
+	receiverAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	ttx1, err := client.NewTransferTransaction(
@@ -570,7 +571,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	senderAccount, err := client.NewAccount()
+	senderAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
@@ -786,9 +787,9 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 }
 
 func TestAccountPropertiesAddressTransaction(t *testing.T) {
-	blockAccount, err := client.NewAccount()
+	blockAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
-	testAccount, err := client.NewAccount()
+	testAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	fmt.Println(blockAccount, testAccount)
@@ -827,7 +828,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	testAccount, err := client.NewAccount()
+	testAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	fmt.Println(testAccount)
@@ -848,7 +849,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 }
 
 func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
-	testAccount, err := client.NewAccount()
+	testAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
 	fmt.Println(testAccount)
@@ -869,7 +870,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 }
 
 func TestAccountMetadataTransaction(t *testing.T) {
-	childAccount, err := client.NewAccount()
+	childAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(childAccount)
 	metadataTx, err := client.NewAccountMetadataTransaction(
@@ -1042,7 +1043,7 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 }
 
 func TestModifyMosaicLevyTransaction(t *testing.T) {
-	recipientAccount, err := client.NewAccount()
+	recipientAccount, err := client.NewAccountFromVersion(1)
 
 	// fake transaction for recipientAccount
 	result := sendTransaction(t, func() (sdk.Transaction, error) {

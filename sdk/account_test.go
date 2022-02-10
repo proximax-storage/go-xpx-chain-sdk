@@ -18,10 +18,11 @@ var (
 		PublicKey:       "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
 		PublicKeyHeight: uint64DTO{0, 0}.toStruct(),
 		AccountType:     MainAccount,
-		LinkedAccount: &PublicAccount{
+		Version:         1,
+		SupplementalPublicKeys: &SupplementalPublicKeys{&PublicAccount{
 			&Address{Type: MijinTest, Address: "SDYVPENRSMSGU24XSSCQPHKKWYUNKYFDLAVTUMMS"},
 			"F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
-		},
+		}, nil, nil},
 		Mosaics: []*Mosaic{
 			newMosaicPanic(newMosaicIdPanic(uint64DTO{298950589, 1817567325}.toUint64()), uint64DTO{3863990592, 95248}.toStruct()),
 		},
@@ -58,8 +59,25 @@ const (
          0
       ],
 	  "accountType": 1,
-      "linkedAccountKey": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
+	  "supplementalPublicKeys": {
+		  "linked": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
+		  "node": "",
+		  "vrf": ""
+	  },
+	  "version": 1,
       "mosaics":[  
+         {  
+            "id":[  
+               298950589,
+               1817567325
+            ],
+            "amount":[  
+               3863990592,
+               95248
+            ]
+         }
+      ],
+	  "lockedMosaics":[  
          {  
             "id":[  
                298950589,

@@ -102,7 +102,7 @@ func (m *sdkMock) getPublicTestClientUnsafe() *Client {
 func TestClient_AdaptAccount(t *testing.T) {
 	var stockHash = &Hash{1}
 	var defaultHash = &Hash{2}
-	account, err := NewAccount(PublicTest, stockHash)
+	account, err := NewAccount(PublicTest, stockHash, 1)
 	assert.Nil(t, err)
 
 	config, err := NewConfigWithReputation(

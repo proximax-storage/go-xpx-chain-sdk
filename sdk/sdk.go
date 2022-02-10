@@ -241,7 +241,7 @@ func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error)
 
 // AdaptAccount returns a new account with the same network type and generation hash like a Client
 func (c *Client) AdaptAccount(account *Account) (*Account, error) {
-	return c.NewAccountFromPrivateKey(account.PrivateKey.String())
+	return c.NewAccountFromPrivateKey(account.PrivateKey.String(), account.Version)
 }
 
 // doNewRequest creates new request, Do it & return result in V
@@ -303,7 +303,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		b := &bytes.Buffer{}
 		b.ReadFrom(resp.Body)
 		httpError := HttpError{
-			fmt.Errorf("sdk do request: %s", b.String()),
+			fmt.Errorf("sdk do request: %s %d", b.String(), resp.StatusCode),
 			resp.StatusCode,
 		}
 		return nil, &httpError
@@ -354,12 +354,21 @@ func (c *Client) newRequest(method, urlStr string, body interface{}) (*http.Requ
 	return req, nil
 }
 
-func (c *Client) NewAccount() (*Account, error) {
-	return NewAccount(c.config.NetworkType, c.config.GenerationHash)
+// Use NewAccountFromVersion instead when version is known before hand to avoid an API call!
+func (c *Client) NewAccount(ctx context.Context) (*Account, error) {
+	accountVersion, err := c.Network.GetActiveAccountVersion(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return NewAccount(c.config.NetworkType, c.config.GenerationHash, accountVersion)
 }
 
-func (c *Client) NewAccountFromPrivateKey(pKey string) (*Account, error) {
-	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash)
+func (c *Client) NewAccountFromVersion(accountVersion uint32) (*Account, error) {
+	return NewAccount(c.config.NetworkType, c.config.GenerationHash, accountVersion)
+}
+
+func (c *Client) NewAccountFromPrivateKey(pKey string, accountVersion uint32) (*Account, error) {
+	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash, accountVersion)
 }
 
 func (c *Client) NewAccountFromPublicKey(pKey string) (*PublicAccount, error) {
@@ -404,6 +413,24 @@ func (c *Client) NewMosaicAliasTransaction(deadline *Deadline, mosaicId *MosaicI
 
 func (c *Client) NewAccountLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction) (*AccountLinkTransaction, error) {
 	tx, err := NewAccountLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewNodeKeyLinkTransaction(deadline *Deadline, remoteAccount string, linkAction AccountLinkAction) (*NodeKeyLinkTransaction, error) {
+	tx, err := NewNodeKeyLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewVrfKeyLinkTransaction(deadline *Deadline, remoteAccount *PublicAccount, linkAction AccountLinkAction) (*VrfKeyLinkTransaction, error) {
+	tx, err := NewVrfKeyLinkTransaction(deadline, remoteAccount, linkAction, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -476,6 +503,15 @@ func (c *Client) NewNetworkConfigTransaction(deadline *Deadline, delta Duration,
 
 func (c *Client) NewBlockchainUpgradeTransaction(deadline *Deadline, upgradePeriod Duration, newBlockChainVersion BlockChainVersion) (*BlockchainUpgradeTransaction, error) {
 	tx, err := NewBlockchainUpgradeTransaction(deadline, upgradePeriod, newBlockChainVersion, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAccountV2UpgradeTransaction(deadline *Deadline, NewAccount *PublicAccount) (*AccountV2UpgradeTransaction, error) {
+	tx, err := NewAccountV2UpgradeTransaction(deadline, NewAccount, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

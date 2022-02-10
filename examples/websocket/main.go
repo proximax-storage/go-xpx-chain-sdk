@@ -41,7 +41,11 @@ func main() {
 	//Starting listening messages from websocket
 	go wsc.Listen()
 
-	destAccount, _ := client.NewAccountFromPrivateKey(privateKey)
+	version, err := client.Network.GetActiveAccountVersion(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	destAccount, err := client.NewAccountFromPrivateKey(privateKey, version)
 	address := destAccount.PublicAccount.Address
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
@@ -104,7 +108,11 @@ func main() {
 func doTransferTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing transfer transaction")
-	acc, err := client.NewAccountFromPrivateKey(privateKey)
+	version, err := client.Network.GetActiveAccountVersion(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	acc, err := client.NewAccountFromPrivateKey(privateKey, version)
 
 	ttx, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
@@ -134,7 +142,11 @@ func doTransferTransaction(address *sdk.Address, client *sdk.Client) {
 func doBondedAggregateTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
-	acc, err := client.NewAccountFromPrivateKey(privateKey)
+	version, err := client.Network.GetActiveAccountVersion(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	acc, err := client.NewAccountFromPrivateKey(privateKey, version)
 
 	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),

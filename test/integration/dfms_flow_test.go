@@ -6,14 +6,15 @@ package integration
 
 import (
 	"fmt"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDriveFlowTransaction(t *testing.T) {
-	exchangeAccount, err := client.NewAccount()
+	exchangeAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(exchangeAccount)
 	var exchangeAmount uint64 = 1000000
@@ -35,11 +36,11 @@ func TestDriveFlowTransaction(t *testing.T) {
 
 	waitForBlocksCount(t, configDelta)
 
-	driveAccount, err := client.NewAccount()
+	driveAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(driveAccount)
 
-	replicatorAccount, err := client.NewAccount()
+	replicatorAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(replicatorAccount)
 

@@ -446,6 +446,65 @@ func (dto *accountLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	}, nil
 }
 
+type nodeKeyLinkTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		RemoteAccountKey string            `json:"remoteAccountKey"`
+		Action           AccountLinkAction `json:"action"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *nodeKeyLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NodeKeyLinkTransaction{
+		*atx,
+		dto.Tx.RemoteAccountKey,
+		dto.Tx.Action,
+	}, nil
+}
+
+type vrfKeyLinkTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		RemoteAccountKey string            `json:"remoteAccountKey"`
+		Action           AccountLinkAction `json:"action"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *vrfKeyLinkTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewAccountFromPublicKey(dto.Tx.RemoteAccountKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &VrfKeyLinkTransaction{
+		*atx,
+		acc,
+		dto.Tx.Action,
+	}, nil
+}
+
 type networkConfigTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
@@ -518,6 +577,36 @@ func (dto *blockchainUpgradeTransactionDTO) toStruct(*Hash) (Transaction, error)
 		*atx,
 		Duration(upgradePeriod),
 		BlockChainVersion(newBlockChainVersion),
+	}, nil
+}
+
+type accountV2UpgradeTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		NewAccountPublicKey string `json:"newAccountPublicKey"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *accountV2UpgradeTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := NewAccountFromPublicKey(dto.Tx.NewAccountPublicKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AccountV2UpgradeTransaction{
+		*atx,
+		acc,
 	}, nil
 }
 

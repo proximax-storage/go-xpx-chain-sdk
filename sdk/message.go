@@ -13,6 +13,13 @@ type MessageType uint8
 const (
 	PlainMessageType MessageType = iota
 	SecureMessageType
+	PersistentHarvestingDelegationMessageType = 0xFE
+)
+
+type MessageMarker [8]uint8
+
+const (
+	PersistentDelegationUnlockMarker = "2A8061577301E2"
 )
 
 type Message interface {
@@ -133,7 +140,62 @@ func (m *messageDTO) toStruct() (Message, error) {
 		return NewPlainMessage(string(b)), nil
 	case SecureMessageType:
 		return NewSecureMessage(b), nil
+	case PersistentHarvestingDelegationMessageType:
+		return NewPersistentHarvestingDelegationMessage(b), nil
 	default:
 		return nil, errors.New("Not supported MessageType")
 	}
+}
+
+type PersistentHarvestingDelegationMessage struct {
+	payload []byte
+}
+
+func (m *PersistentHarvestingDelegationMessage) String() string {
+	return str.StructToString(
+		"PersistentHarvestingDelegationMessage",
+		str.NewField("Type", str.IntPattern, m.Type()),
+		str.NewField("Payload", str.StringPattern, m.Payload()),
+	)
+}
+
+func (m *PersistentHarvestingDelegationMessage) Type() MessageType {
+	return PersistentHarvestingDelegationMessageType
+}
+
+func (m *PersistentHarvestingDelegationMessage) Payload() []byte {
+	return m.payload
+}
+
+func (m *PersistentHarvestingDelegationMessage) Message() string {
+	return string(m.payload)
+}
+
+func NewPersistentHarvestingDelegationMessage(payload []byte) *PersistentHarvestingDelegationMessage {
+	return &PersistentHarvestingDelegationMessage{payload}
+}
+
+func NewPersistentHarvestingDelegationMessageFromPlainText(harvesterPrivateKey *xpxcrypto.PrivateKey, vrfPrivateKey *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey) (*PersistentHarvestingDelegationMessage, error) {
+	// Ephemeral keys always use Ed25519 Sha3 Engine
+	ephemeralKeyPair, err := xpxcrypto.NewKeyPairByEngine(Ephemeral_Key_Derivation_Scheme)
+	if err != nil {
+		return nil, err
+	}
+	concat := append(harvesterPrivateKey.Raw, vrfPrivateKey.Raw...)
+	recipientKeyPair, err := xpxcrypto.NewKeyPair(nil, recipient, Node_Boot_Key_Derivation_Scheme)
+	if err != nil {
+		return nil, err
+	}
+	blockCypher := xpxcrypto.NewEd25519Sha3BlockCipher(ephemeralKeyPair, recipientKeyPair, nil)
+	encoded, err := blockCypher.EncryptGCMNacl(concat, nil)
+	if err != nil {
+		return nil, err
+	}
+	marker, err := hex.DecodeString(PersistentDelegationUnlockMarker)
+	if err != nil {
+		return nil, err
+	}
+	encrypted := append(append(marker, ephemeralKeyPair.PublicKey.Raw...), encoded...)
+
+	return &PersistentHarvestingDelegationMessage{encrypted}, nil
 }
