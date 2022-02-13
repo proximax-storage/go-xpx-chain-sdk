@@ -164,6 +164,32 @@ table ReplicatorOffboardingTransactionBuffer {
     driveKey: [ubyte];
 }
 
+table OpinionsBuffer {
+    Opinion: [uint];   
+}
+
+table DownloadApprovalTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    downloadChannelId: [ubyte];
+    approvalTrigger: [ubyte];
+    sequenceNumber: ushort;
+    responseToFinishDownloadTransaction: bool;
+    judgingCount: ubyte;
+    overlappingCount: ubyte;
+    judgedCount: ubyte;
+    opinionElementCount: ubyte;
+    publicKeys: [KeysBuffer];
+    signatures: [SignaturesBuffer];
+    presentOpinions: [ubyte];
+    opinions: [OpinionsBuffer];
+}
+
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
@@ -191,3 +217,7 @@ root_type SignaturesBuffer;
 root_type EndDriveVerificationTransactionV2Buffer;
 
 root_type ReplicatorOffboardingTransactionBuffer;
+
+root_type OpinionsBuffer;
+
+root_type DownloadApprovalTransactionBuffer;

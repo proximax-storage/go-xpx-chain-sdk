@@ -2709,6 +2709,7 @@ const (
 	MaxFeeSize                                   = BaseInt64Size
 	DeadLineSize                                 = BaseInt64Size
 	DurationSize                                 = BaseInt64Size
+	OpinionSizeSize                              = BaseInt64Size
 	StorageSizeSize                              = BaseInt64Size
 	TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
@@ -2798,6 +2799,7 @@ const (
 	KeyCountSize                                 = 1
 	JudgingKeyCountSize                          = 1
 	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
+	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + 2 + 1
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
 )
@@ -2868,6 +2870,7 @@ const (
 	FinishDownload            EntityType = 0x4862
 	VerificationPayment       EntityType = 0x4C62
 	EndDriveVerificationV2    EntityType = 0x4F62
+	DownloadApproval          EntityType = 0x4D62
 	DriveClosure              EntityType = 0x4E62
 	ReplicatorOffboarding     EntityType = 0x4762
 )
@@ -2939,6 +2942,7 @@ const (
 	FinishDownloadVersion            EntityVersion = 1
 	VerificationPaymentVersion       EntityVersion = 1
 	EndDriveVerificationV2Version    EntityVersion = 1
+	DownloadApprovalVersion          EntityVersion = 1
 	DriveClosureVersion              EntityVersion = 1
 	ReplicatorOffboardingVersion     EntityVersion = 1
 )
@@ -3230,6 +3234,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveClosureTransactionDTO{}
 	case ReplicatorOffboarding:
 		dto = &replicatorOffboardingTransactionDTO{}
+	case DownloadApproval:
+		dto = &downloadApprovalTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

@@ -592,3 +592,19 @@ func (t *downloadChannelsPageDTO) toStruct(networkType NetworkType) (*DownloadCh
 
 	return page, nil
 }
+
+type opinionDTO struct {
+	Opinion []uint64DTO
+}
+
+func (ref *opinionDTO) toStruct() (*Opinion, error) {
+	opinion := make([]OpinionSize, 0)
+	for _, dto := range ref.Opinion {
+		info := dto.toStruct()
+		opinion = append(opinion, info)
+	}
+
+	return &Opinion{
+		Opinion: opinion,
+	}, nil
+}

@@ -371,3 +371,20 @@ type ReplicatorOffboardingTransaction struct {
 	AbstractTransaction
 	DriveKey *PublicAccount
 }
+
+type Opinion struct {
+	Opinion []OpinionSize
+}
+
+// Download Approval Transaction
+type DownloadApprovalTransaction struct {
+	AbstractTransaction
+	DownloadChannelId                   *Hash
+	ApprovalTrigger                     *Hash
+	SequenceNumber                      uint16
+	ResponseToFinishDownloadTransaction bool
+	PublicKeys                          []*PublicAccount
+	Signatures                          []*Signature
+	PresentOpinions                     []uint8
+	Opinions                            []*Opinion
+}
