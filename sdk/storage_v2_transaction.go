@@ -589,6 +589,7 @@ func NewDownloadPaymentTransaction(
 	if downloadChannelId == nil {
 		return nil, ErrNilHash
 	}
+
 	if downloadSize <= 0 {
 		return nil, errors.New("downloadSize should be positive")
 	}
@@ -1068,6 +1069,15 @@ func NewEndDriveVerificationTransactionV2(
 	opinions []uint8,
 	networkType NetworkType,
 ) (*EndDriveVerificationTransactionV2, error) {
+
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
+	if verificationTrigger == nil {
+		return nil, ErrNilHash
+	}
+
 	tx := EndDriveVerificationTransactionV2{
 		AbstractTransaction: AbstractTransaction{
 			Version:     EndDriveVerificationV2Version,
@@ -1158,7 +1168,7 @@ func opinionsToArrayToBuffer(builder *flatbuffers.Builder, keyCount, signaturesC
 
 	byteNumber := 0
 	for i, o := range opinions {
-		oB[byteNumber] |= o << i % 8
+		oB[byteNumber] |= o << (uint8(i) % 8)
 
 		if i != 0 && i%8 == 0 {
 			byteNumber++
@@ -1356,11 +1366,11 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 
 	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 
-	transactions.DriveClosureTransactionBufferStart(builder)
+	transactions.ReplicatorOffboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveV)
+	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, driveV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -1407,6 +1417,10 @@ func NewReplicatorOffboardingTransaction(
 	networkType NetworkType,
 ) (*ReplicatorOffboardingTransaction, error) {
 
+	if driveKey == nil {
+		return nil, ErrNilAccount
+	}
+
 	return &ReplicatorOffboardingTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Deadline:    deadline,
@@ -1441,19 +1455,18 @@ func (tx *ReplicatorOffboardingTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	b, err := hex.DecodeString(tx.DriveKey.PublicKey)
+	driveB, err := hex.DecodeString(tx.DriveKey.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	dkV := transactions.TransactionBufferCreateByteVector(builder, b)
+	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 
 	transactions.ReplicatorOffboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, dkV)
-
+	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, driveV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -1467,7 +1480,7 @@ func (tx *ReplicatorOffboardingTransaction) Size() int {
 type replicatorOffboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey *PublicAccount `json:"driveKey"`
+		DriveKey string `json:"driveKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1483,9 +1496,14 @@ func (dto *replicatorOffboardingTransactionDTO) toStruct(*Hash) (Transaction, er
 		return nil, err
 	}
 
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ReplicatorOffboardingTransaction{
 		*atx,
-		dto.Tx.DriveKey,
+		driveKey,
 	}, nil
 }
 
