@@ -1366,11 +1366,11 @@ func (tx *DriveClosureTransaction) Bytes() ([]byte, error) {
 
 	driveV := transactions.TransactionBufferCreateByteVector(builder, driveB)
 
-	transactions.ReplicatorOffboardingTransactionBufferStart(builder)
+	transactions.DriveClosureTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
-	transactions.ReplicatorOffboardingTransactionBufferAddDriveKey(builder, driveV)
+	transactions.DriveClosureTransactionBufferAddDriveKey(builder, driveV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
