@@ -909,7 +909,7 @@ func TestAccountMetadataTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	hash, _ := sdk.CalculateUniqueAccountMetadataId(defaultAccount.Address, childAccount.PublicAccount, 1)
-	metadata, err := client.MetadataNem.GetMetadataNemInfo(ctx, hash)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
 	assert.Nil(t, err)
 	println(metadata)
 }
@@ -972,7 +972,7 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	hash, _ := sdk.CalculateUniqueMosaicMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, mosaicId)
-	metadata, err := client.MetadataNem.GetMetadataNemInfo(ctx, hash)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
 	assert.Nil(t, err)
 	println(metadata)
 }
@@ -1036,7 +1036,7 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 
 	hash, _ := sdk.CalculateUniqueNamespaceMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, namespaceId)
-	metadata, err := client.MetadataNem.GetMetadataNemInfo(ctx, hash)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
 	assert.Nil(t, err)
 	println(metadata)
 }

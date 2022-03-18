@@ -24,7 +24,7 @@ import (
 const (
 	DefaultWebsocketReconnectionTimeout = time.Second * 5
 	DefaultFeeCalculationStrategy       = MiddleCalculationStrategy
-	DefaultMaxFee                       = 5 * 1000000
+	DefaultMaxFee                       = 75 * 1000000
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -38,9 +38,9 @@ type FeeCalculationStrategy uint32
 
 // FeeCalculationStrategy enums
 const (
-	HighCalculationStrategy   FeeCalculationStrategy = 2500
-	MiddleCalculationStrategy FeeCalculationStrategy = 250
-	LowCalculationStrategy    FeeCalculationStrategy = 25
+	HighCalculationStrategy   FeeCalculationStrategy = 1500000
+	MiddleCalculationStrategy FeeCalculationStrategy = 150000
+	LowCalculationStrategy    FeeCalculationStrategy = 15000
 )
 
 // Provides service configuration
@@ -168,7 +168,7 @@ type Client struct {
 	Lock          *LockService
 	Contract      *ContractService
 	Metadata      *MetadataService
-	MetadataNem   *MetadataNemService
+	MetadataV2    *MetadataV2Service
 }
 
 type service struct {
@@ -212,7 +212,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
-	c.MetadataNem = (*MetadataNemService)(&c.common)
+	c.MetadataV2 = (*MetadataV2Service)(&c.common)
 
 	return c
 }

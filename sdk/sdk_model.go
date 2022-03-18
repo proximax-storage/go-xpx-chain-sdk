@@ -99,13 +99,17 @@ type PaginationOrderingOptions struct {
 	PageNumber    uint64 `url:"pageNumber,omitempty"`
 	Offset        string `url:"offset,omitempty"`
 	SortField     string `url:"sortField,omitempty"`
-	SortDirection string `url:"sortDirection,omitempty"`
+	SortDirection string `url:"order,omitempty"`
 }
 
 type baseInt64 int64
 
 func (m baseInt64) String() string {
 	return fmt.Sprintf("%d", m)
+}
+
+func (m baseInt64) ToHexString() string {
+	return uint64ToHex(uint64(m))
 }
 
 func (m baseInt64) toArray() [2]uint32 {
