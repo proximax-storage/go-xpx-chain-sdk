@@ -79,8 +79,8 @@ func (confirmed *ConfirmedUsedSize) String() string {
 }
 
 type Shard struct {
-	DownloadChannelId *Hash
-	Replicators       []*PublicAccount
+	Id          *Hash
+	Replicators []*PublicAccount
 }
 
 type Verification struct {
@@ -105,22 +105,78 @@ func (verification *Verification) String() string {
 	)
 }
 
+type DownloadShard struct {
+	DownloadChannelId *Hash
+}
+
+func (ds *DownloadShard) String() string {
+	return fmt.Sprintf(`"DownloadChannelId": %s`, ds.DownloadChannelId.String())
+}
+
+type UploadInfoStorageV2 struct {
+	Key        *PublicAccount
+	UploadSize uint64
+}
+
+func (uis *UploadInfoStorageV2) String() string {
+	return fmt.Sprintf(
+		`
+		"Key": %s,
+		"UploadSize": %d
+		`,
+		uis.Key.String(),
+		uis.UploadSize,
+	)
+}
+
+type DataModificationShard struct {
+	Replicator             *PublicAccount
+	ActualShardReplicators []*UploadInfoStorageV2
+	FormerShardReplicators []*UploadInfoStorageV2
+	OwnerUpload            uint64
+}
+
+func (uis *DataModificationShard) String() string {
+	actualShardReplicators := ""
+	for _, asr := range uis.ActualShardReplicators {
+		actualShardReplicators += asr.String() + " "
+	}
+
+	formerShardReplicators := ""
+	for _, fsr := range uis.FormerShardReplicators {
+		formerShardReplicators += fsr.String() + " "
+	}
+
+	return fmt.Sprintf(
+		`
+		"Replicator": %s,
+		"ActualShardReplicators": %s,
+		"FormerShardReplicators": %s,
+		"OwnerUpload": %d
+		`,
+		uis.Replicator.String(),
+		actualShardReplicators,
+		formerShardReplicators,
+		uis.OwnerUpload,
+	)
+}
+
 type BcDrive struct {
 	MultisigAccount            *PublicAccount
 	Owner                      *PublicAccount
 	RootHash                   *Hash
 	Size                       StorageSize
-	UsedSize                   StorageSize
-	MetaFilesSize              StorageSize
+	UsedSizeBytes              StorageSize
+	MetaFilesSizeBytes         StorageSize
 	ReplicatorCount            uint16
-	OwnerCumulativeUploadSize  StorageSize
 	ActiveDataModifications    []*ActiveDataModification
 	CompletedDataModifications []*CompletedDataModification
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
 	Replicators                []*PublicAccount
 	OffboardingReplicators     []*PublicAccount
 	Verifications              []*Verification
-	Shards                     []*Shard
+	DownloadShards             []*DownloadShard
+	DataModificationShards     []*DataModificationShard
 }
 
 func (drive *BcDrive) String() string {
@@ -130,33 +186,33 @@ func (drive *BcDrive) String() string {
 		"Owner": %s,
 		"RootHash": %s,
 		"Size": %d,
-		"UsedSize": %d,
-		"MetaFilesSize": %d,
+		"UsedSizeBytes": %d,
+		"MetaFilesSizeBytes": %d,
 		"ReplicatorCount": %d,
-		"OwnerCumulativeUploadSize": %d,
 		"ActiveDataModifications": %+v,
 		"CompletedDataModifications": %+v,
 		"ConfirmedUsedSizes": %+v,
 		"Replicators": %s,
 		"OffboardingReplicators": %s,
 		"Verifications": %+v,
-		"Shards": %+v,
+		"DownloadShards": %+v,
+		"DataModificationShards": %+v,
 		`,
 		drive.MultisigAccount,
 		drive.Owner,
 		drive.RootHash,
 		drive.Size,
-		drive.UsedSize,
-		drive.MetaFilesSize,
+		drive.UsedSizeBytes,
+		drive.MetaFilesSizeBytes,
 		drive.ReplicatorCount,
-		drive.OwnerCumulativeUploadSize,
 		drive.ActiveDataModifications,
 		drive.CompletedDataModifications,
 		drive.ConfirmedUsedSizes,
 		drive.Replicators,
 		drive.OffboardingReplicators,
 		drive.Verifications,
-		drive.Shards,
+		drive.DownloadShards,
+		drive.DataModificationShards,
 	)
 }
 
@@ -195,21 +251,21 @@ func (info *DriveInfo) String() string {
 }
 
 type Replicator struct {
-	ReplicatorAccount *PublicAccount
-	Version           uint32
-	Capacity          Amount
-	Drives            []*DriveInfo // TODO make map
+	Account  *PublicAccount
+	Version  uint32
+	Capacity Amount
+	Drives   []*DriveInfo // TODO make map
 }
 
 func (replicator *Replicator) String() string {
 	return fmt.Sprintf(
 		`
-		ReplicatorAccount: %s, 
+		Account: %s, 
 		Version: %d,
 		Capacity: %d,
 		Drives: %+v,
 		`,
-		replicator.ReplicatorAccount,
+		replicator.Account,
 		replicator.Version,
 		replicator.Capacity,
 		replicator.Drives,
@@ -242,13 +298,14 @@ func (payment *Payment) String() string {
 }
 
 type DownloadChannel struct {
-	Id                    *Hash
-	Consumer              *PublicAccount
-	Drive                 *PublicAccount
-	DownloadSize          StorageSize
-	DownloadApprovalCount uint16
-	ListOfPublicKeys      []*PublicAccount
-	CumulativePayments    []*Payment
+	Id                        *Hash
+	Consumer                  *PublicAccount
+	Drive                     *PublicAccount
+	DownloadSize              StorageSize
+	DownloadApprovalCountLeft uint16
+	ListOfPublicKeys          []*PublicAccount
+	ShardReplicators          []*PublicAccount
+	CumulativePayments        []*Payment
 }
 
 func (downloadChannel *DownloadChannel) String() string {
@@ -258,7 +315,7 @@ func (downloadChannel *DownloadChannel) String() string {
 			"Consumer": %s,
 			"Drive": %s,
 			"DownloadSize": %d,
-			"DownloadApprovalCount": %d,
+			"DownloadApprovalCountLeft": %d,
 			"ListOfPublicKeys": %s,
 			"CumulativePayments": %+v,
 		`,
@@ -266,7 +323,7 @@ func (downloadChannel *DownloadChannel) String() string {
 		downloadChannel.Consumer,
 		downloadChannel.Drive,
 		downloadChannel.DownloadSize,
-		downloadChannel.DownloadApprovalCount,
+		downloadChannel.DownloadApprovalCountLeft,
 		downloadChannel.ListOfPublicKeys,
 		downloadChannel.CumulativePayments,
 	)
@@ -379,19 +436,20 @@ type Opinion struct {
 // Data Modification Approval Transaction
 type DataModificationApprovalTransaction struct {
 	AbstractTransaction
-	DriveKey             *PublicAccount
-	DataModificationId   *Hash
-	FileStructureCdi     *Hash
-	FileStructureSize    uint64
-	MetaFileSizeBytes    uint64
-	UsedDriveSize        uint64
-	JudgingKeysCount     uint8
-	OverlappingKeysCount uint8
-	JudgedKeysCount      uint8
-	PublicKeys           []*PublicAccount
-	Signatures           []*Signature
-	PresentOpinions      []uint8
-	Opinions             []uint64
+	DriveKey               *PublicAccount
+	DataModificationId     *Hash
+	FileStructureCdi       *Hash
+	FileStructureSizeBytes uint64
+	MetaFilesSizeBytes     uint64
+	UsedDriveSizeBytes     uint64
+	//JudgingKeysCount       uint8
+	//OverlappingKeysCount   uint8
+	//JudgedKeysCount        uint8
+	//OpinionElementCount    uint16
+	//PublicKeys             []*PublicAccount
+	//Signatures             []*Signature
+	//PresentOpinions        []uint8
+	//Opinions               []uint64
 }
 
 type DataModificationSingleApprovalTransaction struct {
@@ -411,6 +469,7 @@ type DownloadApprovalTransaction struct {
 	JudgingKeysCount     uint8
 	OverlappingKeysCount uint8
 	JudgedKeysCount      uint8
+	OpinionElementCount  uint16
 	PublicKeys           []*PublicAccount
 	Signatures           []*Signature
 	PresentOpinions      []uint8

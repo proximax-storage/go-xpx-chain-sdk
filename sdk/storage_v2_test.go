@@ -15,88 +15,111 @@ import (
 
 const (
 	testBcDriveInfoJson = `{
-    "drive": {
-      "multisig": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-      "multisigAddress": "9048760066A50F0F65820D3008A79CF73E1034A564BF44AB3E",
-      "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
-      "rootHash": "0100000000000000000000000000000000000000000000000000000000000000",
-      "size": [
-        1000,
-        0
-      ],
-      "usedSize": [
-        0,
-        0
-      ],
-      "metaFilesSize": [
-        20,
-        0
-      ],
-      "replicatorCount": 5,
-	  "ownerCumulativeUploadSize": [
-		  10,
-		  0
-	  ],
-      "activeDataModifications": [
-        {
-          "id": "0100000000000000000000000000000000000000000000000000000000000000",
-          "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
-          "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-          "expectedUploadSize": [
-            100,
-            0
-          ],
-		  "actualUploadSize": [
-			50,
-			0
-		  ],
-		  "folderName": "C://MyStorage",
-		  "readyForApproval": false
-        }
-      ],
-      "completedDataModifications": [
-        {
-          "id": "0100000000000000000000000000000000000000000000000000000000000000",
-          "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
-          "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
-		  "expectedUploadSize": [
-		    100,
-		    0
-		  ],
-		  "actualUploadSize": [
-		    50,
-		    0
-		  ],
-		  "folderName": "C://MyStorage",
-		  "readyForApproval": false,
-          "state": 0
-        }
-      ],
-	  "confirmedUsedSizes": [
-		{
-		  "replicator": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
-		  "size": [
-			1000,
-			0
-		  ]
-		}
-	  ],
-	  "replicators": [
-		"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
-		"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
-	  ],
-	  "verifications": [
-		{
-		  "verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
-		  "expiration": [
-				0,
-				0
-			],
-		  "expired": true,
-		  "shards": [],
-	    }
-	  ]
-    }
+  "drive": {
+    "multisig": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
+    "multisigAddress": "9048760066A50F0F65820D3008A79CF73E1034A564BF44AB3E",
+    "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+    "rootHash": "0100000000000000000000000000000000000000000000000000000000000000",
+    "size": [
+      1000,
+      0
+    ],
+    "usedSizeBytes": [
+      0,
+      0
+    ],
+    "metaFilesSizeBytes": [
+      20,
+      0
+    ],
+    "replicatorCount": 5,
+    "activeDataModifications": [
+      {
+        "id": "0100000000000000000000000000000000000000000000000000000000000000",
+        "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+        "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
+        "expectedUploadSize": [
+          100,
+          0
+        ],
+        "actualUploadSize": [
+          50,
+          0
+        ],
+        "folderName": "C://MyStorage",
+        "readyForApproval": false
+      }
+    ],
+    "completedDataModifications": [
+      {
+        "id": "0100000000000000000000000000000000000000000000000000000000000000",
+        "owner": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+        "downloadDataCdi": "0100000000000000000000000000000000000000000000000000000000000000",
+        "expectedUploadSize": [
+          100,
+          0
+        ],
+        "actualUploadSize": [
+          50,
+          0
+        ],
+        "folderName": "C://MyStorage",
+        "readyForApproval": false,
+        "state": 0
+      }
+    ],
+    "confirmedUsedSizes": [
+      {
+        "replicator": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
+        "size": [
+          1000,
+          0
+        ]
+      }
+    ],
+    "replicators": [
+      "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+      "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
+    ],
+	"offboardingReplicators": [
+      "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+      "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
+    ],
+    "verifications": [
+      {
+        "verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
+        "expiration": [
+          0,
+          0
+        ],
+        "expired": true,
+        "shards": []
+      }
+    ],
+    "downloadShards": [
+      {
+        "downloadChannelId": "0100000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "dataModificationShards": [
+      {
+        "replicator": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+        "actualShardReplicators": [
+          {
+            "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+            "uploadSize": 1
+          }
+        ],
+        "formerShardReplicators": [
+          {
+            "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+            "uploadSize": 2
+          }
+        ],
+        "ownerUpload": 3
+      }
+    ]
+  }
 }`
 
 	testBcDriveInfoJsonArr = "[" + testBcDriveInfoJson + ", " + testBcDriveInfoJson + "]"
@@ -138,8 +161,12 @@ const (
 				500,
 				0
 			],
-			"downloadApprovalCount": 0,
+			"downloadApprovalCountLeft": 0,
 			"listOfPublicKeys": [
+				"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+				"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
+			],
+			"shardReplicators": [
 				"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
 				"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
 			],
@@ -173,14 +200,13 @@ var testConsumerAccount, _ = NewAccountFromPublicKey("5830A8E6AC1AD2775F38EA43E8
 
 var (
 	testBcDriveInfo = &BcDrive{
-		MultisigAccount:           testBcDriveAccount,
-		Owner:                     testBcDriveOwnerAccount,
-		RootHash:                  &Hash{1},
-		Size:                      StorageSize(1000),
-		UsedSize:                  StorageSize(0),
-		MetaFilesSize:             StorageSize(20),
-		ReplicatorCount:           5,
-		OwnerCumulativeUploadSize: 10,
+		MultisigAccount:    testBcDriveAccount,
+		Owner:              testBcDriveOwnerAccount,
+		RootHash:           &Hash{1},
+		Size:               StorageSize(1000),
+		UsedSizeBytes:      StorageSize(0),
+		MetaFilesSizeBytes: StorageSize(20),
+		ReplicatorCount:    5,
 		ActiveDataModifications: []*ActiveDataModification{
 			{
 				Id:                 &Hash{1},
@@ -203,7 +229,7 @@ var (
 					FolderName:         "C://MyStorage",
 					ReadyForApproval:   false,
 				},
-				State: DataModificationState(Succeeded),
+				State: Succeeded,
 			},
 		},
 		ConfirmedUsedSizes: []*ConfirmedUsedSize{
@@ -216,6 +242,10 @@ var (
 			testReplicatorV2Account1,
 			testReplicatorV2Account2,
 		},
+		OffboardingReplicators: []*PublicAccount{
+			testReplicatorV2Account1,
+			testReplicatorV2Account2,
+		},
 		Verifications: []*Verification{
 			{
 				VerificationTrigger: &Hash{1},
@@ -224,12 +254,31 @@ var (
 				Shards:              []*Shard{},
 			},
 		},
+		DownloadShards: []*DownloadShard{{&Hash{1}}},
+		DataModificationShards: []*DataModificationShard{
+			{
+				Replicator: testReplicatorV2Account1,
+				ActualShardReplicators: []*UploadInfoStorageV2{
+					{
+						Key:        testReplicatorV2Account1,
+						UploadSize: 1,
+					},
+				},
+				FormerShardReplicators: []*UploadInfoStorageV2{
+					{
+						Key:        testReplicatorV2Account1,
+						UploadSize: 2,
+					},
+				},
+				OwnerUpload: 3,
+			},
+		},
 	}
 
 	testReplicatorInfo = &Replicator{
-		ReplicatorAccount: testReplicatorV2Account1,
-		Version:           1,
-		Capacity:          StorageSize(1000),
+		Account:  testReplicatorV2Account1,
+		Version:  1,
+		Capacity: StorageSize(1000),
 		Drives: []*DriveInfo{
 			{
 				DriveKey:                       testBcDriveAccount,
@@ -241,12 +290,16 @@ var (
 	}
 
 	testDownloadChannelInfo = &DownloadChannel{
-		Id:                    &Hash{2},
-		Consumer:              testConsumerAccount,
-		Drive:                 testBcDriveAccount,
-		DownloadSize:          StorageSize(500),
-		DownloadApprovalCount: 0,
+		Id:                        &Hash{2},
+		Consumer:                  testConsumerAccount,
+		Drive:                     testBcDriveAccount,
+		DownloadSize:              StorageSize(500),
+		DownloadApprovalCountLeft: 0,
 		ListOfPublicKeys: []*PublicAccount{
+			testReplicatorV2Account1,
+			testReplicatorV2Account2,
+		},
+		ShardReplicators: []*PublicAccount{
 			testReplicatorV2Account1,
 			testReplicatorV2Account2,
 		},

@@ -924,15 +924,6 @@ func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKe
 	return tx, err
 }
 
-func (c *Client) NewDownloadApprovalTransaction(deadline *Deadline, downloadChannelId *Hash, approvalTrigger *Hash, sequenceNumber uint16, responseToFinishDownloadTransaction bool, publicKeys []*PublicAccount, signatures []*Signature, presentOpinions []uint8, opinions []*Opinion) (*DownloadApprovalTransaction, error) {
-	tx, err := NewDownloadApprovalTransaction(deadline, downloadChannelId, approvalTrigger, sequenceNumber, responseToFinishDownloadTransaction, publicKeys, signatures, presentOpinions, opinions, c.config.NetworkType)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {

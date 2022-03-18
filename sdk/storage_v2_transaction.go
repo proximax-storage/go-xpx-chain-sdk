@@ -146,7 +146,7 @@ func (tx *PrepareBcDriveTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"DriveSize": %s,
+			"Size": %s,
 			"VerificationFeeAmount": %s,
 			"ReplicatorCount": %d,
 		`,
@@ -391,7 +391,7 @@ func (tx *DataModificationCancelTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DriveKey": %s
-			"DownloadDataCdi": %s
+			"Id": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveKey.String(),
@@ -1496,45 +1496,38 @@ func (tx *DataModificationApprovalTransaction) GetAbstractTransaction() *Abstrac
 }
 
 func (tx *DataModificationApprovalTransaction) String() string {
-	keys := ""
-	for _, k := range tx.PublicKeys {
-		keys += k.String() + "\t"
-	}
-
-	signatures := ""
-	for _, s := range tx.Signatures {
-		signatures += s.String() + "\t"
-	}
+	//keys := ""
+	//for _, k := range tx.PublicKeys {
+	//	keys += k.String() + "\t"
+	//}
+	//
+	//signatures := ""
+	//for _, s := range tx.Signatures {
+	//	signatures += s.String() + "\t"
+	//}
 
 	return fmt.Sprintf(
 		`
 			"DriveKey": %s, 
 			"DataModificationId": %s, 
 			"FileStructureCdi": %s, 
-			"FileStructureSize": %d, 
-			"MetaFileSizeBytes": %d, 
-			"UsedDriveSize": %d,
-			"JudgingKeysCount": %d, 
-			"OverlappingKeysCount": %d, 
-			"JudgedKeysCount": %d,
-			"PublicKeys": %s,
-			"Signatures": %s, 
-			"PresentOpinions": %+v,
-			"Opinions": %+v,
+			"FileStructureSizeBytes": %d, 
+			"MetaFilesSizeBytes": %d, 
+			"UsedDriveSizeBytes": %d,
 		`,
 		tx.DriveKey.String(),
 		tx.DataModificationId.String(),
 		tx.FileStructureCdi.String(),
-		tx.FileStructureSize,
-		tx.MetaFileSizeBytes,
-		tx.UsedDriveSize,
-		tx.JudgingKeysCount,
-		tx.OverlappingKeysCount,
-		tx.JudgedKeysCount,
-		keys,
-		signatures,
-		tx.PresentOpinions,
-		tx.Opinions,
+		tx.FileStructureSizeBytes,
+		tx.MetaFilesSizeBytes,
+		tx.UsedDriveSizeBytes,
+		//tx.JudgingKeysCount,
+		//tx.OverlappingKeysCount,
+		//tx.JudgedKeysCount,
+		//keys,
+		//signatures,
+		//tx.PresentOpinions,
+		//tx.Opinions,
 	)
 }
 
@@ -1543,29 +1536,26 @@ func (tx *DataModificationApprovalTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DataModificationApprovalTransaction) Size() int {
-	return DataModificationApprovalHeaderSize +
-		len(tx.PublicKeys)*KeySize +
-		len(tx.Signatures)*SignatureSize +
-		len(tx.PresentOpinions) +
-		len(tx.Opinions)*OpinionSizeSize
+	return DataModificationApprovalHeaderSize
 }
 
 type dataModificationApprovalTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey             string         `json:"driveKey"`
-		DataModificationId   hashDto        `json:"dataModificationId"`
-		FileStructureCdi     hashDto        `json:"fileStructureCdi"`
-		FileStructureSize    uint64         `json:"fileStructureSize"`
-		MetaFileSizeBytes    uint64         `json:"metaFileSizeBytes"`
-		UsedDriveSize        uint64         `json:"usedDriveSize"`
-		JudgingKeysCount     uint8          `json:"judgingKeysCount"`
-		OverlappingKeysCount uint8          `json:"overlappingKeysCount"`
-		JudgedKeysCount      uint8          `json:"judgedKeysCount"`
-		PublicKeys           []string       `json:"publicKeys"`
-		Signatures           []signatureDto `json:"signatures"`
-		PresentOpinions      []uint8        `json:"presentOpinions"`
-		Opinions             []uint64DTO    `json:"opinions"`
+		DriveKey               string  `json:"driveKey"`
+		DataModificationId     hashDto `json:"dataModificationId"`
+		FileStructureCdi       hashDto `json:"fileStructureCdi"`
+		FileStructureSizeBytes uint64  `json:"fileStructureSizeBytes"`
+		MetaFilesSizeBytes     uint64  `json:"metaFilesSizeBytes"`
+		UsedDriveSizeBytes     uint64  `json:"usedDriveSizeBytes"`
+		//JudgingKeysCount     uint8          `json:"judgingKeysCount"`
+		//OverlappingKeysCount uint8          `json:"overlappingKeysCount"`
+		//JudgedKeysCount      uint8          `json:"judgedKeysCount"`
+		//OpinionElementCount  uint16         `json:"opinionElementCount"`
+		//PublicKeys           []string       `json:"publicKeys"`
+		//Signatures           []signatureDto `json:"signatures"`
+		//PresentOpinions      []uint8        `json:"presentOpinions"`
+		//Opinions             []uint64DTO    `json:"opinions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1596,52 +1586,53 @@ func (dto *dataModificationApprovalTransactionDTO) toStruct(*Hash) (Transaction,
 		return nil, fmt.Errorf("error parsing ApprovalTrigger: %v", err)
 	}
 
-	pKeys := make([]*PublicAccount, len(dto.Tx.PublicKeys))
-	for i, k := range dto.Tx.PublicKeys {
-		pKeys[i], err = NewAccountFromPublicKey(k, atx.NetworkType)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	signatures := make([]*Signature, len(dto.Tx.Signatures))
-	for i, s := range dto.Tx.Signatures {
-		signatures[i], err = s.Signature()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	totalJudgingKeysCount := dto.Tx.JudgingKeysCount + dto.Tx.OverlappingKeysCount
-	presentOpinionByteCount := uint8(len(dto.Tx.PresentOpinions))
-	overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - dto.Tx.JudgedKeysCount
-	totalJudgedKeysCount := dto.Tx.JudgedKeysCount + overlappingKeysCount
-
-	parsedPresentOpinions := parseOpinions(dto.Tx.PresentOpinions, totalJudgedKeysCount, totalJudgingKeysCount)
-
-	opinions := make([]uint64, len(dto.Tx.Opinions))
-	for i, o := range dto.Tx.Opinions {
-		opinions[i] = o.toUint64()
-		if err != nil {
-			return nil, err
-		}
-	}
+	//pKeys := make([]*PublicAccount, len(dto.Tx.PublicKeys))
+	//for i, k := range dto.Tx.PublicKeys {
+	//	pKeys[i], err = NewAccountFromPublicKey(k, atx.NetworkType)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//
+	//signatures := make([]*Signature, len(dto.Tx.Signatures))
+	//for i, s := range dto.Tx.Signatures {
+	//	signatures[i], err = s.Signature()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//
+	//totalJudgingKeysCount := dto.Tx.JudgingKeysCount + dto.Tx.OverlappingKeysCount
+	//presentOpinionByteCount := uint8(len(dto.Tx.PresentOpinions))
+	//overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - dto.Tx.JudgedKeysCount
+	//totalJudgedKeysCount := dto.Tx.JudgedKeysCount + overlappingKeysCount
+	//
+	//parsedPresentOpinions := parseOpinions(dto.Tx.PresentOpinions, totalJudgedKeysCount, totalJudgingKeysCount)
+	//
+	//opinions := make([]uint64, len(dto.Tx.Opinions))
+	//for i, o := range dto.Tx.Opinions {
+	//	opinions[i] = o.toUint64()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	return &DataModificationApprovalTransaction{
 		*atx,
 		driveKey,
 		dataModificationId,
 		fileStructureCdi,
-		dto.Tx.FileStructureSize,
-		dto.Tx.MetaFileSizeBytes,
-		dto.Tx.UsedDriveSize,
-		dto.Tx.JudgingKeysCount,
-		dto.Tx.OverlappingKeysCount,
-		dto.Tx.JudgedKeysCount,
-		pKeys,
-		signatures,
-		parsedPresentOpinions,
-		opinions,
+		dto.Tx.FileStructureSizeBytes,
+		dto.Tx.MetaFilesSizeBytes,
+		dto.Tx.UsedDriveSizeBytes,
+		//dto.Tx.JudgingKeysCount,
+		//dto.Tx.OverlappingKeysCount,
+		//dto.Tx.JudgedKeysCount,
+		//dto.Tx.OpinionElementCount,
+		//pKeys,
+		//signatures,
+		//parsedPresentOpinions,
+		//opinions,
 	}, nil
 }
 
@@ -1821,6 +1812,7 @@ type downloadApprovalTransactionDTO struct {
 		JudgingKeysCount     uint8          `json:"judgingKeysCount"`
 		OverlappingKeysCount uint8          `json:"overlappingKeysCount"`
 		JudgedKeysCount      uint8          `json:"judgedKeysCount"`
+		OpinionElementCount  uint16         `json:"opinionElementCount"`
 		PublicKeys           []string       `json:"publicKeys"`
 		Signatures           []signatureDto `json:"signatures"`
 		PresentOpinions      []uint8        `json:"presentOpinions"`
@@ -1888,6 +1880,7 @@ func (dto *downloadApprovalTransactionDTO) toStruct(*Hash) (Transaction, error) 
 		dto.Tx.JudgingKeysCount,
 		dto.Tx.OverlappingKeysCount,
 		dto.Tx.JudgedKeysCount,
+		dto.Tx.OpinionElementCount,
 		pKeys,
 		signatures,
 		parsedPresentOpinions,
