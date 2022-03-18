@@ -160,23 +160,18 @@ func (ref *accountListDTOs) toStruct(networkType NetworkType) ([]*PublicAccount,
 }
 
 type shardDTO struct {
-	Id          hashDto         `json:"id"`
+	Id          uint32          `json:"id"`
 	Replicators accountListDTOs `json:"replicators"`
 }
 
 func (ref *shardDTO) toStruct(networkType NetworkType) (*Shard, error) {
-	downloadDataCdi, err := ref.Id.Hash()
-	if err != nil {
-		return nil, err
-	}
-
 	replicators, err := ref.Replicators.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Shard{
-		Id:          downloadDataCdi,
+		Id:          ref.Id,
 		Replicators: replicators,
 	}, nil
 }

@@ -79,7 +79,7 @@ func (confirmed *ConfirmedUsedSize) String() string {
 }
 
 type Shard struct {
-	Id          *Hash
+	Id          uint32
 	Replicators []*PublicAccount
 }
 
