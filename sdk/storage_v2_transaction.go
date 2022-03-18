@@ -1234,29 +1234,13 @@ func (tx *EndDriveVerificationTransactionV2) Size() int {
 		(len(tx.Signatures)*len(tx.Keys)+7)/8
 }
 
-func parseOpinions(opinions []uint8, keyCount, signaturesCount int) []uint8 {
-	opinionsCount := keyCount * signaturesCount
-	parsedOpinions := make([]uint8, opinionsCount)
-
-	byteNumber := 0
-	for i := 0; i < opinionsCount; i++ {
-		parsedOpinions[i] = opinions[byteNumber] & uint8(i%8)
-
-		if i != 0 && i%8 == 0 {
-			byteNumber++
-		}
-	}
-
-	return parsedOpinions
-}
-
 type endDriveVerificationTransactionV2DTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		DriveKey            string         `json:"driveKey"`
 		VerificationTrigger hashDto        `json:"verificationTrigger"`
 		ShardId             uint16         `json:"shardId"`
-		Keys                []string       `json:"keys"`
+		Keys                []string       `json:"publicKeys"`
 		Signatures          []signatureDto `json:"signatures"`
 		Opinions            []uint8        `json:"opinions"`
 	} `json:"transaction"`
@@ -1300,7 +1284,7 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		}
 	}
 
-	parsedOpinions := parseOpinions(dto.Tx.Opinions, len(keys), len(dto.Tx.Signatures))
+	parsedOpinions := parseOpinions(dto.Tx.Opinions, uint8(len(keys)), uint8(len(dto.Tx.Signatures)))
 
 	return &EndDriveVerificationTransactionV2{
 		*atx,
@@ -1507,40 +1491,251 @@ func (dto *replicatorOffboardingTransactionDTO) toStruct(*Hash) (Transaction, er
 	}, nil
 }
 
-func NewDownloadApprovalTransaction(
-	deadline *Deadline,
-	downloadChannelId *Hash,
-	approvalTrigger *Hash,
-	sequenceNumber uint16,
-	responseToFinishDownloadTransaction bool,
-	publicKeys []*PublicAccount,
-	signatures []*Signature,
-	presentOpinions []uint8,
-	opinions []*Opinion,
-	networkType NetworkType,
-) (*DownloadApprovalTransaction, error) {
-	if downloadChannelId == nil {
-		return nil, ErrNilHash
+func (tx *DataModificationApprovalTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DataModificationApprovalTransaction) String() string {
+	keys := ""
+	for _, k := range tx.PublicKeys {
+		keys += k.String() + "\t"
 	}
 
-	tx := DownloadApprovalTransaction{
-		AbstractTransaction: AbstractTransaction{
-			Version:     DownloadApprovalVersion,
-			Deadline:    deadline,
-			Type:        DownloadApproval,
-			NetworkType: networkType,
-		},
-		DownloadChannelId:                   downloadChannelId,
-		ApprovalTrigger:                     approvalTrigger,
-		SequenceNumber:                      sequenceNumber,
-		ResponseToFinishDownloadTransaction: responseToFinishDownloadTransaction,
-		PublicKeys:                          publicKeys,
-		Signatures:                          signatures,
-		PresentOpinions:                     presentOpinions,
-		Opinions:                            opinions,
+	signatures := ""
+	for _, s := range tx.Signatures {
+		signatures += s.String() + "\t"
 	}
 
-	return &tx, nil
+	return fmt.Sprintf(
+		`
+			"DriveKey": %s, 
+			"DataModificationId": %s, 
+			"FileStructureCdi": %s, 
+			"FileStructureSize": %d, 
+			"MetaFileSizeBytes": %d, 
+			"UsedDriveSize": %d,
+			"JudgingKeysCount": %d, 
+			"OverlappingKeysCount": %d, 
+			"JudgedKeysCount": %d,
+			"PublicKeys": %s,
+			"Signatures": %s, 
+			"PresentOpinions": %+v,
+			"Opinions": %+v,
+		`,
+		tx.DriveKey.String(),
+		tx.DataModificationId.String(),
+		tx.FileStructureCdi.String(),
+		tx.FileStructureSize,
+		tx.MetaFileSizeBytes,
+		tx.UsedDriveSize,
+		tx.JudgingKeysCount,
+		tx.OverlappingKeysCount,
+		tx.JudgedKeysCount,
+		keys,
+		signatures,
+		tx.PresentOpinions,
+		tx.Opinions,
+	)
+}
+
+func (tx *DataModificationApprovalTransaction) Bytes() ([]byte, error) {
+	return nil, errors.New("cannot get bytes of DataModificationApprovalTransaction")
+}
+
+func (tx *DataModificationApprovalTransaction) Size() int {
+	return DataModificationApprovalHeaderSize +
+		len(tx.PublicKeys)*KeySize +
+		len(tx.Signatures)*SignatureSize +
+		len(tx.PresentOpinions) +
+		len(tx.Opinions)*OpinionSizeSize
+}
+
+type dataModificationApprovalTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey             string         `json:"driveKey"`
+		DataModificationId   hashDto        `json:"dataModificationId"`
+		FileStructureCdi     hashDto        `json:"fileStructureCdi"`
+		FileStructureSize    uint64         `json:"fileStructureSize"`
+		MetaFileSizeBytes    uint64         `json:"metaFileSizeBytes"`
+		UsedDriveSize        uint64         `json:"usedDriveSize"`
+		JudgingKeysCount     uint8          `json:"judgingKeysCount"`
+		OverlappingKeysCount uint8          `json:"overlappingKeysCount"`
+		JudgedKeysCount      uint8          `json:"judgedKeysCount"`
+		PublicKeys           []string       `json:"publicKeys"`
+		Signatures           []signatureDto `json:"signatures"`
+		PresentOpinions      []uint8        `json:"presentOpinions"`
+		Opinions             []uint64DTO    `json:"opinions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *dataModificationApprovalTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	dataModificationId, err := dto.Tx.DataModificationId.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing DownloadChannelId: %v", err)
+	}
+
+	fileStructureCdi, err := dto.Tx.FileStructureCdi.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing ApprovalTrigger: %v", err)
+	}
+
+	pKeys := make([]*PublicAccount, len(dto.Tx.PublicKeys))
+	for i, k := range dto.Tx.PublicKeys {
+		pKeys[i], err = NewAccountFromPublicKey(k, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	signatures := make([]*Signature, len(dto.Tx.Signatures))
+	for i, s := range dto.Tx.Signatures {
+		signatures[i], err = s.Signature()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	totalJudgingKeysCount := dto.Tx.JudgingKeysCount + dto.Tx.OverlappingKeysCount
+	presentOpinionByteCount := uint8(len(dto.Tx.PresentOpinions))
+	overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - dto.Tx.JudgedKeysCount
+	totalJudgedKeysCount := dto.Tx.JudgedKeysCount + overlappingKeysCount
+
+	parsedPresentOpinions := parseOpinions(dto.Tx.PresentOpinions, totalJudgedKeysCount, totalJudgingKeysCount)
+
+	opinions := make([]uint64, len(dto.Tx.Opinions))
+	for i, o := range dto.Tx.Opinions {
+		opinions[i] = o.toUint64()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &DataModificationApprovalTransaction{
+		*atx,
+		driveKey,
+		dataModificationId,
+		fileStructureCdi,
+		dto.Tx.FileStructureSize,
+		dto.Tx.MetaFileSizeBytes,
+		dto.Tx.UsedDriveSize,
+		dto.Tx.JudgingKeysCount,
+		dto.Tx.OverlappingKeysCount,
+		dto.Tx.JudgedKeysCount,
+		pKeys,
+		signatures,
+		parsedPresentOpinions,
+		opinions,
+	}, nil
+}
+
+func (tx *DataModificationSingleApprovalTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *DataModificationSingleApprovalTransaction) String() string {
+	keys := ""
+	for _, k := range tx.PublicKeys {
+		keys += k.String() + "\t"
+	}
+
+	return fmt.Sprintf(
+		`
+			"DriveKey": %s, 
+			"DataModificationId": %s,
+			"PublicKeys": %s,
+			"Opinions": %+v,
+		`,
+		tx.DriveKey.String(),
+		tx.DataModificationId.String(),
+		keys,
+		tx.Opinions,
+	)
+}
+
+func (tx *DataModificationSingleApprovalTransaction) Bytes() ([]byte, error) {
+	return nil, errors.New("cannot get bytes of DataModificationApprovalTransaction")
+}
+
+func (tx *DataModificationSingleApprovalTransaction) Size() int {
+	return DataModificationSignleApprovalHeaderSize +
+		len(tx.PublicKeys)*KeySize +
+		len(tx.Opinions)*OpinionSizeSize
+}
+
+type dataModificationSingleApprovalTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		DriveKey           string      `json:"driveKey"`
+		DataModificationId hashDto     `json:"dataModificationId"`
+		PublicKeysCount    uint8       `json:"publicKeysCount"`
+		PublicKeys         []string    `json:"publicKeys"`
+		Opinions           []uint64DTO `json:"opinions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *dataModificationSingleApprovalTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	driveKey, err := NewAccountFromPublicKey(dto.Tx.DriveKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	dataModificationId, err := dto.Tx.DataModificationId.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing DownloadChannelId: %v", err)
+	}
+
+	pKeys := make([]*PublicAccount, len(dto.Tx.PublicKeys))
+	for i, k := range dto.Tx.PublicKeys {
+		pKeys[i], err = NewAccountFromPublicKey(k, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	opinions := make([]uint64, len(dto.Tx.Opinions))
+	for i, o := range dto.Tx.Opinions {
+		opinions[i] = o.toUint64()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &DataModificationSingleApprovalTransaction{
+		*atx,
+		driveKey,
+		dataModificationId,
+		dto.Tx.PublicKeysCount,
+		pKeys,
+		opinions,
+	}, nil
 }
 
 func (tx *DownloadApprovalTransaction) GetAbstractTransaction() *AbstractTransaction {
@@ -1563,8 +1758,6 @@ func (tx *DownloadApprovalTransaction) String() string {
 			"AbstractTransaction": %s,
 			"DownloadChannelId": %s,
 			"ApprovalTrigger": %s,
-			"SequenceNumber": %d,
-			"ResponseToFinishDownloadTransaction": %t,
 			"PublicKeys": %s,
 			"Signatures": %s,
 			"PresentOpinions": %+v,
@@ -1573,8 +1766,6 @@ func (tx *DownloadApprovalTransaction) String() string {
 		tx.AbstractTransaction.String(),
 		tx.DownloadChannelId.String(),
 		tx.ApprovalTrigger.String(),
-		tx.SequenceNumber,
-		tx.ResponseToFinishDownloadTransaction,
 		keys,
 		signatures,
 		tx.PresentOpinions,
@@ -1611,87 +1802,29 @@ func opinionsToJaggedArrayToBuffer(builder *flatbuffers.Builder, opinions []*Opi
 }
 
 func (tx *DownloadApprovalTransaction) Bytes() ([]byte, error) {
-	builder := flatbuffers.NewBuilder(0)
-
-	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
-	if err != nil {
-		return nil, err
-	}
-
-	downloadChannelIdV := hashToBuffer(builder, tx.DownloadChannelId)
-	approvalTriggerV := hashToBuffer(builder, tx.ApprovalTrigger)
-
-	keysV, err := keysToArrayToBuffer(builder, tx.PublicKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	signaturesV, err := signaturesToArrayToBuffer(builder, tx.Signatures)
-	if err != nil {
-		return nil, err
-	}
-
-	totalKeysCount := len(tx.PublicKeys)        // judgingKeysCount + overlappingKeysCount + judgedKeysCount
-	totalJudgingKeysCount := len(tx.Signatures) // judgingKeysCount + overlappingKeysCount
-	judgedKeysCount := len(tx.PublicKeys) - len(tx.Signatures)
-	presentOpinionByteCount := len(tx.PresentOpinions) // (totalJudgingKeysCount * totalJudgedKeysCount + 7) / 8
-	overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - judgedKeysCount
-	totalJudgedKeysCount := judgedKeysCount + overlappingKeysCount
-	judgingKeysCount := totalKeysCount - totalJudgedKeysCount
-
-	presentOpinionsV := presentOpinionsToArrayToBuffer(builder, totalJudgedKeysCount, totalJudgingKeysCount, tx.PresentOpinions)
-	opinionsV, err := opinionsToJaggedArrayToBuffer(builder, tx.Opinions)
-	if err != nil {
-		return nil, err
-	}
-
-	transactions.DownloadApprovalTransactionBufferStart(builder)
-	transactions.TransactionBufferAddSize(builder, tx.Size())
-	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-
-	transactions.DownloadApprovalTransactionBufferAddDownloadChannelId(builder, downloadChannelIdV)
-	transactions.DownloadApprovalTransactionBufferAddDownloadChannelId(builder, approvalTriggerV)
-	transactions.DownloadApprovalTransactionBufferAddSequenceNumber(builder, tx.SequenceNumber)
-	transactions.DownloadApprovalTransactionBufferAddResponseToFinishDownloadTransaction(builder, tx.ResponseToFinishDownloadTransaction)
-	transactions.DownloadApprovalTransactionBufferAddJudgingCount(builder, uint8(judgingKeysCount))
-	transactions.DownloadApprovalTransactionBufferAddOverlappingCount(builder, uint8(overlappingKeysCount))
-	transactions.DownloadApprovalTransactionBufferAddJudgedCount(builder, uint8(judgedKeysCount))
-	transactions.DownloadApprovalTransactionBufferAddOpinionElementCount(builder, uint8(len(tx.Opinions)))
-	transactions.DownloadApprovalTransactionBufferAddPublicKeys(builder, keysV)
-	transactions.DownloadApprovalTransactionBufferAddSignatures(builder, signaturesV)
-	transactions.DownloadApprovalTransactionBufferAddPresentOpinions(builder, presentOpinionsV)
-	transactions.DownloadApprovalTransactionBufferAddOpinions(builder, opinionsV)
-
-	t := transactions.TransactionBufferEnd(builder)
-	builder.Finish(t)
-
-	return downloadApprovalTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return nil, errors.New("cannot get bytes of DownloadApprovalTransaction")
 }
 
 func (tx *DownloadApprovalTransaction) Size() int {
-	totalOpinions := 0
-	for _, op := range tx.Opinions {
-		totalOpinions += len(op.Opinion)
-	}
-
 	return DownloadApprovalHeaderSize +
 		len(tx.PublicKeys)*KeySize +
 		len(tx.Signatures)*SignatureSize +
 		len(tx.PresentOpinions) +
-		totalOpinions*OpinionSizeSize
+		len(tx.Opinions)*OpinionSizeSize
 }
 
 type downloadApprovalTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DownloadChannelId                   hashDto `json:"downloadChannelId"`
-		ApprovalTrigger                     hashDto
-		SequenceNumber                      uint16
-		ResponseToFinishDownloadTransaction bool
-		PublicKeys                          []string
-		Signatures                          []signatureDto
-		PresentOpinions                     []uint8
-		Opinions                            []opinionDTO
+		DownloadChannelId    hashDto        `json:"downloadChannelId"`
+		ApprovalTrigger      hashDto        `json:"approvalTrigger"`
+		JudgingKeysCount     uint8          `json:"judgingKeysCount"`
+		OverlappingKeysCount uint8          `json:"overlappingKeysCount"`
+		JudgedKeysCount      uint8          `json:"judgedKeysCount"`
+		PublicKeys           []string       `json:"publicKeys"`
+		Signatures           []signatureDto `json:"signatures"`
+		PresentOpinions      []uint8        `json:"presentOpinions"`
+		Opinions             []uint64DTO    `json:"opinions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1733,17 +1866,16 @@ func (dto *downloadApprovalTransactionDTO) toStruct(*Hash) (Transaction, error) 
 		}
 	}
 
-	totalJudgingKeysCount := len(dto.Tx.Signatures) // judgingKeysCount + overlappingKeysCount
-	judgedKeysCount := len(dto.Tx.PublicKeys) - len(dto.Tx.Signatures)
-	presentOpinionByteCount := len(dto.Tx.PresentOpinions) // (totalJudgingKeysCount * totalJudgedKeysCount + 7) / 8
-	overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - judgedKeysCount
-	totalJudgedKeysCount := judgedKeysCount + overlappingKeysCount
+	totalJudgingKeysCount := dto.Tx.JudgingKeysCount + dto.Tx.OverlappingKeysCount
+	presentOpinionByteCount := uint8(len(dto.Tx.PresentOpinions))
+	overlappingKeysCount := (((presentOpinionByteCount * 8) - 7) / totalJudgingKeysCount) - dto.Tx.JudgedKeysCount
+	totalJudgedKeysCount := dto.Tx.JudgedKeysCount + overlappingKeysCount
 
 	parsedPresentOpinions := parseOpinions(dto.Tx.PresentOpinions, totalJudgedKeysCount, totalJudgingKeysCount)
 
-	opinions := make([]*Opinion, len(dto.Tx.Opinions))
+	opinions := make([]uint64, len(dto.Tx.Opinions))
 	for i, o := range dto.Tx.Opinions {
-		opinions[i], err = o.toStruct()
+		opinions[i] = o.toUint64()
 		if err != nil {
 			return nil, err
 		}
@@ -1753,11 +1885,28 @@ func (dto *downloadApprovalTransactionDTO) toStruct(*Hash) (Transaction, error) 
 		*atx,
 		downloadChannelId,
 		approvalTrigger,
-		dto.Tx.SequenceNumber,
-		dto.Tx.ResponseToFinishDownloadTransaction,
+		dto.Tx.JudgingKeysCount,
+		dto.Tx.OverlappingKeysCount,
+		dto.Tx.JudgedKeysCount,
 		pKeys,
 		signatures,
 		parsedPresentOpinions,
 		opinions,
 	}, nil
+}
+
+func parseOpinions(opinions []uint8, keyCount, signaturesCount uint8) []uint8 {
+	opinionsCount := keyCount * signaturesCount
+	parsedOpinions := make([]uint8, opinionsCount)
+
+	byteNumber := 0
+	for i := uint8(0); i < opinionsCount; i++ {
+		parsedOpinions[i] = opinions[byteNumber] & (i % 8)
+
+		if i != 0 && i%8 == 0 {
+			byteNumber++
+		}
+	}
+
+	return parsedOpinions
 }

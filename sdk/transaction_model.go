@@ -2798,8 +2798,12 @@ const (
 	ShardIdSize                                  = 2
 	KeyCountSize                                 = 1
 	JudgingKeyCountSize                          = 1
+	OverlappingKeyCountSize                      = 1
+	JudgedKeyCountSize                           = 1
 	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
-	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + 2 + 1
+	DataModificationApprovalHeaderSize           = TransactionHeaderSize + KeySize + Hash256 + Hash256 + 8 + 8 + 8 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize
+	DataModificationSignleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
+	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
 )
@@ -2807,72 +2811,73 @@ const (
 type EntityType uint16
 
 const (
-	AccountPropertyAddress    EntityType = 0x4150
-	AccountPropertyMosaic     EntityType = 0x4250
-	AccountPropertyEntityType EntityType = 0x4350
-	AddressAlias              EntityType = 0x424e
-	AggregateBonded           EntityType = 0x4241
-	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = 0x415D
-	AddHarvesterEntityType    EntityType = 0x4161
-	ExchangeOffer             EntityType = 0x425D
-	RemoveExchangeOffer       EntityType = 0x435D
-	RemoveHarvesterEntityType EntityType = 0x4261
-	Block                     EntityType = 0x8143
-	NemesisBlock              EntityType = 0x8043
-	NetworkConfigEntityType   EntityType = 0x4159
-	BlockchainUpgrade         EntityType = 0x4158
-	LinkAccount               EntityType = 0x414c
-	Lock                      EntityType = 0x4148
-	MetadataAddress           EntityType = 0x413d
-	MetadataMosaic            EntityType = 0x423d
-	MetadataNamespace         EntityType = 0x433d
-	AccountMetadata           EntityType = 0x413f
-	MosaicMetadata            EntityType = 0x423f
-	NamespaceMetadata         EntityType = 0x433f
-	ModifyContract            EntityType = 0x4157
-	ModifyMultisig            EntityType = 0x4155
-	MosaicAlias               EntityType = 0x434e
-	MosaicDefinition          EntityType = 0x414d
-	MosaicSupplyChange        EntityType = 0x424d
-	MosaicModifyLevy          EntityType = 0x434d
-	MosaicRemoveLevy          EntityType = 0x444d
-	RegisterNamespace         EntityType = 0x414e
-	SecretLock                EntityType = 0x4152
-	SecretProof               EntityType = 0x4252
-	Transfer                  EntityType = 0x4154
-	PrepareDrive              EntityType = 0x415A
-	JoinToDrive               EntityType = 0x425A
-	DriveFileSystem           EntityType = 0x435A
-	FilesDeposit              EntityType = 0x445A
-	EndDrive                  EntityType = 0x455A
-	DriveFilesReward          EntityType = 0x465A
-	StartDriveVerification    EntityType = 0x475A
-	EndDriveVerification      EntityType = 0x485A
-	StartFileDownload         EntityType = 0x495A
-	EndFileDownload           EntityType = 0x4A5A
-	OperationIdentify         EntityType = 0x415F
-	StartOperation            EntityType = 0x425F
-	EndOperation              EntityType = 0x435F
-	Deploy                    EntityType = 0x4160
-	StartExecute              EntityType = 0x4260
-	EndExecute                EntityType = 0x4360
-	SuperContractFileSystem   EntityType = 0x4460
-	Deactivate                EntityType = 0x4560
-	ReplicatorOnboarding      EntityType = 0x4662
-	PrepareBcDrive            EntityType = 0x4162
-	DataModification          EntityType = 0x4262
-	DataModificationApproval  EntityType = 0x4462 // TODO delete?
-	DataModificationCancel    EntityType = 0x4562
-	StoragePayment            EntityType = 0x4A62
-	DownloadPayment           EntityType = 0x4962
-	Download                  EntityType = 0x4362
-	FinishDownload            EntityType = 0x4862
-	VerificationPayment       EntityType = 0x4C62
-	EndDriveVerificationV2    EntityType = 0x4F62
-	DownloadApproval          EntityType = 0x4D62
-	DriveClosure              EntityType = 0x4E62
-	ReplicatorOffboarding     EntityType = 0x4762
+	AccountPropertyAddress         EntityType = 0x4150
+	AccountPropertyMosaic          EntityType = 0x4250
+	AccountPropertyEntityType      EntityType = 0x4350
+	AddressAlias                   EntityType = 0x424e
+	AggregateBonded                EntityType = 0x4241
+	AggregateCompleted             EntityType = 0x4141
+	AddExchangeOffer               EntityType = 0x415D
+	AddHarvesterEntityType         EntityType = 0x4161
+	ExchangeOffer                  EntityType = 0x425D
+	RemoveExchangeOffer            EntityType = 0x435D
+	RemoveHarvesterEntityType      EntityType = 0x4261
+	Block                          EntityType = 0x8143
+	NemesisBlock                   EntityType = 0x8043
+	NetworkConfigEntityType        EntityType = 0x4159
+	BlockchainUpgrade              EntityType = 0x4158
+	LinkAccount                    EntityType = 0x414c
+	Lock                           EntityType = 0x4148
+	MetadataAddress                EntityType = 0x413d
+	MetadataMosaic                 EntityType = 0x423d
+	MetadataNamespace              EntityType = 0x433d
+	AccountMetadata                EntityType = 0x413f
+	MosaicMetadata                 EntityType = 0x423f
+	NamespaceMetadata              EntityType = 0x433f
+	ModifyContract                 EntityType = 0x4157
+	ModifyMultisig                 EntityType = 0x4155
+	MosaicAlias                    EntityType = 0x434e
+	MosaicDefinition               EntityType = 0x414d
+	MosaicSupplyChange             EntityType = 0x424d
+	MosaicModifyLevy               EntityType = 0x434d
+	MosaicRemoveLevy               EntityType = 0x444d
+	RegisterNamespace              EntityType = 0x414e
+	SecretLock                     EntityType = 0x4152
+	SecretProof                    EntityType = 0x4252
+	Transfer                       EntityType = 0x4154
+	PrepareDrive                   EntityType = 0x415A
+	JoinToDrive                    EntityType = 0x425A
+	DriveFileSystem                EntityType = 0x435A
+	FilesDeposit                   EntityType = 0x445A
+	EndDrive                       EntityType = 0x455A
+	DriveFilesReward               EntityType = 0x465A
+	StartDriveVerification         EntityType = 0x475A
+	EndDriveVerification           EntityType = 0x485A
+	StartFileDownload              EntityType = 0x495A
+	EndFileDownload                EntityType = 0x4A5A
+	OperationIdentify              EntityType = 0x415F
+	StartOperation                 EntityType = 0x425F
+	EndOperation                   EntityType = 0x435F
+	Deploy                         EntityType = 0x4160
+	StartExecute                   EntityType = 0x4260
+	EndExecute                     EntityType = 0x4360
+	SuperContractFileSystem        EntityType = 0x4460
+	Deactivate                     EntityType = 0x4560
+	ReplicatorOnboarding           EntityType = 0x4662
+	PrepareBcDrive                 EntityType = 0x4162
+	DataModification               EntityType = 0x4262
+	DataModificationApproval       EntityType = 0x4462
+	DataModificationSingleApproval EntityType = 0x4B62
+	DataModificationCancel         EntityType = 0x4562
+	StoragePayment                 EntityType = 0x4A62
+	DownloadPayment                EntityType = 0x4962
+	Download                       EntityType = 0x4362
+	FinishDownload                 EntityType = 0x4862
+	VerificationPayment            EntityType = 0x4C62
+	EndDriveVerificationV2         EntityType = 0x4F62
+	DownloadApproval               EntityType = 0x4D62
+	DriveClosure                   EntityType = 0x4E62
+	ReplicatorOffboarding          EntityType = 0x4762
 )
 
 func (t EntityType) String() string {
@@ -3214,8 +3219,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:
 		dto = &dataModificationTransactionDTO{}
-	//case DataModificationApproval:
-	//	dto = &dataModificationApprovalTransactionDTO{}
+	case DataModificationApproval:
+		dto = &dataModificationApprovalTransactionDTO{}
+	case DataModificationSingleApproval:
+		dto = &dataModificationSingleApprovalTransactionDTO{}
 	case DataModificationCancel:
 		dto = &dataModificationCancelTransactionDTO{}
 	case StoragePayment:

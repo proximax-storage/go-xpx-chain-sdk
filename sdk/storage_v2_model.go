@@ -376,15 +376,43 @@ type Opinion struct {
 	Opinion []OpinionSize
 }
 
+// Data Modification Approval Transaction
+type DataModificationApprovalTransaction struct {
+	AbstractTransaction
+	DriveKey             *PublicAccount
+	DataModificationId   *Hash
+	FileStructureCdi     *Hash
+	FileStructureSize    uint64
+	MetaFileSizeBytes    uint64
+	UsedDriveSize        uint64
+	JudgingKeysCount     uint8
+	OverlappingKeysCount uint8
+	JudgedKeysCount      uint8
+	PublicKeys           []*PublicAccount
+	Signatures           []*Signature
+	PresentOpinions      []uint8
+	Opinions             []uint64
+}
+
+type DataModificationSingleApprovalTransaction struct {
+	AbstractTransaction
+	DriveKey           *PublicAccount
+	DataModificationId *Hash
+	PublicKeysCount    uint8
+	PublicKeys         []*PublicAccount
+	Opinions           []uint64
+}
+
 // Download Approval Transaction
 type DownloadApprovalTransaction struct {
 	AbstractTransaction
-	DownloadChannelId                   *Hash
-	ApprovalTrigger                     *Hash
-	SequenceNumber                      uint16
-	ResponseToFinishDownloadTransaction bool
-	PublicKeys                          []*PublicAccount
-	Signatures                          []*Signature
-	PresentOpinions                     []uint8
-	Opinions                            []*Opinion
+	DownloadChannelId    *Hash
+	ApprovalTrigger      *Hash
+	JudgingKeysCount     uint8
+	OverlappingKeysCount uint8
+	JudgedKeysCount      uint8
+	PublicKeys           []*PublicAccount
+	Signatures           []*Signature
+	PresentOpinions      []uint8
+	Opinions             []uint64
 }

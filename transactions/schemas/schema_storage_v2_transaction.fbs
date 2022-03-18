@@ -178,8 +178,6 @@ table DownloadApprovalTransactionBuffer {
     deadline: [uint];
     downloadChannelId: [ubyte];
     approvalTrigger: [ubyte];
-    sequenceNumber: ushort;
-    responseToFinishDownloadTransaction: bool;
     judgingCount: ubyte;
     overlappingCount: ubyte;
     judgedCount: ubyte;

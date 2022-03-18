@@ -4294,32 +4294,8 @@ func (rcv *DownloadApprovalTransactionBuffer) MutateApprovalTrigger(j int, n byt
 	return false
 }
 
-func (rcv *DownloadApprovalTransactionBuffer) SequenceNumber() uint16 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
-	if o != 0 {
-		return rcv._tab.GetUint16(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *DownloadApprovalTransactionBuffer) MutateSequenceNumber(n uint16) bool {
-	return rcv._tab.MutateUint16Slot(22, n)
-}
-
-func (rcv *DownloadApprovalTransactionBuffer) ResponseToFinishDownloadTransaction() bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		return rcv._tab.GetBool(o + rcv._tab.Pos)
-	}
-	return false
-}
-
-func (rcv *DownloadApprovalTransactionBuffer) MutateResponseToFinishDownloadTransaction(n bool) bool {
-	return rcv._tab.MutateBoolSlot(24, n)
-}
-
 func (rcv *DownloadApprovalTransactionBuffer) JudgingCount() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -4327,11 +4303,11 @@ func (rcv *DownloadApprovalTransactionBuffer) JudgingCount() byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) MutateJudgingCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(26, n)
+	return rcv._tab.MutateByteSlot(22, n)
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) OverlappingCount() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -4339,11 +4315,11 @@ func (rcv *DownloadApprovalTransactionBuffer) OverlappingCount() byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) MutateOverlappingCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(28, n)
+	return rcv._tab.MutateByteSlot(24, n)
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) JudgedCount() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(26))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -4351,11 +4327,11 @@ func (rcv *DownloadApprovalTransactionBuffer) JudgedCount() byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) MutateJudgedCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(30, n)
+	return rcv._tab.MutateByteSlot(26, n)
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) OpinionElementCount() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -4363,11 +4339,11 @@ func (rcv *DownloadApprovalTransactionBuffer) OpinionElementCount() byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) MutateOpinionElementCount(n byte) bool {
-	return rcv._tab.MutateByteSlot(32, n)
+	return rcv._tab.MutateByteSlot(28, n)
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) PublicKeys(obj *KeysBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -4379,7 +4355,7 @@ func (rcv *DownloadApprovalTransactionBuffer) PublicKeys(obj *KeysBuffer, j int)
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) PublicKeysLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -4387,7 +4363,7 @@ func (rcv *DownloadApprovalTransactionBuffer) PublicKeysLength() int {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) Signatures(obj *SignaturesBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -4399,7 +4375,7 @@ func (rcv *DownloadApprovalTransactionBuffer) Signatures(obj *SignaturesBuffer, 
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) SignaturesLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -4407,7 +4383,7 @@ func (rcv *DownloadApprovalTransactionBuffer) SignaturesLength() int {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) PresentOpinions(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -4416,7 +4392,7 @@ func (rcv *DownloadApprovalTransactionBuffer) PresentOpinions(j int) byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) PresentOpinionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -4424,7 +4400,7 @@ func (rcv *DownloadApprovalTransactionBuffer) PresentOpinionsLength() int {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) PresentOpinionsBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -4432,7 +4408,7 @@ func (rcv *DownloadApprovalTransactionBuffer) PresentOpinionsBytes() []byte {
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) MutatePresentOpinions(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -4441,7 +4417,7 @@ func (rcv *DownloadApprovalTransactionBuffer) MutatePresentOpinions(j int, n byt
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) Opinions(obj *OpinionsBuffer, j int) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(40))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
@@ -4453,7 +4429,7 @@ func (rcv *DownloadApprovalTransactionBuffer) Opinions(obj *OpinionsBuffer, j in
 }
 
 func (rcv *DownloadApprovalTransactionBuffer) OpinionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(40))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -4461,7 +4437,7 @@ func (rcv *DownloadApprovalTransactionBuffer) OpinionsLength() int {
 }
 
 func DownloadApprovalTransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(19)
+	builder.StartObject(17)
 }
 func DownloadApprovalTransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -4508,44 +4484,38 @@ func DownloadApprovalTransactionBufferAddApprovalTrigger(builder *flatbuffers.Bu
 func DownloadApprovalTransactionBufferStartApprovalTriggerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func DownloadApprovalTransactionBufferAddSequenceNumber(builder *flatbuffers.Builder, sequenceNumber uint16) {
-	builder.PrependUint16Slot(9, sequenceNumber, 0)
-}
-func DownloadApprovalTransactionBufferAddResponseToFinishDownloadTransaction(builder *flatbuffers.Builder, responseToFinishDownloadTransaction bool) {
-	builder.PrependBoolSlot(10, responseToFinishDownloadTransaction, false)
-}
 func DownloadApprovalTransactionBufferAddJudgingCount(builder *flatbuffers.Builder, judgingCount byte) {
-	builder.PrependByteSlot(11, judgingCount, 0)
+	builder.PrependByteSlot(9, judgingCount, 0)
 }
 func DownloadApprovalTransactionBufferAddOverlappingCount(builder *flatbuffers.Builder, overlappingCount byte) {
-	builder.PrependByteSlot(12, overlappingCount, 0)
+	builder.PrependByteSlot(10, overlappingCount, 0)
 }
 func DownloadApprovalTransactionBufferAddJudgedCount(builder *flatbuffers.Builder, judgedCount byte) {
-	builder.PrependByteSlot(13, judgedCount, 0)
+	builder.PrependByteSlot(11, judgedCount, 0)
 }
 func DownloadApprovalTransactionBufferAddOpinionElementCount(builder *flatbuffers.Builder, opinionElementCount byte) {
-	builder.PrependByteSlot(14, opinionElementCount, 0)
+	builder.PrependByteSlot(12, opinionElementCount, 0)
 }
 func DownloadApprovalTransactionBufferAddPublicKeys(builder *flatbuffers.Builder, publicKeys flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(publicKeys), 0)
+	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(publicKeys), 0)
 }
 func DownloadApprovalTransactionBufferStartPublicKeysVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func DownloadApprovalTransactionBufferAddSignatures(builder *flatbuffers.Builder, signatures flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(16, flatbuffers.UOffsetT(signatures), 0)
+	builder.PrependUOffsetTSlot(14, flatbuffers.UOffsetT(signatures), 0)
 }
 func DownloadApprovalTransactionBufferStartSignaturesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func DownloadApprovalTransactionBufferAddPresentOpinions(builder *flatbuffers.Builder, presentOpinions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(17, flatbuffers.UOffsetT(presentOpinions), 0)
+	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(presentOpinions), 0)
 }
 func DownloadApprovalTransactionBufferStartPresentOpinionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func DownloadApprovalTransactionBufferAddOpinions(builder *flatbuffers.Builder, opinions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(18, flatbuffers.UOffsetT(opinions), 0)
+	builder.PrependUOffsetTSlot(16, flatbuffers.UOffsetT(opinions), 0)
 }
 func DownloadApprovalTransactionBufferStartOpinionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
