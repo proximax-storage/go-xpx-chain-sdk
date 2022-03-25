@@ -168,6 +168,7 @@ type Client struct {
 	Contract      *ContractService
 	Metadata      *MetadataService
 	MetadataV2    *MetadataV2Service
+	LockFund      *LockFundService
 }
 
 type service struct {
@@ -211,7 +212,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataV2 = (*MetadataV2Service)(&c.common)
-
+	c.LockFund = (*LockFundService)(&c.common)
 	return c
 }
 

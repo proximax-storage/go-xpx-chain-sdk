@@ -1,0 +1,36 @@
+namespace Catapult.Buffers;
+
+
+table MosaicBuffer {
+    id: [uint];
+    amount: [uint];
+}
+
+table LockFundTransferTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    duration:ulong;
+    action:ubyte;
+    mosaicsCount:ubyte;
+    mosaics: [MosaicBuffer];
+}
+
+table LockFundCancelUnlockTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    targetHeight:ulong;
+}
+
+root_type LockFundCancelUnlockTransactionBuffer;
+
+root_type LockFundTransferTransactionBuffer;

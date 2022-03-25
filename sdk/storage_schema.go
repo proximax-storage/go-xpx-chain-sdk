@@ -311,3 +311,41 @@ func deactivateTransactionSchema() *schema {
 		},
 	}
 }
+
+func lockFundTransferTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("duration", LongSize),
+			newScalarAttribute("action", ByteSize),
+			newScalarAttribute("mosaicsCount", ByteSize),
+			newTableArrayAttribute("mosaics", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func lockFundCancelUnlockTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newScalarAttribute("targetHeight", LongSize),
+		},
+	}
+}

@@ -153,6 +153,12 @@ const (
 	announceAggregateCosignatureRoute = "/transactions/cosignature"
 )
 
+// routes for LockFundService
+const (
+	lockFundKeyRecordGroupRoute    = "/lockfund/account/%s"
+	lockFundHeightRecordGroupRoute = "/lockfund/height/%s"
+)
+
 type TransactionGroup string
 
 const (

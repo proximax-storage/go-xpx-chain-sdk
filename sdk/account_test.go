@@ -26,6 +26,9 @@ var (
 		Mosaics: []*Mosaic{
 			newMosaicPanic(newMosaicIdPanic(uint64DTO{298950589, 1817567325}.toUint64()), uint64DTO{3863990592, 95248}.toStruct()),
 		},
+		LockedMosaics: []*Mosaic{
+			newMosaicPanic(newMosaicIdPanic(uint64DTO{298950589, 1817567325}.toUint64()), uint64DTO{3863990592, 95248}.toStruct()),
+		},
 		Reputation: 0.9,
 	}
 

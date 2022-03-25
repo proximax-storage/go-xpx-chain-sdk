@@ -55,6 +55,15 @@ func newMosaicIdPanic(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
 	return &mosaicId
 }
+func newAssetIdPanic(id uint64DTO) AssetId {
+	if hasBits(id.toUint64(), NamespaceBit) {
+		val, _ := (*namespaceIdDTO)(&id).toStruct()
+		return val
+	} else {
+		val, _ := (*mosaicIdDTO)(&id).toStruct()
+		return val
+	}
+}
 
 func (m *MosaicId) Type() AssetIdType {
 	return MosaicAssetIdType
