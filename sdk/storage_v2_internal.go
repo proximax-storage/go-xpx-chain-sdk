@@ -276,8 +276,8 @@ func (ref *downloadShardDTOs) toStruct(networkType NetworkType) ([]*DownloadShar
 }
 
 type uploadInfoStorageV2DTO struct {
-	Key        string `json:"key"`
-	UploadSize uint64 `json:"uploadSize"`
+	Key        string    `json:"key"`
+	UploadSize uint64DTO `json:"uploadSize"`
 }
 
 func (ref *uploadInfoStorageV2DTO) toStruct(networkType NetworkType) (*UploadInfoStorageV2, error) {
@@ -288,7 +288,7 @@ func (ref *uploadInfoStorageV2DTO) toStruct(networkType NetworkType) (*UploadInf
 
 	return &UploadInfoStorageV2{
 		account,
-		ref.UploadSize,
+		ref.UploadSize.toUint64(),
 	}, nil
 }
 
@@ -316,7 +316,7 @@ type dataModificationShardDTO struct {
 	Replicator             string                  `json:"replicator"`
 	ActualShardReplicators uploadInfoStorageV2DTOs `json:"actualShardReplicators"`
 	FormerShardReplicators uploadInfoStorageV2DTOs `json:"formerShardReplicators"`
-	OwnerUpload            uint64                  `json:"ownerUpload"`
+	OwnerUpload            uint64DTO               `json:"ownerUpload"`
 }
 
 func (ref *dataModificationShardDTO) toStruct(networkType NetworkType) (*DataModificationShard, error) {
@@ -339,7 +339,7 @@ func (ref *dataModificationShardDTO) toStruct(networkType NetworkType) (*DataMod
 		replicator,
 		actualShardReplicators,
 		formerShardReplicators,
-		ref.OwnerUpload,
+		ref.OwnerUpload.toUint64(),
 	}, nil
 }
 

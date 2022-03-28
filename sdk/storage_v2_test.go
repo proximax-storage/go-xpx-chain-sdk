@@ -107,16 +107,25 @@ const (
         "actualShardReplicators": [
           {
             "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
-            "uploadSize": 1
+            "uploadSize": [
+			  1,
+			  0
+			]
           }
         ],
         "formerShardReplicators": [
           {
             "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
-            "uploadSize": 2
+            "uploadSize": [
+			  2,
+			  0
+			]
           }
         ],
-        "ownerUpload": 3
+        "ownerUpload": [
+          3,
+          0
+        ]
       }
     ]
   }
