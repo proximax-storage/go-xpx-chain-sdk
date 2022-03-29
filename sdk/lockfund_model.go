@@ -10,6 +10,11 @@ import (
 
 type LockFundAction uint8
 
+const (
+	LockFundAction_Lock LockFundAction = iota
+	LockFundAction_Unlock
+)
+
 type LockFundHeightRecord struct {
 	Identifier Height
 	Records    map[string]*LockFundRecord
