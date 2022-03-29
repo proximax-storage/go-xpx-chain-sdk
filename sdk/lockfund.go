@@ -13,14 +13,14 @@ import (
 
 type LockFundService service
 
-func (s *LockFundService) GetLockFundKeyRecords(ctx context.Context, accountKey *PublicAccount) ([]*LockFundKeyRecord, error) {
+func (s *LockFundService) GetLockFundKeyRecords(ctx context.Context, accountKey *PublicAccount) (*LockFundKeyRecord, error) {
 	if accountKey == nil {
 		return nil, ErrNilAccount
 	}
 
 	url := net.NewUrl(fmt.Sprintf(lockFundKeyRecordGroupRoute, accountKey.PublicKey))
 
-	dto := &LockFundKeyRecordGroupDtos{}
+	dto := &LockFundKeyRecordGroupDto{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {
@@ -34,14 +34,14 @@ func (s *LockFundService) GetLockFundKeyRecords(ctx context.Context, accountKey 
 	return dto.toStruct(s.client.NetworkType())
 }
 
-func (s *LockFundService) GetLockFundHeightRecords(ctx context.Context, height Height) ([]*LockFundHeightRecord, error) {
+func (s *LockFundService) GetLockFundHeightRecords(ctx context.Context, height Height) (*LockFundHeightRecord, error) {
 	if height == 0 {
 		return nil, ErrArgumentNotValid
 	}
 
 	url := net.NewUrl(fmt.Sprintf(lockFundHeightRecordGroupRoute, height))
 
-	dto := &LockFundHeightRecordGroupDtos{}
+	dto := &LockFundHeightRecordGroupDto{}
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {

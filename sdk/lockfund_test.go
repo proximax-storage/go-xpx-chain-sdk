@@ -152,17 +152,16 @@ func Test_LockFundService_GetHeightRecordGroupEntry(t *testing.T) {
 		Path:                fmt.Sprintf(lockFundHeightRecordGroupRoute, Height(120)),
 		AcceptedHttpMethods: []string{http.MethodGet},
 		RespHttpCode:        200,
-		RespBody:            testHeightRecordGroupEntryJsonArr,
+		RespBody:            testHeightRecordGroupEntryJson,
 	})
 	lockFundClient := mock.getPublicTestClientUnsafe().LockFund
 
 	defer mock.Close()
 
-	records, err := lockFundClient.GetLockFundHeightRecords(ctx, Height(120))
+	record, err := lockFundClient.GetLockFundHeightRecords(ctx, Height(120))
 	assert.Nil(t, err)
-	assert.NotNil(t, records)
-	assert.Equal(t, 1, len(records))
-	assert.Equal(t, testHeightRecordGroupEntry, records[0])
+	assert.NotNil(t, record)
+	assert.Equal(t, testHeightRecordGroupEntry, record)
 }
 
 func Test_LockFundService_GetKeyRecordGroupEntry(t *testing.T) {
@@ -170,15 +169,14 @@ func Test_LockFundService_GetKeyRecordGroupEntry(t *testing.T) {
 		Path:                fmt.Sprintf(lockFundKeyRecordGroupRoute, testPublicAccount.PublicKey),
 		AcceptedHttpMethods: []string{http.MethodGet},
 		RespHttpCode:        200,
-		RespBody:            testKeyRecordGroupEntryJsonArr,
+		RespBody:            testKeyRecordGroupEntryJson,
 	})
 	lockFundClient := mock.getPublicTestClientUnsafe().LockFund
 
 	defer mock.Close()
 
-	records, err := lockFundClient.GetLockFundKeyRecords(ctx, testPublicAccount)
+	record, err := lockFundClient.GetLockFundKeyRecords(ctx, testPublicAccount)
 	assert.Nil(t, err)
-	assert.NotNil(t, records)
-	assert.Equal(t, 1, len(records))
-	assert.Equal(t, testKeyRecordGroupEntry, records[0])
+	assert.NotNil(t, record)
+	assert.Equal(t, testKeyRecordGroupEntry, record)
 }
