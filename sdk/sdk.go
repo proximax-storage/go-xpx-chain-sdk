@@ -924,3 +924,21 @@ func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *Mo
 
 	return tx, err
 }
+
+func (c *Client) NewLockFundTransferTransaction(deadline *Deadline, duration Duration, action LockFundAction, mosaics []*Mosaic, networkType NetworkType) (*LockFundTransferTransaction, error) {
+	tx, err := NewLockFundTransferTransaction(deadline, duration, action, mosaics, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewLockFundCancelUnlockTransaction(deadline *Deadline, targetHeight Height, networkType NetworkType) (*LockFundCancelUnlockTransaction, error) {
+	tx, err := NewLockFundCancelUnlockTransaction(deadline, targetHeight, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
