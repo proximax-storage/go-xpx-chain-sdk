@@ -255,11 +255,15 @@ func (c *NetworkConfig) String() string {
 }
 
 func (c *NetworkConfig) GetActiveAccountVersion() (uint32, error) {
-	i, err := strconv.Atoi(c.Sections["network"].Fields["accountVersion"].Value)
-	if err != nil {
-		return 0, err
+	val, ok := c.Sections["chain"].Fields["accountVersion"]
+	if ok {
+		i, err := strconv.Atoi(val.Value)
+		if err != nil {
+			return 0, err
+		}
+		return uint32(i), nil
 	}
-	return uint32(i), nil
+	return uint32(1), nil
 }
 
 type SupportedEntities struct {
