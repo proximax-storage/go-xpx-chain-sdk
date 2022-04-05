@@ -1,0 +1,31 @@
+namespace Catapult.Buffers;
+
+table CreateLiquidityProviderBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    providerMosaicId: [uint];
+    currencyDeposit: [uint];
+    initialMosaicsMinting: [uint];
+    slashingPeriod: uint;
+    windowSize: ushort;
+    slashingAccount: [ubyte];
+    alpha: uint;
+    beta: uint;
+}
+
+table ManualRateChangeBuffer {
+    providerMosaicId: [uint];
+    currencyBalanceIncrease: bool;
+    currencyBalanceChange: [uint];
+    mosaicBalanceIncrease: bool;
+    mosaicBalanceChange: [uint];
+}
+
+root_type CreateLiquidityProviderBuffer;
+
+root_type ManualRateChangeBuffer;

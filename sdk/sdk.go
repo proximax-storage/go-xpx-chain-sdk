@@ -153,22 +153,23 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain    *BlockchainService
-	Exchange      *ExchangeService
-	Mosaic        *MosaicService
-	Namespace     *NamespaceService
-	Node          *NodeService
-	Network       *NetworkService
-	Transaction   *TransactionService
-	Resolve       *ResolverService
-	Account       *AccountService
-	Storage       *StorageService
-	StorageV2     *StorageV2Service
-	SuperContract *SuperContractService
-	Lock          *LockService
-	Contract      *ContractService
-	Metadata      *MetadataService
-	MetadataV2    *MetadataV2Service
+	Blockchain        *BlockchainService
+	Exchange          *ExchangeService
+	Mosaic            *MosaicService
+	Namespace         *NamespaceService
+	Node              *NodeService
+	Network           *NetworkService
+	Transaction       *TransactionService
+	Resolve           *ResolverService
+	Account           *AccountService
+	Storage           *StorageService
+	StorageV2         *StorageV2Service
+	SuperContract     *SuperContractService
+	Lock              *LockService
+	Contract          *ContractService
+	Metadata          *MetadataService
+	MetadataV2        *MetadataV2Service
+	LiquidityProvider *LiquidityProviderService
 }
 
 type service struct {
@@ -213,6 +214,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataV2 = (*MetadataV2Service)(&c.common)
+	c.LiquidityProvider = (*LiquidityProviderService)(&c.common)
 
 	return c
 }

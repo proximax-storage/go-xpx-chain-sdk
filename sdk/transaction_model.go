@@ -2807,6 +2807,8 @@ const (
 	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize + OpinionElementCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
+	CreateLiquidityProviderHeaderSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + AmountSize + 4 + 2 + KeySize + 4 + 4
+	ManualRateChangeHeaderSize                   = TransactionHeaderSize + MosaicIdSize + 1 + AmountSize + 1 + AmountSize
 )
 
 type EntityType uint16
