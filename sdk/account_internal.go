@@ -150,10 +150,22 @@ func (ref *reputationDTO) toFloat(repConfig *reputationConfig) float64 {
 	return float64(rep)
 }
 
+type supplementalPublicKeyDto struct {
+	PublicKey string `json:"publicKey"`
+}
+
+func (dto *supplementalPublicKeyDto) toStruct(networkType NetworkType) (*PublicAccount, error) {
+	account, err := NewAccountFromPublicKey(dto.PublicKey, networkType)
+	if err != nil {
+		return nil, err
+	}
+	return account, nil
+}
+
 type supplementalPublicKeysDTO struct {
-	LinkedPublicKey string `json:"linked"`
-	NodePublicKey   string `json:"node"`
-	VrfPublicKey    string `json:"vrf"`
+	LinkedPublicKey *supplementalPublicKeyDto `json:"linked"`
+	NodePublicKey   *supplementalPublicKeyDto `json:"node"`
+	VrfPublicKey    *supplementalPublicKeyDto `json:"vrf"`
 }
 
 func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*SupplementalPublicKeys, error) {
@@ -161,14 +173,14 @@ func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*Supple
 	var linkedAccount *PublicAccount = nil
 	var nodeAccount *PublicAccount = nil
 	var vrfAccount *PublicAccount = nil
-	if len(dto.LinkedPublicKey) > 0 {
-		linkedAccount, err = NewAccountFromPublicKey(dto.LinkedPublicKey, networkType)
+	if dto.LinkedPublicKey != nil {
+		linkedAccount, err = dto.LinkedPublicKey.toStruct(networkType)
 	}
-	if len(dto.NodePublicKey) > 0 {
-		nodeAccount, err = NewAccountFromPublicKey(dto.NodePublicKey, networkType)
+	if dto.NodePublicKey != nil {
+		nodeAccount, err = dto.LinkedPublicKey.toStruct(networkType)
 	}
-	if len(dto.VrfPublicKey) > 0 {
-		vrfAccount, err = NewAccountFromPublicKey(dto.VrfPublicKey, networkType)
+	if dto.VrfPublicKey != nil {
+		vrfAccount, err = dto.LinkedPublicKey.toStruct(networkType)
 	}
 	if err != nil {
 		return nil, err
