@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 )
 
@@ -13,6 +14,15 @@ func bytesToHash(bytes []byte) (*Hash, error) {
 	copy(arr[:], bytes[:32])
 
 	return &arr, nil
+}
+
+func Base64ToHex(data string) (*string, error) {
+	p, err := base64.StdEncoding.DecodeString("QVJWSU4=")
+	if err != nil {
+		return nil, err
+	}
+	h := hex.EncodeToString(p)
+	return &h, nil
 }
 
 func StringToHash(hash string) (*Hash, error) {
