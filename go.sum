@@ -42,6 +42,8 @@ github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220406155341-0df734c74573 h
 github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220406155341-0df734c74573/go.mod h1:go95DyDrDgNL/Ow24Uqmfq1AtodU2ZUtTnXex98iuSY=
 github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220406163604-525e3f72e5ae h1:g5w8boRJu66Az7J1YrWpsvHDg8eGtWk5xvPnxDR3L2g=
 github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220406163604-525e3f72e5ae/go.mod h1:go95DyDrDgNL/Ow24Uqmfq1AtodU2ZUtTnXex98iuSY=
+github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220407163211-a6ba19cf64a8 h1:JNmP8qBM5Sc3/zN3hjnkzLQmiZPwhr6N8Iz5iWmvIdo=
+github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220407163211-a6ba19cf64a8/go.mod h1:go95DyDrDgNL/Ow24Uqmfq1AtodU2ZUtTnXex98iuSY=
 github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f h1:/ll8hQJ1jfDreLorR4U1Vn6Z6UL8r+pd8mv4mYq7RUY=
 github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f/go.mod h1:++1dcQ6EiUK6Yqi5al5OO3QXZPR1y9mX03e5O2qawEw=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=

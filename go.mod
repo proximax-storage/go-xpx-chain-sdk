@@ -10,7 +10,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220406163604-525e3f72e5ae
+	github.com/proximax-storage/go-xpx-crypto v0.1.1-0.20220407163211-a6ba19cf64a8
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
 	github.com/stretchr/testify v1.3.0
 	github.com/supranational/blst v0.3.4 // indirect
