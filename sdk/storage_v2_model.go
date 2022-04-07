@@ -442,14 +442,14 @@ type DataModificationApprovalTransaction struct {
 	FileStructureSizeBytes uint64
 	MetaFilesSizeBytes     uint64
 	UsedDriveSizeBytes     uint64
-	//JudgingKeysCount       uint8
-	//OverlappingKeysCount   uint8
-	//JudgedKeysCount        uint8
-	//OpinionElementCount    uint16
-	//PublicKeys             []*PublicAccount
-	//Signatures             []*Signature
-	//PresentOpinions        []uint8
-	//Opinions               []uint64
+	JudgingKeysCount       uint8
+	OverlappingKeysCount   uint8
+	JudgedKeysCount        uint8
+	OpinionElementCount    uint16
+	PublicKeys             []*PublicAccount
+	Signatures             []*Signature
+	PresentOpinions        []uint8
+	Opinions               []uint64
 }
 
 type DataModificationSingleApprovalTransaction struct {
