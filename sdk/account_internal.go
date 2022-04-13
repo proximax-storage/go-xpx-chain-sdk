@@ -155,11 +155,7 @@ type supplementalPublicKeyDto struct {
 }
 
 func (dto *supplementalPublicKeyDto) toStruct(networkType NetworkType) (*PublicAccount, error) {
-	key, err := Base64ToHex(dto.PublicKey)
-	if err != nil {
-		return nil, err
-	}
-	account, err := NewAccountFromPublicKey(*key, networkType)
+	account, err := NewAccountFromPublicKey(dto.PublicKey, networkType)
 	if err != nil {
 		return nil, err
 	}
