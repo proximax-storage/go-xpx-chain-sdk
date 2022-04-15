@@ -32,6 +32,8 @@ const privateKey = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
 const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
 
+const managerPrivateKey = "2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053"
+
 const timeout = 2 * time.Minute
 const defaultDurationNamespaceAndMosaic = 10
 
@@ -50,6 +52,7 @@ var client *sdk.Client
 var wsc websocket.CatapultClient
 var defaultAccount *sdk.Account
 var nemesisAccount *sdk.Account
+var managerAccount *sdk.Account
 
 var XPXID uint64 = 0x0DC67FBE1CAD29E3
 
@@ -75,6 +78,11 @@ func init() {
 	}
 
 	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	managerAccount, err = client.NewAccountFromPrivateKey(managerPrivateKey)
 	if err != nil {
 		panic(err)
 	}

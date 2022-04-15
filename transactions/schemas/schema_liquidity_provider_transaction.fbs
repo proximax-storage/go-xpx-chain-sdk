@@ -19,6 +19,13 @@ table CreateLiquidityProviderBuffer {
 }
 
 table ManualRateChangeBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
     providerMosaicId: [uint];
     currencyBalanceIncrease: bool;
     currencyBalanceChange: [uint];

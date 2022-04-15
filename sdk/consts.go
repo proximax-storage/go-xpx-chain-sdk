@@ -150,6 +150,12 @@ const (
 	announceAggregateCosignatureRoute = "/transactions/cosignature"
 )
 
+// routes for LiquidityProvider
+const (
+	liquidityProvidersRoute = "/liquidity_provider"
+	liquidityProviderRoute  = "/liquidity_provider/%s"
+)
+
 type TransactionGroup string
 
 const (

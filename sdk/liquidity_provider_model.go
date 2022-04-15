@@ -21,7 +21,7 @@ type LiquidityProvider struct {
 	AdditionallyMinted Amount
 	SlashingAccount    *PublicAccount
 	SlashingPeriod     uint32
-	WindowSize         uint32
+	WindowSize         uint16
 	CreationHeight     Height
 	Alpha              uint32
 	Beta               uint32
@@ -29,9 +29,21 @@ type LiquidityProvider struct {
 	RecentTurnover     *Turnover
 }
 
+type LiquidityProviderPage struct {
+	LiquidityProviders []*LiquidityProvider
+	Pagination         Pagination
+}
+
+type LiquidityProviderPageOptions struct {
+	PaginationOrderingOptions
+	MosaicId        string `url:"mosaicId,omitempty"`
+	SlashingAccount string `url:"slashingAccount,omitempty"`
+	Owner           string `url:"owner,omitempty"`
+}
+
 type CreateLiquidityProviderTransaction struct {
 	AbstractTransaction
-	ProviderMosaic        *Mosaic
+	ProviderMosaicId      *MosaicId
 	CurrencyDeposit       Amount
 	InitialMosaicsMinting Amount
 	SlashingPeriod        uint32
@@ -43,7 +55,7 @@ type CreateLiquidityProviderTransaction struct {
 
 type ManualRateChangeTransaction struct {
 	AbstractTransaction
-	ProviderMosaic          *Mosaic
+	ProviderMosaicId        *MosaicId
 	CurrencyBalanceIncrease bool
 	CurrencyBalanceChange   Amount
 	MosaicBalanceIncrease   bool

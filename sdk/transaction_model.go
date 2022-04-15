@@ -2881,6 +2881,8 @@ const (
 	DownloadApproval               EntityType = 0x4D62
 	DriveClosure                   EntityType = 0x4E62
 	ReplicatorOffboarding          EntityType = 0x4762
+	CreateLiquidityProvider        EntityType = 0x4168
+	ManualRateChange               EntityType = 0x4268
 )
 
 func (t EntityType) String() string {
@@ -2953,6 +2955,8 @@ const (
 	DownloadApprovalVersion          EntityVersion = 1
 	DriveClosureVersion              EntityVersion = 1
 	ReplicatorOffboardingVersion     EntityVersion = 1
+	CreateLiquidityProviderVersion   EntityVersion = 1
+	ManualRateChangeVersion          EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3246,6 +3250,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOffboardingTransactionDTO{}
 	case DownloadApproval:
 		dto = &downloadApprovalTransactionDTO{}
+	case CreateLiquidityProvider:
+		dto = &createLiquidityProviderTransactionDTO{}
+	case ManualRateChange:
+		dto = &manualRateChangeTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

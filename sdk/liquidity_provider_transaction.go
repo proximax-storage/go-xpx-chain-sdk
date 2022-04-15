@@ -14,7 +14,7 @@ import (
 
 func NewCreateLiquidityProviderTransaction(
 	deadline *Deadline,
-	providerMosaic *Mosaic,
+	providerMosaicId *MosaicId,
 	currencyDeposit Amount,
 	initialMosaicsMinting Amount,
 	slashingPeriod uint32,
@@ -26,12 +26,12 @@ func NewCreateLiquidityProviderTransaction(
 ) (*CreateLiquidityProviderTransaction, error) {
 	tx := CreateLiquidityProviderTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     AddExchangeOfferVersion,
+			Version:     CreateLiquidityProviderVersion,
 			Deadline:    deadline,
-			Type:        AddExchangeOffer,
+			Type:        CreateLiquidityProvider,
 			NetworkType: networkType,
 		},
-		ProviderMosaic:        providerMosaic,
+		ProviderMosaicId:      providerMosaicId,
 		CurrencyDeposit:       currencyDeposit,
 		InitialMosaicsMinting: initialMosaicsMinting,
 		SlashingPeriod:        slashingPeriod,
@@ -52,7 +52,7 @@ func (tx *CreateLiquidityProviderTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"ProviderMosaic": %s,
+			"ProviderMosaicId": %s,
 			"CurrencyDeposit": %s,
 			"InitialMosaicsMinting": %s,
 			"SlashingPeriod": %d,
@@ -62,7 +62,7 @@ func (tx *CreateLiquidityProviderTransaction) String() string {
 			"Beta": %d,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.ProviderMosaic.String(),
+		tx.ProviderMosaicId.String(),
 		tx.CurrencyDeposit.String(),
 		tx.InitialMosaicsMinting.String(),
 		tx.SlashingPeriod,
@@ -91,7 +91,7 @@ func (tx *CreateLiquidityProviderTransaction) Bytes() ([]byte, error) {
 	}
 
 	slashingAccountV := transactions.TransactionBufferCreateByteVector(builder, slashingAccountB)
-	providerMosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ProviderMosaic.AssetId.toArray())
+	providerMosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ProviderMosaicId.toArray())
 	currencyDepositV := transactions.TransactionBufferCreateUint32Vector(builder, tx.CurrencyDeposit.toArray())
 	initialMosaicsMintingV := transactions.TransactionBufferCreateUint32Vector(builder, tx.InitialMosaicsMinting.toArray())
 
@@ -116,7 +116,7 @@ func (tx *CreateLiquidityProviderTransaction) Bytes() ([]byte, error) {
 
 func NewManualRateChangeTransaction(
 	deadline *Deadline,
-	providerMosaic *Mosaic,
+	providerMosaicId *MosaicId,
 	currencyBalanceIncrease bool,
 	currencyBalanceChange Amount,
 	mosaicBalanceIncrease bool,
@@ -125,12 +125,12 @@ func NewManualRateChangeTransaction(
 ) (*ManualRateChangeTransaction, error) {
 	tx := ManualRateChangeTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     AddExchangeOfferVersion,
+			Version:     ManualRateChangeVersion,
 			Deadline:    deadline,
-			Type:        AddExchangeOffer,
+			Type:        ManualRateChange,
 			NetworkType: networkType,
 		},
-		ProviderMosaic:          providerMosaic,
+		ProviderMosaicId:        providerMosaicId,
 		CurrencyBalanceIncrease: currencyBalanceIncrease,
 		CurrencyBalanceChange:   currencyBalanceChange,
 		MosaicBalanceIncrease:   mosaicBalanceIncrease,
@@ -148,14 +148,14 @@ func (tx *ManualRateChangeTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
-			"ProviderMosaic": %s,
+			"ProviderMosaicId": %s,
 			"CurrencyBalanceIncrease": %t,
 			"CurrencyBalanceChange": %s,
 			"MosaicBalanceIncrease": %t,
 			"MosaicBalanceChange": %s,
 		`,
 		tx.AbstractTransaction.String(),
-		tx.ProviderMosaic.String(),
+		tx.ProviderMosaicId.String(),
 		tx.CurrencyBalanceIncrease,
 		tx.CurrencyBalanceChange.String(),
 		tx.MosaicBalanceIncrease,
@@ -175,7 +175,7 @@ func (tx *ManualRateChangeTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	providerMosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ProviderMosaic.AssetId.toArray())
+	providerMosaicIdV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ProviderMosaicId.toArray())
 	currencyBalanceChangeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.CurrencyBalanceChange.toArray())
 	mosaicBalanceChangeV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicBalanceChange.toArray())
 

@@ -962,6 +962,60 @@ func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *Mo
 	return tx, err
 }
 
+func (c *Client) NewCreateLiquidityProviderTransaction(
+	deadline *Deadline,
+	providerMosaicId *MosaicId,
+	currencyDeposit Amount,
+	initialMosaicsMinting Amount,
+	slashingPeriod uint32,
+	windowSize uint16,
+	slashingAccount *PublicAccount,
+	alpha uint32,
+	beta uint32,
+) (*CreateLiquidityProviderTransaction, error) {
+	tx, err := NewCreateLiquidityProviderTransaction(
+		deadline,
+		providerMosaicId,
+		currencyDeposit,
+		initialMosaicsMinting,
+		slashingPeriod,
+		windowSize,
+		slashingAccount,
+		alpha,
+		beta,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewManualRateChangeTransaction(
+	deadline *Deadline,
+	providerMosaicId *MosaicId,
+	currencyBalanceIncrease bool,
+	currencyBalanceChange Amount,
+	mosaicBalanceIncrease bool,
+	mosaicBalanceChange Amount,
+) (*ManualRateChangeTransaction, error) {
+	tx, err := NewManualRateChangeTransaction(
+		deadline,
+		providerMosaicId,
+		currencyBalanceIncrease,
+		currencyBalanceChange,
+		mosaicBalanceIncrease,
+		mosaicBalanceChange,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {
