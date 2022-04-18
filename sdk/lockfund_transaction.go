@@ -69,11 +69,12 @@ func (tx *LockFundTransferTransaction) Bytes() ([]byte, error) {
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
 
+	duration := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 	transactions.LockFundTransferTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.LockFundTransferTransactionBufferAddAction(builder, uint8(tx.Action))
-	transactions.LockFundTransferTransactionBufferAddDuration(builder, uint64(tx.Duration))
+	transactions.LockFundTransferTransactionBufferAddDuration(builder, duration)
 	transactions.LockFundTransferTransactionBufferAddMosaicsCount(builder, uint8(len(tx.Mosaics)))
 	transactions.LockFundTransferTransactionBufferAddMosaics(builder, mV)
 	t := transactions.LockFundTransferTransactionBufferEnd(builder)
@@ -163,11 +164,11 @@ func (tx *LockFundCancelUnlockTransaction) Bytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	targetHeight := transactions.TransactionBufferCreateUint32Vector(builder, tx.TargetHeight.toArray())
 	transactions.LockFundCancelUnlockTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-	transactions.LockFundCancelUnlockTransactionBufferAddTargetHeight(builder, uint64(tx.TargetHeight))
+	transactions.LockFundCancelUnlockTransactionBufferAddTargetHeight(builder, targetHeight)
 	t := transactions.LockFundCancelUnlockTransactionBufferEnd(builder)
 	builder.Finish(t)
 
