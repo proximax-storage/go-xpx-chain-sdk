@@ -14,7 +14,7 @@ table LockFundTransferTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
-    duration:ulong;
+    duration:[uint];
     action:ubyte;
     mosaicsCount:ubyte;
     mosaics: [MosaicBuffer];
@@ -27,8 +27,8 @@ table LockFundCancelUnlockTransactionBuffer {
     version: uint;
     type: ushort;
     maxFee: [uint];
-    deadline:[uint];
-    targetHeight:ulong;
+    deadline: [uint];
+    targetHeight: [uint];
 }
 
 root_type LockFundCancelUnlockTransactionBuffer;
