@@ -152,8 +152,8 @@ const (
 
 // routes for LiquidityProvider
 const (
-	liquidityProvidersRoute = "/liquidity_provider"
-	liquidityProviderRoute  = "/liquidity_provider/%s"
+	liquidityProvidersRoute = "/liquidity_providers"
+	liquidityProviderRoute  = "/liquidity_providers/%s"
 )
 
 type TransactionGroup string

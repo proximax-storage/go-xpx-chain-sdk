@@ -26,7 +26,7 @@ func TestCreateLiquidityProviderTransaction(t *testing.T) {
 			sdk.NewPlainMessage("Test"),
 		)
 	}, defaultAccount)
-	require.Nil(t, result.error)
+	require.Nil(t, result.error, result.error)
 
 	slashingAccount, err := client.NewAccount()
 	require.Nil(t, err, err)
@@ -44,7 +44,17 @@ func TestCreateLiquidityProviderTransaction(t *testing.T) {
 			10,
 		)
 	}, managerAccount)
-	assert.Nil(t, result.error)
+	assert.Nil(t, result.error, result.error)
+
+	lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
+	assert.Nil(t, err, err)
+	require.NotNil(t, lps.LiquidityProviders)
+
+	expectedLp := lps.LiquidityProviders[0]
+	lp, err := client.LiquidityProvider.GetLiquidityProvider(ctx, expectedLp.ProviderKey)
+	assert.Nil(t, err, err)
+	assert.NotNil(t, lp)
+	assert.EqualValues(t, expectedLp, lp)
 }
 
 func TestManualRateChangeTransactionTransaction(t *testing.T) {

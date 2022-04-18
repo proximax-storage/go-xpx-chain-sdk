@@ -53,47 +53,49 @@ func (ref *turnoverHistoryDTOs) toStruct(networkType NetworkType) ([]*Turnover, 
 }
 
 type liquidityProviderDTO struct {
-	MosaicId           uint64DTO           `json:"mosaicId"`
-	Provider           string              `json:"providerKey"`
-	Owner              string              `json:"owner"`
-	AdditionallyMinted uint64DTO           `json:"additionallyMinted"`
-	SlashingAccount    string              `json:"slashingAccount"`
-	SlashingPeriod     uint32              `json:"slashingPeriod"`
-	WindowSize         uint16              `json:"windowSize"`
-	CreationHeight     uint64DTO           `json:"creationHeight"`
-	Alpha              uint32              `json:"alpha"`
-	Beta               uint32              `json:"beta"`
-	TurnoverHistory    turnoverHistoryDTOs `json:"turnoverHistory"`
-	RecentTurnover     turnoverDTO         `json:"recentTurnover"`
+	LiquidityProvider struct {
+		MosaicId           uint64DTO           `json:"mosaicId"`
+		Provider           string              `json:"providerKey"`
+		Owner              string              `json:"owner"`
+		AdditionallyMinted uint64DTO           `json:"additionallyMinted"`
+		SlashingAccount    string              `json:"slashingAccount"`
+		SlashingPeriod     uint32              `json:"slashingPeriod"`
+		WindowSize         uint16              `json:"windowSize"`
+		CreationHeight     uint64DTO           `json:"creationHeight"`
+		Alpha              uint32              `json:"alpha"`
+		Beta               uint32              `json:"beta"`
+		TurnoverHistory    turnoverHistoryDTOs `json:"turnoverHistory"`
+		RecentTurnover     turnoverDTO         `json:"recentTurnover"`
+	} `json:"liquidityProvider"`
 }
 
 func (ref *liquidityProviderDTO) toStruct(networkType NetworkType) (*LiquidityProvider, error) {
-	mosaicId, err := NewMosaicId(ref.MosaicId.toUint64())
+	mosaicId, err := NewMosaicId(ref.LiquidityProvider.MosaicId.toUint64())
 	if err != nil {
 		return nil, err
 	}
 
-	provider, err := NewAccountFromPublicKey(ref.Provider, networkType)
+	provider, err := NewAccountFromPublicKey(ref.LiquidityProvider.Provider, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	owner, err := NewAccountFromPublicKey(ref.Owner, networkType)
+	owner, err := NewAccountFromPublicKey(ref.LiquidityProvider.Owner, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	slashingAccount, err := NewAccountFromPublicKey(ref.SlashingAccount, networkType)
+	slashingAccount, err := NewAccountFromPublicKey(ref.LiquidityProvider.SlashingAccount, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	turnoverHistory, err := ref.TurnoverHistory.toStruct(networkType)
+	turnoverHistory, err := ref.LiquidityProvider.TurnoverHistory.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	recentTurnover, err := ref.RecentTurnover.toStruct(networkType)
+	recentTurnover, err := ref.LiquidityProvider.RecentTurnover.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -102,13 +104,13 @@ func (ref *liquidityProviderDTO) toStruct(networkType NetworkType) (*LiquidityPr
 		MosaicId:           mosaicId,
 		ProviderKey:        provider,
 		Owner:              owner,
-		AdditionallyMinted: ref.AdditionallyMinted.toStruct(),
+		AdditionallyMinted: ref.LiquidityProvider.AdditionallyMinted.toStruct(),
 		SlashingAccount:    slashingAccount,
-		SlashingPeriod:     ref.SlashingPeriod,
-		WindowSize:         ref.WindowSize,
-		CreationHeight:     ref.CreationHeight.toStruct(),
-		Alpha:              ref.Alpha,
-		Beta:               ref.Beta,
+		SlashingPeriod:     ref.LiquidityProvider.SlashingPeriod,
+		WindowSize:         ref.LiquidityProvider.WindowSize,
+		CreationHeight:     ref.LiquidityProvider.CreationHeight.toStruct(),
+		Alpha:              ref.LiquidityProvider.Alpha,
+		Beta:               ref.LiquidityProvider.Beta,
 		TurnoverHistory:    turnoverHistory,
 		RecentTurnover:     recentTurnover,
 	}, nil
