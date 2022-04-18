@@ -71,7 +71,7 @@ func (tx *LockFundTransferTransaction) Bytes() ([]byte, error) {
 
 	duration := transactions.TransactionBufferCreateUint32Vector(builder, tx.Duration.toArray())
 	transactions.LockFundTransferTransactionBufferStart(builder)
-	transactions.TransactionBufferAddSize(builder, tx.Size() + )
+	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.LockFundTransferTransactionBufferAddAction(builder, uint8(tx.Action))
 	transactions.LockFundTransferTransactionBufferAddDuration(builder, duration)
