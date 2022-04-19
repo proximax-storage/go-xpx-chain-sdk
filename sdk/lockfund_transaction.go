@@ -86,7 +86,7 @@ func (tx *LockFundTransferTransaction) Bytes() ([]byte, error) {
 type lockFundTransferTransactionDto struct {
 	Tx struct {
 		abstractTransactionDTO
-		Duration Duration       `json:"duration"`
+		Duration uint64DTO      `json:"duration"`
 		Action   LockFundAction `json:"action"`
 		Mosaics  []*mosaicDTO   `json:"mosaics"`
 	} `json:"transaction"`
@@ -117,7 +117,7 @@ func (dto *lockFundTransferTransactionDto) toStruct(*Hash) (Transaction, error) 
 
 	return &LockFundTransferTransaction{
 		*atx,
-		dto.Tx.Duration,
+		Duration(dto.Tx.Duration.toUint64()),
 		dto.Tx.Action,
 		mosaics,
 	}, nil
