@@ -741,7 +741,7 @@ func (tx *DownloadTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DriveKey": %s,
-			"DownloadSize": %s,
+			"DownloadSizeBytes": %s,
 			"FeedbackFeeAmount": %s,
 			"ListOfPublicKeys": %s,
 		`,
