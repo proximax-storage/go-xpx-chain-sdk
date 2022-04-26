@@ -301,7 +301,7 @@ type DownloadChannel struct {
 	Id                    *Hash
 	Consumer              *PublicAccount
 	Drive                 *PublicAccount
-	downloadSizeMegabytes StorageSize
+	DownloadSizeMegabytes StorageSize
 	DownloadApprovalCount uint16
 	Finished              bool
 	ListOfPublicKeys      []*PublicAccount
@@ -315,7 +315,7 @@ func (downloadChannel *DownloadChannel) String() string {
 			"Id": %s,
 			"Consumer": %s,
 			"Drive": %s,
-			"downloadSizeMegabytes": %d,
+			"DownloadSizeMegabytes": %d,
 			"DownloadApprovalCount": %d,
 			"ListOfPublicKeys": %s,
 			"CumulativePayments": %+v,
@@ -323,7 +323,7 @@ func (downloadChannel *DownloadChannel) String() string {
 		downloadChannel.Id,
 		downloadChannel.Consumer,
 		downloadChannel.Drive,
-		downloadChannel.downloadSizeMegabytes,
+		downloadChannel.DownloadSizeMegabytes,
 		downloadChannel.DownloadApprovalCount,
 		downloadChannel.ListOfPublicKeys,
 		downloadChannel.CumulativePayments,

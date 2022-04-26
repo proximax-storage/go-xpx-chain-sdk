@@ -302,7 +302,7 @@ var (
 		Id:                    &Hash{2},
 		Consumer:              testConsumerAccount,
 		Drive:                 testBcDriveAccount,
-		downloadSizeMegabytes: StorageSize(500),
+		DownloadSizeMegabytes: StorageSize(500),
 		DownloadApprovalCount: 0,
 		ListOfPublicKeys: []*PublicAccount{
 			testReplicatorV2Account1,

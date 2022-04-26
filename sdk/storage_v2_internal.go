@@ -573,7 +573,7 @@ type downloadChannelDTO struct {
 		Id                    hashDto         `json:"id"`
 		Consumer              string          `json:"consumer"`
 		Drive                 string          `json:"drive"`
-		DownloadSizeMegabytes uint64DTO       `json:"downloadSizeMegabytes"`
+		DownloadSizeMegabytes uint64DTO       `json:"DownloadSizeMegabytes"`
 		DownloadApprovalCount uint16          `json:"downloadApprovalCount"`
 		Finished              bool            `json:"finished"`
 		ListOfPublicKeys      accountListDTOs `json:"listOfPublicKeys"`
@@ -617,7 +617,7 @@ func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChann
 		Id:                    id,
 		Consumer:              consumer,
 		Drive:                 drive,
-		downloadSizeMegabytes: ref.DownloadChannelInfo.DownloadSizeMegabytes.toStruct(),
+		DownloadSizeMegabytes: ref.DownloadChannelInfo.DownloadSizeMegabytes.toStruct(),
 		DownloadApprovalCount: ref.DownloadChannelInfo.DownloadApprovalCount,
 		Finished:              ref.DownloadChannelInfo.Finished,
 		ListOfPublicKeys:      listOfPublicKeys,
