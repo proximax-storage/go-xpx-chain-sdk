@@ -570,15 +570,15 @@ func (ref *paymentsV2DTOs) toStruct(networkType NetworkType) ([]*Payment, error)
 
 type downloadChannelDTO struct {
 	DownloadChannelInfo struct {
-		Id                        hashDto         `json:"id"`
-		Consumer                  string          `json:"consumer"`
-		Drive                     string          `json:"drive"`
-		DownloadSizeBytes         uint64DTO       `json:"downloadSizeBytes"`
-		DownloadApprovalCountLeft uint16          `json:"downloadApprovalCount"`
-		Finished                  bool            `json:"finished"`
-		ListOfPublicKeys          accountListDTOs `json:"listOfPublicKeys"`
-		ShardReplicators          accountListDTOs `json:"shardReplicators"`
-		CumulativePayments        paymentsV2DTOs  `json:"cumulativePayments"`
+		Id                    hashDto         `json:"id"`
+		Consumer              string          `json:"consumer"`
+		Drive                 string          `json:"drive"`
+		DownloadSizeMegabytes uint64DTO       `json:"downloadSizeMegabytes"`
+		DownloadApprovalCount uint16          `json:"downloadApprovalCount"`
+		Finished              bool            `json:"finished"`
+		ListOfPublicKeys      accountListDTOs `json:"listOfPublicKeys"`
+		ShardReplicators      accountListDTOs `json:"shardReplicators"`
+		CumulativePayments    paymentsV2DTOs  `json:"cumulativePayments"`
 	}
 }
 
@@ -617,8 +617,8 @@ func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChann
 		Id:                    id,
 		Consumer:              consumer,
 		Drive:                 drive,
-		DownloadSizeBytes:     ref.DownloadChannelInfo.DownloadSizeBytes.toStruct(),
-		DownloadApprovalCount: ref.DownloadChannelInfo.DownloadApprovalCountLeft,
+		downloadSizeMegabytes: ref.DownloadChannelInfo.DownloadSizeMegabytes.toStruct(),
+		DownloadApprovalCount: ref.DownloadChannelInfo.DownloadApprovalCount,
 		Finished:              ref.DownloadChannelInfo.Finished,
 		ListOfPublicKeys:      listOfPublicKeys,
 		ShardReplicators:      shardReplicators,
