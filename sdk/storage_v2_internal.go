@@ -573,8 +573,9 @@ type downloadChannelDTO struct {
 		Id                        hashDto         `json:"id"`
 		Consumer                  string          `json:"consumer"`
 		Drive                     string          `json:"drive"`
-		DownloadSize              uint64DTO       `json:"downloadSize"`
-		DownloadApprovalCountLeft uint16          `json:"downloadApprovalCountLeft"`
+		DownloadSizeBytes         uint64DTO       `json:"downloadSizeBytes"`
+		DownloadApprovalCountLeft uint16          `json:"downloadApprovalCount"`
+		Finished                  bool            `json:"finished"`
 		ListOfPublicKeys          accountListDTOs `json:"listOfPublicKeys"`
 		ShardReplicators          accountListDTOs `json:"shardReplicators"`
 		CumulativePayments        paymentsV2DTOs  `json:"cumulativePayments"`
@@ -613,14 +614,15 @@ func (ref *downloadChannelDTO) toStruct(networkType NetworkType) (*DownloadChann
 	}
 
 	return &DownloadChannel{
-		Id:                        id,
-		Consumer:                  consumer,
-		Drive:                     drive,
-		DownloadSize:              ref.DownloadChannelInfo.DownloadSize.toStruct(),
-		DownloadApprovalCountLeft: ref.DownloadChannelInfo.DownloadApprovalCountLeft,
-		ListOfPublicKeys:          listOfPublicKeys,
-		ShardReplicators:          shardReplicators,
-		CumulativePayments:        cumulativePayments,
+		Id:                    id,
+		Consumer:              consumer,
+		Drive:                 drive,
+		DownloadSizeBytes:     ref.DownloadChannelInfo.DownloadSizeBytes.toStruct(),
+		DownloadApprovalCount: ref.DownloadChannelInfo.DownloadApprovalCountLeft,
+		Finished:              ref.DownloadChannelInfo.Finished,
+		ListOfPublicKeys:      listOfPublicKeys,
+		ShardReplicators:      shardReplicators,
+		CumulativePayments:    cumulativePayments,
 	}, nil
 }
 

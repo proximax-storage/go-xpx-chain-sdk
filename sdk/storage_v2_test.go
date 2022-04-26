@@ -166,11 +166,11 @@ const (
 			"id": "0200000000000000000000000000000000000000000000000000000000000000",
 			"consumer": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
 			"drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-			"downloadSize": [
+			"downloadSizeBytes": [
 				500,
 				0
 			],
-			"downloadApprovalCountLeft": 0,
+			"downloadApprovalCount": 0,
 			"listOfPublicKeys": [
 				"36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
 				"E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
@@ -299,11 +299,11 @@ var (
 	}
 
 	testDownloadChannelInfo = &DownloadChannel{
-		Id:                        &Hash{2},
-		Consumer:                  testConsumerAccount,
-		Drive:                     testBcDriveAccount,
-		DownloadSize:              StorageSize(500),
-		DownloadApprovalCountLeft: 0,
+		Id:                    &Hash{2},
+		Consumer:              testConsumerAccount,
+		Drive:                 testBcDriveAccount,
+		DownloadSizeBytes:     StorageSize(500),
+		DownloadApprovalCount: 0,
 		ListOfPublicKeys: []*PublicAccount{
 			testReplicatorV2Account1,
 			testReplicatorV2Account2,
