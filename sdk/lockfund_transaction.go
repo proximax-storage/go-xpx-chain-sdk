@@ -178,7 +178,7 @@ func (tx *LockFundCancelUnlockTransaction) Bytes() ([]byte, error) {
 type lockFundCancelUnlockTransactionDto struct {
 	Tx struct {
 		abstractTransactionDTO
-		TargetHeight Height `json:"targetHeight"`
+		TargetHeight uint64DTO `json:"targetHeight"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -196,6 +196,6 @@ func (dto *lockFundCancelUnlockTransactionDto) toStruct(*Hash) (Transaction, err
 
 	return &LockFundCancelUnlockTransaction{
 		*atx,
-		dto.Tx.TargetHeight,
+		dto.Tx.TargetHeight.toStruct(),
 	}, nil
 }
