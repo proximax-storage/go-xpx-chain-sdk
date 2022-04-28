@@ -14,13 +14,13 @@ type InactiveRecordsDto []*([]*mosaicDTO)
 
 type LockFundHeightRecordDto struct {
 	Key             string
-	ActiveMosaics   []*mosaicDTO       `json:"activeRecord"`
+	ActiveMosaics   []*mosaicDTO       `json:"activeMosaics"`
 	InactiveRecords InactiveRecordsDto `json:"inactiveRecords"`
 }
 
 type LockFundKeyRecordDto struct {
 	Key             uint64DTO          `json:"key"`
-	ActiveMosaics   []*mosaicDTO       `json:"activeRecord"`
+	ActiveMosaics   []*mosaicDTO       `json:"activeMosaics"`
 	InactiveRecords InactiveRecordsDto `json:"inactiveRecords"`
 }
 type LockFundKeyRecordGroupDto struct {
