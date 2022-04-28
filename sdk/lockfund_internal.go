@@ -10,7 +10,11 @@ type LockFundHeightRecordGroupDto struct {
 		Records    []*LockFundHeightRecordDto `json:"records"`
 	}
 }
-type InactiveRecordsDto []*([]*mosaicDTO)
+type InactiveRecordsDto []*InactiveRecordDto
+
+type InactiveRecordDto struct {
+	Mosaics []*mosaicDTO `json:"mosaics"`
+}
 
 type LockFundHeightRecordDto struct {
 	Key             string
@@ -44,8 +48,8 @@ func (ref *LockFundHeightRecordDto) toStruct(networkType NetworkType) (*LockFund
 
 	inactiveRecords := make([]*([]*Mosaic), 0)
 	for _, inactiveRecord := range ref.InactiveRecords {
-		record := make([]*Mosaic, len(*inactiveRecord))
-		for i, mosaic := range *inactiveRecord {
+		record := make([]*Mosaic, len(inactiveRecord.Mosaics))
+		for i, mosaic := range inactiveRecord.Mosaics {
 			msc, err := mosaic.toStruct()
 			if err != nil {
 				return nil, nil, err
@@ -73,8 +77,8 @@ func (ref *LockFundKeyRecordDto) toStruct(networkType NetworkType) (*LockFundRec
 
 	inactiveRecords := make([]*([]*Mosaic), 0)
 	for _, inactiveRecord := range ref.InactiveRecords {
-		record := make([]*Mosaic, len(*inactiveRecord))
-		for i, mosaic := range *inactiveRecord {
+		record := make([]*Mosaic, len(inactiveRecord.Mosaics))
+		for i, mosaic := range inactiveRecord.Mosaics {
 			msc, err := mosaic.toStruct()
 			if err != nil {
 				return nil, 0, err
