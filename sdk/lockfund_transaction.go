@@ -127,9 +127,9 @@ func NewLockFundCancelUnlockTransaction(deadline *Deadline, targetHeight Height,
 
 	tx := LockFundCancelUnlockTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     LockFundTransferVersion,
+			Version:     LockFundCancelUnlockVersion,
 			Deadline:    deadline,
-			Type:        LockFundTransfer,
+			Type:        LockFundCancelUnlock,
 			NetworkType: networkType,
 		},
 		TargetHeight: targetHeight,
