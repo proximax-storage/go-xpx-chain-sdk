@@ -1912,6 +1912,7 @@ func (tx *TransferTransaction) MessageSize() int {
 
 type HarvesterTransaction struct {
 	AbstractTransaction
+	HarvesterKey *PublicAccount
 }
 
 type HarvesterTransactionType EntityType
@@ -1922,7 +1923,10 @@ const (
 )
 
 // HarvesterTransaction creates new Harvester transaction
-func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, networkType NetworkType) (*HarvesterTransaction, error) {
+func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, harvesterKey *PublicAccount, networkType NetworkType) (*HarvesterTransaction, error) {
+	if harvesterKey == nil {
+		return nil, errors.New("harvesterKey must not be nil")
+	}
 	return &HarvesterTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     HarvesterVersion,
@@ -1930,6 +1934,7 @@ func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, n
 			Type:        EntityType(htt),
 			NetworkType: networkType,
 		},
+		HarvesterKey: harvesterKey,
 	}, nil
 }
 
@@ -1941,13 +1946,21 @@ func (tx *HarvesterTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
+			"HarvesterKey": %s
 		`,
 		tx.AbstractTransaction.String(),
+		tx.HarvesterKey.String(),
 	)
 }
 
 func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
+
+	b, err := utils.HexDecodeStringOdd(tx.HarvesterKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1957,6 +1970,7 @@ func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 	transactions.HarvesterTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.HarvesterTransactionBufferAddHarvesterKey(builder, pV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -1964,7 +1978,7 @@ func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *HarvesterTransaction) Size() int {
-	return TransactionHeaderSize
+	return HarvesterTransactionSize
 }
 
 type ModifyMultisigAccountTransaction struct {
@@ -2809,6 +2823,7 @@ const (
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
 	CreateLiquidityProviderHeaderSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + AmountSize + 4 + 2 + KeySize + 4 + 4
 	ManualRateChangeHeaderSize                   = TransactionHeaderSize + MosaicIdSize + 1 + AmountSize + 1 + AmountSize
+	HarvesterTransactionSize                     = TransactionHeaderSize + KeySize
 )
 
 type EntityType uint16

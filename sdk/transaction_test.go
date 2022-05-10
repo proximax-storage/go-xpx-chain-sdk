@@ -886,9 +886,13 @@ func TestAddHarvesterTransactionSigning(t *testing.T) {
 	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
+	harvesterAccount, err := NewAccountFromPublicKey("A44F44D5B7FA91D8E6D1FD8FB51B21407DC94E7F0A6C7BBDBF82EC3547549C6F", MijinTest)
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
 	htx, err := NewHarvesterTransaction(
 		fakeDeadline,
 		AddHarvester,
+		harvesterAccount,
 		MijinTest,
 	)
 
@@ -898,16 +902,20 @@ func TestAddHarvesterTransactionSigning(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, EntityType(AddHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
-	assert.Equal(t, stringToHashPanic("c712d80ba3d7f0eec4d4f647580818ce0ea9e3e62e874ef7c207a46290817c9c"), shtx.Hash)
+	assert.Equal(t, stringToHashPanic("ddcfed65ff576facd186a5ae7949836821727d5bcc2668a8e44660245876e61b"), shtx.Hash)
 }
 
 func TestRemoveHarvesterTransactionSigning(t *testing.T) {
 	a, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash)
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
+	harvesterAccount, err := NewAccountFromPublicKey("A44F44D5B7FA91D8E6D1FD8FB51B21407DC94E7F0A6C7BBDBF82EC3547549C6F", MijinTest)
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
 	htx, err := NewHarvesterTransaction(
 		fakeDeadline,
 		RemoveHarvester,
+		harvesterAccount,
 		MijinTest,
 	)
 
@@ -917,7 +925,7 @@ func TestRemoveHarvesterTransactionSigning(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, EntityType(RemoveHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
-	assert.Equal(t, stringToHashPanic("d052a0b5d9535551e9d9ac51a3a06e2cc0983ce0d39689a6576d93d09c5c2912"), shtx.Hash)
+	assert.Equal(t, stringToHashPanic("e721bfbae059478013be310a454ddd36424ee0aabc46892f551161e9b5586ad8"), shtx.Hash)
 }
 
 func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {

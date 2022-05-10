@@ -960,6 +960,7 @@ func (dto *transferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 type harvesterTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		HarvesterKey string `json:"harvesterKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -975,8 +976,14 @@ func (dto *harvesterTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
+	acc, err := NewAccountFromPublicKey(dto.Tx.HarvesterKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &HarvesterTransaction{
 		*atx,
+		acc,
 	}, nil
 }
 

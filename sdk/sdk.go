@@ -625,8 +625,8 @@ func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipie
 	return tx, err
 }
 
-func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType) (*HarvesterTransaction, error) {
-	tx, err := NewHarvesterTransaction(deadline, htt, c.config.NetworkType)
+func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, harvesterKey *PublicAccount) (*HarvesterTransaction, error) {
+	tx, err := NewHarvesterTransaction(deadline, htt, harvesterKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
