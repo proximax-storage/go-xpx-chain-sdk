@@ -86,7 +86,7 @@ type Shard struct {
 type Verification struct {
 	VerificationTrigger *Hash
 	Expiration          *Timestamp
-	Expired             bool
+	Duration            *Timestamp
 	Shards              []*Shard
 }
 
@@ -95,12 +95,12 @@ func (verification *Verification) String() string {
 		`
 			"VerificationTrigger": %s,
 			"Expiration:" %s,
-			"VerificationOpinions:" %t,
+			"VerificationOpinions:" %s,
 			"Shards:" %+v,
 		`,
 		verification.VerificationTrigger,
 		verification.Expiration.String(),
-		verification.Expired,
+		verification.Duration.String(),
 		verification.Shards,
 	)
 }
@@ -174,7 +174,7 @@ type BcDrive struct {
 	ConfirmedUsedSizes         []*ConfirmedUsedSize
 	Replicators                []*PublicAccount
 	OffboardingReplicators     []*PublicAccount
-	Verifications              []*Verification
+	Verification               *Verification
 	DownloadShards             []*DownloadShard
 	DataModificationShards     []*DataModificationShard
 }
@@ -194,7 +194,7 @@ func (drive *BcDrive) String() string {
 		"ConfirmedUsedSizes": %+v,
 		"Replicators": %s,
 		"OffboardingReplicators": %s,
-		"Verifications": %+v,
+		"Verification": %+v,
 		"DownloadShards": %+v,
 		"DataModificationShards": %+v,
 		`,
@@ -210,7 +210,7 @@ func (drive *BcDrive) String() string {
 		drive.ConfirmedUsedSizes,
 		drive.Replicators,
 		drive.OffboardingReplicators,
-		drive.Verifications,
+		drive.Verification,
 		drive.DownloadShards,
 		drive.DataModificationShards,
 	)

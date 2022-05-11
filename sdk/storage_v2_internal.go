@@ -199,7 +199,7 @@ func (ref *shardDTOs) toStruct(networkType NetworkType) ([]*Shard, error) {
 type verificationDTO struct {
 	VerificationTrigger hashDto                `json:"verificationTrigger"`
 	Expiration          blockchainTimestampDTO `json:"expiration"`
-	Expired             bool                   `json:"expired"`
+	Duration            blockchainTimestampDTO `json:"Duration"`
 	Shards              shardDTOs              `json:"shards"`
 }
 
@@ -217,7 +217,7 @@ func (ref *verificationDTO) toStruct(networkType NetworkType) (*Verification, er
 	return &Verification{
 		VerificationTrigger: verificationTrigger,
 		Expiration:          ref.Expiration.toStruct().ToTimestamp(),
-		Expired:             ref.Expired,
+		Duration:            ref.Duration.toStruct().ToTimestamp(),
 		Shards:              shards,
 	}, nil
 }
@@ -378,7 +378,7 @@ type bcDriveDTO struct {
 		ConfirmedUsedSizes         confirmedUsedSizeDTOs         `json:"confirmedUsedSizes"`
 		Replicators                accountListDTOs               `json:"replicators"`
 		OffboardingReplicators     accountListDTOs               `json:"offboardingReplicators"`
-		Verifications              verificationDTOs              `json:"verifications"`
+		Verification               *verificationDTO              `json:"verification,omitempty"`
 		DownloadShards             downloadShardDTOs             `json:"downloadShards"`
 		DataModificationShards     dataModificationShardDTOs     `json:"dataModificationShards"`
 	}
@@ -425,9 +425,14 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.OffboardingReplicators.toStruct: %v", err)
 	}
 
-	verifications, err := ref.Drive.Verifications.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Verifications.toStruct: %v", err)
+	verification := &Verification{}
+	if ref.Drive.Verification != nil {
+		verification, err = ref.Drive.Verification.toStruct(networkType)
+		if err != nil {
+			return nil, fmt.Errorf("sdk.bcDriveDTO.toStruct BcDrive.Verification.toStruct: %v", err)
+		}
+	} else {
+		verification = nil
 	}
 
 	downloadShards, err := ref.Drive.DownloadShards.toStruct(networkType)
@@ -453,7 +458,7 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 		ConfirmedUsedSizes:         confirmedUsedSizes,
 		Replicators:                replicators,
 		OffboardingReplicators:     offboardingReplicators,
-		Verifications:              verifications,
+		Verification:               verification,
 		DownloadShards:             downloadShards,
 		DataModificationShards:     dataModificationShards,
 	}, nil
@@ -573,7 +578,7 @@ type downloadChannelDTO struct {
 		Id                    hashDto         `json:"id"`
 		Consumer              string          `json:"consumer"`
 		Drive                 string          `json:"drive"`
-		DownloadSizeMegabytes uint64DTO       `json:"DownloadSizeMegabytes"`
+		DownloadSizeMegabytes uint64DTO       `json:"downloadSizeMegabytes"`
 		DownloadApprovalCount uint16          `json:"downloadApprovalCount"`
 		Finished              bool            `json:"finished"`
 		ListOfPublicKeys      accountListDTOs `json:"listOfPublicKeys"`

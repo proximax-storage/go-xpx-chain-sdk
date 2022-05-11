@@ -85,17 +85,18 @@ const (
       "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
       "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64"
     ],
-    "verifications": [
-      {
-        "verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
-        "expiration": [
-          0,
-          0
-        ],
-        "expired": true,
-        "shards": []
-      }
-    ],
+    "verification": {
+		"verificationTrigger": "0100000000000000000000000000000000000000000000000000000000000000",
+		"expiration": [
+		  0,
+		  0
+		],
+		"duration": [
+		  0,
+		  0
+		],
+		"shards": []
+	},
     "downloadShards": [
       {
         "downloadChannelId": "0100000000000000000000000000000000000000000000000000000000000000"
@@ -166,7 +167,7 @@ const (
 			"id": "0200000000000000000000000000000000000000000000000000000000000000",
 			"consumer": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
 			"drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-			"downloadSizeBytes": [
+			"downloadSizeMegabytes": [
 				500,
 				0
 			],
@@ -255,13 +256,11 @@ var (
 			testReplicatorV2Account1,
 			testReplicatorV2Account2,
 		},
-		Verifications: []*Verification{
-			{
-				VerificationTrigger: &Hash{1},
-				Expiration:          blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
-				Expired:             true,
-				Shards:              []*Shard{},
-			},
+		Verification: &Verification{
+			VerificationTrigger: &Hash{1},
+			Expiration:          blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+			Duration:            blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+			Shards:              []*Shard{},
 		},
 		DownloadShards: []*DownloadShard{{&Hash{1}}},
 		DataModificationShards: []*DataModificationShard{
