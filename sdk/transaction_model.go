@@ -2782,6 +2782,11 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
+	SdaOffersCountSize                           = 1
+	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + KeySize + DurationSize
+	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
+	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
+	RemoveSdaExchangeOfferHeaderSize             = TransactionHeaderSize + SdaOffersCountSize
 )
 
 type EntityType uint16
@@ -2839,6 +2844,8 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
+	PlaceSdaExchangeOffer     EntityType = 0x4161
+	RemoveSdaExchangeOffer    EntityType = 0x4261
 )
 
 func (t EntityType) String() string {
@@ -2897,6 +2904,8 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
+	PlaceSdaExchangeOfferVersion     EntityVersion = 1
+	RemoveSdaExchangeOfferVersion    EntityVersion = 1
 )
 
 type AccountLinkAction uint8
