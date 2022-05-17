@@ -6,6 +6,46 @@ package sdk
 
 import "fmt"
 
+type UserSdaExchangeInfo struct {
+	Owner     *PublicAccount
+	SdaOffers map[MosaicId]map[MosaicId]*SdaOfferBalance
+}
+
+func (info *UserSdaExchangeInfo) String() string {
+	return fmt.Sprintf(
+		`
+			"Owner": %s,
+			"SdaOffers": %+v,
+		`,
+		info.Owner,
+		info.SdaOffers,
+	)
+}
+
+type SdaOfferBalance struct {
+	Owner             *PublicAccount
+	MosaicGive        *Mosaic
+	MosaicGet         *Mosaic
+	InitialAmountGive Amount
+	InitialAmountGet  Amount
+	Deadline          Height
+}
+
+func (info *SdaOfferBalance) String() string {
+	return fmt.Sprintf(
+		`
+			"Owner": %s,
+			"MosaicGive": %s,
+			"MosaicGet": %s,
+			"Deadline": %d,
+		`,
+		info.Owner,
+		info.MosaicGive,
+		info.MosaicGet,
+		info.Deadline,
+	)
+}
+
 type SdaOffer struct {
 	MosaicGive *Mosaic
 	MosaicGet  *Mosaic

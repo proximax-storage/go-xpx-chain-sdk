@@ -465,6 +465,24 @@ func (c *Client) NewRemoveExchangeOfferTransaction(deadline *Deadline, removeOff
 	return tx, err
 }
 
+func (c *Client) NewPlaceSdaExchangeOfferTransaction(deadline *Deadline, placeSdaOffers []*PlaceSdaOffer) (*PlaceSdaExchangeOfferTransaction, error) {
+	tx, err := NewPlaceSdaExchangeOfferTransaction(deadline, placeSdaOffers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewRemoveSdaExchangeOfferTransaction(deadline *Deadline, removeSdaOffers []*RemoveSdaOffer) (*RemoveSdaExchangeOfferTransaction, error) {
+	tx, err := NewRemoveSdaExchangeOfferTransaction(deadline, removeSdaOffers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewNetworkConfigTransaction(deadline *Deadline, delta Duration, config *NetworkConfig, entities *SupportedEntities) (*NetworkConfigTransaction, error) {
 	tx, err := NewNetworkConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
 	if tx != nil {
