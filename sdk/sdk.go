@@ -155,6 +155,7 @@ type Client struct {
 	// Services for communicating to the Catapult REST APIs
 	Blockchain    *BlockchainService
 	Exchange      *ExchangeService
+	SdaExchange   *SdaExchangeService
 	Mosaic        *MosaicService
 	Namespace     *NamespaceService
 	Node          *NodeService
@@ -204,6 +205,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Exchange = &ExchangeService{&c.common, c.Resolve}
+	c.SdaExchange = &SdaExchangeService{&c.common, c.Resolve}
 	c.Account = (*AccountService)(&c.common)
 	c.Lock = (*LockService)(&c.common)
 	c.Storage = &StorageService{&c.common, c.Lock}
