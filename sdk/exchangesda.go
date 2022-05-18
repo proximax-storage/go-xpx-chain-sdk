@@ -41,7 +41,7 @@ func (e *SdaExchangeService) GetAccountSdaExchangeInfo(ctx context.Context, acco
 
 // Return offers with same mosaic id give or mosaic id get.
 // offerType = give OR offerType = get ONLY
-func (e *ExchangeService) GetSdaExchangeOfferByAssetId(ctx context.Context, assetId AssetId, offerType string) ([]*SdaOfferBalance, error) {
+func (e *SdaExchangeService) GetSdaExchangeOfferByAssetId(ctx context.Context, assetId AssetId, offerType string) ([]*SdaOfferBalance, error) {
 	var mosaicId *MosaicId
 
 	switch assetId.Type() {

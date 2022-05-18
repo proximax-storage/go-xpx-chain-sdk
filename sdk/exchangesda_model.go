@@ -7,18 +7,18 @@ package sdk
 import "fmt"
 
 type UserSdaExchangeInfo struct {
-	Owner     *PublicAccount
-	SdaOffers map[MosaicId]map[MosaicId]*SdaOfferBalance
+	Owner            *PublicAccount
+	SdaOfferBalances map[MosaicId]map[MosaicId]*SdaOfferBalance
 }
 
 func (info *UserSdaExchangeInfo) String() string {
 	return fmt.Sprintf(
 		`
 			"Owner": %s,
-			"SdaOffers": %+v,
+			"SdaOfferBalance": %+v,
 		`,
 		info.Owner,
-		info.SdaOffers,
+		info.SdaOfferBalances,
 	)
 }
 
@@ -37,11 +37,15 @@ func (info *SdaOfferBalance) String() string {
 			"Owner": %s,
 			"MosaicGive": %s,
 			"MosaicGet": %s,
+			"InitialAmountGive": %s,
+			"InitialAmountGet": %s,
 			"Deadline": %d,
 		`,
 		info.Owner,
 		info.MosaicGive,
 		info.MosaicGet,
+		info.InitialAmountGive,
+		info.InitialAmountGet,
 		info.Deadline,
 	)
 }

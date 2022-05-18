@@ -7,10 +7,10 @@ package sdk
 type sdaOfferBalanceDTO struct {
 	MosaicIdGive      uint64DTO `json:"mosaicIdGive"`
 	MosaicIdGet       uint64DTO `json:"mosaicIdGet"`
-	CurrentAmountGive uint64DTO `json:"currentAmountGive"`
-	CurrentAmountGet  uint64DTO `json:"currentAmountGet"`
-	InitialAmountGive uint64DTO `json:"initialAmountGive"`
-	InitialAmountGet  uint64DTO `json:"initialAmountGet"`
+	CurrentAmountGive uint64DTO `json:"currentMosaicGiveAmount"`
+	CurrentAmountGet  uint64DTO `json:"currentMosaicGetAmount"`
+	InitialAmountGive uint64DTO `json:"initialMosaicGiveAmount"`
+	InitialAmountGet  uint64DTO `json:"initialMosaicGetAmount"`
 	Owner             string    `json:"owner"`
 	Deadline          uint64DTO `json:"deadline"`
 }
@@ -83,11 +83,12 @@ func (ref *sdaExchangeDTO) toStruct(networkType NetworkType) (*UserSdaExchangeIn
 			return nil, err
 		}
 
+		offersMap[*mosaicIdGive] = make(map[MosaicId]*SdaOfferBalance)
 		offersMap[*mosaicIdGive][*mosaicIdGet] = offer
 	}
 
 	return &UserSdaExchangeInfo{
-		Owner:     owner,
-		SdaOffers: offersMap,
+		Owner:            owner,
+		SdaOfferBalances: offersMap,
 	}, nil
 }
