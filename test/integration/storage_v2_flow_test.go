@@ -224,13 +224,10 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 	// end region
 
 	t.Run("EndDriveVerificationV2", func(t *testing.T) {
-		//t.SkipNow()
+		t.SkipNow()
 
 		// prepare same opinions
-		opinions := make([]uint8, len(replicators)*len(replicators))
-		for i, _ := range opinions {
-			opinions[i] = 1
-		}
+		opinions := 22
 
 		keys := make([]*sdk.PublicAccount, len(replicators))
 		for i, r := range replicators {
@@ -258,7 +255,7 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 				1,
 				keys,
 				signatures,
-				opinions,
+				uint8(opinions),
 			)
 		}, defaultAccount)
 		assert.NoError(t, result.error, result.error)

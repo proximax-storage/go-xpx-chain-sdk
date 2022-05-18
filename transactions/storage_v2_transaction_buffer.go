@@ -3598,38 +3598,16 @@ func (rcv *EndDriveVerificationTransactionV2Buffer) SignaturesLength() int {
 	return 0
 }
 
-func (rcv *EndDriveVerificationTransactionV2Buffer) Opinions(j int) byte {
+func (rcv *EndDriveVerificationTransactionV2Buffer) Opinions() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *EndDriveVerificationTransactionV2Buffer) OpinionsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *EndDriveVerificationTransactionV2Buffer) OpinionsBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *EndDriveVerificationTransactionV2Buffer) MutateOpinions(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
+func (rcv *EndDriveVerificationTransactionV2Buffer) MutateOpinions(n byte) bool {
+	return rcv._tab.MutateByteSlot(32, n)
 }
 
 func EndDriveVerificationTransactionV2BufferStart(builder *flatbuffers.Builder) {
@@ -3704,11 +3682,8 @@ func EndDriveVerificationTransactionV2BufferAddSignatures(builder *flatbuffers.B
 func EndDriveVerificationTransactionV2BufferStartSignaturesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func EndDriveVerificationTransactionV2BufferAddOpinions(builder *flatbuffers.Builder, opinions flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(14, flatbuffers.UOffsetT(opinions), 0)
-}
-func EndDriveVerificationTransactionV2BufferStartOpinionsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func EndDriveVerificationTransactionV2BufferAddOpinions(builder *flatbuffers.Builder, opinions byte) {
+	builder.PrependByteSlot(14, opinions, 0)
 }
 func EndDriveVerificationTransactionV2BufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

@@ -894,7 +894,7 @@ func (c *Client) NewVerificationPaymentTransaction(deadline *Deadline, driveKey 
 	return tx, err
 }
 
-func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []*Signature, opinions []uint8) (*EndDriveVerificationTransactionV2, error) {
+func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []*Signature, opinions uint8) (*EndDriveVerificationTransactionV2, error) {
 	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)

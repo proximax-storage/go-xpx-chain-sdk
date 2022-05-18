@@ -407,6 +407,8 @@ type VerificationPaymentTransaction struct {
 	VerificationFeeAmount Amount
 }
 
+// TODO add VerificationOpinions type with ability to covert to uint8
+
 // End Drive Verification Transaction
 type EndDriveVerificationTransactionV2 struct {
 	AbstractTransaction
@@ -415,7 +417,7 @@ type EndDriveVerificationTransactionV2 struct {
 	ShardId             uint16
 	Keys                []*PublicAccount
 	Signatures          []*Signature
-	Opinions            []uint8
+	Opinions            uint8
 }
 
 // Drive Closure Transaction

@@ -1066,7 +1066,7 @@ func NewEndDriveVerificationTransactionV2(
 	shardId uint16,
 	keys []*PublicAccount,
 	signatures []*Signature,
-	opinions []uint8,
+	opinions uint8,
 	networkType NetworkType,
 ) (*EndDriveVerificationTransactionV2, error) {
 
@@ -1208,8 +1208,6 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	opinionsV := opinionsToArrayToBuffer(builder, len(tx.Keys), len(tx.Signatures), tx.Opinions)
-
 	transactions.EndDriveVerificationTransactionV2BufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
@@ -1220,7 +1218,7 @@ func (tx *EndDriveVerificationTransactionV2) Bytes() ([]byte, error) {
 	transactions.EndDriveVerificationTransactionV2BufferAddJudgingKeyCount(builder, uint8(len(tx.Signatures)))
 	transactions.EndDriveVerificationTransactionV2BufferAddKeys(builder, keysV)
 	transactions.EndDriveVerificationTransactionV2BufferAddSignatures(builder, signaturesV)
-	transactions.EndDriveVerificationTransactionV2BufferAddOpinions(builder, opinionsV)
+	transactions.EndDriveVerificationTransactionV2BufferAddOpinions(builder, tx.Opinions)
 	t := transactions.EndDriveVerificationTransactionV2BufferEnd(builder)
 	builder.Finish(t)
 
@@ -1242,7 +1240,7 @@ type endDriveVerificationTransactionV2DTO struct {
 		ShardId             uint16         `json:"shardId"`
 		Keys                []string       `json:"publicKeys"`
 		Signatures          []signatureDto `json:"signatures"`
-		Opinions            []uint8        `json:"opinions"`
+		Opinions            uint8          `json:"opinions"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -1284,8 +1282,6 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		}
 	}
 
-	parsedOpinions := parseOpinions(dto.Tx.Opinions, uint8(len(keys)), uint8(len(dto.Tx.Signatures)))
-
 	return &EndDriveVerificationTransactionV2{
 		*atx,
 		driveAccount,
@@ -1293,7 +1289,7 @@ func (dto *endDriveVerificationTransactionV2DTO) toStruct(*Hash) (Transaction, e
 		dto.Tx.ShardId,
 		keys,
 		signatures,
-		parsedOpinions,
+		dto.Tx.Opinions,
 	}, nil
 }
 

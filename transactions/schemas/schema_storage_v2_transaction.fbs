@@ -150,7 +150,7 @@ table EndDriveVerificationTransactionV2Buffer {
     judgingKeyCount: ubyte;
     keys: [KeysBuffer];
     signatures: [SignaturesBuffer];
-    opinions: [ubyte];
+    opinions: ubyte;
 }
 
 table ReplicatorOffboardingTransactionBuffer {

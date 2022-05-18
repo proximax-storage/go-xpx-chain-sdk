@@ -183,7 +183,7 @@ func endDriveVerificationV2TransactionSchema() *schema {
 					newArrayAttribute("signature", ByteSize),
 				},
 			}.schemaDefinition),
-			newArrayAttribute("opinions", ByteSize),
+			newScalarAttribute("opinions", ByteSize),
 		},
 	}
 }
