@@ -15,7 +15,7 @@ func (info *UserSdaExchangeInfo) String() string {
 	return fmt.Sprintf(
 		`
 			"Owner": %s,
-			"SdaOfferBalance": %+v,
+			"SdaOfferBalances": %+v,
 		`,
 		info.Owner,
 		info.SdaOfferBalances,
