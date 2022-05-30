@@ -1910,7 +1910,7 @@ type MosaicDefinitionTransaction struct {
 #### func  NewMosaicDefinitionTransaction
 
 ```go
-func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error)
+func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, mosaicSupply Amount, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error)
 ```
 returns MosaicDefinitionTransaction from passed nonce, public key of announcer
 and MosaicProperties

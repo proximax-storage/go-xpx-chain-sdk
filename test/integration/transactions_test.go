@@ -302,6 +302,7 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 		return client.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
+			100,
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
@@ -317,6 +318,7 @@ func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
 		return client.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
+			100,
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
 		)
@@ -610,6 +612,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 	mosaicDefinitionTx, err := client.NewMosaicDefinitionTransaction(
 		sdk.NewDeadline(time.Hour),
 		nonce,
+		100,
 		defaultAccount.PublicAccount.PublicKey,
 		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
@@ -675,6 +678,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 	mosaicDefinitionTx, err := client.NewMosaicDefinitionTransaction(
 		sdk.NewDeadline(time.Hour),
 		nonce,
+		100,
 		defaultAccount.PublicAccount.PublicKey,
 		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
@@ -821,6 +825,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 		return client.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
+			100,
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
@@ -922,6 +927,7 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 		return client.NewMosaicDefinitionTransaction(
 			sdk.NewDeadline(time.Hour),
 			nonce,
+			100,
 			defaultAccount.PublicAccount.PublicKey,
 			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
 		)
