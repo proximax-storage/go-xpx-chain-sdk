@@ -3169,6 +3169,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveFileSystemTransactionDTO{}
 	case Deactivate:
 		dto = &deactivateTransactionDTO{}
+	case PlaceSdaExchangeOffer:
+		dto = &placeSdaOfferTransactionDTO{}
+	case RemoveSdaExchangeOffer:
+		dto = &removeSdaExchangeOfferTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
