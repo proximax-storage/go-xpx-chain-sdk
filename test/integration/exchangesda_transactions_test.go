@@ -10,6 +10,7 @@ import (
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlaceSdaExchangeOfferTransaction_LongOfferKey(t *testing.T) {
@@ -57,7 +58,22 @@ func TestPlaceSdaExchangeOfferTransaction_LongOfferKey(t *testing.T) {
 }
 
 func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
+	owner, err := client.NewAccountFromPrivateKey("E8230C5CD4EB49F6AC7FD191373E9B6322C5258CE6EE03119944A312CE6226F6")
+	require.NoError(t, err, err)
+
+	// add storage and streaming mosaic to the drive owner
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			owner.Address,
+			[]*sdk.Mosaic{sdk.Storage(100000000), sdk.Streaming(1000000000)},
+			sdk.NewPlainMessage(""),
+		)
+	}, defaultAccount)
+	require.NoError(t, result.error, result.error)
+	// end region
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewPlaceSdaExchangeOfferTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]*sdk.PlaceSdaOffer{
@@ -66,7 +82,7 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 						sdk.Storage(10000),
 						sdk.Streaming(100000000),
 					},
-					defaultAccount.PublicAccount,
+					owner.PublicAccount,
 					sdk.Duration(1000),
 				},
 				{
@@ -74,16 +90,19 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 						sdk.Streaming(100),
 						sdk.Storage(10000),
 					},
-					defaultAccount.PublicAccount,
+					owner.PublicAccount,
 					sdk.Duration(1000),
 				},
 			},
 		)
-	}, defaultAccount)
+	}, owner)
 	assert.Nil(t, result.error)
 }
 
 func TestRemoveSdaExchangeOfferTransaction(t *testing.T) {
+	owner, err := client.NewAccountFromPrivateKey("E8230C5CD4EB49F6AC7FD191373E9B6322C5258CE6EE03119944A312CE6226F6")
+	require.NoError(t, err, err)
+
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewRemoveSdaExchangeOfferTransaction(
 			sdk.NewDeadline(time.Hour),
@@ -98,6 +117,6 @@ func TestRemoveSdaExchangeOfferTransaction(t *testing.T) {
 				},
 			},
 		)
-	}, defaultAccount)
+	}, owner)
 	assert.Nil(t, result.error)
 }
