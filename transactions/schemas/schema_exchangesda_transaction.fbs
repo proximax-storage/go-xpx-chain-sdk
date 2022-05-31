@@ -9,7 +9,7 @@ table PlaceSdaExchangeOfferTransactionBuffer {
     maxFee: [uint];
     deadline:[uint];
     sdaOfferCount: ubyte;
-    sdaOffers: [PlaceSdaExchangeOfferBuffer];
+    offers: [PlaceSdaExchangeOfferBuffer];
 }
 
 table RemoveSdaExchangeOfferTransactionBuffer {
@@ -21,7 +21,7 @@ table RemoveSdaExchangeOfferTransactionBuffer {
     maxFee: [uint];
     deadline:[uint];
     sdaOfferCount: ubyte;
-    sdaOffers: [RemoveSdaExchangeOfferBuffer];
+    offers: [RemoveSdaExchangeOfferBuffer];
 }
 
 table PlaceSdaExchangeOfferBuffer {

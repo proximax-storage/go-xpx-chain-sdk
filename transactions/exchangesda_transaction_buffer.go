@@ -435,7 +435,7 @@ func (rcv *PlaceSdaExchangeOfferTransactionBuffer) MutateSdaOfferCount(n byte) b
 	return rcv._tab.MutateByteSlot(18, n)
 }
 
-func (rcv *PlaceSdaExchangeOfferTransactionBuffer) SdaOffers(obj *PlaceSdaExchangeOfferBuffer, j int) bool {
+func (rcv *PlaceSdaExchangeOfferTransactionBuffer) Offers(obj *PlaceSdaExchangeOfferBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
@@ -447,7 +447,7 @@ func (rcv *PlaceSdaExchangeOfferTransactionBuffer) SdaOffers(obj *PlaceSdaExchan
 	return false
 }
 
-func (rcv *PlaceSdaExchangeOfferTransactionBuffer) SdaOffersLength() int {
+func (rcv *PlaceSdaExchangeOfferTransactionBuffer) OffersLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -494,10 +494,10 @@ func PlaceSdaExchangeOfferTransactionBufferStartDeadlineVector(builder *flatbuff
 func PlaceSdaExchangeOfferTransactionBufferAddSdaOfferCount(builder *flatbuffers.Builder, sdaOfferCount byte) {
 	builder.PrependByteSlot(7, sdaOfferCount, 0)
 }
-func PlaceSdaExchangeOfferTransactionBufferAddSdaOffers(builder *flatbuffers.Builder, sdaOffers flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(sdaOffers), 0)
+func PlaceSdaExchangeOfferTransactionBufferAddOffers(builder *flatbuffers.Builder, offers flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(offers), 0)
 }
-func PlaceSdaExchangeOfferTransactionBufferStartSdaOffersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func PlaceSdaExchangeOfferTransactionBufferStartOffersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func PlaceSdaExchangeOfferTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
@@ -797,7 +797,7 @@ func (rcv *RemoveSdaExchangeOfferTransactionBuffer) MutateSdaOfferCount(n byte) 
 	return rcv._tab.MutateByteSlot(18, n)
 }
 
-func (rcv *RemoveSdaExchangeOfferTransactionBuffer) SdaOffers(obj *RemoveSdaExchangeOfferBuffer, j int) bool {
+func (rcv *RemoveSdaExchangeOfferTransactionBuffer) Offers(obj *RemoveSdaExchangeOfferBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
@@ -809,7 +809,7 @@ func (rcv *RemoveSdaExchangeOfferTransactionBuffer) SdaOffers(obj *RemoveSdaExch
 	return false
 }
 
-func (rcv *RemoveSdaExchangeOfferTransactionBuffer) SdaOffersLength() int {
+func (rcv *RemoveSdaExchangeOfferTransactionBuffer) OffersLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -856,10 +856,10 @@ func RemoveSdaExchangeOfferTransactionBufferStartDeadlineVector(builder *flatbuf
 func RemoveSdaExchangeOfferTransactionBufferAddSdaOfferCount(builder *flatbuffers.Builder, sdaOfferCount byte) {
 	builder.PrependByteSlot(7, sdaOfferCount, 0)
 }
-func RemoveSdaExchangeOfferTransactionBufferAddSdaOffers(builder *flatbuffers.Builder, sdaOffers flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(sdaOffers), 0)
+func RemoveSdaExchangeOfferTransactionBufferAddOffers(builder *flatbuffers.Builder, offers flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(offers), 0)
 }
-func RemoveSdaExchangeOfferTransactionBufferStartSdaOffersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func RemoveSdaExchangeOfferTransactionBufferStartOffersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func RemoveSdaExchangeOfferTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {

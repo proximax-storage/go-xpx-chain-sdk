@@ -95,7 +95,7 @@ func (tx *PlaceSdaExchangeOfferTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.PlaceSdaExchangeOfferTransactionBufferAddSdaOfferCount(builder, byte(len(tx.Offers)))
-	transactions.PlaceSdaExchangeOfferTransactionBufferAddSdaOffers(builder, offersV)
+	transactions.PlaceSdaExchangeOfferTransactionBufferAddOffers(builder, offersV)
 	t := transactions.PlaceSdaExchangeOfferTransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -252,7 +252,7 @@ func (tx *RemoveSdaExchangeOfferTransaction) Bytes() ([]byte, error) {
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.RemoveSdaExchangeOfferTransactionBufferAddSdaOfferCount(builder, byte(len(tx.Offers)))
-	transactions.RemoveSdaExchangeOfferTransactionBufferAddSdaOffers(builder, offersV)
+	transactions.RemoveSdaExchangeOfferTransactionBufferAddOffers(builder, offersV)
 	t := transactions.RemoveSdaExchangeOfferTransactionBufferEnd(builder)
 	builder.Finish(t)
 

@@ -15,7 +15,7 @@ func placeSdaExchangeOfferTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("sdaOfferCount", ByteSize),
-			newTableArrayAttribute("sdaOffers", schema{
+			newTableArrayAttribute("offers", schema{
 				[]schemaAttribute{
 					newArrayAttribute("mosaicIdGive", IntSize),
 					newArrayAttribute("mosaicAmountGive", IntSize),
@@ -40,7 +40,7 @@ func removeSdaExchangeOfferTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newScalarAttribute("sdaOfferCount", ByteSize),
-			newTableArrayAttribute("sdaOffers", schema{
+			newTableArrayAttribute("offers", schema{
 				[]schemaAttribute{
 					newArrayAttribute("mosaicIdGive", IntSize),
 					newArrayAttribute("mosaicIdGet", IntSize),
