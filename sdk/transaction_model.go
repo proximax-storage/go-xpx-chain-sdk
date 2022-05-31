@@ -2844,8 +2844,8 @@ const (
 	EndExecute                EntityType = 0x4360
 	SuperContractFileSystem   EntityType = 0x4460
 	Deactivate                EntityType = 0x4560
-	PlaceSdaExchangeOffer     EntityType = 0x4161
-	RemoveSdaExchangeOffer    EntityType = 0x4261
+	PlaceSdaExchangeOffer     EntityType = 0x416A
+	RemoveSdaExchangeOffer    EntityType = 0x426A
 )
 
 func (t EntityType) String() string {
