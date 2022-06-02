@@ -837,10 +837,9 @@ func (dto *modifyMetadataNamespaceTransactionDTO) toStruct(*Hash) (Transaction, 
 type mosaicDefinitionTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Properties   mosaicPropertiesDTO `json:"properties"`
-		MosaicNonce  int64               `json:"mosaicNonce"`
-		MosaicId     *mosaicIdDTO        `json:"mosaicId"`
-		MosaicSupply uint64DTO           `json:"mosaicSuply"`
+		Properties  mosaicPropertiesDTO `json:"properties"`
+		MosaicNonce int64               `json:"mosaicNonce"`
+		MosaicId    *mosaicIdDTO        `json:"mosaicId"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -870,7 +869,6 @@ func (dto *mosaicDefinitionTransactionDTO) toStruct(*Hash) (Transaction, error) 
 		*atx,
 		properties,
 		uint32(dto.Tx.MosaicNonce),
-		dto.Tx.MosaicSupply.toStruct(),
 		mosaicId,
 	}, nil
 }

@@ -1457,13 +1457,12 @@ func (tx *ModifyMetadataNamespaceTransaction) Size() int {
 type MosaicDefinitionTransaction struct {
 	AbstractTransaction
 	*MosaicProperties
-	MosaicNonce  uint32
-	MosaicSupply Amount
+	MosaicNonce uint32
 	*MosaicId
 }
 
 // returns MosaicDefinitionTransaction from passed nonce, public key of announcer and MosaicProperties
-func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, mosaicSupply Amount, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error) {
+func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties, networkType NetworkType) (*MosaicDefinitionTransaction, error) {
 	if len(ownerPublicKey) != 64 {
 		return nil, ErrInvalidOwnerPublicKey
 	}
@@ -1494,7 +1493,6 @@ func NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, mosaicSupp
 		MosaicProperties: mosaicProps,
 		MosaicNonce:      nonce,
 		MosaicId:         mosaicId,
-		MosaicSupply:     mosaicSupply,
 	}, nil
 }
 
@@ -1508,14 +1506,12 @@ func (tx *MosaicDefinitionTransaction) String() string {
 			"AbstractTransaction": %s,
 			"MosaicProperties": %s,
 			"MosaicNonce": %d,
-			"MosaicId": %s,
-			"MosaicSupply": %s
+			"MosaicId": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.MosaicProperties,
 		tx.MosaicNonce,
 		tx.MosaicId,
-		tx.MosaicSupply,
 	)
 }
 
@@ -1534,7 +1530,6 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	nonceV := transactions.TransactionBufferCreateByteVector(builder, nonceB)
 
 	mV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicId.toArray())
-	sV := transactions.TransactionBufferCreateUint32Vector(builder, tx.MosaicSupply.toArray())
 	pV := mosaicPropertyArrayToBuffer(builder, tx.MosaicProperties.OptionalProperties)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
@@ -1547,7 +1542,6 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicNonce(builder, nonceV)
 	transactions.MosaicDefinitionTransactionBufferAddMosaicId(builder, mV)
-	transactions.MosaicDefinitionTransactionBufferAddMosaicSupply(builder, sV)
 	transactions.MosaicDefinitionTransactionBufferAddFlags(builder, f)
 	transactions.MosaicDefinitionTransactionBufferAddDivisibility(builder, tx.MosaicProperties.Divisibility)
 	transactions.MosaicDefinitionTransactionBufferAddNumOptionalProperties(builder, byte(len(tx.MosaicProperties.OptionalProperties)))

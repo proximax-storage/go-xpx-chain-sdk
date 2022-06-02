@@ -585,8 +585,8 @@ func (c *Client) NewModifyContractTransaction(
 	return tx, err
 }
 
-func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, mosaicSupply Amount, ownerPublicKey string, mosaicProps *MosaicProperties) (*MosaicDefinitionTransaction, error) {
-	tx, err := NewMosaicDefinitionTransaction(deadline, nonce, mosaicSupply, ownerPublicKey, mosaicProps, c.config.NetworkType)
+func (c *Client) NewMosaicDefinitionTransaction(deadline *Deadline, nonce uint32, ownerPublicKey string, mosaicProps *MosaicProperties) (*MosaicDefinitionTransaction, error) {
+	tx, err := NewMosaicDefinitionTransaction(deadline, nonce, ownerPublicKey, mosaicProps, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

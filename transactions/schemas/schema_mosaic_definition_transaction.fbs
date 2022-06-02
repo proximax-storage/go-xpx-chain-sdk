@@ -15,7 +15,6 @@ table MosaicDefinitionTransactionBuffer {
     deadline:[uint];
     mosaicNonce:[ubyte];
     mosaicId:[uint];
-    mosaicSupply:[uint];
     numOptionalProperties:ubyte;
     flags:ubyte;
     divisibility:ubyte;
