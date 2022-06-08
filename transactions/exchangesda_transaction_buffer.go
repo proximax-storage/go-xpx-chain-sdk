@@ -137,42 +137,8 @@ func (rcv *PlaceSdaExchangeOfferBuffer) MutateMosaicAmountGet(j int, n uint32) b
 	return false
 }
 
-func (rcv *PlaceSdaExchangeOfferBuffer) Owner(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
-	}
-	return 0
-}
-
-func (rcv *PlaceSdaExchangeOfferBuffer) OwnerLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *PlaceSdaExchangeOfferBuffer) OwnerBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *PlaceSdaExchangeOfferBuffer) MutateOwner(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
 func (rcv *PlaceSdaExchangeOfferBuffer) Duration(j int) uint32 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
@@ -181,7 +147,7 @@ func (rcv *PlaceSdaExchangeOfferBuffer) Duration(j int) uint32 {
 }
 
 func (rcv *PlaceSdaExchangeOfferBuffer) DurationLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -189,7 +155,7 @@ func (rcv *PlaceSdaExchangeOfferBuffer) DurationLength() int {
 }
 
 func (rcv *PlaceSdaExchangeOfferBuffer) MutateDuration(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
@@ -198,7 +164,7 @@ func (rcv *PlaceSdaExchangeOfferBuffer) MutateDuration(j int, n uint32) bool {
 }
 
 func PlaceSdaExchangeOfferBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(6)
+	builder.StartObject(5)
 }
 func PlaceSdaExchangeOfferBufferAddMosaicIdGive(builder *flatbuffers.Builder, mosaicIdGive flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(mosaicIdGive), 0)
@@ -224,14 +190,8 @@ func PlaceSdaExchangeOfferBufferAddMosaicAmountGet(builder *flatbuffers.Builder,
 func PlaceSdaExchangeOfferBufferStartMosaicAmountGetVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func PlaceSdaExchangeOfferBufferAddOwner(builder *flatbuffers.Builder, owner flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(owner), 0)
-}
-func PlaceSdaExchangeOfferBufferStartOwnerVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
-}
 func PlaceSdaExchangeOfferBufferAddDuration(builder *flatbuffers.Builder, duration flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(duration), 0)
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(duration), 0)
 }
 func PlaceSdaExchangeOfferBufferStartDurationVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)

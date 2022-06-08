@@ -5,7 +5,6 @@
 package sdk
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -53,16 +52,10 @@ func (tx *PlaceSdaExchangeOfferTransaction) Size() int {
 func placeSdaExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers []*PlaceSdaOffer) (flatbuffers.UOffsetT, error) {
 	msb := make([]flatbuffers.UOffsetT, len(offers))
 	for i, offer := range offers {
-		ob, err := hex.DecodeString(offer.Owner.PublicKey)
-		if err != nil {
-			return 0, err
-		}
-
 		mGiveV := transactions.TransactionBufferCreateUint32Vector(builder, offer.MosaicGive.AssetId.toArray())
 		maGiveV := transactions.TransactionBufferCreateUint32Vector(builder, offer.MosaicGive.Amount.toArray())
 		mGetV := transactions.TransactionBufferCreateUint32Vector(builder, offer.MosaicGet.AssetId.toArray())
 		maGetV := transactions.TransactionBufferCreateUint32Vector(builder, offer.MosaicGet.Amount.toArray())
-		oV := transactions.TransactionBufferCreateByteVector(builder, ob)
 		dV := transactions.TransactionBufferCreateUint32Vector(builder, offer.Duration.toArray())
 
 		transactions.PlaceSdaExchangeOfferBufferStart(builder)
@@ -70,7 +63,6 @@ func placeSdaExchangeOfferToArrayToBuffer(builder *flatbuffers.Builder, offers [
 		transactions.PlaceSdaExchangeOfferBufferAddMosaicAmountGive(builder, maGiveV)
 		transactions.PlaceSdaExchangeOfferBufferAddMosaicIdGet(builder, mGetV)
 		transactions.PlaceSdaExchangeOfferBufferAddMosaicAmountGet(builder, maGetV)
-		transactions.PlaceSdaExchangeOfferBufferAddOwner(builder, oV)
 		transactions.PlaceSdaExchangeOfferBufferAddDuration(builder, dV)
 		msb[i] = transactions.PlaceSdaExchangeOfferBufferEnd(builder)
 	}
@@ -128,7 +120,6 @@ func (dto *sdaOfferDTO) toStruct() (*SdaOffer, error) {
 
 type placeSdaOfferDTO struct {
 	sdaOfferDTO
-	Owner    string    `json:"owner"`
 	Duration uint64DTO `json:"duration"`
 }
 
@@ -141,14 +132,8 @@ func placeSdaOfferDTOArrayToStruct(offers []*placeSdaOfferDTO, networkType Netwo
 			return nil, err
 		}
 
-		a, err := NewAccountFromPublicKey(offer.Owner, networkType)
-		if err != nil {
-			return nil, err
-		}
-
 		offersResult[i] = &PlaceSdaOffer{
 			SdaOffer: *o,
-			Owner:    a,
 			Duration: offer.Duration.toStruct(),
 		}
 	}

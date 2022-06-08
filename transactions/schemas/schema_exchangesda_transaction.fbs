@@ -29,7 +29,6 @@ table PlaceSdaExchangeOfferBuffer {
     mosaicAmountGive: [uint];
     mosaicIdGet: [uint];
     mosaicAmountGet: [uint];
-    owner: [ubyte];
     duration: [uint];
 }
 

@@ -57,7 +57,6 @@ type SdaOffer struct {
 
 type PlaceSdaOffer struct {
 	SdaOffer
-	Owner    *PublicAccount
 	Duration Duration
 }
 
@@ -68,14 +67,12 @@ func (offer *PlaceSdaOffer) String() string {
 			"AmountGive": %s,
 			"AssetIdGet": %s,
 			"AmountGet": %s,
-			"Owner": %s,
 			"Duration": %s,
 		`,
 		offer.MosaicGive.AssetId,
 		offer.MosaicGive.Amount,
 		offer.MosaicGet.AssetId,
 		offer.MosaicGet.Amount,
-		offer.Owner,
 		offer.Duration,
 	)
 }

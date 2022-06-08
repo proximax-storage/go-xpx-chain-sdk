@@ -40,7 +40,6 @@ func TestPlaceSdaExchangeOfferTransaction_LongOfferKey(t *testing.T) {
 						sdk.Storage(10000),
 						sdk.Streaming(100000000),
 					},
-					defaultAccount.PublicAccount,
 					sdk.Duration(10000000),
 				},
 				{
@@ -48,7 +47,6 @@ func TestPlaceSdaExchangeOfferTransaction_LongOfferKey(t *testing.T) {
 						sdk.Streaming(100),
 						sdk.Storage(10000),
 					},
-					defaultAccount.PublicAccount,
 					sdk.Duration(10000000),
 				},
 			},
@@ -82,7 +80,6 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 						sdk.Storage(10000),
 						sdk.Streaming(100000000),
 					},
-					owner.PublicAccount,
 					sdk.Duration(1000),
 				},
 				{
@@ -90,7 +87,6 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 						sdk.Streaming(100),
 						sdk.Storage(10000),
 					},
-					owner.PublicAccount,
 					sdk.Duration(1000),
 				},
 			},

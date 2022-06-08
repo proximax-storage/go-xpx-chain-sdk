@@ -21,7 +21,6 @@ func placeSdaExchangeOfferTransactionSchema() *schema {
 					newArrayAttribute("mosaicAmountGive", IntSize),
 					newArrayAttribute("mosaicIdGet", IntSize),
 					newArrayAttribute("mosaicAmountGet", IntSize),
-					newArrayAttribute("owner", ByteSize),
 					newArrayAttribute("duration", IntSize),
 				},
 			}.schemaDefinition),
