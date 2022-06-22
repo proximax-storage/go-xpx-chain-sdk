@@ -3210,7 +3210,7 @@ type EntityType uint16
 const (
     AccountPropertiesAddress       EntityType = 0x4150
     AccountPropertiesMosaic        EntityType = 0x4250
-    AccountProperties 		       EntityType = 0x4350
+    AccountProperties              EntityType = 0x4350
     AddressAlias                   EntityType = 0x424e
     AggregateBonded                EntityType = 0x4241
     AggregateComplete              EntityType = 0x4141
@@ -3218,10 +3218,10 @@ const (
     AddHarvester		           EntityType = 0x4161
     ExchangeOffer                  EntityType = 0x425D
     RemoveExchangeOffer            EntityType = 0x435D
-    RemoveHarvester			       EntityType = 0x4261
+    RemoveHarvester                EntityType = 0x4261
     RegularBlock                   EntityType = 0x8143
     NemesisBlock                   EntityType = 0x8043
-    NetworkConfig		           EntityType = 0x4159
+    NetworkConfig                  EntityType = 0x4159
     BlockchainUpgrade              EntityType = 0x4158
     AccountLink                    EntityType = 0x414c
     HashLock                       EntityType = 0x4148
