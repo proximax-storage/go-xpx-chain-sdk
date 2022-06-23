@@ -37,15 +37,15 @@ func TestPlaceSdaExchangeOfferTransaction_LongOfferKey(t *testing.T) {
 			[]*sdk.PlaceSdaOffer{
 				{
 					sdk.SdaOffer{
-						sdk.Storage(10000),
-						sdk.Streaming(100000000),
+						sdk.Storage(1000),
+						sdk.Streaming(2000),
 					},
 					sdk.Duration(10000000),
 				},
 				{
 					sdk.SdaOffer{
-						sdk.Streaming(100),
-						sdk.Storage(10000),
+						sdk.Streaming(2000),
+						sdk.Storage(1000),
 					},
 					sdk.Duration(10000000),
 				},
@@ -64,7 +64,7 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 		return client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			owner.Address,
-			[]*sdk.Mosaic{sdk.Storage(100000000), sdk.Streaming(1000000000)},
+			[]*sdk.Mosaic{sdk.Storage(1000), sdk.Streaming(2000)},
 			sdk.NewPlainMessage(""),
 		)
 	}, defaultAccount)
@@ -77,15 +77,15 @@ func TestPlaceSdaExchangeOfferTransaction(t *testing.T) {
 			[]*sdk.PlaceSdaOffer{
 				{
 					sdk.SdaOffer{
-						sdk.Storage(10000),
-						sdk.Streaming(100000000),
+						sdk.Storage(100),
+						sdk.Streaming(200),
 					},
 					sdk.Duration(1000),
 				},
 				{
 					sdk.SdaOffer{
-						sdk.Streaming(100),
-						sdk.Storage(10000),
+						sdk.Streaming(200),
+						sdk.Storage(100),
 					},
 					sdk.Duration(1000),
 				},

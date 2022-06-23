@@ -4,6 +4,8 @@
 
 package sdk
 
+import "fmt"
+
 type sdaOfferBalanceDTO struct {
 	MosaicIdGive      uint64DTO `json:"mosaicIdGive"`
 	MosaicIdGet       uint64DTO `json:"mosaicIdGet"`
@@ -20,7 +22,7 @@ type sdaOfferBalanceDTOs []*sdaOfferBalanceDTO
 func (ref *sdaOfferBalanceDTOs) toStruct(networkType NetworkType) ([]*SdaOfferBalance, error) {
 	var (
 		dtos   = *ref
-		offers = make([]*SdaOfferBalance, len(*ref))
+		offers = make([]*SdaOfferBalance, 0, len(*ref))
 	)
 
 	for i, dto := range dtos {
@@ -60,6 +62,8 @@ type sdaExchangeDTO struct {
 }
 
 func (ref *sdaExchangeDTO) toStruct(networkType NetworkType) (*UserSdaExchangeInfo, error) {
+	sdaExchangeInfo := UserSdaExchangeInfo{}
+
 	owner, err := NewAccountFromPublicKey(ref.ExchangeSda.Owner, networkType)
 	if err != nil {
 		return nil, err
@@ -69,26 +73,13 @@ func (ref *sdaExchangeDTO) toStruct(networkType NetworkType) (*UserSdaExchangeIn
 		dto.Owner = owner.PublicKey
 	}
 
-	offersMap := make(map[MosaicId]map[MosaicId]*SdaOfferBalance)
-
 	offers, err := ref.ExchangeSda.SdaOfferBalances.toStruct(networkType)
-	for _, offer := range offers {
-		mosaicIdGive, err := NewMosaicId(offer.MosaicGive.AssetId.Id())
-		if err != nil {
-			return nil, err
-		}
-
-		mosaicIdGet, err := NewMosaicId(offer.MosaicGet.AssetId.Id())
-		if err != nil {
-			return nil, err
-		}
-
-		offersMap[*mosaicIdGive] = make(map[MosaicId]*SdaOfferBalance)
-		offersMap[*mosaicIdGive][*mosaicIdGet] = offer
+	if err != nil {
+		return nil, fmt.Errorf("sdk.sdaExchangeDTO.toStruct ExchangeSda.SdaOfferBalances.toStruct: %v", err)
 	}
 
-	return &UserSdaExchangeInfo{
-		Owner:            owner,
-		SdaOfferBalances: offersMap,
-	}, nil
+	sdaExchangeInfo.Owner = owner
+	sdaExchangeInfo.SdaOfferBalances = offers
+
+	return &sdaExchangeInfo, nil
 }

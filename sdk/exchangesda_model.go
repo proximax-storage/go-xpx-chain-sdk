@@ -8,7 +8,7 @@ import "fmt"
 
 type UserSdaExchangeInfo struct {
 	Owner            *PublicAccount
-	SdaOfferBalances map[MosaicId]map[MosaicId]*SdaOfferBalance
+	SdaOfferBalances []*SdaOfferBalance
 }
 
 func (info *UserSdaExchangeInfo) String() string {
