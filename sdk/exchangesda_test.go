@@ -105,12 +105,8 @@ var (
 	}
 
 	testUserSdaExchangeInfo = &UserSdaExchangeInfo{
-		Owner: testSdaExchangeAccount,
-		SdaOfferBalances: map[MosaicId]map[MosaicId]*SdaOfferBalance{
-			*testSdaExchangeMosaicIdGive: {
-				*testSdaExchangeMosaicIdGet: testSdaOfferBalance,
-			},
-		},
+		Owner:            testSdaExchangeAccount,
+		SdaOfferBalances: []*SdaOfferBalance{testSdaOfferBalance},
 	}
 )
 

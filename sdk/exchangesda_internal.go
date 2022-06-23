@@ -22,7 +22,7 @@ type sdaOfferBalanceDTOs []*sdaOfferBalanceDTO
 func (ref *sdaOfferBalanceDTOs) toStruct(networkType NetworkType) ([]*SdaOfferBalance, error) {
 	var (
 		dtos   = *ref
-		offers = make([]*SdaOfferBalance, 0, len(*ref))
+		offers = make([]*SdaOfferBalance, len(*ref))
 	)
 
 	for i, dto := range dtos {
