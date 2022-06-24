@@ -3215,7 +3215,7 @@ const (
     AggregateBonded                EntityType = 0x4241
     AggregateComplete              EntityType = 0x4141
     AddExchangeOffer               EntityType = 0x415D
-    AddHarvester		           EntityType = 0x4161
+    AddHarvester                   EntityType = 0x4161
     ExchangeOffer                  EntityType = 0x425D
     RemoveExchangeOffer            EntityType = 0x435D
     RemoveHarvester                EntityType = 0x4261
