@@ -141,12 +141,12 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 		messagePublisher          MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.ConfirmedAddedHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(sdk.Transaction) bool {
 		return false
@@ -162,7 +162,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -174,10 +174,10 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.ConfirmedAdded)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -191,7 +191,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -205,7 +205,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				confirmedAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -219,7 +219,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				confirmedAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -233,7 +233,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 				confirmedAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -250,7 +250,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 					GenerationHash: nil,
 				},
 			}
-			err := c.AddConfirmedAddedHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddConfirmedAddedHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -264,12 +264,12 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 		messagePublisher            MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.UnconfirmedAddedHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(sdk.Transaction) bool {
 		return false
@@ -285,7 +285,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -297,10 +297,10 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.UnconfirmedAdded)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -314,7 +314,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -328,7 +328,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 				unconfirmedAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -342,7 +342,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 				unconfirmedAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -357,7 +357,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 				topicHandlers:               tt.fields.topicHandlers,
 				messagePublisher:            tt.fields.messagePublisher,
 			}
-			err := c.AddUnconfirmedAddedHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddUnconfirmedAddedHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -372,12 +372,12 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.UnconfirmedRemovedHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.UnconfirmedRemoved) bool {
 		return false
@@ -393,7 +393,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -405,10 +405,10 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.UnconfirmedRemoved)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -422,7 +422,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -436,7 +436,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 				unconfirmedRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -450,7 +450,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 				unconfirmedRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -464,7 +464,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 				unconfirmedRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -479,7 +479,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 				messagePublisher:              tt.fields.messagePublisher,
 				unconfirmedRemovedSubscribers: tt.fields.unconfirmedRemovedSubscribers,
 			}
-			err := c.AddUnconfirmedRemovedHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddUnconfirmedRemovedHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -494,18 +494,18 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.PartialAddedHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
-	handler1 := func(*sdk.AggregateTransaction) bool {
+	handler1 := func(sdk.Transaction) bool {
 		return false
 	}
 
-	handler2 := func(*sdk.AggregateTransaction) bool {
+	handler2 := func(sdk.Transaction) bool {
 		return false
 	}
 
@@ -515,7 +515,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -527,10 +527,10 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.PartialAdded)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -544,7 +544,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -558,7 +558,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 				partialAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -572,7 +572,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 				partialAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -586,7 +586,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 				partialAddedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -601,7 +601,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 				topicHandlers:           tt.fields.topicHandlers,
 				messagePublisher:        tt.fields.messagePublisher,
 			}
-			err := c.AddPartialAddedHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddPartialAddedHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -616,12 +616,12 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.PartialRemovedHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.PartialRemovedInfo) bool {
 		return false
@@ -637,7 +637,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -649,10 +649,10 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.PartialRemoved)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -666,7 +666,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -680,7 +680,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 				partialRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -694,7 +694,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 				partialRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -708,7 +708,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 				partialRemovedSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -723,7 +723,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 				topicHandlers:             tt.fields.topicHandlers,
 				messagePublisher:          tt.fields.messagePublisher,
 			}
-			err := c.AddPartialRemovedHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddPartialRemovedHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -738,12 +738,12 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.StatusHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.StatusInfo) bool {
 		return false
@@ -759,7 +759,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -771,10 +771,10 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.Status)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -788,7 +788,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -802,7 +802,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 				statusSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -816,7 +816,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 				statusSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -830,7 +830,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 				statusSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -845,7 +845,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 				topicHandlers:     tt.fields.topicHandlers,
 				messagePublisher:  tt.fields.messagePublisher,
 			}
-			err := c.AddStatusHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddStatusHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -860,12 +860,12 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []subscribers.CosignatureHandler
 	}
 
 	uid := "123456"
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.SignerInfo) bool {
 		return false
@@ -881,7 +881,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockAddress := new(sdk.Address)
+	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -893,10 +893,10 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 
 	subscribersAddHandlersError := errors.New("error adding handlers")
 	mockSubscribers := new(mocks.Cosignature)
-	mockSubscribers.On("HasHandlers", address).Return(false).Once().
-		On("HasHandlers", address).Return(true).
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
-		On("AddHandlers", address, mock.Anything, mock.Anything).Return(nil)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name    string
@@ -910,7 +910,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				UID: uid,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: nil,
 			},
 			wantErr: false,
@@ -924,7 +924,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				cosignatureSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -938,7 +938,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				cosignatureSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: true,
@@ -952,7 +952,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				cosignatureSubscribers: mockSubscribers,
 			},
 			args: args{
-				address:  mockAddress,
+				handle:   mockHandle,
 				handlers: userHandlers,
 			},
 			wantErr: false,
@@ -967,7 +967,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				topicHandlers:          tt.fields.topicHandlers,
 				messagePublisher:       tt.fields.messagePublisher,
 			}
-			err := c.AddCosignatureHandlers(tt.args.address, tt.args.handlers...)
+			err := c.AddCosignatureHandlersByHandle(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}

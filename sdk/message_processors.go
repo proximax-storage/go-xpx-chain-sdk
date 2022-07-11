@@ -134,7 +134,7 @@ func NewPartialAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash
 }
 
 type PartialAddedMapper interface {
-	MapPartialAdded(m []byte) (*AggregateTransaction, error)
+	MapPartialAdded(m []byte) (Transaction, error)
 }
 
 type partialAddedMapperImpl struct {
@@ -142,16 +142,20 @@ type partialAddedMapperImpl struct {
 	generationHash     *Hash
 }
 
-func (p partialAddedMapperImpl) MapPartialAdded(m []byte) (*AggregateTransaction, error) {
+func (p partialAddedMapperImpl) MapPartialAdded(m []byte) (Transaction, error) {
 	buf := bytes.NewBuffer(m)
 	tr, err := p.mapTransactionFunc(buf, p.generationHash)
 	if err != nil {
 		return nil, err
 	}
 
-	v, ok := tr.(*AggregateTransaction)
+	v, ok := tr.(*AggregateTransactionV2)
 	if !ok {
-		return nil, errors.New("error cast types")
+		o, ok := tr.(*AggregateTransactionV1)
+		if !ok {
+			return nil, errors.New("error cast types")
+		}
+		return o, nil
 	}
 
 	return v, nil

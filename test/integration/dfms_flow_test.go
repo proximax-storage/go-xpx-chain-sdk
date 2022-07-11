@@ -13,8 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//Should be moved to acceptance tests and verify which aggregate transaction version is enabled
 func TestDriveFlowTransaction(t *testing.T) {
-	exchangeAccount, err := client.NewAccountFromVersion(1)
+	exchangeAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 	fmt.Println(exchangeAccount)
 	var exchangeAmount uint64 = 1000000
@@ -36,11 +37,11 @@ func TestDriveFlowTransaction(t *testing.T) {
 
 	waitForBlocksCount(t, configDelta)
 
-	driveAccount, err := client.NewAccountFromVersion(1)
+	driveAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 	fmt.Println(driveAccount)
 
-	replicatorAccount, err := client.NewAccountFromVersion(1)
+	replicatorAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 	fmt.Println(replicatorAccount)
 
@@ -60,7 +61,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		1,
 	)
 	assert.Nil(t, err)
-	driveTx.ToAggregate(driveAccount.PublicAccount)
+	driveTx.ToAggregate(driveAccount)
 
 	transferStorageToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -69,7 +70,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferStorageToReplicator.ToAggregate(defaultAccount)
 
 	transferXpxToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -78,7 +79,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferXpxToReplicator.ToAggregate(defaultAccount)
 
 	transferXpxToExchange, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -87,7 +88,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferXpxToExchange.ToAggregate(defaultAccount.PublicAccount)
+	transferXpxToExchange.ToAggregate(defaultAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -133,7 +134,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		[]*sdk.Action{},
 	)
 	assert.Nil(t, err)
-	fsTx.ToAggregate(defaultAccount.PublicAccount)
+	fsTx.ToAggregate(defaultAccount)
 
 	transferStreamingToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -142,7 +143,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferStreamingToReplicator.ToAggregate(defaultAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -203,7 +204,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	exchangeOfferTransaction.ToAggregate(driveAccount.PublicAccount)
+	exchangeOfferTransaction.ToAggregate(driveAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -236,7 +237,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		[]*sdk.FailureVerification{},
 	)
 	assert.Nil(t, err)
-	verificationTx.ToAggregate(driveAccount.PublicAccount)
+	verificationTx.ToAggregate(driveAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -257,9 +258,9 @@ func TestDriveFlowTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	startFileDownloadTx.ToAggregate(defaultAccount.PublicAccount)
+	startFileDownloadTx.ToAggregate(defaultAccount)
 
-	agTx, err := client.NewCompleteAggregateTransaction(
+	agTx, err := client.NewCompleteAggregateV1Transaction(
 		sdk.NewDeadline(time.Hour),
 		[]sdk.Transaction{startFileDownloadTx},
 	)
@@ -269,7 +270,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 	}, defaultAccount)
 	assert.Nil(t, result.error)
 
-	uniqueHash, err := sdk.UniqueAggregateHash(agTx, startFileDownloadTx, client.GenerationHash())
+	uniqueHash, err := sdk.UniqueAggregateHashV1(agTx, startFileDownloadTx, client.GenerationHash())
 	assert.Nil(t, err)
 	donwloadInfo, err := client.Storage.GetDownloadInfo(ctx, uniqueHash)
 	assert.Nil(t, err)
@@ -294,7 +295,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	endFileDownloadTx.ToAggregate(driveAccount.PublicAccount)
+	endFileDownloadTx.ToAggregate(driveAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -340,7 +341,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		driveAccount.PublicAccount,
 	)
 	assert.Nil(t, err)
-	endDriveTx.ToAggregate(driveAccount.PublicAccount)
+	endDriveTx.ToAggregate(driveAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -364,7 +365,7 @@ func TestDriveFlowTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	driveFilesRewardTx.ToAggregate(driveAccount.PublicAccount)
+	driveFilesRewardTx.ToAggregate(driveAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(

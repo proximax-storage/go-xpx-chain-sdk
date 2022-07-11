@@ -19,16 +19,18 @@ var statusHandlerFunc2 = func(tx *sdk.StatusInfo) bool {
 
 func Test_statusImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []StatusHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
 	subscribers := make(map[string][]*StatusHandler)
-	subscribers[address.Address] = make([]*StatusHandler, 0)
+	subscribers[handle.String()] = make([]*StatusHandler, 0)
 
 	subscribersNilHandlers := make(map[string][]*StatusHandler)
 
@@ -44,7 +46,7 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 				subscribers: nil,
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []StatusHandler{},
 			},
 			wantErr: false,
@@ -57,7 +59,7 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []StatusHandler{
 					statusHandlerFunc1Ptr,
 					statusHandlerFunc2Ptr,
@@ -73,7 +75,7 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []StatusHandler{
 					statusHandlerFunc1Ptr,
 					statusHandlerFunc2Ptr,
@@ -85,7 +87,7 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
+			err := tt.e.AddHandlers(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}
@@ -93,27 +95,28 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 
 func Test_statusImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*StatusHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 
 	emptySubscribers := make(map[string][]*StatusHandler)
-	emptySubscribers[address.Address] = make([]*StatusHandler, 0)
+	emptySubscribers[handle.String()] = make([]*StatusHandler, 0)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
 
 	hasSubscribersStorage := make(map[string][]*StatusHandler)
-	hasSubscribersStorage[address.Address] = make([]*StatusHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*StatusHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc2Ptr
 
 	oneSubsctiberStorage := make(map[string][]*StatusHandler)
-	oneSubsctiberStorage[address.Address] = make([]*StatusHandler, 1)
-	oneSubsctiberStorage[address.Address][0] = &statusHandlerFunc1Ptr
+	oneSubsctiberStorage[handle.String()] = make([]*StatusHandler, 1)
+	oneSubsctiberStorage[handle.String()][0] = &statusHandlerFunc1Ptr
 
 	tests := []struct {
 		name    string
@@ -130,21 +133,21 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []*StatusHandler{},
 			},
 			want:    false,
 			wantErr: false,
 		},
 		{
-			name: "empty handlers storage for address",
+			name: "empty handlers storage for handle",
 			e: &statusImpl{
 				subscribers:        emptySubscribers,
 				newSubscriberCh:    make(chan *statusSubscription),
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []*StatusHandler{
 					&statusHandlerFunc1Ptr,
 				},
@@ -160,7 +163,7 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []*StatusHandler{},
 			},
 			want:    false,
@@ -174,7 +177,7 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []*StatusHandler{
 					&statusHandlerFunc1Ptr,
 				},
@@ -186,7 +189,7 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
+			got := tt.e.RemoveHandlers(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -194,22 +197,23 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 
 func Test_statusImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		address *sdk.Address
+		handle *sdk.TransactionChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
 
 	emptySubscribers := make(map[string][]*StatusHandler)
-	emptySubscribers[address.Address] = make([]*StatusHandler, 0)
+	emptySubscribers[handle.String()] = make([]*StatusHandler, 0)
 
 	hasSubscribersStorage := make(map[string][]*StatusHandler)
-	hasSubscribersStorage[address.Address] = make([]*StatusHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*StatusHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -225,7 +229,7 @@ func Test_statusImpl_HasHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -237,7 +241,7 @@ func Test_statusImpl_HasHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: false,
 		},
@@ -245,7 +249,7 @@ func Test_statusImpl_HasHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got := tt.e.HasHandlers(tt.args.address)
+			got := tt.e.HasHandlers(tt.args.handle)
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -253,22 +257,23 @@ func Test_statusImpl_HasHandlers(t *testing.T) {
 
 func Test_statusImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		address *sdk.Address
+		handle *sdk.TransactionChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
 
 	nilSubscribers := make(map[string][]*StatusHandler)
-	nilSubscribers[address.Address] = nil
+	nilSubscribers[handle.String()] = nil
 
 	hasSubscribersStorage := make(map[string][]*StatusHandler)
-	hasSubscribersStorage[address.Address] = make([]*StatusHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][0] = &statusHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*StatusHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][0] = &statusHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -284,9 +289,9 @@ func Test_statusImpl_GetHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
-			want: hasSubscribersStorage[address.Address],
+			want: hasSubscribersStorage[handle.String()],
 		},
 		{
 			name: "nil result",
@@ -296,7 +301,7 @@ func Test_statusImpl_GetHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *statusSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: nil,
 		},
@@ -304,7 +309,7 @@ func Test_statusImpl_GetHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			if got := tt.e.GetHandlers(tt.args.address); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.e.GetHandlers(tt.args.handle); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("statusImpl.GetHandlers() = %v, want %v", got, tt.want)
 			}
 		})

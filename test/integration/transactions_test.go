@@ -27,7 +27,7 @@ import (
 // const privateKey = "451EA3199FE0520FB10B7F89D3A34BAF7E5C3B16FDFE2BC11A5CAC95CDB29ED6"
 
 const testUrl = "http://127.0.0.1:3000"
-const privateKey = "28FCECEA252231D2C86E1BCF7DD541552BDBBEFBB09324758B3AC199B4AA7B78"
+const privateKey = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
 
 //const testUrl = "http://35.167.38.200:3000"
 //const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
@@ -70,12 +70,12 @@ func init() {
 		panic(err)
 	}
 
-	defaultAccount, err = client.NewAccountFromPrivateKey(privateKey, 1)
+	defaultAccount, err = client.NewAccountFromPrivateKeyAndVersion(privateKey, 1)
 	if err != nil {
 		panic(err)
 	}
 
-	nemesisAccount, err = client.NewAccountFromPrivateKey(nemesisPrivateKey, 1)
+	nemesisAccount, err = client.NewAccountFromPrivateKeyAndVersion(nemesisPrivateKey, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -102,10 +102,22 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 		tx.GetAbstractTransaction().TransactionInfo = transaction.GetAbstractTransaction().TransactionInfo
 		tx.GetAbstractTransaction().Deadline = transaction.GetAbstractTransaction().Deadline
 
-		if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
-			transaction.GetAbstractTransaction().Type == sdk.AggregateCompleted {
-			agTx := transaction.(*sdk.AggregateTransaction)
-			originalAgTx := tx.(*sdk.AggregateTransaction)
+		if transaction.GetAbstractTransaction().Type == sdk.AggregateBondedV1 ||
+			transaction.GetAbstractTransaction().Type == sdk.AggregateCompletedV1 {
+			agTx := transaction.(*sdk.AggregateTransactionV1)
+			originalAgTx := tx.(*sdk.AggregateTransactionV1)
+
+			for i, t := range agTx.InnerTransactions {
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer = t.GetAbstractTransaction().Signer
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signature = t.GetAbstractTransaction().Signature
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().TransactionInfo = t.GetAbstractTransaction().TransactionInfo
+				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline = t.GetAbstractTransaction().Deadline
+			}
+			agTx.Cosignatures = originalAgTx.Cosignatures
+		} else if transaction.GetAbstractTransaction().Type == sdk.AggregateBondedV2 ||
+			transaction.GetAbstractTransaction().Type == sdk.AggregateCompletedV2 {
+			agTx := transaction.(*sdk.AggregateTransactionV2)
+			originalAgTx := tx.(*sdk.AggregateTransactionV2)
 
 			for i, t := range agTx.InnerTransactions {
 				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer = t.GetAbstractTransaction().Signer
@@ -186,7 +198,9 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	var signTx *sdk.SignedTransaction
 
 	switch v := tx.(type) {
-	case *sdk.AggregateTransaction:
+	case *sdk.AggregateTransactionV1:
+		signTx, err = account.SignWithCosignaturesV1(v, cosignatories)
+	case *sdk.AggregateTransactionV2:
 		signTx, err = account.SignWithCosignatures(v, cosignatories)
 	default:
 		signTx, err = account.Sign(v)
@@ -201,14 +215,45 @@ func sendTransaction(t *testing.T, createTransaction CreateTransaction, account 
 	return waitTimeout(t, wg, timeout)
 }
 
-func sendAggregateTransaction(t *testing.T, createTransaction func() (*sdk.AggregateTransaction, error), account *sdk.Account, cosignatories ...*sdk.Account) Result {
+func sendAggregateTransactionV1(t *testing.T, createTransaction func() (*sdk.AggregateTransactionV1, error), account *sdk.Account, cosignatories ...*sdk.Account) Result {
+	tx, err := createTransaction()
+	assert.Nil(t, err)
+
+	signTx, err := account.SignWithCosignaturesV1(tx, cosignatories)
+	assert.Nil(t, err)
+
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV1, "", signTx.Hash}
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewLockFundsTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.XpxRelative(10),
+			sdk.Duration(100),
+			stx,
+		)
+	}, account)
+
+	if result.error != nil {
+		return result
+	}
+
+	time.Sleep(2 * time.Second)
+
+	wg := initListeners(t, account, signTx.Hash, tx)
+	_, err = client.Transaction.AnnounceAggregateBonded(ctx, signTx)
+	assert.Nil(t, err)
+
+	return waitTimeout(t, wg, timeout)
+}
+
+func sendAggregateTransactionV2(t *testing.T, createTransaction func() (*sdk.AggregateTransactionV2, error), account *sdk.Account, cosignatories ...*sdk.Account) Result {
 	tx, err := createTransaction()
 	assert.Nil(t, err)
 
 	signTx, err := account.SignWithCosignatures(tx, cosignatories)
 	assert.Nil(t, err)
 
-	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "", signTx.Hash}
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV2, "", signTx.Hash}
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewLockFundsTransaction(
@@ -393,7 +438,7 @@ func TestModifyMultisigTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	multTxs.ToAggregate(multisigAccount.PublicAccount)
+	multTxs.ToAggregate(multisigAccount)
 
 	fackeTxs, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -402,9 +447,55 @@ func TestModifyMultisigTransaction(t *testing.T) {
 		sdk.NewPlainMessage("I wan't to create multisig"),
 	)
 	assert.Nil(t, err)
-	fackeTxs.ToAggregate(defaultAccount.PublicAccount)
+	fackeTxs.ToAggregate(defaultAccount)
 
-	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{multTxs, fackeTxs},
+		)
+	}, defaultAccount, multisigAccount, acc1, acc2)
+	assert.Nil(t, result.error)
+}
+
+func TestModifyMultisigTransactionV2(t *testing.T) {
+	acc1, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+	acc2, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+
+	multisigAccount, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+	fmt.Println(multisigAccount)
+
+	multTxs, err := client.NewModifyMultisigAccountTransaction(
+		sdk.NewDeadline(time.Hour),
+		2,
+		1,
+		[]*sdk.MultisigCosignatoryModification{
+			{
+				sdk.Add,
+				acc1.PublicAccount,
+			},
+			{
+				sdk.Add,
+				acc2.PublicAccount,
+			},
+		},
+	)
+	assert.Nil(t, err)
+	multTxs.ToAggregate(multisigAccount)
+
+	fackeTxs, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		multisigAccount.PublicAccount.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("I wan't to create multisig"),
+	)
+	assert.Nil(t, err)
+	fackeTxs.ToAggregate(defaultAccount)
+
+	result := sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{multTxs, fackeTxs},
@@ -436,7 +527,26 @@ func TestLockFundsTransactionTransaction(t *testing.T) {
 	_, err := rand.Read(hash[:])
 	assert.Nil(t, err)
 
-	stx := &sdk.SignedTransaction{sdk.AggregateBonded, "", hash}
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV1, "", hash}
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewLockFundsTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.XpxRelative(10),
+			sdk.Duration(100),
+			stx,
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestLockFundsTransactionTransactionV2(t *testing.T) {
+	hash := &sdk.Hash{}
+
+	_, err := rand.Read(hash[:])
+	assert.Nil(t, err)
+
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV2, "", hash}
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewLockFundsTransaction(
@@ -494,7 +604,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 		sdk.NewPlainMessage("test-message"),
 	)
 	assert.Nil(t, err)
-	ttx.ToAggregate(defaultAccount.PublicAccount)
+	ttx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -505,7 +615,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestAggregateBoundedTransaction(t *testing.T) {
+func TestAggregateBoundedTransactionV1(t *testing.T) {
 	receiverAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
@@ -516,7 +626,7 @@ func TestAggregateBoundedTransaction(t *testing.T) {
 		sdk.NewPlainMessage("test-message"),
 	)
 	assert.Nil(t, err)
-	ttx1.ToAggregate(defaultAccount.PublicAccount)
+	ttx1.ToAggregate(defaultAccount)
 
 	ttx2, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -525,9 +635,40 @@ func TestAggregateBoundedTransaction(t *testing.T) {
 		sdk.NewPlainMessage("test-message"),
 	)
 	assert.Nil(t, err)
-	ttx2.ToAggregate(receiverAccount.PublicAccount)
+	ttx2.ToAggregate(receiverAccount)
 
-	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{ttx1, ttx2},
+		)
+	}, defaultAccount, receiverAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestAggregateBoundedTransactionV2(t *testing.T) {
+	receiverAccount, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+
+	ttx1, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		receiverAccount.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("test-message"),
+	)
+	assert.Nil(t, err)
+	ttx1.ToAggregate(defaultAccount)
+
+	ttx2, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		defaultAccount.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("test-message"),
+	)
+	assert.Nil(t, err)
+	ttx2.ToAggregate(receiverAccount)
+
+	result := sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx1, ttx2},
@@ -552,7 +693,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
-	registerTx.ToAggregate(defaultAccount.PublicAccount)
+	registerTx.ToAggregate(defaultAccount)
 
 	aliasTx, err := client.NewAddressAliasTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -561,7 +702,7 @@ func TestAddressAliasTransaction(t *testing.T) {
 		sdk.AliasLink,
 	)
 	assert.Nil(t, err)
-	aliasTx.ToAggregate(defaultAccount.PublicAccount)
+	aliasTx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -601,7 +742,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
-	registerTx.ToAggregate(defaultAccount.PublicAccount)
+	registerTx.ToAggregate(defaultAccount)
 
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
@@ -615,7 +756,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
-	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
+	mosaicDefinitionTx.ToAggregate(defaultAccount)
 
 	aliasTx, err := client.NewMosaicAliasTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -624,7 +765,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 		sdk.AliasLink,
 	)
 	assert.Nil(t, err)
-	aliasTx.ToAggregate(defaultAccount.PublicAccount)
+	aliasTx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -680,7 +821,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
-	mosaicDefinitionTx.ToAggregate(defaultAccount.PublicAccount)
+	mosaicDefinitionTx.ToAggregate(defaultAccount)
 
 	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
 	assert.Nil(t, err)
@@ -699,7 +840,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+	metadataTx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -744,7 +885,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 		sdk.Duration(defaultDurationNamespaceAndMosaic),
 	)
 	assert.Nil(t, err)
-	registrNamespaceTx.ToAggregate(defaultAccount.PublicAccount)
+	registrNamespaceTx.ToAggregate(defaultAccount)
 
 	modifyMetadataTx, err := client.NewModifyMetadataNamespaceTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -758,7 +899,7 @@ func TestModifyNamespaceMetadataTransaction(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	modifyMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+	modifyMetadataTx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -869,7 +1010,7 @@ func TestAccountPropertiesEntityTypeTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestAccountMetadataTransaction(t *testing.T) {
+func TestAccountMetadataTransactionV1(t *testing.T) {
 	childAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	fmt.Println(childAccount)
@@ -881,9 +1022,55 @@ func TestAccountMetadataTransaction(t *testing.T) {
 		"",
 	)
 	assert.Nil(t, err)
-	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+	metadataTx.ToAggregate(defaultAccount)
 
-	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount)
+
+	result = sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount, childAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueAccountMetadataId(defaultAccount.Address, childAccount.PublicAccount, 1)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestAccountMetadataTransactionV2(t *testing.T) {
+	childAccount, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+	fmt.Println(childAccount)
+	metadataTx, err := client.NewAccountMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		childAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount)
+
+	result := sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{metadataTx},
@@ -899,9 +1086,9 @@ func TestAccountMetadataTransaction(t *testing.T) {
 		"Hello world",
 	)
 	assert.Nil(t, err)
-	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+	updateMetadataTx.ToAggregate(defaultAccount)
 
-	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result = sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{updateMetadataTx},
@@ -915,7 +1102,7 @@ func TestAccountMetadataTransaction(t *testing.T) {
 	println(metadata)
 }
 
-func TestMosaicMetadataTransaction(t *testing.T) {
+func TestMosaicMetadataTransactionV1(t *testing.T) {
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
 
@@ -943,9 +1130,72 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 		"",
 	)
 	assert.Nil(t, err)
-	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+	metadataTx.ToAggregate(defaultAccount)
 
-	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result = sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount)
+
+	result = sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueMosaicMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, mosaicId)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestMosaicMetadataTransactionV2(t *testing.T) {
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewMosaicDefinitionTransaction(
+			sdk.NewDeadline(time.Hour),
+			nonce,
+			defaultAccount.PublicAccount.PublicKey,
+			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewMosaicMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		mosaicId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount)
+
+	result = sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{metadataTx},
@@ -962,9 +1212,9 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 		"Hello world",
 	)
 	assert.Nil(t, err)
-	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+	updateMetadataTx.ToAggregate(defaultAccount)
 
-	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result = sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{updateMetadataTx},
@@ -978,7 +1228,7 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 	println(metadata)
 }
 
-func TestNamespaceMetadataTransaction(t *testing.T) {
+func TestNamespaceMetadataTransactionV1(t *testing.T) {
 	name := make([]byte, 5)
 
 	_, err := rand.Read(name)
@@ -1007,9 +1257,73 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 		"",
 	)
 	assert.Nil(t, err)
-	metadataTx.ToAggregate(defaultAccount.PublicAccount)
+	metadataTx.ToAggregate(defaultAccount)
 
-	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result = sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{metadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	updateMetadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello hell",
+		"Hello world",
+	)
+	assert.Nil(t, err)
+	updateMetadataTx.ToAggregate(defaultAccount)
+
+	result = sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{updateMetadataTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	hash, _ := sdk.CalculateUniqueNamespaceMetadataId(defaultAccount.Address, defaultAccount.PublicAccount, 1, namespaceId)
+	metadata, err := client.MetadataV2.GetMetadataV2Info(ctx, hash)
+	assert.Nil(t, err)
+	println(metadata)
+}
+
+func TestNamespaceMetadataTransactionV2(t *testing.T) {
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewRegisterRootNamespaceTransaction(
+			sdk.NewDeadline(time.Hour),
+			nameHex,
+			sdk.Duration(defaultDurationNamespaceAndMosaic),
+		)
+	}, defaultAccount)
+
+	namespaceId, err := sdk.NewNamespaceIdFromName(nameHex)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataTx, err := client.NewNamespaceMetadataTransaction(
+		sdk.NewDeadline(1*time.Hour),
+		namespaceId,
+		defaultAccount.PublicAccount,
+		1,
+		"Hello world",
+		"",
+	)
+	assert.Nil(t, err)
+	metadataTx.ToAggregate(defaultAccount)
+
+	result = sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{metadataTx},
@@ -1026,9 +1340,9 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 		"Hello world",
 	)
 	assert.Nil(t, err)
-	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
+	updateMetadataTx.ToAggregate(defaultAccount)
 
-	result = sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result = sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{updateMetadataTx},

@@ -12,14 +12,14 @@ import (
 const (
 	testKeyRecordGroupEntryJson = `{
 		"lockFundRecordGroup": {
-			"identifier": "90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569A",
+			"identifier": "C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23810",
 			"records": [
 				{
 					"key": [
 							120,
 							0
 						],
-					"activeRecord": [
+					"activeMosaics": [
 					{
 						"id":[
 							3646934825,
@@ -32,18 +32,20 @@ const (
 					}	
 					],
 					"inactiveRecords": [
-						[
-							{
-								"id":[
-									3646934825,
-									3576016193
-								],
-								"amount":[
-									10000005,
-									0
-								]
-							}	
-						]
+						{
+							"mosaics" : [
+								{
+									"id":[
+										3646934825,
+										3576016193
+									],
+									"amount":[
+										10000005,
+										0
+									]
+								}	
+							]
+						}
 					]
 				},
 				{		
@@ -51,7 +53,7 @@ const (
 							1233,
 							0
 						],
-					"activeRecord": [
+					"activeMosaics": [
 					],
 					"inactiveRecords": [
 					]
@@ -67,15 +69,15 @@ const (
 			],
 			"records": [
 				{
-					"key": "90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569A",
-					"activeRecord": [
+					"key": "C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23810",
+					"activeMosaics": [
 					],
 					"inactiveRecords": [
 					]
 				},
 				{		
-					"key": "90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569B",
-					"activeRecord": [
+					"key": "C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23811",
+					"activeMosaics": [
 					{
 						"id":[
 							3646934825,
@@ -88,18 +90,20 @@ const (
 					}	
 					],
 					"inactiveRecords": [
-						[
-							{
-								"id":[
-									3646934825,
-									3576016193
-								],
-								"amount":[
-									10000005,
-									0
-								]
-							}	
-						]
+						{
+							"mosaics" : [
+								{
+									"id":[
+										3646934825,
+										3576016193
+									],
+									"amount":[
+										10000005,
+										0
+									]
+								}	
+							]
+						}
 					]
 				}
 			]
@@ -111,9 +115,9 @@ const (
 )
 
 var (
-	testKeyRecordKey      = "90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569A"
+	testKeyRecordKey      = "C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23810"
 	testPublicAccount, _  = NewAccountFromPublicKey(testKeyRecordKey, PublicTest)
-	testPublicAccount2, _ = NewAccountFromPublicKey("90936FF3536858CBEA8EE0EAAB99FE9EC4EF5EF1F66366569B", PublicTest)
+	testPublicAccount2, _ = NewAccountFromPublicKey("C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23811", PublicTest)
 
 	testLockFundRecordEmpty = LockFundRecord{
 		ActiveRecord:    []*Mosaic{},

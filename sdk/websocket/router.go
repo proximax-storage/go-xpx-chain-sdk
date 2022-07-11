@@ -51,7 +51,7 @@ func (r *messageRouter) run() {
 			continue
 		}
 
-		if ok := handler.Handle(messageInfo.Address, m); !ok {
+		if ok := handler.Handle(messageInfo.Handle, m); !ok {
 			if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
 				fmt.Println(err, "unsubscribing from topic")
 				continue
@@ -140,7 +140,7 @@ func (f topicFormatFn) Format(info *sdk.WsMessageInfo) Path {
 }
 
 func formatPlainTopic(info *sdk.WsMessageInfo) Path {
-	return Path(fmt.Sprintf("%s/%s", Path(info.ChannelName), info.Address.Address))
+	return Path(fmt.Sprintf("%s/%s", Path(info.ChannelName), info.Handle.String()))
 }
 
 func formatBlockTopic(_ *sdk.WsMessageInfo) Path {

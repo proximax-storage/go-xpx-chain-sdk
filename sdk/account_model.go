@@ -28,14 +28,24 @@ func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 	return signTransactionWith(tx, a)
 }
 
-// sign AggregateTransaction with current Account and with every passed cosignatory Account's
+// sign AggregateTransactionV2 with current Account and with every passed cosignatory Account's
 // returns announced Aggregate SignedTransaction
-func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
-	return signTransactionWithCosignatures(tx, a, cosignatories)
+func (a *Account) SignWithCosignatures(tx *AggregateTransactionV2, cosignatories []*Account) (*SignedTransaction, error) {
+	return signTransactionWithCosignaturesV2(tx, a, cosignatories)
 }
 
-func (a *Account) SignCosignatureTransaction(tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
-	return signCosignatureTransaction(a, tx)
+func (a *Account) SignCosignatureTransaction(tx *CosignatureTransactionV2) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransactionV2(a, tx)
+}
+
+// sign AggregateTransactionV1 with current Account and with every passed cosignatory Account's
+// returns announced Aggregate SignedTransaction
+func (a *Account) SignWithCosignaturesV1(tx *AggregateTransactionV1, cosignatories []*Account) (*SignedTransaction, error) {
+	return signTransactionWithCosignaturesV1(tx, a, cosignatories)
+}
+
+func (a *Account) SignCosignatureTransactionV1(tx *CosignatureTransactionV1) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransactionV1(a, tx)
 }
 
 func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicAccount) (*SecureMessage, error) {

@@ -9,11 +9,11 @@ type (
 	UnconfirmedRemovedHandler func(*sdk.UnconfirmedRemoved) bool
 
 	UnconfirmedRemoved interface {
-		AddHandlers(address *sdk.Address, handlers ...UnconfirmedRemovedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) bool
-		HasHandlers(address *sdk.Address) bool
-		GetHandlers(address *sdk.Address) []*UnconfirmedRemovedHandler
-		GetAddresses() []string
+		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...UnconfirmedRemovedHandler) error
+		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool
+		HasHandlers(handle *sdk.TransactionChannelHandle) bool
+		GetHandlers(handle *sdk.TransactionChannelHandle) []*UnconfirmedRemovedHandler
+		GetHandles() []string
 	}
 
 	unconfirmedRemovedImpl struct {
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*UnconfirmedRemovedHandler
 	}
 	unconfirmedRemovedSubscription struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*UnconfirmedRemovedHandler
 		resultCh chan bool
 	}
@@ -54,35 +54,35 @@ func (e *unconfirmedRemovedImpl) handleNewSubscription() {
 func (e *unconfirmedRemovedImpl) addSubscription(s *unconfirmedRemovedSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if _, ok := e.subscribers[s.address.Address]; !ok {
-		e.subscribers[s.address.Address] = make([]*UnconfirmedRemovedHandler, 0)
+	if _, ok := e.subscribers[s.handle.String()]; !ok {
+		e.subscribers[s.handle.String()] = make([]*UnconfirmedRemovedHandler, 0)
 	}
 	for i := 0; i < len(s.handlers); i++ {
-		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+		e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()], s.handlers[i])
 	}
 }
 
 func (e *unconfirmedRemovedImpl) removeSubscription(s *unconfirmedRemovedSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+	if external, ok := e.subscribers[s.handle.String()]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
 
-	itemCount := len(e.subscribers[s.address.Address])
+	itemCount := len(e.subscribers[s.handle.String()])
 	for _, removeHandler := range s.handlers {
-		for index, currentHandlers := range e.subscribers[s.address.Address] {
+		for index, currentHandlers := range e.subscribers[s.handle.String()] {
 			if removeHandler == currentHandlers {
-				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
-					e.subscribers[s.address.Address][index+1:]...)
+				e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()][:index],
+					e.subscribers[s.handle.String()][index+1:]...)
 			}
 		}
 	}
 
-	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
+	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *unconfirmedRemovedImpl) AddHandlers(address *sdk.Address, handlers ...UnconfirmedRemovedHandler) error {
+func (e *unconfirmedRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...UnconfirmedRemovedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -94,20 +94,20 @@ func (e *unconfirmedRemovedImpl) AddHandlers(address *sdk.Address, handlers ...U
 	}
 
 	e.newSubscriberCh <- &unconfirmedRemovedSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: refHandlers,
 	}
 	return nil
 }
 
-func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*UnconfirmedRemovedHandler) bool {
+func (e *unconfirmedRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
 
 	resCh := make(chan bool)
 	e.removeSubscriberCh <- &unconfirmedRemovedSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: handlers,
 		resultCh: resCh,
 	}
@@ -115,29 +115,29 @@ func (e *unconfirmedRemovedImpl) RemoveHandlers(address *sdk.Address, handlers .
 	return <-resCh
 }
 
-func (e *unconfirmedRemovedImpl) HasHandlers(address *sdk.Address) bool {
+func (e *unconfirmedRemovedImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
-	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
+	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *unconfirmedRemovedImpl) GetHandlers(address *sdk.Address) []*UnconfirmedRemovedHandler {
+func (e *unconfirmedRemovedImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*UnconfirmedRemovedHandler {
 	e.Lock()
 	defer e.Unlock()
-	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+	if res, ok := e.subscribers[handle.String()]; ok && res != nil {
 		return res
 	}
 
 	return nil
 }
 
-func (e *unconfirmedRemovedImpl) GetAddresses() []string {
+func (e *unconfirmedRemovedImpl) GetHandles() []string {
 	e.Lock()
 	defer e.Unlock()
-	addresses := make([]string, 0, len(e.subscribers))
+	handles := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
-		addresses = append(addresses, addr)
+		handles = append(handles, addr)
 	}
 
-	return addresses
+	return handles
 }

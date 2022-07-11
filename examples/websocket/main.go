@@ -41,11 +41,10 @@ func main() {
 	//Starting listening messages from websocket
 	go wsc.Listen()
 
-	version, err := client.Network.GetActiveAccountVersion(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	destAccount, err := client.NewAccountFromPrivateKey(privateKey, version)
+	destAccount, err := client.NewAccountFromPrivateKey(privateKey, context.Background())
 	address := destAccount.PublicAccount.Address
 
 	fmt.Println(fmt.Sprintf("destination address: %s", address.Address))
@@ -108,11 +107,7 @@ func main() {
 func doTransferTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing transfer transaction")
-	version, err := client.Network.GetActiveAccountVersion(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	acc, err := client.NewAccountFromPrivateKey(privateKey, version)
+	acc, err := client.NewAccountFromPrivateKey(privateKey, context.Background())
 
 	ttx, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
@@ -142,11 +137,7 @@ func doTransferTransaction(address *sdk.Address, client *sdk.Client) {
 func doBondedAggregateTransaction(address *sdk.Address, client *sdk.Client) {
 
 	fmt.Println("start publishing bonded aggregated transaction")
-	version, err := client.Network.GetActiveAccountVersion(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	acc, err := client.NewAccountFromPrivateKey(privateKey, version)
+	acc, err := client.NewAccountFromPrivateKey(privateKey, context.Background())
 
 	ttx1, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
@@ -159,7 +150,7 @@ func doBondedAggregateTransaction(address *sdk.Address, client *sdk.Client) {
 		panic(err)
 	}
 
-	ttx1.ToAggregate(acc.PublicAccount)
+	ttx1.ToAggregate(acc)
 
 	ttx2, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*1),
@@ -172,7 +163,7 @@ func doBondedAggregateTransaction(address *sdk.Address, client *sdk.Client) {
 		panic(err)
 	}
 
-	ttx2.ToAggregate(acc.PublicAccount)
+	ttx2.ToAggregate(acc)
 
 	bondedTx, err := client.NewBondedAggregateTransaction(
 		sdk.NewDeadline(time.Hour*3),
@@ -267,13 +258,13 @@ func ConfirmedAddedHandler2(tr sdk.Transaction) bool {
 	return false
 }
 
-func PartialAddedHandler1(tr *sdk.AggregateTransaction) bool {
+func PartialAddedHandler1(tr sdk.Transaction) bool {
 	fmt.Println("called PartialAddedHandler1")
 	//fmt.Println(tr.String())
 	return false
 }
 
-func PartialAddedHandler2(tr *sdk.AggregateTransaction) bool {
+func PartialAddedHandler2(tr sdk.Transaction) bool {
 	fmt.Println("called PartialAddedHandler2")
 	//fmt.Println(tr.String())
 	return false

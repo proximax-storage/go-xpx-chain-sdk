@@ -159,6 +159,19 @@ const (
 	lockFundHeightRecordGroupRoute = "/lockfund/height/%s"
 )
 
+// routes for AccountRestrictionsService
+const (
+	accountRestrictionsRoute       = "/restrictions/account/%s"
+	accountRestrictionsSearchRoute = "/restrictions/account"
+	accountRestrictionsMerkleRoute = "/restrictions/account/%s/merkle"
+)
+
+// routes for MosaicRestrictionsService
+const (
+	mosaicRestrictionsRoute       = "/restrictions/mosaic/%s"
+	mosaicRestrictionsMerkleRoute = "/restrictions/mosaic/%s/merkle"
+)
+
 type TransactionGroup string
 
 const (

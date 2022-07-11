@@ -9,11 +9,11 @@ type (
 	StatusHandler func(*sdk.StatusInfo) bool
 
 	Status interface {
-		AddHandlers(address *sdk.Address, handlers ...StatusHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) bool
-		HasHandlers(address *sdk.Address) bool
-		GetHandlers(address *sdk.Address) []*StatusHandler
-		GetAddresses() []string
+		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...StatusHandler) error
+		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*StatusHandler) bool
+		HasHandlers(handle *sdk.TransactionChannelHandle) bool
+		GetHandlers(handle *sdk.TransactionChannelHandle) []*StatusHandler
+		GetHandles() []string
 	}
 
 	statusImpl struct {
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*StatusHandler
 	}
 	statusSubscription struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*StatusHandler
 		resultCh chan bool
 	}
@@ -54,35 +54,35 @@ func (e *statusImpl) handleNewSubscription() {
 func (e *statusImpl) addSubscription(s *statusSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if _, ok := e.subscribers[s.address.Address]; !ok {
-		e.subscribers[s.address.Address] = make([]*StatusHandler, 0)
+	if _, ok := e.subscribers[s.handle.String()]; !ok {
+		e.subscribers[s.handle.String()] = make([]*StatusHandler, 0)
 	}
 	for i := 0; i < len(s.handlers); i++ {
-		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+		e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()], s.handlers[i])
 	}
 }
 
 func (e *statusImpl) removeSubscription(s *statusSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+	if external, ok := e.subscribers[s.handle.String()]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
 
-	itemCount := len(e.subscribers[s.address.Address])
+	itemCount := len(e.subscribers[s.handle.String()])
 	for _, removeHandler := range s.handlers {
-		for index, currentHandlers := range e.subscribers[s.address.Address] {
+		for index, currentHandlers := range e.subscribers[s.handle.String()] {
 			if removeHandler == currentHandlers {
-				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
-					e.subscribers[s.address.Address][index+1:]...)
+				e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()][:index],
+					e.subscribers[s.handle.String()][index+1:]...)
 			}
 		}
 	}
 
-	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
+	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler) error {
+func (e *statusImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...StatusHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -94,20 +94,20 @@ func (e *statusImpl) AddHandlers(address *sdk.Address, handlers ...StatusHandler
 	}
 
 	e.newSubscriberCh <- &statusSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: refHandlers,
 	}
 	return nil
 }
 
-func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHandler) bool {
+func (e *statusImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*StatusHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
 
 	resCh := make(chan bool)
 	e.removeSubscriberCh <- &statusSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: handlers,
 		resultCh: resCh,
 	}
@@ -115,29 +115,29 @@ func (e *statusImpl) RemoveHandlers(address *sdk.Address, handlers ...*StatusHan
 	return <-resCh
 }
 
-func (e *statusImpl) HasHandlers(address *sdk.Address) bool {
+func (e *statusImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
-	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
+	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *statusImpl) GetHandlers(address *sdk.Address) []*StatusHandler {
+func (e *statusImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*StatusHandler {
 	e.Lock()
 	defer e.Unlock()
-	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+	if res, ok := e.subscribers[handle.String()]; ok && res != nil {
 		return res
 	}
 
 	return nil
 }
 
-func (e *statusImpl) GetAddresses() []string {
+func (e *statusImpl) GetHandles() []string {
 	e.Lock()
 	defer e.Unlock()
-	addresses := make([]string, 0, len(e.subscribers))
+	handles := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
-		addresses = append(addresses, addr)
+		handles = append(handles, addr)
 	}
 
-	return addresses
+	return handles
 }

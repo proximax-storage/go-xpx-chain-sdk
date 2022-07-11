@@ -16,11 +16,11 @@ func Test_driveStateHandler_Handle(t *testing.T) {
 		handlers      subscribers.DriveState
 	}
 	type args struct {
-		address *sdk.Address
-		resp    []byte
+		handle *sdk.TransactionChannelHandle
+		resp   []byte
 	}
 
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.DriveStateInfo)
 	messageMapperMock := new(mappers.DriveStateMapper)
@@ -61,7 +61,7 @@ func Test_driveStateHandler_Handle(t *testing.T) {
 				messageMapper: messageMapperMock,
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -72,7 +72,7 @@ func Test_driveStateHandler_Handle(t *testing.T) {
 				messageMapper: messageMapperMock,
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -84,7 +84,7 @@ func Test_driveStateHandler_Handle(t *testing.T) {
 				messageMapper: tt.fields.messageMapper,
 				handlers:      tt.fields.handlers,
 			}
-			got := h.Handle(tt.args.address, tt.args.resp)
+			got := h.Handle(tt.args.handle, tt.args.resp)
 			assert.Equal(t, got, tt.want)
 		})
 	}

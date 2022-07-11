@@ -18,16 +18,16 @@ var cosignatureHandlerFunc2 = func(tx *sdk.SignerInfo) bool {
 
 func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []CosignatureHandler
 	}
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 	address := &sdk.Address{}
 	address.Address = "test-address"
-
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 	subscribers := make(map[string][]*CosignatureHandler)
-	subscribers[address.Address] = make([]*CosignatureHandler, 0)
+	subscribers[handle.String()] = make([]*CosignatureHandler, 0)
 
 	subscribersNilHandlers := make(map[string][]*CosignatureHandler)
 
@@ -45,7 +45,7 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []CosignatureHandler{},
 			},
 			wantErr: false,
@@ -58,7 +58,7 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []CosignatureHandler{
 					cosignatureHandlerFunc1Ptr,
 					cosignatureHandlerFunc2Ptr,
@@ -74,7 +74,7 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []CosignatureHandler{
 					cosignatureHandlerFunc1Ptr,
 					cosignatureHandlerFunc2Ptr,
@@ -86,7 +86,7 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			err := tt.e.AddHandlers(tt.args.address, tt.args.handlers...)
+			err := tt.e.AddHandlers(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
@@ -94,27 +94,27 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*CosignatureHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 	emptySubscribers := make(map[string][]*CosignatureHandler)
-	emptySubscribers[address.Address] = make([]*CosignatureHandler, 0)
+	emptySubscribers[handle.String()] = make([]*CosignatureHandler, 0)
 
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 
 	hasSubscribersStorage := make(map[string][]*CosignatureHandler)
-	hasSubscribersStorage[address.Address] = make([]*CosignatureHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &cosignatureHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][1] = &cosignatureHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*CosignatureHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &cosignatureHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][1] = &cosignatureHandlerFunc2Ptr
 
 	oneSubsctiberStorage := make(map[string][]*CosignatureHandler)
-	oneSubsctiberStorage[address.Address] = make([]*CosignatureHandler, 1)
-	oneSubsctiberStorage[address.Address][0] = &cosignatureHandlerFunc1Ptr
+	oneSubsctiberStorage[handle.String()] = make([]*CosignatureHandler, 1)
+	oneSubsctiberStorage[handle.String()][0] = &cosignatureHandlerFunc1Ptr
 
 	tests := []struct {
 		name    string
@@ -131,21 +131,21 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []*CosignatureHandler{},
 			},
 			want:    false,
 			wantErr: false,
 		},
 		{
-			name: "empty handlers storage for address",
+			name: "empty handlers storage for handle",
 			e: &cosignatureImpl{
 				subscribers:        emptySubscribers,
 				newSubscriberCh:    make(chan *cosignatureSubscription),
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []*CosignatureHandler{
 					&cosignatureHandlerFunc1Ptr,
 				},
@@ -161,7 +161,7 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address:  address,
+				handle:   handle,
 				handlers: []*CosignatureHandler{},
 			},
 			want:    false,
@@ -175,7 +175,7 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 				handlers: []*CosignatureHandler{
 					&cosignatureHandlerFunc1Ptr,
 				},
@@ -187,7 +187,7 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got := tt.e.RemoveHandlers(tt.args.address, tt.args.handlers...)
+			got := tt.e.RemoveHandlers(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -195,22 +195,22 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		address *sdk.Address
+		handle *sdk.TransactionChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 
 	emptySubscribers := make(map[string][]*CosignatureHandler)
-	emptySubscribers[address.Address] = make([]*CosignatureHandler, 0)
+	emptySubscribers[handle.String()] = make([]*CosignatureHandler, 0)
 
 	hasSubscribersStorage := make(map[string][]*CosignatureHandler)
-	hasSubscribersStorage[address.Address] = make([]*CosignatureHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &cosignatureHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][1] = &cosignatureHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*CosignatureHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &cosignatureHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][1] = &cosignatureHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -226,7 +226,7 @@ func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -238,7 +238,7 @@ func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: false,
 		},
@@ -246,7 +246,7 @@ func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got := tt.e.HasHandlers(tt.args.address)
+			got := tt.e.HasHandlers(tt.args.handle)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -254,22 +254,22 @@ func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		address *sdk.Address
+		handle *sdk.TransactionChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-
+	handle := sdk.NewTransactionChannelHandleFromAddress(address)
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 
 	nilSubscribers := make(map[string][]*CosignatureHandler)
-	nilSubscribers[address.Address] = nil
+	nilSubscribers[handle.String()] = nil
 
 	hasSubscribersStorage := make(map[string][]*CosignatureHandler)
-	hasSubscribersStorage[address.Address] = make([]*CosignatureHandler, 2)
-	hasSubscribersStorage[address.Address][0] = &cosignatureHandlerFunc1Ptr
-	hasSubscribersStorage[address.Address][1] = &cosignatureHandlerFunc2Ptr
+	hasSubscribersStorage[handle.String()] = make([]*CosignatureHandler, 2)
+	hasSubscribersStorage[handle.String()][0] = &cosignatureHandlerFunc1Ptr
+	hasSubscribersStorage[handle.String()][1] = &cosignatureHandlerFunc2Ptr
 
 	tests := []struct {
 		name string
@@ -285,9 +285,9 @@ func Test_cosignatureImpl_GetHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
-			want: hasSubscribersStorage[address.Address],
+			want: hasSubscribersStorage[handle.String()],
 		},
 		{
 			name: "nil result",
@@ -297,7 +297,7 @@ func Test_cosignatureImpl_GetHandlers(t *testing.T) {
 				removeSubscriberCh: make(chan *cosignatureSubscription),
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: nil,
 		},
@@ -305,7 +305,7 @@ func Test_cosignatureImpl_GetHandlers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			go tt.e.handleNewSubscription()
-			got := tt.e.GetHandlers(tt.args.address)
+			got := tt.e.GetHandlers(tt.args.handle)
 			assert.Equal(t, tt.want, got)
 		})
 	}

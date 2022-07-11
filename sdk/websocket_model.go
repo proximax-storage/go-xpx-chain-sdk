@@ -4,6 +4,11 @@
 
 package sdk
 
+import (
+	"encoding/binary"
+	"encoding/hex"
+)
+
 type statusInfoDto struct {
 	Status string  `json:"status"`
 	Hash   hashDto `json:"hash"`
@@ -81,8 +86,14 @@ type PartialRemovedInfo struct {
 	Meta *TransactionInfo
 }
 
+type PartialAddedInfo struct {
+	AbstractTransaction
+	InnerTransactions []Transaction
+	Cosignatures      []*AggregateTransactionCosignature
+}
+
 type WsMessageInfo struct {
-	Address     *Address
+	Handle      *TransactionChannelHandle
 	ChannelName string
 }
 
@@ -99,17 +110,25 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 		return msg, nil
 	}
 
-	address, err := NewAddressFromBase32(dto.Meta.Address)
-	if err != nil {
-		return nil, err
+	if len(dto.Meta.Handle) == 2 {
+		handle, err := hex.DecodeString(dto.Meta.Handle)
+		if err != nil {
+			return nil, err
+		}
+		val := binary.BigEndian.Uint16(handle)
+		msg.Handle = NewTransactionChannelHandleFromTransactionType(EntityType(val))
+	} else {
+		address, err := NewAddressFromBase32(dto.Meta.Handle)
+		if err != nil {
+			return nil, err
+		}
+		msg.Handle = NewTransactionChannelHandleFromAddress(address)
 	}
-
-	msg.Address = address
 
 	return msg, nil
 }
 
 type wsMessageInfoMetaDTO struct {
 	ChannelName string `json:"channelName"`
-	Address     string `json:"address"`
+	Handle      string `json:"address"`
 }

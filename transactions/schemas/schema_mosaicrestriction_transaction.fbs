@@ -1,0 +1,36 @@
+namespace Catapult.Buffers;
+
+table MosaicAddressRestrictionTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    mosaicId:[uint];
+    restrictionKey:[uint];
+    previousRestrictionValue:[uint];
+    newRestrictionValue:[uint];
+    targetAddress:[ubyte];
+}
+
+table MosaicGlobalRestrictionTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    mosaicId:[uint];
+    referenceMosaicId:[uint];
+    restrictionKey:[uint];
+    previousRestrictionValue:[uint];
+    newRestrictionValue:[uint];
+    previousRestrictionType:ubyte;
+    newRestrictionType:ubyte;
+}
+
+root_type MosaicAddressRestrictionTransactionBuffer;
+root_type MosaicGlobalRestrictionTransactionBuffer;

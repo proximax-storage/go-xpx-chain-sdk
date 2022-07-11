@@ -10,7 +10,7 @@ import (
 )
 
 type Handler interface {
-	Handle(*sdk.Address, []byte) bool // Is subscription still necessary ?
+	Handle(*sdk.TransactionChannelHandle, []byte) bool // Is subscription still necessary ?
 }
 
 type cosignatureHandler struct {
@@ -25,13 +25,13 @@ func NewCosignatureHandler(messageMapper sdk.CosignatureMapper, handlers subscri
 	}
 }
 
-func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
+func (h *cosignatureHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapCosignature(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))
 	}
 
-	handlers := h.handlers.GetHandlers(address)
+	handlers := h.handlers.GetHandlers(handle)
 	if len(handlers) == 0 {
 		return true
 	}
@@ -48,11 +48,11 @@ func (h *cosignatureHandler) Handle(address *sdk.Address, resp []byte) bool {
 				return
 			}
 
-			h.handlers.RemoveHandlers(address, f)
+			h.handlers.RemoveHandlers(handle, f)
 		}(f)
 	}
 
 	wg.Wait()
 
-	return h.handlers.HasHandlers(address)
+	return h.handlers.HasHandlers(handle)
 }

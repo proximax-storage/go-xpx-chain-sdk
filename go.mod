@@ -14,5 +14,6 @@ require (
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
 	github.com/stretchr/testify v1.3.0
 	github.com/supranational/blst v0.3.4 // indirect
-	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
+	github.com/vektra/mockery v1.1.2 // indirect
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )

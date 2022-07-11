@@ -9,11 +9,11 @@ type (
 	PartialRemovedHandler func(*sdk.PartialRemovedInfo) bool
 
 	PartialRemoved interface {
-		AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) bool
-		HasHandlers(address *sdk.Address) bool
-		GetHandlers(address *sdk.Address) []*PartialRemovedHandler
-		GetAddresses() []string
+		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialRemovedHandler) error
+		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialRemovedHandler) bool
+		HasHandlers(handle *sdk.TransactionChannelHandle) bool
+		GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialRemovedHandler
+		GetHandles() []string
 	}
 
 	partialRemovedImpl struct {
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*PartialRemovedHandler
 	}
 	partialRemovedSubscription struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*PartialRemovedHandler
 		resultCh chan bool
 	}
@@ -54,35 +54,35 @@ func (e *partialRemovedImpl) handleNewSubscription() {
 func (e *partialRemovedImpl) addSubscription(s *partialRemovedSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if _, ok := e.subscribers[s.address.Address]; !ok {
-		e.subscribers[s.address.Address] = make([]*PartialRemovedHandler, 0)
+	if _, ok := e.subscribers[s.handle.String()]; !ok {
+		e.subscribers[s.handle.String()] = make([]*PartialRemovedHandler, 0)
 	}
 	for i := 0; i < len(s.handlers); i++ {
-		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+		e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()], s.handlers[i])
 	}
 }
 
 func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+	if external, ok := e.subscribers[s.handle.String()]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
 
-	itemCount := len(e.subscribers[s.address.Address])
+	itemCount := len(e.subscribers[s.handle.String()])
 	for _, removeHandler := range s.handlers {
-		for index, currentHandlers := range e.subscribers[s.address.Address] {
+		for index, currentHandlers := range e.subscribers[s.handle.String()] {
 			if removeHandler == currentHandlers {
-				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
-					e.subscribers[s.address.Address][index+1:]...)
+				e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()][:index],
+					e.subscribers[s.handle.String()][index+1:]...)
 			}
 		}
 	}
 
-	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
+	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...PartialRemovedHandler) error {
+func (e *partialRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialRemovedHandler) error {
 	e.Lock()
 	defer e.Unlock()
 	if len(handlers) == 0 {
@@ -95,20 +95,20 @@ func (e *partialRemovedImpl) AddHandlers(address *sdk.Address, handlers ...Parti
 	}
 
 	e.newSubscriberCh <- &partialRemovedSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: refHandlers,
 	}
 	return nil
 }
 
-func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*PartialRemovedHandler) bool {
+func (e *partialRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialRemovedHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
 
 	resCh := make(chan bool)
 	e.removeSubscriberCh <- &partialRemovedSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: handlers,
 		resultCh: resCh,
 	}
@@ -116,29 +116,29 @@ func (e *partialRemovedImpl) RemoveHandlers(address *sdk.Address, handlers ...*P
 	return <-resCh
 }
 
-func (e *partialRemovedImpl) HasHandlers(address *sdk.Address) bool {
+func (e *partialRemovedImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
-	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
+	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *partialRemovedImpl) GetHandlers(address *sdk.Address) []*PartialRemovedHandler {
+func (e *partialRemovedImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialRemovedHandler {
 	e.Lock()
 	defer e.Unlock()
-	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+	if res, ok := e.subscribers[handle.String()]; ok && res != nil {
 		return res
 	}
 
 	return nil
 }
 
-func (e *partialRemovedImpl) GetAddresses() []string {
+func (e *partialRemovedImpl) GetHandles() []string {
 	e.Lock()
 	defer e.Unlock()
-	addresses := make([]string, 0, len(e.subscribers))
+	handles := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
-		addresses = append(addresses, addr)
+		handles = append(handles, addr)
 	}
 
-	return addresses
+	return handles
 }

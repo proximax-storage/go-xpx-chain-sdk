@@ -19,8 +19,8 @@ func Test_blockHandler_Handle(t *testing.T) {
 		handlers      subscribers.Block
 	}
 	type args struct {
-		address *sdk.Address
-		resp    []byte
+		handle *sdk.TransactionChannelHandle
+		resp   []byte
 	}
 
 	blockInfo := new(sdk.BlockInfo)
@@ -80,7 +80,7 @@ func Test_blockHandler_Handle(t *testing.T) {
 				messageMapper: tt.fields.messageMapper,
 				handlers:      tt.fields.handlers,
 			}
-			got := h.Handle(tt.args.address, tt.args.resp)
+			got := h.Handle(tt.args.handle, tt.args.resp)
 			assert.Equal(t, got, tt.want)
 		})
 	}

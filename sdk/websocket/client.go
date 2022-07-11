@@ -173,8 +173,7 @@ func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.B
 
 	return nil
 }
-
-func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.ConfirmedAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -186,13 +185,13 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 		})
 	}
 
-	if !c.confirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, address.Address))); err != nil {
+	if !c.confirmedAddedSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.confirmedAddedSubscribers.AddHandlers(address, handlers...)
+	err := c.confirmedAddedSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
@@ -200,7 +199,11 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Add
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error {
+	return c.AddConfirmedAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
+
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.UnconfirmedAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -212,21 +215,24 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.A
 		})
 	}
 
-	if !c.unconfirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address.Address))); err != nil {
+	if !c.unconfirmedAddedSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.unconfirmedAddedSubscribers.AddHandlers(address, handlers...)
+	err := c.unconfirmedAddedSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
 }
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error {
+	return c.AddUnconfirmedAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.UnconfirmedRemovedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -238,13 +244,13 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk
 		})
 	}
 
-	if !c.unconfirmedRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address.Address))); err != nil {
+	if !c.unconfirmedRemovedSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.unconfirmedRemovedSubscribers.AddHandlers(address, handlers...)
+	err := c.unconfirmedRemovedSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
@@ -252,7 +258,11 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error {
+	return c.AddUnconfirmedRemovedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
+
+func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.PartialAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -264,13 +274,13 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 		})
 	}
 
-	if !c.partialAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, address.Address))); err != nil {
+	if !c.partialAddedSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.partialAddedSubscribers.AddHandlers(address, handlers...)
+	err := c.partialAddedSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
@@ -278,7 +288,11 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Addre
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error {
+	return c.AddPartialAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
+
+func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.PartialRemovedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -290,13 +304,13 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Add
 		})
 	}
 
-	if !c.partialRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, address.Address))); err != nil {
+	if !c.partialRemovedSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.partialRemovedSubscribers.AddHandlers(address, handlers...)
+	err := c.partialRemovedSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
@@ -304,7 +318,11 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Add
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error {
+func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error {
+	return c.AddPartialRemovedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
+
+func (c *CatapultWebsocketClientImpl) AddStatusHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.StatusHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -316,13 +334,13 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, ha
 		})
 	}
 
-	if !c.statusSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, address.Address))); err != nil {
+	if !c.statusSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	err := c.statusSubscribers.AddHandlers(address, handlers...)
+	err := c.statusSubscribers.AddHandlers(handle, handlers...)
 	if err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
@@ -330,7 +348,11 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, ha
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error {
+func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error {
+	return c.AddStatusHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+}
+
+func (c *CatapultWebsocketClientImpl) AddCosignatureHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.CosignatureHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -342,17 +364,21 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Addres
 		})
 	}
 
-	if !c.cosignatureSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, address.Address))); err != nil {
+	if !c.cosignatureSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
-	if err := c.cosignatureSubscribers.AddHandlers(address, handlers...); err != nil {
+	if err := c.cosignatureSubscribers.AddHandlers(handle, handlers...); err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
 	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error {
+	return c.AddCosignatureHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
 }
 
 func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
@@ -492,43 +518,43 @@ func (c *CatapultWebsocketClientImpl) updateHandlers() error {
 		}
 	}
 
-	for _, value := range c.confirmedAddedSubscribers.GetAddresses() {
+	for _, value := range c.confirmedAddedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.cosignatureSubscribers.GetAddresses() {
+	for _, value := range c.cosignatureSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.partialAddedSubscribers.GetAddresses() {
+	for _, value := range c.partialAddedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.partialRemovedSubscribers.GetAddresses() {
+	for _, value := range c.partialRemovedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.statusSubscribers.GetAddresses() {
+	for _, value := range c.statusSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.unconfirmedAddedSubscribers.GetAddresses() {
+	for _, value := range c.unconfirmedAddedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, value))); err != nil {
 			return err
 		}
 	}
 
-	for _, value := range c.unconfirmedRemovedSubscribers.GetAddresses() {
+	for _, value := range c.unconfirmedRemovedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, value))); err != nil {
 			return err
 		}

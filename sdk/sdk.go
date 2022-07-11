@@ -153,22 +153,24 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain    *BlockchainService
-	Exchange      *ExchangeService
-	Mosaic        *MosaicService
-	Namespace     *NamespaceService
-	Node          *NodeService
-	Network       *NetworkService
-	Transaction   *TransactionService
-	Resolve       *ResolverService
-	Account       *AccountService
-	Storage       *StorageService
-	SuperContract *SuperContractService
-	Lock          *LockService
-	Contract      *ContractService
-	Metadata      *MetadataService
-	MetadataV2    *MetadataV2Service
-	LockFund      *LockFundService
+	Blockchain         *BlockchainService
+	Exchange           *ExchangeService
+	Mosaic             *MosaicService
+	Namespace          *NamespaceService
+	Node               *NodeService
+	Network            *NetworkService
+	Transaction        *TransactionService
+	Resolve            *ResolverService
+	Account            *AccountService
+	Storage            *StorageService
+	SuperContract      *SuperContractService
+	Lock               *LockService
+	Contract           *ContractService
+	Metadata           *MetadataService
+	MetadataV2         *MetadataV2Service
+	LockFund           *LockFundService
+	AccountRestriction *AccountRestrictionService
+	MosaicRestriction  *MosaicRestrictionService
 }
 
 type service struct {
@@ -213,6 +215,8 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataV2 = (*MetadataV2Service)(&c.common)
 	c.LockFund = (*LockFundService)(&c.common)
+	c.AccountRestriction = (*AccountRestrictionService)(&c.common)
+	c.MosaicRestriction = (*MosaicRestrictionService)(&c.common)
 	return c
 }
 
@@ -242,7 +246,7 @@ func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error)
 
 // AdaptAccount returns a new account with the same network type and generation hash like a Client
 func (c *Client) AdaptAccount(account *Account) (*Account, error) {
-	return c.NewAccountFromPrivateKey(account.PrivateKey.String(), account.Version)
+	return c.NewAccountFromPrivateKeyAndVersion(account.PrivateKey.String(), account.Version)
 }
 
 // doNewRequest creates new request, Do it & return result in V
@@ -368,7 +372,14 @@ func (c *Client) NewAccountFromVersion(accountVersion uint32) (*Account, error) 
 	return NewAccount(c.config.NetworkType, c.config.GenerationHash, accountVersion)
 }
 
-func (c *Client) NewAccountFromPrivateKey(pKey string, accountVersion uint32) (*Account, error) {
+func (c *Client) NewAccountFromPrivateKeyAndVersion(pKey string, accountVersion uint32) (*Account, error) {
+	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash, accountVersion)
+}
+func (c *Client) NewAccountFromPrivateKey(pKey string, ctx context.Context) (*Account, error) {
+	accountVersion, err := c.Network.GetActiveAccountVersion(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return NewAccountFromPrivateKey(pKey, c.config.NetworkType, c.config.GenerationHash, accountVersion)
 }
 
@@ -520,7 +531,27 @@ func (c *Client) NewAccountV2UpgradeTransaction(deadline *Deadline, NewAccount *
 	return tx, err
 }
 
-func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
+func (c *Client) NewCompleteAggregateV1Transaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransactionV1, error) {
+	tx, err := NewCompleteAggregateV1Transaction(deadline, innerTxs, c.config.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+	c.modifyTransaction(tx)
+
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
+}
+
+func (c *Client) NewBondedAggregateV1Transaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransactionV1, error) {
+	tx, err := NewBondedAggregateV1Transaction(deadline, innerTxs, c.config.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+	c.modifyTransaction(tx)
+
+	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
+}
+
+func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransactionV2, error) {
 	tx, err := NewCompleteAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
 	if err != nil {
 		return nil, err
@@ -530,7 +561,7 @@ func (c *Client) NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []
 	return tx, tx.UpdateUniqueAggregateHash(c.config.GenerationHash)
 }
 
-func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransaction, error) {
+func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction) (*AggregateTransactionV2, error) {
 	tx, err := NewBondedAggregateTransaction(deadline, innerTxs, c.config.NetworkType)
 	if err != nil {
 		return nil, err

@@ -21,13 +21,13 @@ type partialAddedHandler struct {
 	handlers      subscribers.PartialAdded
 }
 
-func (h *partialAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
+func (h *partialAddedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapPartialAdded(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))
 	}
 
-	handlers := h.handlers.GetHandlers(address)
+	handlers := h.handlers.GetHandlers(handle)
 	if len(handlers) == 0 {
 		return true
 	}
@@ -45,11 +45,11 @@ func (h *partialAddedHandler) Handle(address *sdk.Address, resp []byte) bool {
 				return
 			}
 
-			h.handlers.RemoveHandlers(address, f)
+			h.handlers.RemoveHandlers(handle, f)
 		}(f)
 	}
 
 	wg.Wait()
 
-	return h.handlers.HasHandlers(address)
+	return h.handlers.HasHandlers(handle)
 }

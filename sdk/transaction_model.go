@@ -64,8 +64,10 @@ func (tx *AbstractTransaction) IsUnannounced() bool {
 	return !tx.IsAnnounced()
 }
 
-func (tx *AbstractTransaction) ToAggregate(signer *PublicAccount) {
-	tx.Signer = signer
+func (tx *AbstractTransaction) ToAggregate(signer *Account) {
+	tx.Signer = signer.PublicAccount
+	derivationScheme := GetDerivationSchemeForAccountVersion(signer.Version).EngineDerivationScheme()
+	tx.Version = EntityVersion(uint32(tx.Version) | (uint32(derivationScheme) << 16))
 }
 
 func (tx *AbstractTransaction) String() string {
@@ -1059,21 +1061,32 @@ func (tx *AccountV2UpgradeTransaction) Size() int {
 	return AccountV2UpgradeTransactionSize
 }
 
-type AggregateTransaction struct {
+type AggregateTransactionIFace interface {
+	Transaction
+	GetCosignatures() []*AggregateTransactionCosignature
+}
+
+type AggregateTransactionV1 struct {
+	AbstractTransaction
+	InnerTransactions []Transaction
+	Cosignatures      []*AggregateTransactionCosignature
+}
+
+type AggregateTransactionV2 struct {
 	AbstractTransaction
 	InnerTransactions []Transaction
 	Cosignatures      []*AggregateTransactionCosignature
 }
 
 // returns complete AggregateTransaction from passed array of own Transaction's to be included in
-func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error) {
+func NewCompleteAggregateV1Transaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransactionV1, error) {
 	if innerTxs == nil {
 		return nil, errors.New("innerTransactions must not be nil")
 	}
-	return &AggregateTransaction{
+	return &AggregateTransactionV1{
 		AbstractTransaction: AbstractTransaction{
-			Type:        AggregateCompleted,
-			Version:     AggregateCompletedVersion,
+			Type:        AggregateCompletedV1,
+			Version:     AggregateCompletedV1Version,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
@@ -1082,14 +1095,14 @@ func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction,
 }
 
 // returns bounded AggregateTransaction from passed array of transactions to be included in
-func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransaction, error) {
+func NewBondedAggregateV1Transaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransactionV1, error) {
 	if innerTxs == nil {
 		return nil, errors.New("innerTransactions must not be nil")
 	}
-	return &AggregateTransaction{
+	return &AggregateTransactionV1{
 		AbstractTransaction: AbstractTransaction{
-			Type:        AggregateBonded,
-			Version:     AggregateBondedVersion,
+			Type:        AggregateBondedV1,
+			Version:     AggregateBondedV1Version,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
@@ -1097,9 +1110,51 @@ func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, n
 	}, nil
 }
 
-func (tx *AggregateTransaction) UpdateUniqueAggregateHash(generationHash *Hash) (err error) {
+// returns complete AggregateTransaction from passed array of own Transaction's to be included in
+func NewCompleteAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransactionV2, error) {
+	if innerTxs == nil {
+		return nil, errors.New("innerTransactions must not be nil")
+	}
+	return &AggregateTransactionV2{
+		AbstractTransaction: AbstractTransaction{
+			Type:        AggregateCompletedV2,
+			Version:     AggregateCompletedV2Version,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		InnerTransactions: innerTxs,
+	}, nil
+}
+
+// returns bounded AggregateTransaction from passed array of transactions to be included in
+func NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Transaction, networkType NetworkType) (*AggregateTransactionV2, error) {
+	if innerTxs == nil {
+		return nil, errors.New("innerTransactions must not be nil")
+	}
+	return &AggregateTransactionV2{
+		AbstractTransaction: AbstractTransaction{
+			Type:        AggregateBondedV2,
+			Version:     AggregateBondedV2Version,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		InnerTransactions: innerTxs,
+	}, nil
+}
+
+func (tx *AggregateTransactionV1) UpdateUniqueAggregateHash(generationHash *Hash) (err error) {
 	for _, innerTx := range tx.InnerTransactions {
-		innerTx.GetAbstractTransaction().UniqueAggregateHash, err = UniqueAggregateHash(tx, innerTx, generationHash)
+		innerTx.GetAbstractTransaction().UniqueAggregateHash, err = UniqueAggregateHashV1(tx, innerTx, generationHash)
+		if err != nil {
+			break
+		}
+	}
+
+	return err
+}
+func (tx *AggregateTransactionV2) UpdateUniqueAggregateHash(generationHash *Hash) (err error) {
+	for _, innerTx := range tx.InnerTransactions {
+		innerTx.GetAbstractTransaction().UniqueAggregateHash, err = UniqueAggregateHashV2(tx, innerTx, generationHash)
 		if err != nil {
 			break
 		}
@@ -1122,11 +1177,15 @@ func CompareInnerTransaction(left []Transaction, right []Transaction) bool {
 	return true
 }
 
-func (tx *AggregateTransaction) GetAbstractTransaction() *AbstractTransaction {
+func (tx *AggregateTransactionV1) GetAbstractTransaction() *AbstractTransaction {
 	return &tx.AbstractTransaction
 }
 
-func (tx *AggregateTransaction) String() string {
+func (tx *AggregateTransactionV2) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *AggregateTransactionV1) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
@@ -1139,7 +1198,20 @@ func (tx *AggregateTransaction) String() string {
 	)
 }
 
-func (tx *AggregateTransaction) Bytes() ([]byte, error) {
+func (tx *AggregateTransactionV2) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"InnerTransactions": %+v,
+			"Cosignatures": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.InnerTransactions,
+		tx.Cosignatures,
+	)
+}
+
+func (tx *AggregateTransactionV1) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
 
 	var txsb []byte
@@ -1168,7 +1240,44 @@ func (tx *AggregateTransaction) Bytes() ([]byte, error) {
 	return aggregateTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
-func (tx *AggregateTransaction) Size() int {
+func (tx *AggregateTransactionV2) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	var txsb []byte
+	for _, itx := range tx.InnerTransactions {
+		txb, err := toAggregateTransactionBytes(itx)
+		if err != nil {
+			return nil, err
+		}
+		txsb = append(txsb, txb...)
+	}
+	tV := transactions.TransactionBufferCreateByteVector(builder, txsb)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions.AggregateTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+	transactions.AggregateTransactionBufferAddTransactionsSize(builder, uint32(len(txsb)))
+	transactions.AggregateTransactionBufferAddTransactions(builder, tV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return aggregateTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *AggregateTransactionV1) Size() int {
+	sizeOfInnerTransactions := 0
+	for _, itx := range tx.InnerTransactions {
+		sizeOfInnerTransactions += itx.Size() - SignatureSize - MaxFeeSize - DeadLineSize
+	}
+	return AggregateBondedHeaderSize + sizeOfInnerTransactions
+}
+
+func (tx *AggregateTransactionV2) Size() int {
 	sizeOfInnerTransactions := 0
 	for _, itx := range tx.InnerTransactions {
 		sizeOfInnerTransactions += itx.Size() - SignatureSize - MaxFeeSize - DeadLineSize
@@ -2496,10 +2605,9 @@ func NewLockFundsTransaction(deadline *Deadline, mosaic *Mosaic, duration Durati
 		return nil, errors.New("signedTx must not be nil")
 	}
 
-	if signedTx.EntityType != AggregateBonded {
+	if signedTx.EntityType != AggregateBondedV1 && signedTx.EntityType != AggregateBondedV2 {
 		return nil, errors.New("signedTx must be of type AggregateBonded")
 	}
-
 	return &LockFundsTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     LockVersion,
@@ -2745,22 +2853,26 @@ func (tx *SecretProofTransaction) Size() int {
 	return SecretProofHeaderSize + tx.Proof.Size()
 }
 
-type CosignatureTransaction struct {
-	TransactionToCosign *AggregateTransaction
+type CosignatureTransactionV1 struct {
+	TransactionToCosign *AggregateTransactionV1
+}
+
+type CosignatureTransactionV2 struct {
+	TransactionToCosign *AggregateTransactionV2
 }
 
 // returns a CosignatureTransaction from passed AggregateTransaction
-func NewCosignatureTransaction(txToCosign *AggregateTransaction) (*CosignatureTransaction, error) {
+func NewCosignatureTransactionV1(txToCosign *AggregateTransactionV1) (*CosignatureTransactionV1, error) {
 	if txToCosign == nil {
 		return nil, errors.New("txToCosign must not be nil")
 	}
-	return &CosignatureTransaction{txToCosign}, nil
+	return &CosignatureTransactionV1{txToCosign}, nil
 }
 
 // returns a CosignatureTransaction from passed hash of bounded AggregateTransaction
-func NewCosignatureTransactionFromHash(hash *Hash) *CosignatureTransaction {
-	return &CosignatureTransaction{
-		TransactionToCosign: &AggregateTransaction{
+func NewCosignatureTransactionFromHashV1(hash *Hash) *CosignatureTransactionV1 {
+	return &CosignatureTransactionV1{
+		TransactionToCosign: &AggregateTransactionV1{
 			AbstractTransaction: AbstractTransaction{
 				TransactionInfo: TransactionInfo{
 					TransactionHash: hash,
@@ -2770,7 +2882,32 @@ func NewCosignatureTransactionFromHash(hash *Hash) *CosignatureTransaction {
 	}
 }
 
-func (tx *CosignatureTransaction) String() string {
+func (tx *CosignatureTransactionV1) String() string {
+	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign)
+}
+
+// returns a CosignatureTransaction from passed AggregateTransaction
+func NewCosignatureTransaction(txToCosign *AggregateTransactionV2) (*CosignatureTransactionV2, error) {
+	if txToCosign == nil {
+		return nil, errors.New("txToCosign must not be nil")
+	}
+	return &CosignatureTransactionV2{txToCosign}, nil
+}
+
+// returns a CosignatureTransaction from passed hash of bounded AggregateTransaction
+func NewCosignatureTransactionFromHash(hash *Hash) *CosignatureTransactionV2 {
+	return &CosignatureTransactionV2{
+		TransactionToCosign: &AggregateTransactionV2{
+			AbstractTransaction: AbstractTransaction{
+				TransactionInfo: TransactionInfo{
+					TransactionHash: hash,
+				},
+			},
+		},
+	}
+}
+
+func (tx *CosignatureTransactionV2) String() string {
 	return fmt.Sprintf(`"TransactionToCosign": %s`, tx.TransactionToCosign)
 }
 
@@ -2802,18 +2939,21 @@ func (tx *SignedTransaction) String() string {
 type cosignatureSignedTransactionDto struct {
 	ParentHash string `json:"parentHash"`
 	Signature  string `json:"signature"`
+	Scheme     crypto.DerivationScheme
 	Signer     string `json:"signer"`
 }
 
 type CosignatureSignedTransaction struct {
 	ParentHash *Hash
 	Signature  *Signature
+	Scheme     crypto.DerivationScheme
 	Signer     string
 }
 
 type AggregateTransactionCosignature struct {
 	Signature string
 	Signer    *PublicAccount
+	Scheme    crypto.DerivationScheme
 }
 
 func (agt *AggregateTransactionCosignature) String() string {
@@ -2893,6 +3033,10 @@ func (ts *TransactionStatus) String() string {
 
 const (
 	AddressSize                              int = 25
+	CharCountSize                            int = 1
+	IntPaddingSize                           int = 4
+	ByteFlagsSize                            int = 1
+	HalfWordFlagsSize                        int = 2
 	BaseInt64Size                            int = 8
 	AmountSize                                   = BaseInt64Size
 	KeySize                                  int = 32
@@ -2987,68 +3131,80 @@ const (
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 	LockFundTransferHeaderSize                   = TransactionHeaderSize + DurationSize + 1 + 1
 	LockFundCancelUnlockHeaderSize               = TransactionHeaderSize + BaseInt64Size
+	AccountAddressRestrictionHeaderSize          = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
+	AccountMosaicRestrictionHeaderSize           = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
+	AccountOperationRestrictionHeaderSize        = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
+	MosaicGlobalRestrictionHeaderSize            = TransactionHeaderSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + AddressSize
+	MosaicAddressRestrictionHeaderSize           = TransactionHeaderSize + MosaicIdSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + ByteFlagsSize + ByteFlagsSize
 )
 
 type EntityType uint16
 
 const (
-	AccountPropertyAddress    EntityType = 0x4150
-	AccountPropertyMosaic     EntityType = 0x4250
-	AccountPropertyEntityType EntityType = 0x4350
-	AddressAlias              EntityType = 0x424e
-	AggregateBonded           EntityType = 0x4241
-	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = 0x415D
-	AddHarvesterEntityType    EntityType = 0x4161
-	ExchangeOffer             EntityType = 0x425D
-	RemoveExchangeOffer       EntityType = 0x435D
-	RemoveHarvesterEntityType EntityType = 0x4261
-	Block                     EntityType = 0x8143
-	NemesisBlock              EntityType = 0x8043
-	NetworkConfigEntityType   EntityType = 0x4159
-	BlockchainUpgrade         EntityType = 0x4158
-	AccountV2Upgrade          EntityType = 0x4258
-	LinkAccount               EntityType = 0x414c
-	NodeKeyLink               EntityType = 0x424c
-	VrfKeyLink                EntityType = 0x434c
-	Lock                      EntityType = 0x4148
-	MetadataAddress           EntityType = 0x413d
-	MetadataMosaic            EntityType = 0x423d
-	MetadataNamespace         EntityType = 0x433d
-	AccountMetadata           EntityType = 0x413f
-	MosaicMetadata            EntityType = 0x423f
-	NamespaceMetadata         EntityType = 0x433f
-	ModifyContract            EntityType = 0x4157
-	ModifyMultisig            EntityType = 0x4155
-	MosaicAlias               EntityType = 0x434e
-	MosaicDefinition          EntityType = 0x414d
-	MosaicSupplyChange        EntityType = 0x424d
-	MosaicModifyLevy          EntityType = 0x434d
-	MosaicRemoveLevy          EntityType = 0x444d
-	RegisterNamespace         EntityType = 0x414e
-	SecretLock                EntityType = 0x4152
-	SecretProof               EntityType = 0x4252
-	Transfer                  EntityType = 0x4154
-	PrepareDrive              EntityType = 0x415A
-	JoinToDrive               EntityType = 0x425A
-	DriveFileSystem           EntityType = 0x435A
-	FilesDeposit              EntityType = 0x445A
-	EndDrive                  EntityType = 0x455A
-	DriveFilesReward          EntityType = 0x465A
-	StartDriveVerification    EntityType = 0x475A
-	EndDriveVerification      EntityType = 0x485A
-	StartFileDownload         EntityType = 0x495A
-	EndFileDownload           EntityType = 0x4A5A
-	OperationIdentify         EntityType = 0x415F
-	StartOperation            EntityType = 0x425F
-	EndOperation              EntityType = 0x435F
-	Deploy                    EntityType = 0x4160
-	StartExecute              EntityType = 0x4260
-	EndExecute                EntityType = 0x4360
-	SuperContractFileSystem   EntityType = 0x4460
-	Deactivate                EntityType = 0x4560
-	LockFundTransfer          EntityType = 0x4162
-	LockFundCancelUnlock      EntityType = 0x4262
+	AccountPropertyAddress      EntityType = 0x4150
+	AccountPropertyMosaic       EntityType = 0x4250
+	AccountPropertyEntityType   EntityType = 0x4350
+	AddressAlias                EntityType = 0x424e
+	AggregateBondedV1           EntityType = 0x4241
+	AggregateCompletedV1        EntityType = 0x4141
+	AggregateBondedV2           EntityType = 0x4341
+	AggregateCompletedV2        EntityType = 0x4441
+	AddExchangeOffer            EntityType = 0x415D
+	AddHarvesterEntityType      EntityType = 0x4161
+	ExchangeOffer               EntityType = 0x425D
+	RemoveExchangeOffer         EntityType = 0x435D
+	RemoveHarvesterEntityType   EntityType = 0x4261
+	Block                       EntityType = 0x8143
+	NemesisBlock                EntityType = 0x8043
+	NetworkConfigEntityType     EntityType = 0x4159
+	BlockchainUpgrade           EntityType = 0x4158
+	AccountV2Upgrade            EntityType = 0x4258
+	LinkAccount                 EntityType = 0x414c
+	NodeKeyLink                 EntityType = 0x424c
+	VrfKeyLink                  EntityType = 0x434c
+	Lock                        EntityType = 0x4148
+	MetadataAddress             EntityType = 0x413d
+	MetadataMosaic              EntityType = 0x423d
+	MetadataNamespace           EntityType = 0x433d
+	AccountMetadata             EntityType = 0x413f
+	MosaicMetadata              EntityType = 0x423f
+	NamespaceMetadata           EntityType = 0x433f
+	ModifyContract              EntityType = 0x4157
+	ModifyMultisig              EntityType = 0x4155
+	MosaicAlias                 EntityType = 0x434e
+	MosaicDefinition            EntityType = 0x414d
+	MosaicSupplyChange          EntityType = 0x424d
+	MosaicModifyLevy            EntityType = 0x434d
+	MosaicRemoveLevy            EntityType = 0x444d
+	RegisterNamespace           EntityType = 0x414e
+	SecretLock                  EntityType = 0x4152
+	SecretProof                 EntityType = 0x4252
+	Transfer                    EntityType = 0x4154
+	PrepareDrive                EntityType = 0x415A
+	JoinToDrive                 EntityType = 0x425A
+	DriveFileSystem             EntityType = 0x435A
+	FilesDeposit                EntityType = 0x445A
+	EndDrive                    EntityType = 0x455A
+	DriveFilesReward            EntityType = 0x465A
+	StartDriveVerification      EntityType = 0x475A
+	EndDriveVerification        EntityType = 0x485A
+	StartFileDownload           EntityType = 0x495A
+	EndFileDownload             EntityType = 0x4A5A
+	OperationIdentify           EntityType = 0x415F
+	StartOperation              EntityType = 0x425F
+	EndOperation                EntityType = 0x435F
+	Deploy                      EntityType = 0x4160
+	StartExecute                EntityType = 0x4260
+	EndExecute                  EntityType = 0x4360
+	SuperContractFileSystem     EntityType = 0x4460
+	Deactivate                  EntityType = 0x4560
+	LockFundTransfer            EntityType = 0x4162
+	LockFundCancelUnlock        EntityType = 0x4262
+	AccountAddressRestriction   EntityType = 0x4163
+	AccountMosaicRestriction    EntityType = 0x4263
+	AccountOperationRestriction EntityType = 0x4363
+	MosaicGlobalRestriction     EntityType = 0x4164
+	MosaicAddressRestriction    EntityType = 0x4264
 )
 
 func (t EntityType) String() string {
@@ -3058,60 +3214,67 @@ func (t EntityType) String() string {
 type EntityVersion uint32
 
 const (
-	AccountPropertyAddressVersion    EntityVersion = 1
-	AccountPropertyMosaicVersion     EntityVersion = 1
-	AccountPropertyEntityTypeVersion EntityVersion = 1
-	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 3
-	AggregateCompletedVersion        EntityVersion = 3
-	AddExchangeOfferVersion          EntityVersion = 4
-	ExchangeOfferVersion             EntityVersion = 2
-	RemoveExchangeOfferVersion       EntityVersion = 2
-	NetworkConfigVersion             EntityVersion = 1
-	BlockchainUpgradeVersion         EntityVersion = 1
-	AccountV2UpgradeVersion          EntityVersion = 1
-	LinkAccountVersion               EntityVersion = 2
-	NodeKeyLinkVersion               EntityVersion = 1
-	VrfKeyLinkVersion                EntityVersion = 1
-	LockVersion                      EntityVersion = 1
-	AccountMetadataVersion           EntityVersion = 1
-	MosaicMetadataVersion            EntityVersion = 1
-	NamespaceMetadataVersion         EntityVersion = 1
-	MetadataAddressVersion           EntityVersion = 1
-	MetadataMosaicVersion            EntityVersion = 1
-	MetadataNamespaceVersion         EntityVersion = 1
-	ModifyContractVersion            EntityVersion = 3
-	ModifyMultisigVersion            EntityVersion = 3
-	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
-	MosaicSupplyChangeVersion        EntityVersion = 2
-	MosaicModifyLevyVersion          EntityVersion = 1
-	MosaicRemoveLevyVersion          EntityVersion = 1
-	RegisterNamespaceVersion         EntityVersion = 2
-	SecretLockVersion                EntityVersion = 1
-	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 4
-	PrepareDriveVersion              EntityVersion = 3
-	JoinToDriveVersion               EntityVersion = 1
-	DriveFileSystemVersion           EntityVersion = 1
-	FilesDepositVersion              EntityVersion = 1
-	EndDriveVersion                  EntityVersion = 1
-	DriveFilesRewardVersion          EntityVersion = 1
-	StartDriveVerificationVersion    EntityVersion = 1
-	EndDriveVerificationVersion      EntityVersion = 1
-	StartFileDownloadVersion         EntityVersion = 1
-	EndFileDownloadVersion           EntityVersion = 1
-	DeployVersion                    EntityVersion = 1
-	StartExecuteVersion              EntityVersion = 1
-	EndExecuteVersion                EntityVersion = 1
-	StartOperationVersion            EntityVersion = 1
-	EndOperationVersion              EntityVersion = 1
-	HarvesterVersion                 EntityVersion = 1
-	OperationIdentifyVersion         EntityVersion = 1
-	SuperContractFileSystemVersion   EntityVersion = 1
-	DeactivateVersion                EntityVersion = 1
-	LockFundTransferVersion          EntityVersion = 1
-	LockFundCancelUnlockVersion      EntityVersion = 1
+	AccountPropertyAddressVersion      EntityVersion = 1
+	AccountPropertyMosaicVersion       EntityVersion = 1
+	AccountPropertyEntityTypeVersion   EntityVersion = 1
+	AddressAliasVersion                EntityVersion = 1
+	AggregateBondedV1Version           EntityVersion = 3
+	AggregateCompletedV1Version        EntityVersion = 3
+	AggregateBondedV2Version           EntityVersion = 1
+	AggregateCompletedV2Version        EntityVersion = 1
+	AddExchangeOfferVersion            EntityVersion = 4
+	ExchangeOfferVersion               EntityVersion = 2
+	RemoveExchangeOfferVersion         EntityVersion = 2
+	NetworkConfigVersion               EntityVersion = 1
+	BlockchainUpgradeVersion           EntityVersion = 1
+	AccountV2UpgradeVersion            EntityVersion = 1
+	LinkAccountVersion                 EntityVersion = 2
+	NodeKeyLinkVersion                 EntityVersion = 1
+	VrfKeyLinkVersion                  EntityVersion = 1
+	LockVersion                        EntityVersion = 1
+	AccountMetadataVersion             EntityVersion = 1
+	MosaicMetadataVersion              EntityVersion = 1
+	NamespaceMetadataVersion           EntityVersion = 1
+	MetadataAddressVersion             EntityVersion = 1
+	MetadataMosaicVersion              EntityVersion = 1
+	MetadataNamespaceVersion           EntityVersion = 1
+	ModifyContractVersion              EntityVersion = 3
+	ModifyMultisigVersion              EntityVersion = 3
+	MosaicAliasVersion                 EntityVersion = 1
+	MosaicDefinitionVersion            EntityVersion = 3
+	MosaicSupplyChangeVersion          EntityVersion = 2
+	MosaicModifyLevyVersion            EntityVersion = 1
+	MosaicRemoveLevyVersion            EntityVersion = 1
+	RegisterNamespaceVersion           EntityVersion = 2
+	SecretLockVersion                  EntityVersion = 1
+	SecretProofVersion                 EntityVersion = 1
+	TransferVersion                    EntityVersion = 4
+	PrepareDriveVersion                EntityVersion = 3
+	JoinToDriveVersion                 EntityVersion = 1
+	DriveFileSystemVersion             EntityVersion = 1
+	FilesDepositVersion                EntityVersion = 1
+	EndDriveVersion                    EntityVersion = 1
+	DriveFilesRewardVersion            EntityVersion = 1
+	StartDriveVerificationVersion      EntityVersion = 1
+	EndDriveVerificationVersion        EntityVersion = 1
+	StartFileDownloadVersion           EntityVersion = 1
+	EndFileDownloadVersion             EntityVersion = 1
+	DeployVersion                      EntityVersion = 1
+	StartExecuteVersion                EntityVersion = 1
+	EndExecuteVersion                  EntityVersion = 1
+	StartOperationVersion              EntityVersion = 1
+	EndOperationVersion                EntityVersion = 1
+	HarvesterVersion                   EntityVersion = 1
+	OperationIdentifyVersion           EntityVersion = 1
+	SuperContractFileSystemVersion     EntityVersion = 1
+	DeactivateVersion                  EntityVersion = 1
+	LockFundTransferVersion            EntityVersion = 1
+	LockFundCancelUnlockVersion        EntityVersion = 1
+	AccountAddressRestrictionVersion   EntityVersion = 1
+	AccountMosaicRestrictionVersion    EntityVersion = 1
+	AccountOperationRestrictionVersion EntityVersion = 1
+	MosaicGlobalRestrictionVersion     EntityVersion = 1
+	MosaicAddressRestrictionVersion    EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3287,8 +3450,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &accountPropertiesEntityTypeTransactionDTO{}
 	case AddressAlias:
 		dto = &addressAliasTransactionDTO{}
-	case AggregateBonded, AggregateCompleted:
-		dto = &aggregateTransactionDTO{}
+	case AggregateBondedV1, AggregateCompletedV1:
+		dto = &aggregateTransactionV1DTO{}
+	case AggregateBondedV2, AggregateCompletedV2:
+		dto = &aggregateTransactionV2DTO{}
 	case AddExchangeOffer:
 		dto = &addExchangeOfferTransactionDTO{}
 	case AddHarvesterEntityType:
@@ -3385,6 +3550,16 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &lockFundTransferTransactionDto{}
 	case LockFundCancelUnlock:
 		dto = &lockFundCancelUnlockTransactionDto{}
+	case AccountAddressRestriction:
+		dto = &AccountAddressRestrictionTransactionDto{}
+	case AccountMosaicRestriction:
+		dto = &lockFundCancelUnlockTransactionDto{}
+	case AccountOperationRestriction:
+		dto = &lockFundTransferTransactionDto{}
+	case MosaicGlobalRestriction:
+		dto = &lockFundCancelUnlockTransactionDto{}
+	case MosaicAddressRestriction:
+		dto = &lockFundTransferTransactionDto{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
@@ -3503,7 +3678,7 @@ func InnerTransactionHash(tx Transaction) *Hash {
 	return result
 }
 
-func UniqueAggregateHash(aggregateTx *AggregateTransaction, tx Transaction, generationHash *Hash) (*Hash, error) {
+func UniqueAggregateHashImpl(deadline *Deadline, tx Transaction, generationHash *Hash) (*Hash, error) {
 	b, err := toAggregateTransactionBytes(tx)
 	if err != nil {
 		return nil, err
@@ -3515,7 +3690,7 @@ func UniqueAggregateHash(aggregateTx *AggregateTransaction, tx Transaction, gene
 	copy(sb[SignerSize+generationSize:], b[SizeSize+SignerSize:SizeSize+SignerSize+VersionSize+TypeSize])
 
 	// We are using dealine of aggregate transaction instead of deadline of transaction
-	deadlineB := aggregateTx.Deadline.ToBlockchainTimestamp().toLittleEndian()
+	deadlineB := deadline.ToBlockchainTimestamp().toLittleEndian()
 	copy(sb[SignerSize+generationSize+VersionSize+TypeSize:], deadlineB)
 	copy(
 		sb[SignerSize+generationSize+VersionSize+TypeSize+DeadLineSize:],
@@ -3529,16 +3704,18 @@ func UniqueAggregateHash(aggregateTx *AggregateTransaction, tx Transaction, gene
 
 	return bytesToHash(r)
 }
+func UniqueAggregateHashV1(aggregateTx *AggregateTransactionV1, tx Transaction, generationHash *Hash) (*Hash, error) {
+	return UniqueAggregateHashImpl(aggregateTx.Deadline, tx, generationHash)
+}
 
-func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
-	stx, err := signTransactionWith(tx, a)
-	if err != nil {
-		return nil, err
-	}
+func UniqueAggregateHashV2(aggregateTx *AggregateTransactionV2, tx Transaction, generationHash *Hash) (*Hash, error) {
+	return UniqueAggregateHashImpl(aggregateTx.Deadline, tx, generationHash)
+}
 
+func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityType, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
 	p := stx.Payload
 	for _, cos := range cosignatories {
-		s := crypto.NewSignerFromKeyPair(cos.KeyPair, nil)
+		s := crypto.NewSignerFromKeyPair(cos.KeyPair, cos.KeyPair.CryptoEngine)
 		sb, err := s.Sign(stx.Hash[:])
 		if err != nil {
 			return nil, err
@@ -3556,16 +3733,31 @@ func signTransactionWithCosignatures(tx *AggregateTransaction, a *Account, cosig
 
 	copy(pb[:len(s)], s)
 
-	return &SignedTransaction{tx.Type, hex.EncodeToString(pb), stx.Hash}, nil
+	return &SignedTransaction{txType, hex.EncodeToString(pb), stx.Hash}, nil
 }
 
-func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*CosignatureSignedTransaction, error) {
-	if tx.TransactionToCosign.TransactionInfo.TransactionHash.Empty() {
+func signTransactionWithCosignaturesV1(tx *AggregateTransactionV1, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
+	stx, err := signTransactionWith(tx, a)
+	if err != nil {
+		return nil, err
+	}
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, a, cosignatories)
+}
+func signTransactionWithCosignaturesV2(tx *AggregateTransactionV2, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
+	stx, err := signTransactionWith(tx, a)
+	if err != nil {
+		return nil, err
+	}
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, a, cosignatories)
+}
+
+func signCosignatureTransactionImpl(a *Account, tx *TransactionInfo) (*CosignatureSignedTransaction, error) {
+	if tx.TransactionHash.Empty() {
 		return nil, errors.New("cosignature transaction hash is nil")
 	}
 
-	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
-	b := tx.TransactionToCosign.TransactionInfo.TransactionHash[:]
+	s := crypto.NewSignerFromKeyPair(a.KeyPair, a.CryptoEngine)
+	b := tx.TransactionHash[:]
 
 	sb, err := s.Sign(b)
 	if err != nil {
@@ -3577,7 +3769,15 @@ func signCosignatureTransaction(a *Account, tx *CosignatureTransaction) (*Cosign
 		return nil, err
 	}
 
-	return &CosignatureSignedTransaction{tx.TransactionToCosign.TransactionInfo.TransactionHash, signature, a.PublicAccount.PublicKey}, nil
+	return &CosignatureSignedTransaction{tx.TransactionHash, signature, a.EngineDerivationScheme(), a.PublicAccount.PublicKey}, nil
+}
+
+func signCosignatureTransactionV1(a *Account, tx *CosignatureTransactionV1) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransactionImpl(a, &tx.TransactionToCosign.TransactionInfo)
+}
+
+func signCosignatureTransactionV2(a *Account, tx *CosignatureTransactionV2) (*CosignatureSignedTransaction, error) {
+	return signCosignatureTransactionImpl(a, &tx.TransactionToCosign.TransactionInfo)
 }
 
 func cosignatoryModificationArrayToBuffer(builder *flatbuffers.Builder, modifications []*MultisigCosignatoryModification) (flatbuffers.UOffsetT, error) {

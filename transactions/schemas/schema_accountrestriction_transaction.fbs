@@ -1,0 +1,62 @@
+namespace Catapult.Buffers;
+
+
+table AddressBuffer {
+    address: [ubyte];
+}
+
+table MosaicId {
+    id: [uint];
+}
+
+table AccountAddressRestrictionTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    restrictionFlags:uint16;
+    restrictionAdditionsCount:ubyte;
+    restrictionDeletionsCount:ubyte;
+    accountRestrictionTransactionBody_Reserved1:uint;
+    restrictionAdditions: [AddressBuffer];
+    restrictionDeletions: [AddressBuffer];
+}
+
+table AccountMosaicRestrictionTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+
+    deadline:[uint];
+    restrictionFlags:uint16;
+    restrictionAdditionsCount:ubyte;
+    restrictionDeletionsCount:ubyte;
+    accountRestrictionTransactionBody_Reserved1:uint;
+    restrictionAdditions: [MosaicId];
+    restrictionDeletions: [MosaicId];
+}
+
+table AccountOperationRestrictionTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    restrictionFlags:uint16;
+    restrictionAdditionsCount:ubyte;
+    restrictionDeletionsCount:ubyte;
+    accountRestrictionTransactionBody_Reserved1:uint;
+    restrictionAdditions: [uint16];
+    restrictionDeletions: [uint16];
+}
+root_type AccountAddressRestrictionTransactionBuffer;
+root_type AccountMosaicRestrictionTransactionBuffer;
+root_type AccountOperationRestrictionTransactionBuffer;

@@ -19,11 +19,11 @@ func Test_unconfirmedAddedHandler_Handle(t *testing.T) {
 		handlers      subscribers.UnconfirmedAdded
 	}
 	type args struct {
-		address *sdk.Address
-		resp    []byte
+		handle *sdk.TransactionChannelHandle
+		resp   []byte
 	}
 
-	address := new(sdk.Address)
+	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.TransferTransaction)
 	messageMapperMock := new(mappers.UnconfirmedAddedMapper)
@@ -64,7 +64,7 @@ func Test_unconfirmedAddedHandler_Handle(t *testing.T) {
 				messageMapper: messageMapperMock,
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -75,7 +75,7 @@ func Test_unconfirmedAddedHandler_Handle(t *testing.T) {
 				messageMapper: messageMapperMock,
 			},
 			args: args{
-				address: address,
+				handle: handle,
 			},
 			want: true,
 		},
@@ -87,7 +87,7 @@ func Test_unconfirmedAddedHandler_Handle(t *testing.T) {
 				handlers:      tt.fields.handlers,
 			}
 
-			got := h.Handle(tt.args.address, tt.args.resp)
+			got := h.Handle(tt.args.handle, tt.args.resp)
 			assert.Equal(t, got, tt.want)
 		})
 	}

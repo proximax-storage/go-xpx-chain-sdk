@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	jsonLib "encoding/json"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 	"sync"
 )
 
@@ -610,7 +611,7 @@ func (dto *accountV2UpgradeTransactionDTO) toStruct(*Hash) (Transaction, error) 
 	}, nil
 }
 
-type aggregateTransactionDTO struct {
+type aggregateTransactionV1DTO struct {
 	Tx struct {
 		abstractTransactionDTO
 		Cosignatures      []*aggregateTransactionCosignatureDTO `json:"cosignatures"`
@@ -619,7 +620,7 @@ type aggregateTransactionDTO struct {
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *aggregateTransactionDTO) toStruct(generationHash *Hash) (Transaction, error) {
+func (dto *aggregateTransactionV1DTO) toStruct(generationHash *Hash) (Transaction, error) {
 	txsr, err := json.Marshal(dto.Tx.InnerTransactions)
 	if err != nil {
 		return nil, err
@@ -642,7 +643,7 @@ func (dto *aggregateTransactionDTO) toStruct(generationHash *Hash) (Transaction,
 
 	as := make([]*AggregateTransactionCosignature, len(dto.Tx.Cosignatures))
 	for i, a := range dto.Tx.Cosignatures {
-		as[i], err = a.toStruct(atx.NetworkType)
+		as[i], err = a.toStructV1(atx.NetworkType)
 	}
 	if err != nil {
 		return nil, err
@@ -656,7 +657,62 @@ func (dto *aggregateTransactionDTO) toStruct(generationHash *Hash) (Transaction,
 		iatx.TransactionInfo = atx.TransactionInfo
 	}
 
-	agtx := AggregateTransaction{
+	agtx := AggregateTransactionV1{
+		*atx,
+		txs,
+		as,
+	}
+
+	return &agtx, agtx.UpdateUniqueAggregateHash(generationHash)
+}
+
+type aggregateTransactionV2DTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Cosignatures      []*aggregateTransactionCosignatureDTO `json:"cosignatures"`
+		InnerTransactions []map[string]interface{}              `json:"transactions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *aggregateTransactionV2DTO) toStruct(generationHash *Hash) (Transaction, error) {
+	txsr, err := json.Marshal(dto.Tx.InnerTransactions)
+	if err != nil {
+		return nil, err
+	}
+
+	txs, err := MapTransactions(bytes.NewBuffer(txsr), generationHash)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	as := make([]*AggregateTransactionCosignature, len(dto.Tx.Cosignatures))
+	for i, a := range dto.Tx.Cosignatures {
+		as[i], err = a.toStructV2(atx.NetworkType)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tx := range txs {
+		iatx := tx.GetAbstractTransaction()
+		iatx.Deadline = atx.Deadline
+		iatx.Signature = atx.Signature
+		iatx.MaxFee = atx.MaxFee
+		iatx.TransactionInfo = atx.TransactionInfo
+	}
+
+	agtx := AggregateTransactionV2{
 		*atx,
 		txs,
 		as,
@@ -1247,7 +1303,7 @@ func (dto *lockFundsTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		*atx,
 		mosaic,
 		dto.Tx.Duration.toStruct(),
-		&SignedTransaction{AggregateBonded, "", hash},
+		&SignedTransaction{dto.Tx.Type, "", hash},
 	}, nil
 }
 
@@ -1348,7 +1404,7 @@ type aggregateTransactionCosignatureDTO struct {
 	Signer    string
 }
 
-func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType) (*AggregateTransactionCosignature, error) {
+func (dto *aggregateTransactionCosignatureDTO) toStructV1(networkType NetworkType) (*AggregateTransactionCosignature, error) {
 	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
 	if err != nil {
 		return nil, err
@@ -1356,6 +1412,23 @@ func (dto *aggregateTransactionCosignatureDTO) toStruct(networkType NetworkType)
 	return &AggregateTransactionCosignature{
 		dto.Signature,
 		acc,
+		GetDerivationSchemeForAccountVersion(1).EngineDerivationScheme(),
+	}, nil
+}
+
+func (dto *aggregateTransactionCosignatureDTO) toStructV2(networkType NetworkType) (*AggregateTransactionCosignature, error) {
+	acc, err := NewAccountFromPublicKey(dto.Signer, networkType)
+	if err != nil {
+		return nil, err
+	}
+	signature, err := hex.DecodeString(dto.Signature)
+	if err != nil {
+		return nil, err
+	}
+	return &AggregateTransactionCosignature{
+		dto.Signature,
+		acc,
+		crypto.DerivationScheme(signature[0]),
 	}, nil
 }
 

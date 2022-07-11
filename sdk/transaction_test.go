@@ -180,7 +180,7 @@ var (
 
 	transferTransactionToAggregateCorr = []byte{0x57, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x4, 0x0, 0x0, 0x90, 0x54, 0x41, 0x90, 0xe8, 0xfe, 0xbd, 0x67, 0x1d, 0xd4, 0x1b, 0xee, 0x94, 0xec, 0x3b, 0xa5, 0x83, 0x1c, 0xb6, 0x8, 0xa3, 0x12, 0xc2, 0xf2, 0x3, 0xba, 0x84, 0xac, 0x1, 0x0, 0x1, 0x0, 0x67, 0x2b, 0x0, 0x0, 0xce, 0x56, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
 
-	transferTransactionSigningCorr = "A7000000DAA6B3B5FC1DF5B57CA6B8D85D9EFF65EA350D3D8E4ACD2269C7A6FB53A445F6584023021A7AD164FCAC1C9BF9F355E7AC5918DCC27109697EF8E7F9BF05B3001026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755040000905441000000000000000000BAFD560000000090E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC01000100672B0000CE5600006400000000000000"
+	transferTransactionSigningCorr = "A70000003FC24F9E129ACBDC1C2C0EA198486B663FABA7015DF74A8267B25B77E53225AC9B5A3FC79483728AB391C7A8F67D0215C64CB48B21B299E14C50A49E9D7E79011026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755040001905441000000000000000000BAFD560000000090E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC01000100672B0000CE5600006400000000000000"
 
 	accountPropertiesAddressTransactionSerializationCorr = []byte{0xb0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x90, 0x50, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xba, 0xfd, 0x56, 0x0, 0x0, 0x0, 0x0, 0x81, 0x2, 0x0, 0x90, 0x22, 0xd0, 0x48, 0x12, 0xd0, 0x50, 0x0, 0xf9, 0x6c, 0x28, 0x36, 0x57, 0xb0, 0xc1, 0x79, 0x90, 0x93, 0x2b, 0xc8, 0x49, 0x26, 0xcd, 0xe6, 0x4f, 0x1, 0x90, 0x22, 0xd0, 0x48, 0x12, 0xd0, 0x50, 0x0, 0xf9, 0x6c, 0x28, 0x36, 0x57, 0xb0, 0xc1, 0x79, 0x90, 0x93, 0x2b, 0xc8, 0x49, 0x26, 0xcd, 0xe6, 0x4f}
 
@@ -218,7 +218,7 @@ var (
 
 	lockFundsTransactionSerializationCorr = []byte{0xb2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x90, 0x48, 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xba, 0xfd, 0x56, 0x0, 0x0, 0x0, 0x0, 0x29, 0xcf, 0x5f, 0xd9, 0x41, 0xad, 0x25, 0xd5, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x84, 0x98, 0xb3, 0x8d, 0x89, 0xc1, 0xdc, 0x8a, 0x44, 0x8e, 0xa5, 0x82, 0x49, 0x38, 0xff, 0x82, 0x89, 0x26, 0xcd, 0x9f, 0x77, 0x47, 0xb1, 0x84, 0x4b, 0x59, 0xb4, 0xb6, 0x80, 0x7e, 0x87, 0x8b}
 
-	secretProofTransactionSigningCorr = "BA000000F551BF0E0AAD0A69D083F0073EF0972F02C8F447385461C88F7A359CF1DB85EB6A0F441C57536FF1E573FAE2C2359C33398F344580BEE4092D7675BB0E13FA001026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010000905242000000000000000000BAFD560000000000B5A6FB39ED07E4971CE035F446888B395065A85E950D1BDED3AA767693D25D0790E23316635AC41F7C7C3BCC8620EF6CA388A633F8DC135B3804009A493664"
+	secretProofTransactionSigningCorr = "BA000000A2CAFAC8F3EBD8D64CD259EBFE7A1470DC9AEDE66F7647867424754D83CEC6259F2E4DF08B8FEF1BAD65B540CA33D620B3838EA9B0BA56DE83478D50E0EE32011026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010001905242000000000000000000BAFD560000000000B5A6FB39ED07E4971CE035F446888B395065A85E950D1BDED3AA767693D25D0790E23316635AC41F7C7C3BCC8620EF6CA388A633F8DC135B3804009A493664"
 
 	secretProofTransactionToAggregateCorr = []byte{0x6a, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x1, 0x0, 0x0, 0x90, 0x52, 0x42, 0x0, 0xb5, 0xa6, 0xfb, 0x39, 0xed, 0x7, 0xe4, 0x97, 0x1c, 0xe0, 0x35, 0xf4, 0x46, 0x88, 0x8b, 0x39, 0x50, 0x65, 0xa8, 0x5e, 0x95, 0xd, 0x1b, 0xde, 0xd3, 0xaa, 0x76, 0x76, 0x93, 0xd2, 0x5d, 0x7, 0x90, 0x1, 0x81, 0x41, 0xb1, 0x2d, 0xed, 0xd5, 0x4d, 0x4e, 0x74, 0xb8, 0xf, 0x5c, 0x45, 0x26, 0x69, 0x83, 0x13, 0x1e, 0x3, 0xb5, 0xd7, 0xd5, 0x4f, 0x4, 0x0, 0x9a, 0x49, 0x36, 0x64}
 
@@ -230,9 +230,9 @@ var (
 
 	lockFundsTransactionToAggregateCorr = []byte{0x62, 0x0, 0x0, 0x0, 0x9a, 0x49, 0x36, 0x64, 0x6, 0xac, 0xa9, 0x52, 0xb8, 0x8b, 0xad, 0xf5, 0xf1, 0xe9, 0xbe, 0x6c, 0xe4, 0x96, 0x81, 0x41, 0x3, 0x5a, 0x60, 0xbe, 0x50, 0x32, 0x73, 0xea, 0x65, 0x45, 0x6b, 0x24, 0x1, 0x0, 0x0, 0x90, 0x48, 0x41, 0x29, 0xcf, 0x5f, 0xd9, 0x41, 0xad, 0x25, 0xd5, 0x80, 0x96, 0x98, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x84, 0x98, 0xb3, 0x8d, 0x89, 0xc1, 0xdc, 0x8a, 0x44, 0x8e, 0xa5, 0x82, 0x49, 0x38, 0xff, 0x82, 0x89, 0x26, 0xcd, 0x9f, 0x77, 0x47, 0xb1, 0x84, 0x4b, 0x59, 0xb4, 0xb6, 0x80, 0x7e, 0x87, 0x8b}
 
-	secretLockTransactionSigningCorr = "CC0000005AF6E9782694E22BAFBFAC50B808D5761ECF612880AAB8BD728E465D2833D37A54AB56BE28F75C58311E431C1466F5FC6652CB6C1E5149D84B445D4026741C081026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010000905241000000000000000000BAFD560000000029CF5FD941AD25D58096980000000000640000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC790E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC"
+	secretLockTransactionSigningCorr = "CC0000000F8AA7A6EA953F7A66747FF657CEAE0ED588E3E66F5D2AB399C161679A7A95EF5431FA55F8300C2A162D7D16AD62B987FFE8BE80850C5DAA8E5069838B2BAE081026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010001905241000000000000000000BAFD560000000029CF5FD941AD25D58096980000000000640000000000000000B778A39A3663719DFC5E48C9D78431B1E45C2AF9DF538782BF199C189DABEAC790E8FEBD671DD41BEE94EC3BA5831CB608A312C2F203BA84AC"
 
-	lockFundsTransactionSigningCorr = "B2000000035A5C7C862177970E59E314B3F76723472EDBB903DBB0D6F03FE91A0C7857AE84E5865642C26571ADCF87501AA74261BBF6BD850CBB868F6FE9D9BF0E46C8011026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010000904841000000000000000000BAFD560000000029CF5FD941AD25D5809698000000000064000000000000008498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"
+	lockFundsTransactionSigningCorr = "B20000005D06C6807B47645FDFC00FC7E4372F339CFB22C8A0B51D565080FABB73D8F918620356E605C82B033C28B9AE47A939967CE305EF29EEE46EA9E3DEF06D904F061026D70E1954775749C6811084D6450A3184D977383F0E4282CD47118AF37755010001904841000000000000000000BAFD560000000029CF5FD941AD25D5809698000000000064000000000000008498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"
 )
 
 func TestTransactionService_GetAnyTransactionById_TransferTransaction(t *testing.T) {
@@ -490,7 +490,7 @@ func TestAggregateTransactionSerialization(t *testing.T) {
 
 	ttx.Signer = p
 
-	atx, err := NewCompleteAggregateTransaction(fakeDeadline, []Transaction{ttx}, MijinTest)
+	atx, err := NewCompleteAggregateV1Transaction(fakeDeadline, []Transaction{ttx}, MijinTest)
 
 	assert.Nilf(t, err, "NewCompleteAggregateTransaction returned error: %s", err)
 
@@ -515,7 +515,7 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 	assert.Nil(t, err)
 	ttx.Signer = p
 
-	atx, err := NewCompleteAggregateTransaction(fakeDeadline, []Transaction{ttx}, MijinTest)
+	atx, err := NewCompleteAggregateV1Transaction(fakeDeadline, []Transaction{ttx}, MijinTest)
 
 	assert.Nilf(t, err, "NewCompleteAggregateTransaction returned error: %s", err)
 
@@ -527,21 +527,49 @@ func TestAggregateTransactionSigningWithMultipleCosignatures(t *testing.T) {
 
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
-	stx, err := acc1.SignWithCosignatures(atx, []*Account{acc2})
+	stx, err := acc1.SignWithCosignaturesV1(atx, []*Account{acc2})
 
 	assert.Nilf(t, err, "Account.SignWithCosignatures returned error: %s", err)
 	assert.Equal(t, "31010000", stx.Payload[0:8])
 	assert.Equal(t, "0000530000005300", stx.Payload[240:256])
 }
 
-func TestCosignatureTransactionSigning(t *testing.T) {
+func TestCosignatureTransactionSigningV1(t *testing.T) {
 	rtx := "{\"meta\":{\"hash\":\"671653C94E2254F2A23EFEDB15D67C38332AED1FBD24B063C0A8E675582B6A96\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E55\",\"index\":0,\"merkleComponentHash\":\"81E5E7AE49998802DABC816EC10158D3A7879702FF29084C2C992CD1289877A7\"},\"transaction\":{\"cosignatures\":[{\"signature\":\"5780C8DF9D46BA2BCF029DCC5D3BF55FE1CB5BE7ABCF30387C4637DDEDFC2152703CA0AD95F21BB9B942F3CC52FCFC2064C7B84CF60D1A9E69195F1943156C07\",\"signer\":\"A5F82EC8EBB341427B6785C8111906CD0DF18838FB11B51CE0E18B5E79DFF630\"}],\"deadline\":[3266625578,11],\"maxFee\":[1,0],\"signature\":\"939673209A13FF82397578D22CC96EB8516A6760C894D9B7535E3A1E068007B9255CFA9A914C97142A7AE18533E381C846B69D2AE0D60D1DC8A55AD120E2B606\",\"signer\":\"7681ED5023141D9CDCF184E5A7B60B7D466739918ED5DA30F7E71EA7B86EFF2D\",\"transactions\":[{\"meta\":{\"aggregateHash\":\"3D28C804EDD07D5A728E5C5FFEC01AB07AFA5766AE6997B38526D36015A4D006\",\"aggregateId\":\"5A0069D83F17CF0001777E55\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E56\",\"index\":0},\"transaction\":{\"message\":{\"payload\":\"746573742D6D657373616765\",\"type\":0},\"mosaics\":[{\"amount\":[3863990592,95248],\"id\":[298950589,1817567325]}],\"recipient\":\"9050B9837EFAB4BBE8A4B9BB32D812F9885C00D8FC1650E142\",\"signer\":\"B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\",\"type\":16724,\"version\":36867}}],\"type\":16705,\"version\":36867}}"
 	b := bytes.NewBufferString(rtx)
 	tx, err := MapTransaction(b, &Hash{})
 
 	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
 
-	atx := tx.(*AggregateTransaction)
+	atx := tx.(*AggregateTransactionV1)
+
+	acc, err := NewAccountFromPrivateKey(
+		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
+		MijinTest,
+		stringToHashPanic("A31411BC4BA7267147DBBEDC034FA3D3C0B7294A0784507539C3BCE4EF70615A"),
+		1,
+	)
+
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
+	ctx, err := NewCosignatureTransactionV1(atx)
+
+	assert.Nilf(t, err, "NewCosignatureTransaction returned error: %s", err)
+
+	cstx, err := acc.SignCosignatureTransactionV1(ctx)
+
+	assert.Nilf(t, err, "Account.SignCosignatureTransaction signing returned error: %s", err)
+	assert.Equal(t, stringToSignaturePanic(cosignatureTransactionSigningCorr), cstx.Signature)
+}
+
+func TestCosignatureTransactionSigningV2(t *testing.T) {
+	rtx := "{\"meta\":{\"hash\":\"671653C94E2254F2A23EFEDB15D67C38332AED1FBD24B063C0A8E675582B6A96\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E55\",\"index\":0,\"merkleComponentHash\":\"81E5E7AE49998802DABC816EC10158D3A7879702FF29084C2C992CD1289877A7\"},\"transaction\":{\"cosignatures\":[{\"signature\":\"5780C8DF9D46BA2BCF029DCC5D3BF55FE1CB5BE7ABCF30387C4637DDEDFC2152703CA0AD95F21BB9B942F3CC52FCFC2064C7B84CF60D1A9E69195F1943156C07\",\"signer\":\"A5F82EC8EBB341427B6785C8111906CD0DF18838FB11B51CE0E18B5E79DFF630\"}],\"deadline\":[3266625578,11],\"maxFee\":[1,0],\"signature\":\"939673209A13FF82397578D22CC96EB8516A6760C894D9B7535E3A1E068007B9255CFA9A914C97142A7AE18533E381C846B69D2AE0D60D1DC8A55AD120E2B606\",\"signer\":\"7681ED5023141D9CDCF184E5A7B60B7D466739918ED5DA30F7E71EA7B86EFF2D\",\"transactions\":[{\"meta\":{\"aggregateHash\":\"3D28C804EDD07D5A728E5C5FFEC01AB07AFA5766AE6997B38526D36015A4D006\",\"aggregateId\":\"5A0069D83F17CF0001777E55\",\"height\":[18160,0],\"id\":\"5A0069D83F17CF0001777E56\",\"index\":0},\"transaction\":{\"message\":{\"payload\":\"746573742D6D657373616765\",\"type\":0},\"mosaics\":[{\"amount\":[3863990592,95248],\"id\":[298950589,1817567325]}],\"recipient\":\"9050B9837EFAB4BBE8A4B9BB32D812F9885C00D8FC1650E142\",\"signer\":\"B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF\",\"type\":16724,\"version\":36867}}],\"type\":17217,\"version\":36867}}"
+	b := bytes.NewBufferString(rtx)
+	tx, err := MapTransaction(b, &Hash{})
+
+	assert.Nilf(t, err, "MapTransaction returned error: %s", err)
+
+	atx := tx.(*AggregateTransactionV2)
 
 	acc, err := NewAccountFromPrivateKey(
 		"26b64cb10f005e5988a36744ca19e20d835ccc7c105aaa5f3b212da593180930",
@@ -880,7 +908,7 @@ func TestTransferTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
 	assert.Equal(t, transferTransactionSigningCorr, stx.Payload)
-	assert.Equal(t, stringToHashPanic("e75060fadf4b74af22f0ffad79a2c00bfaf62ba78d2ee9ab5d30221e762cc3f1"), stx.Hash)
+	assert.Equal(t, stringToHashPanic("ce1e4263edb79f2c2f7cc9226b1c80c1ed8db3a9386513be18865db48663f856"), stx.Hash)
 }
 
 func TestAddHarvesterTransactionSigning(t *testing.T) {
@@ -899,7 +927,7 @@ func TestAddHarvesterTransactionSigning(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, EntityType(AddHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
-	assert.Equal(t, stringToHashPanic("c712d80ba3d7f0eec4d4f647580818ce0ea9e3e62e874ef7c207a46290817c9c"), shtx.Hash)
+	assert.Equal(t, stringToHashPanic("68af00caf4cf46d1e41adeefe8469f52d797cf169bb8ab46dccedb51a9b7b00a"), shtx.Hash)
 }
 
 func TestRemoveHarvesterTransactionSigning(t *testing.T) {
@@ -918,7 +946,7 @@ func TestRemoveHarvesterTransactionSigning(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, EntityType(RemoveHarvester), shtx.EntityType)
 	assert.Nilf(t, err, "Account.Sign returned error: %s", err)
-	assert.Equal(t, stringToHashPanic("d052a0b5d9535551e9d9ac51a3a06e2cc0983ce0d39689a6576d93d09c5c2912"), shtx.Hash)
+	assert.Equal(t, stringToHashPanic("37e9958f679a55aa109b11aaf55397ee63afa6be1cdef9d276677c886612156f"), shtx.Hash)
 }
 
 func TestModifyMultisigAccountTransactionSerialization(t *testing.T) {
@@ -1043,7 +1071,7 @@ func TestRegisterSubNamespaceTransactionSerialization(t *testing.T) {
 
 func TestLockFundsTransactionSerialization(t *testing.T) {
 	stx := &SignedTransaction{
-		AggregateBonded,
+		AggregateBondedV1,
 		"payload",
 		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
@@ -1064,7 +1092,7 @@ func TestLockFundsTransactionToAggregate(t *testing.T) {
 	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
 
 	stx := &SignedTransaction{
-		AggregateBonded,
+		AggregateBondedV1,
 		"payload",
 		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
@@ -1087,7 +1115,7 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
 
 	stx := &SignedTransaction{
-		AggregateBonded,
+		AggregateBondedV1,
 		"payload",
 		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
 	}
@@ -1100,7 +1128,69 @@ func TestLockFundsTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "signTransactionWith returned error: %s", err)
 	assert.Equal(t, lockFundsTransactionSigningCorr, b.Payload)
-	assert.Equal(t, stringToHashPanic("a8c8a5e024bf3be5013e684c4c2ad43a31a20ed1309583db4dc0832df7bf20bd"), b.Hash)
+	assert.Equal(t, stringToHashPanic("6fed06db1563f84e7437e3c002ae05231490d69af4571229e4a79b2ec6ae6eef"), b.Hash)
+}
+
+func TestLockFundsTransactionV2Serialization(t *testing.T) {
+	stx := &SignedTransaction{
+		AggregateBondedV2,
+		"payload",
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+	}
+
+	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
+
+	assert.Nilf(t, err, "NewLockFundsTransaction returned error: %s", err)
+
+	b, err := tx.Bytes()
+
+	assert.Nilf(t, err, "LockFundsTransaction.Bytes returned error: %s", err)
+	assert.Equal(t, lockFundsTransactionSerializationCorr, b)
+}
+
+func TestLockFundsTransactionToAggregateV2(t *testing.T) {
+	p, err := NewAccountFromPublicKey("9A49366406ACA952B88BADF5F1E9BE6CE4968141035A60BE503273EA65456B24", MijinTest)
+
+	assert.Nilf(t, err, "NewAccountFromPublicKey returned error: %s", err)
+
+	stx := &SignedTransaction{
+		AggregateBondedV2,
+		"payload",
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+	}
+
+	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
+
+	assert.Nilf(t, err, "NewLockFundsTransaction returned error: %s", err)
+
+	tx.Signer = p
+
+	b, err := toAggregateTransactionBytes(tx)
+
+	assert.Nilf(t, err, "toAggregateTransactionBytes returned error: %s", err)
+	assert.Equal(t, lockFundsTransactionToAggregateCorr, b)
+}
+
+func TestLockFundsV2TransactionSigning(t *testing.T) {
+	acc, err := NewAccountFromPrivateKey("787225aaff3d2c71f4ffa32d4f19ec4922f3cd869747f267378f81f8e3fcb12d", MijinTest, GenerationHash, 1)
+
+	assert.Nilf(t, err, "NewAccountFromPrivateKey returned error: %s", err)
+
+	stx := &SignedTransaction{
+		AggregateBondedV2,
+		"payload",
+		stringToHashPanic("8498B38D89C1DC8A448EA5824938FF828926CD9F7747B1844B59B4B6807E878B"),
+	}
+
+	tx, err := NewLockFundsTransaction(fakeDeadline, XemRelative(10), Duration(100), stx, MijinTest)
+
+	assert.Nilf(t, err, "NewLockFundsTransaction returned error: %s", err)
+
+	b, err := signTransactionWith(tx, acc)
+
+	assert.Nilf(t, err, "signTransactionWith returned error: %s", err)
+	assert.Equal(t, lockFundsTransactionSigningCorr, b.Payload)
+	assert.Equal(t, stringToHashPanic("6fed06db1563f84e7437e3c002ae05231490d69af4571229e4a79b2ec6ae6eef"), b.Hash)
 }
 
 func TestSecretLockTransactionSerialization(t *testing.T) {
@@ -1165,7 +1255,7 @@ func TestSecretLockTransactionSigning(t *testing.T) {
 
 	assert.Nilf(t, err, "Sign returned error: %s", err)
 	assert.Equal(t, secretLockTransactionSigningCorr, b.Payload)
-	assert.Equal(t, stringToHashPanic("c7bfdb9a78dfccd3ea5eb3c0e57d347340ee253871c23cb368a02904563cb897"), b.Hash)
+	assert.Equal(t, stringToHashPanic("da6020e99c76950ff6bae1b295aac95844af5bf2c37b8b82d9513cbaad8a616f"), b.Hash)
 }
 
 func TestSecretProofTransactionSerialization(t *testing.T) {

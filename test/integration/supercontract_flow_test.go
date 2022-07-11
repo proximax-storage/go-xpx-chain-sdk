@@ -38,7 +38,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		1,
 	)
 	assert.Nil(t, err)
-	driveTx.ToAggregate(driveAccount.PublicAccount)
+	driveTx.ToAggregate(driveAccount)
 
 	transferStorageToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -47,7 +47,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferStorageToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferStorageToReplicator.ToAggregate(defaultAccount)
 
 	transferXpxToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -56,7 +56,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferXpxToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferXpxToReplicator.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -92,7 +92,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Action{},
 	)
 	assert.Nil(t, err)
-	fsTx.ToAggregate(defaultAccount.PublicAccount)
+	fsTx.ToAggregate(defaultAccount)
 
 	transferStreamingToReplicator, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -101,7 +101,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferStreamingToReplicator.ToAggregate(defaultAccount.PublicAccount)
+	transferStreamingToReplicator.ToAggregate(defaultAccount)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -121,7 +121,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		123,
 	)
 	assert.Nil(t, err)
-	deploy.ToAggregate(superContract.PublicAccount)
+	deploy.ToAggregate(superContract)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -147,7 +147,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.NewPlainMessage(""),
 	)
 	assert.Nil(t, err)
-	transferSCToInitiator.ToAggregate(defaultAccount.PublicAccount)
+	transferSCToInitiator.ToAggregate(defaultAccount)
 
 	assert.Nil(t, err)
 	execute, err := client.NewStartExecuteTransaction(
@@ -158,7 +158,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]int64{},
 	)
 	assert.Nil(t, err)
-	execute.ToAggregate(initiator.PublicAccount)
+	execute.ToAggregate(initiator)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -168,7 +168,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 	}, defaultAccount, initiator, replicatorAccount)
 	assert.Nil(t, result.error)
 
-	operationToken := result.Transaction.(*sdk.AggregateTransaction).InnerTransactions[1].GetAbstractTransaction().UniqueAggregateHash
+	operationToken := result.Transaction.(*sdk.AggregateTransactionV1).InnerTransactions[1].GetAbstractTransaction().UniqueAggregateHash
 	operation, err := client.SuperContract.GetOperation(ctx, operationToken)
 	assert.Nil(t, err)
 
@@ -181,7 +181,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		operationToken,
 	)
 	assert.Nil(t, err)
-	operationIdentify.ToAggregate(superContract.PublicAccount)
+	operationIdentify.ToAggregate(superContract)
 
 	scFileHash, err := sdk.StringToHash("BA2D2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093")
 	assert.Nil(t, err)
@@ -199,7 +199,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		[]*sdk.Action{},
 	)
 	assert.Nil(t, err)
-	scFs.ToAggregate(superContract.PublicAccount)
+	scFs.ToAggregate(superContract)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
@@ -215,7 +215,7 @@ func TestSuperContractFlowTransaction(t *testing.T) {
 		sdk.Success,
 	)
 	assert.Nil(t, err)
-	endExecute.ToAggregate(superContract.PublicAccount)
+	endExecute.ToAggregate(superContract)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(

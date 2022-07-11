@@ -63,9 +63,9 @@ const (
       ],
 	  "accountType": 1,
 	  "supplementalPublicKeys": {
-		  "linked": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006",
-		  "node": "",
-		  "vrf": ""
+		  "linked": {"publicKey": "F2D7845487664F4417232C93771C337FA34B78BE053EF22C4EAFB2005BD65006"},
+		  "node": null,
+		  "vrf": null
 	  },
 	  "version": 1,
       "mosaics":[  

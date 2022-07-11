@@ -10,14 +10,14 @@ type (
 	CosignatureHandler func(*sdk.SignerInfo) bool
 
 	Cosignature interface {
-		AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error
-		RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) bool
-		HasHandlers(address *sdk.Address) bool
-		GetHandlers(address *sdk.Address) []*CosignatureHandler
-		GetAddresses() []string
+		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...CosignatureHandler) error
+		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*CosignatureHandler) bool
+		HasHandlers(handle *sdk.TransactionChannelHandle) bool
+		GetHandlers(handle *sdk.TransactionChannelHandle) []*CosignatureHandler
+		GetHandles() []string
 	}
 	cosignatureSubscription struct {
-		address  *sdk.Address
+		handle   *sdk.TransactionChannelHandle
 		handlers []*CosignatureHandler
 		resultCh chan bool
 	}
@@ -43,32 +43,32 @@ func NewCosignature() Cosignature {
 func (e *cosignatureImpl) addSubscription(s *cosignatureSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if _, ok := e.subscribers[s.address.Address]; !ok {
-		e.subscribers[s.address.Address] = make([]*CosignatureHandler, 0)
+	if _, ok := e.subscribers[s.handle.String()]; !ok {
+		e.subscribers[s.handle.String()] = make([]*CosignatureHandler, 0)
 	}
 	for i := 0; i < len(s.handlers); i++ {
-		e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address], s.handlers[i])
+		e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()], s.handlers[i])
 	}
 }
 
 func (e *cosignatureImpl) removeSubscription(s *cosignatureSubscription) {
 	e.Lock()
 	defer e.Unlock()
-	if external, ok := e.subscribers[s.address.Address]; !ok || len(external) == 0 {
+	if external, ok := e.subscribers[s.handle.String()]; !ok || len(external) == 0 {
 		s.resultCh <- false
 	}
 
-	itemCount := len(e.subscribers[s.address.Address])
+	itemCount := len(e.subscribers[s.handle.String()])
 	for _, removeHandler := range s.handlers {
-		for index, currentHandlers := range e.subscribers[s.address.Address] {
+		for index, currentHandlers := range e.subscribers[s.handle.String()] {
 			if removeHandler == currentHandlers {
-				e.subscribers[s.address.Address] = append(e.subscribers[s.address.Address][:index],
-					e.subscribers[s.address.Address][index+1:]...)
+				e.subscribers[s.handle.String()] = append(e.subscribers[s.handle.String()][:index],
+					e.subscribers[s.handle.String()][index+1:]...)
 			}
 		}
 	}
 
-	s.resultCh <- itemCount != len(e.subscribers[s.address.Address])
+	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
 func (e *cosignatureImpl) handleNewSubscription() {
@@ -82,7 +82,7 @@ func (e *cosignatureImpl) handleNewSubscription() {
 	}
 }
 
-func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...CosignatureHandler) error {
+func (e *cosignatureImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...CosignatureHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -94,13 +94,13 @@ func (e *cosignatureImpl) AddHandlers(address *sdk.Address, handlers ...Cosignat
 	}
 
 	e.newSubscriberCh <- &cosignatureSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: refHandlers,
 	}
 	return nil
 }
 
-func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*CosignatureHandler) bool {
+func (e *cosignatureImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*CosignatureHandler) bool {
 
 	if len(handlers) == 0 {
 		return false
@@ -109,7 +109,7 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 	resCh := make(chan bool)
 
 	e.removeSubscriberCh <- &cosignatureSubscription{
-		address:  address,
+		handle:   handle,
 		handlers: handlers,
 		resultCh: resCh,
 	}
@@ -117,29 +117,29 @@ func (e *cosignatureImpl) RemoveHandlers(address *sdk.Address, handlers ...*Cosi
 	return <-resCh
 }
 
-func (e *cosignatureImpl) HasHandlers(address *sdk.Address) bool {
+func (e *cosignatureImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
-	return len(e.subscribers[address.Address]) > 0 && e.subscribers[address.Address] != nil
+	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *cosignatureImpl) GetHandlers(address *sdk.Address) []*CosignatureHandler {
+func (e *cosignatureImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*CosignatureHandler {
 	e.Lock()
 	defer e.Unlock()
-	if res, ok := e.subscribers[address.Address]; ok && res != nil {
+	if res, ok := e.subscribers[handle.String()]; ok && res != nil {
 		return res
 	}
 
 	return nil
 }
 
-func (e *cosignatureImpl) GetAddresses() []string {
+func (e *cosignatureImpl) GetHandles() []string {
 	e.Lock()
 	defer e.Unlock()
-	addresses := make([]string, 0, len(e.subscribers))
+	handles := make([]string, 0, len(e.subscribers))
 	for addr := range e.subscribers {
-		addresses = append(addresses, addr)
+		handles = append(handles, addr)
 	}
 
-	return addresses
+	return handles
 }

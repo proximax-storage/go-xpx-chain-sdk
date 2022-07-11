@@ -21,13 +21,13 @@ type unconfirmedRemovedHandler struct {
 	handlers      subscribers.UnconfirmedRemoved
 }
 
-func (h *unconfirmedRemovedHandler) Handle(address *sdk.Address, resp []byte) bool {
+func (h *unconfirmedRemovedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapUnconfirmedRemoved(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))
 	}
 
-	handlers := h.handlers.GetHandlers(address)
+	handlers := h.handlers.GetHandlers(handle)
 	if len(handlers) == 0 {
 		return true
 	}
@@ -45,11 +45,11 @@ func (h *unconfirmedRemovedHandler) Handle(address *sdk.Address, resp []byte) bo
 				return
 			}
 
-			h.handlers.RemoveHandlers(address, f)
+			h.handlers.RemoveHandlers(handle, f)
 		}(f)
 	}
 
 	wg.Wait()
 
-	return h.handlers.HasHandlers(address)
+	return h.handlers.HasHandlers(handle)
 }

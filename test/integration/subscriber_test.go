@@ -21,7 +21,7 @@ const (
 
 func TestAddConfirmedAddedHandlers(t *testing.T) {
 	wg := sync.WaitGroup{}
-	testAccount, err := client.NewAccountFromVersion(1)
+	testAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 
 	fmt.Println(testAccount)
@@ -53,20 +53,20 @@ func TestAddConfirmedAddedHandlers(t *testing.T) {
 func TestAddPartialAddedHandlers(t *testing.T) {
 	wg := sync.WaitGroup{}
 
-	acc1, err := client.NewAccountFromVersion(1)
+	acc1, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
-	acc2, err := client.NewAccountFromVersion(1)
+	acc2, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 
 	wg.Add(1)
 
-	err = wsc.AddPartialAddedHandlers(acc1.Address, func(transaction *sdk.AggregateTransaction) bool {
+	err = wsc.AddPartialAddedHandlers(acc1.Address, func(transaction sdk.Transaction) bool {
 		wg.Done()
 		return false
 	})
 	assert.Nil(t, err)
 
-	multisigAccount, err := client.NewAccountFromVersion(1)
+	multisigAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 	fmt.Println(multisigAccount)
 
@@ -86,7 +86,7 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	multTxs.ToAggregate(multisigAccount.PublicAccount)
+	multTxs.ToAggregate(multisigAccount)
 
 	fackeTxs, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -95,9 +95,66 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 		sdk.NewPlainMessage("I wan't to create multisig"),
 	)
 	assert.Nil(t, err)
-	fackeTxs.ToAggregate(defaultAccount.PublicAccount)
+	fackeTxs.ToAggregate(defaultAccount)
 
-	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{multTxs, fackeTxs},
+		)
+	}, defaultAccount, multisigAccount, acc1, acc2)
+	assert.Nil(t, result.error)
+	wg.Wait()
+}
+
+func TestAddPartialAddedHandlersV2(t *testing.T) {
+	wg := sync.WaitGroup{}
+
+	acc1, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+	acc2, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+
+	wg.Add(1)
+
+	err = wsc.AddPartialAddedHandlers(acc1.Address, func(transaction sdk.Transaction) bool {
+		wg.Done()
+		return false
+	})
+	assert.Nil(t, err)
+
+	multisigAccount, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+	fmt.Println(multisigAccount)
+
+	multTxs, err := client.NewModifyMultisigAccountTransaction(
+		sdk.NewDeadline(time.Hour),
+		2,
+		1,
+		[]*sdk.MultisigCosignatoryModification{
+			{
+				sdk.Add,
+				acc1.PublicAccount,
+			},
+			{
+				sdk.Add,
+				acc2.PublicAccount,
+			},
+		},
+	)
+	assert.Nil(t, err)
+	multTxs.ToAggregate(multisigAccount)
+
+	fackeTxs, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		multisigAccount.PublicAccount.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("I wan't to create multisig"),
+	)
+	assert.Nil(t, err)
+	fackeTxs.ToAggregate(defaultAccount)
+
+	result := sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{multTxs, fackeTxs},
@@ -107,12 +164,12 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 	wg.Wait()
 }
 
-func TestAddCosignatureHandlers(t *testing.T) {
+func TestAddCosignatureHandlersV1(t *testing.T) {
 	wg := sync.WaitGroup{}
 
-	acc1, err := client.NewAccountFromVersion(1)
+	acc1, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
-	acc2, err := client.NewAccountFromVersion(1)
+	acc2, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 
 	wg.Add(1)
@@ -123,7 +180,7 @@ func TestAddCosignatureHandlers(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	multisigAccount, err := client.NewAccountFromVersion(1)
+	multisigAccount, err := client.NewAccount(ctx)
 	assert.Nil(t, err)
 	fmt.Println(multisigAccount)
 
@@ -143,7 +200,7 @@ func TestAddCosignatureHandlers(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
-	multTxs.ToAggregate(multisigAccount.PublicAccount)
+	multTxs.ToAggregate(multisigAccount)
 
 	fackeTxs, err := client.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour),
@@ -152,9 +209,66 @@ func TestAddCosignatureHandlers(t *testing.T) {
 		sdk.NewPlainMessage("I wan't to create multisig"),
 	)
 	assert.Nil(t, err)
-	fackeTxs.ToAggregate(defaultAccount.PublicAccount)
+	fackeTxs.ToAggregate(defaultAccount)
 
-	result := sendAggregateTransaction(t, func() (*sdk.AggregateTransaction, error) {
+	result := sendAggregateTransactionV1(t, func() (*sdk.AggregateTransactionV1, error) {
+		return client.NewBondedAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{multTxs, fackeTxs},
+		)
+	}, defaultAccount, multisigAccount, acc1, acc2)
+	assert.Nil(t, result.error)
+	wg.Wait()
+}
+
+func TestAddCosignatureHandlersV2(t *testing.T) {
+	wg := sync.WaitGroup{}
+
+	acc1, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+	acc2, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+
+	wg.Add(1)
+
+	err = wsc.AddCosignatureHandlers(acc2.Address, func(info *sdk.SignerInfo) bool {
+		wg.Done()
+		return true
+	})
+	assert.Nil(t, err)
+
+	multisigAccount, err := client.NewAccount(ctx)
+	assert.Nil(t, err)
+	fmt.Println(multisigAccount)
+
+	multTxs, err := client.NewModifyMultisigAccountTransaction(
+		sdk.NewDeadline(time.Hour),
+		2,
+		1,
+		[]*sdk.MultisigCosignatoryModification{
+			{
+				sdk.Add,
+				acc1.PublicAccount,
+			},
+			{
+				sdk.Add,
+				acc2.PublicAccount,
+			},
+		},
+	)
+	assert.Nil(t, err)
+	multTxs.ToAggregate(multisigAccount)
+
+	fackeTxs, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		multisigAccount.PublicAccount.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("I wan't to create multisig"),
+	)
+	assert.Nil(t, err)
+	fackeTxs.ToAggregate(defaultAccount)
+
+	result := sendAggregateTransactionV2(t, func() (*sdk.AggregateTransactionV2, error) {
 		return client.NewBondedAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{multTxs, fackeTxs},

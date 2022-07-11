@@ -125,6 +125,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 	dto := cosignatureSignedTransactionDto{
 		c.ParentHash.String(),
 		c.Signature.String(),
+		c.Scheme,
 		c.Signer,
 	}
 
