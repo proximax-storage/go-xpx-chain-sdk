@@ -6,6 +6,7 @@ package sdk
 
 import (
 	"fmt"
+	"time"
 )
 
 type DataModificationState uint8
@@ -86,7 +87,7 @@ type Shard struct {
 type Verification struct {
 	VerificationTrigger *Hash
 	Expiration          *Timestamp
-	Duration            *Timestamp
+	Duration            time.Duration
 	Shards              []*Shard
 }
 
@@ -95,7 +96,7 @@ func (verification *Verification) String() string {
 		`
 			"VerificationTrigger": %s,
 			"Expiration:" %s,
-			"VerificationOpinions:" %s,
+			"Duration:" %s,
 			"Shards:" %+v,
 		`,
 		verification.VerificationTrigger,

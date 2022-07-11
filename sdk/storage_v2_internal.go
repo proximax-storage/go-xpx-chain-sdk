@@ -6,6 +6,7 @@ package sdk
 
 import (
 	"fmt"
+	"time"
 )
 
 type activeDataModificationDTO struct {
@@ -199,7 +200,7 @@ func (ref *shardDTOs) toStruct(networkType NetworkType) ([]*Shard, error) {
 type verificationDTO struct {
 	VerificationTrigger hashDto                `json:"verificationTrigger"`
 	Expiration          blockchainTimestampDTO `json:"expiration"`
-	Duration            blockchainTimestampDTO `json:"Duration"`
+	Duration            uint32                 `json:"duration"`
 	Shards              shardDTOs              `json:"shards"`
 }
 
@@ -217,7 +218,7 @@ func (ref *verificationDTO) toStruct(networkType NetworkType) (*Verification, er
 	return &Verification{
 		VerificationTrigger: verificationTrigger,
 		Expiration:          ref.Expiration.toStruct().ToTimestamp(),
-		Duration:            ref.Duration.toStruct().ToTimestamp(),
+		Duration:            time.Duration(ref.Duration),
 		Shards:              shards,
 	}, nil
 }
