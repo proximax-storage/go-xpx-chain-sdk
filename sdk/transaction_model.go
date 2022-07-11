@@ -1061,11 +1061,6 @@ func (tx *AccountV2UpgradeTransaction) Size() int {
 	return AccountV2UpgradeTransactionSize
 }
 
-type AggregateTransactionIFace interface {
-	Transaction
-	GetCosignatures() []*AggregateTransactionCosignature
-}
-
 type AggregateTransactionV1 struct {
 	AbstractTransaction
 	InnerTransactions []Transaction

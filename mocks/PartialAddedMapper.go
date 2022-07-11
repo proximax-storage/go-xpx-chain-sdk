@@ -13,15 +13,15 @@ type PartialAddedMapper struct {
 }
 
 // MapPartialAdded provides a mock function with given fields: m
-func (_m *PartialAddedMapper) MapPartialAdded(m []byte) (*sdk.AggregateTransaction, error) {
+func (_m *PartialAddedMapper) MapPartialAdded(m []byte) (sdk.Transaction, error) {
 	ret := _m.Called(m)
 
-	var r0 *sdk.AggregateTransaction
-	if rf, ok := ret.Get(0).(func([]byte) *sdk.AggregateTransaction); ok {
+	var r0 sdk.Transaction
+	if rf, ok := ret.Get(0).(func([]byte) sdk.Transaction); ok {
 		r0 = rf(m)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*sdk.AggregateTransaction)
+			r0 = ret.Get(0).(sdk.Transaction)
 		}
 	}
 
