@@ -607,6 +607,28 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 	ttx.ToAggregate(defaultAccount)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{ttx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestCompleteAggregateV2Transaction(t *testing.T) {
+	acc, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+
+	ttx, err := client.NewTransferTransaction(
+		sdk.NewDeadline(time.Hour),
+		acc.Address,
+		[]*sdk.Mosaic{},
+		sdk.NewPlainMessage("test-message"),
+	)
+	assert.Nil(t, err)
+	ttx.ToAggregate(defaultAccount)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCompleteAggregateTransaction(
 			sdk.NewDeadline(time.Hour),
 			[]sdk.Transaction{ttx},

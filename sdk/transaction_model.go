@@ -3707,7 +3707,7 @@ func UniqueAggregateHashV2(aggregateTx *AggregateTransactionV2, tx Transaction, 
 	return UniqueAggregateHashImpl(aggregateTx.Deadline, tx, generationHash)
 }
 
-func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityType, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
+func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityType, cosignatories []*Account) (*SignedTransaction, error) {
 	p := stx.Payload
 	for _, cos := range cosignatories {
 		s := crypto.NewSignerFromKeyPair(cos.KeyPair, cos.KeyPair.CryptoEngine)
@@ -3736,14 +3736,14 @@ func signTransactionWithCosignaturesV1(tx *AggregateTransactionV1, a *Account, c
 	if err != nil {
 		return nil, err
 	}
-	return signTransactionWithCosignaturesImpl(stx, tx.Type, a, cosignatories)
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories)
 }
 func signTransactionWithCosignaturesV2(tx *AggregateTransactionV2, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
 	stx, err := signTransactionWith(tx, a)
 	if err != nil {
 		return nil, err
 	}
-	return signTransactionWithCosignaturesImpl(stx, tx.Type, a, cosignatories)
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories)
 }
 
 func signCosignatureTransactionImpl(a *Account, tx *TransactionInfo) (*CosignatureSignedTransaction, error) {

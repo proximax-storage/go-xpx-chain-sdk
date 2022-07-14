@@ -1303,7 +1303,7 @@ func (dto *lockFundsTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		*atx,
 		mosaic,
 		dto.Tx.Duration.toStruct(),
-		&SignedTransaction{dto.Tx.Type, "", hash},
+		&SignedTransaction{AggregateBondedV1, "", hash}, // IMPORTANT: Update to reflect the valid type if using V2 aggregates
 	}, nil
 }
 
