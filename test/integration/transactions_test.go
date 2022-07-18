@@ -412,7 +412,8 @@ func TestTransferTransaction_SecureMessage(t *testing.T) {
 	assert.Equal(t, message, plainMessage.Message())
 }
 
-func TestModifyMultisigTransaction(t *testing.T) {
+func TestModifyMultisigTransactionAggregateV1(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV1, sdk.AggregateBondedV1Version)
 	acc1, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	acc2, err := client.NewAccountFromVersion(1)
@@ -458,7 +459,8 @@ func TestModifyMultisigTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestModifyMultisigTransactionV2(t *testing.T) {
+func TestModifyMultisigTransactionAggregateV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV2, sdk.AggregateBondedV2Version)
 	acc1, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 	acc2, err := client.NewAccountFromVersion(1)
@@ -546,7 +548,7 @@ func TestLockFundsTransactionTransactionV2(t *testing.T) {
 	_, err := rand.Read(hash[:])
 	assert.Nil(t, err)
 
-	stx := &sdk.SignedTransaction{sdk.AggregateBondedV2, "", hash}
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV1, "", hash}
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewLockFundsTransaction(
@@ -594,6 +596,7 @@ func TestSecretTransaction(t *testing.T) {
 }
 
 func TestCompleteAggregateTransaction(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV1, sdk.AggregateCompletedV1Version)
 	acc, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
@@ -616,6 +619,7 @@ func TestCompleteAggregateTransaction(t *testing.T) {
 }
 
 func TestCompleteAggregateV2Transaction(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV2, sdk.AggregateCompletedV2Version)
 	acc, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
@@ -638,6 +642,7 @@ func TestCompleteAggregateV2Transaction(t *testing.T) {
 }
 
 func TestAggregateBoundedTransactionV1(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV1, sdk.AggregateBondedV1Version)
 	receiverAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
@@ -669,6 +674,7 @@ func TestAggregateBoundedTransactionV1(t *testing.T) {
 }
 
 func TestAggregateBoundedTransactionV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV2, sdk.AggregateBondedV2Version)
 	receiverAccount, err := client.NewAccountFromVersion(1)
 	assert.Nil(t, err)
 
@@ -699,7 +705,58 @@ func TestAggregateBoundedTransactionV2(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestAddressAliasTransaction(t *testing.T) {
+func TestAddressAliasTransactionAggregateV1(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV1, sdk.AggregateBondedV1Version)
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	nsId, err := sdk.NewNamespaceIdFromName(nameHex)
+	assert.Nil(t, err)
+
+	registerTx, err := client.NewRegisterRootNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		nameHex,
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
+	)
+	assert.Nil(t, err)
+	registerTx.ToAggregate(defaultAccount)
+
+	aliasTx, err := client.NewAddressAliasTransaction(
+		sdk.NewDeadline(time.Hour),
+		defaultAccount.PublicAccount.Address,
+		nsId,
+		sdk.AliasLink,
+	)
+	assert.Nil(t, err)
+	aliasTx.ToAggregate(defaultAccount)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{registerTx, aliasTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+
+	senderAccount, err := client.NewAccountFromVersion(1)
+	assert.Nil(t, err)
+
+	result = sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransactionWithNamespace(
+			sdk.NewDeadline(time.Hour),
+			nsId,
+			[]*sdk.Mosaic{},
+			sdk.NewPlainMessage("Test"),
+		)
+	}, senderAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestAddressAliasTransactionAggregateV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV2, sdk.AggregateBondedV2Version)
 	name := make([]byte, 5)
 
 	_, err := rand.Read(name)
@@ -748,7 +805,59 @@ func TestAddressAliasTransaction(t *testing.T) {
 	assert.Nil(t, result.error)
 }
 
-func TestMosaicAliasTransaction(t *testing.T) {
+func TestMosaicAliasTransactionAggregateV1(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV1, sdk.AggregateBondedV1Version)
+	name := make([]byte, 5)
+
+	_, err := rand.Read(name)
+	assert.Nil(t, err)
+	nameHex := hex.EncodeToString(name)
+
+	nsId, err := sdk.NewNamespaceIdFromName(nameHex)
+	assert.Nil(t, err)
+
+	registerTx, err := client.NewRegisterRootNamespaceTransaction(
+		sdk.NewDeadline(time.Hour),
+		nameHex,
+		sdk.Duration(defaultDurationNamespaceAndMosaic),
+	)
+	assert.Nil(t, err)
+	registerTx.ToAggregate(defaultAccount)
+
+	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
+	nonce := r.Uint32()
+
+	mosaicId, err := sdk.NewMosaicIdFromNonceAndOwner(nonce, defaultAccount.PublicAccount.PublicKey)
+	assert.Nil(t, err)
+	mosaicDefinitionTx, err := client.NewMosaicDefinitionTransaction(
+		sdk.NewDeadline(time.Hour),
+		nonce,
+		defaultAccount.PublicAccount.PublicKey,
+		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+	)
+	assert.Nil(t, err)
+	mosaicDefinitionTx.ToAggregate(defaultAccount)
+
+	aliasTx, err := client.NewMosaicAliasTransaction(
+		sdk.NewDeadline(time.Hour),
+		mosaicId,
+		nsId,
+		sdk.AliasLink,
+	)
+	assert.Nil(t, err)
+	aliasTx.ToAggregate(defaultAccount)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewCompleteAggregateV1Transaction(
+			sdk.NewDeadline(time.Hour),
+			[]sdk.Transaction{registerTx, mosaicDefinitionTx, aliasTx},
+		)
+	}, defaultAccount)
+	assert.Nil(t, result.error)
+}
+
+func TestMosaicAliasTransactionAggregateV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateBondedV2, sdk.AggregateBondedV2Version)
 	name := make([]byte, 5)
 
 	_, err := rand.Read(name)
@@ -799,6 +908,7 @@ func TestMosaicAliasTransaction(t *testing.T) {
 }
 
 func TestModifyAddressMetadataTransaction(t *testing.T) {
+	t.SkipNow()
 	fmt.Println(defaultAccount.PublicAccount.Address)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
@@ -833,6 +943,7 @@ func TestModifyAddressMetadataTransaction(t *testing.T) {
 }
 
 func TestModifyMosaicMetadataTransaction(t *testing.T) {
+	t.SkipNow()
 	r := math.New(math.NewSource(time.Now().UTC().UnixNano()))
 	nonce := r.Uint32()
 
@@ -891,6 +1002,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 }
 
 func TestModifyNamespaceMetadataTransaction(t *testing.T) {
+	t.SkipNow()
 	name := make([]byte, 5)
 
 	_, err := rand.Read(name)
