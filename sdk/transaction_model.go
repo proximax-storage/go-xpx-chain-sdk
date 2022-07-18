@@ -3236,8 +3236,8 @@ const (
 	ModifyContractVersion              EntityVersion = 3
 	ModifyMultisigVersion              EntityVersion = 3
 	MosaicAliasVersion                 EntityVersion = 1
-	MosaicDefinitionVersion            EntityVersion = 3
-	MosaicSupplyChangeVersion          EntityVersion = 2
+	MosaicDefinitionVersion            EntityVersion = 4
+	MosaicSupplyChangeVersion          EntityVersion = 3
 	MosaicModifyLevyVersion            EntityVersion = 1
 	MosaicRemoveLevyVersion            EntityVersion = 1
 	RegisterNamespaceVersion           EntityVersion = 2
