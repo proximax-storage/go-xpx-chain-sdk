@@ -56,18 +56,18 @@ func NewPlainMessage(payload string) *PlainMessage {
 	return &PlainMessage{[]byte(payload)}
 }
 
-func NewPlainMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.PrivateKey, sender *xpxcrypto.PublicKey) (*PlainMessage, error) {
-	rkp, err := xpxcrypto.NewKeyPair(recipient, nil, nil)
+func NewPlainMessageFromEncodedData(encodedData []byte, recipient *xpxcrypto.PrivateKey, sender *xpxcrypto.PublicKey, engine xpxcrypto.CryptoEngine) (*PlainMessage, error) {
+	rkp, err := xpxcrypto.NewKeyPair(recipient, nil, engine)
 	if err != nil {
 		return nil, err
 	}
 
-	skp, err := xpxcrypto.NewKeyPair(nil, sender, nil)
+	skp, err := xpxcrypto.NewKeyPair(nil, sender, engine)
 	if err != nil {
 		return nil, err
 	}
 
-	plaintText, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Decrypt(encodedData)
+	plaintText, err := xpxcrypto.NewBlockCipher(skp, rkp, engine).Decrypt(encodedData)
 	if err != nil {
 		return nil, err
 	}
@@ -99,18 +99,18 @@ func NewSecureMessage(encodedData []byte) *SecureMessage {
 	return &SecureMessage{encodedData}
 }
 
-func NewSecureMessageFromPlaintText(plaintText string, sender *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey) (*SecureMessage, error) {
-	skp, err := xpxcrypto.NewKeyPair(sender, nil, nil)
+func NewSecureMessageFromPlaintText(plaintText string, sender *xpxcrypto.PrivateKey, recipient *xpxcrypto.PublicKey, engine xpxcrypto.CryptoEngine) (*SecureMessage, error) {
+	skp, err := xpxcrypto.NewKeyPair(sender, nil, engine)
 	if err != nil {
 		return nil, err
 	}
 
-	rkp, err := xpxcrypto.NewKeyPair(nil, recipient, nil)
+	rkp, err := xpxcrypto.NewKeyPair(nil, recipient, engine)
 	if err != nil {
 		return nil, err
 	}
 
-	encodedData, err := xpxcrypto.NewBlockCipher(skp, rkp, nil).Encrypt([]byte(plaintText))
+	encodedData, err := xpxcrypto.NewBlockCipher(skp, rkp, engine).Encrypt([]byte(plaintText))
 	if err != nil {
 		return nil, err
 	}

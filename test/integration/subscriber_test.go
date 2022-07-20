@@ -51,6 +51,7 @@ func TestAddConfirmedAddedHandlers(t *testing.T) {
 }
 
 func TestAddPartialAddedHandlers(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV1, sdk.AggregateCompletedV1Version)
 	wg := sync.WaitGroup{}
 
 	acc1, err := client.NewAccount(ctx)
@@ -108,6 +109,7 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 }
 
 func TestAddPartialAddedHandlersV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV2, sdk.AggregateCompletedV2Version)
 	wg := sync.WaitGroup{}
 
 	acc1, err := client.NewAccount(ctx)
@@ -165,6 +167,7 @@ func TestAddPartialAddedHandlersV2(t *testing.T) {
 }
 
 func TestAddCosignatureHandlersV1(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV1, sdk.AggregateCompletedV1Version)
 	wg := sync.WaitGroup{}
 
 	acc1, err := client.NewAccount(ctx)
@@ -222,6 +225,7 @@ func TestAddCosignatureHandlersV1(t *testing.T) {
 }
 
 func TestAddCosignatureHandlersV2(t *testing.T) {
+	SkipIfEntityNotSupportedAtVersion(client, t, sdk.AggregateCompletedV2, sdk.AggregateCompletedV2Version)
 	wg := sync.WaitGroup{}
 
 	acc1, err := client.NewAccount(ctx)

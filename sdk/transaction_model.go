@@ -3142,8 +3142,8 @@ const (
 	AddressAlias                EntityType = 0x424e
 	AggregateBondedV1           EntityType = 0x4241
 	AggregateCompletedV1        EntityType = 0x4141
-	AggregateBondedV2           EntityType = 0x4341
-	AggregateCompletedV2        EntityType = 0x4441
+	AggregateBondedV2           EntityType = 0x4441
+	AggregateCompletedV2        EntityType = 0x4341
 	AddExchangeOffer            EntityType = 0x415D
 	AddHarvesterEntityType      EntityType = 0x4161
 	ExchangeOffer               EntityType = 0x425D
@@ -3707,7 +3707,7 @@ func UniqueAggregateHashV2(aggregateTx *AggregateTransactionV2, tx Transaction, 
 	return UniqueAggregateHashImpl(aggregateTx.Deadline, tx, generationHash)
 }
 
-func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityType, cosignatories []*Account) (*SignedTransaction, error) {
+func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityType, cosignatories []*Account, extended bool) (*SignedTransaction, error) {
 	p := stx.Payload
 	for _, cos := range cosignatories {
 		s := crypto.NewSignerFromKeyPair(cos.KeyPair, cos.KeyPair.CryptoEngine)
@@ -3715,7 +3715,16 @@ func signTransactionWithCosignaturesImpl(stx *SignedTransaction, txType EntityTy
 		if err != nil {
 			return nil, err
 		}
-		p += cos.KeyPair.PublicKey.String() + hex.EncodeToString(sb.Bytes())
+		p += cos.KeyPair.PublicKey.String()
+		if extended {
+			sbe, err := crypto.NewExtendedSignatureFromSignature(sb, cos.KeyPair.EngineDerivationScheme())
+			if err != nil {
+				return nil, err
+			}
+			p += hex.EncodeToString(sbe.Bytes())
+		} else {
+			p += hex.EncodeToString(sb.Bytes())
+		}
 	}
 
 	pb, err := hex.DecodeString(p)
@@ -3736,14 +3745,14 @@ func signTransactionWithCosignaturesV1(tx *AggregateTransactionV1, a *Account, c
 	if err != nil {
 		return nil, err
 	}
-	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories)
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories, false)
 }
 func signTransactionWithCosignaturesV2(tx *AggregateTransactionV2, a *Account, cosignatories []*Account) (*SignedTransaction, error) {
 	stx, err := signTransactionWith(tx, a)
 	if err != nil {
 		return nil, err
 	}
-	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories)
+	return signTransactionWithCosignaturesImpl(stx, tx.Type, cosignatories, true)
 }
 
 func signCosignatureTransactionImpl(a *Account, tx *TransactionInfo) (*CosignatureSignedTransaction, error) {

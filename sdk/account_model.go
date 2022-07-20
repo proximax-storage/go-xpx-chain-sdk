@@ -55,7 +55,7 @@ func (a *Account) EncryptMessage(message string, recipientPublicAccount *PublicA
 		return nil, err
 	}
 
-	return NewSecureMessageFromPlaintText(message, a.KeyPair.PrivateKey, rpk)
+	return NewSecureMessageFromPlaintText(message, a.KeyPair.PrivateKey, rpk, a.CryptoEngine)
 }
 
 func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAccount *PublicAccount) (*PlainMessage, error) {
@@ -65,7 +65,7 @@ func (a *Account) DecryptMessage(encryptedMessage *SecureMessage, senderPublicAc
 		return nil, err
 	}
 
-	return NewPlainMessageFromEncodedData(encryptedMessage.Payload(), a.KeyPair.PrivateKey, spk)
+	return NewPlainMessageFromEncodedData(encryptedMessage.Payload(), a.KeyPair.PrivateKey, spk, a.CryptoEngine)
 }
 
 type PublicAccount struct {
