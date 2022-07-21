@@ -973,3 +973,63 @@ func (c *Client) NewLockFundCancelUnlockTransaction(deadline *Deadline, targetHe
 
 	return tx, err
 }
+
+func (c *Client) NewAccountAddressRestrictionTransaction(deadline *Deadline, flags uint16, additions []*Address, deletions []*Address) (*AccountAddressRestrictionTransaction, error) {
+	tx, err := NewAccountAddressRestrictionTransaction(deadline, flags, additions, deletions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAccountMosaicRestrictionTransaction(deadline *Deadline, flags uint16, additions []*MosaicId, deletions []*MosaicId) (*AccountMosaicRestrictionTransaction, error) {
+	tx, err := NewAccountMosaicRestrictionTransaction(deadline, flags, additions, deletions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAccountOperationRestrictionTransaction(deadline *Deadline, flags uint16, additions []EntityType, deletions []EntityType) (*AccountOperationRestrictionTransaction, error) {
+	tx, err := NewAccountOperationRestrictionTransaction(deadline, flags, additions, deletions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId MosaicId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address) (*MosaicAddressRestrictionTransaction, error) {
+	tx, err := NewMosaicAddressRestrictionTransaction(deadline, mosaicId, restrictionKey, previousRestrictionValue, newRestrictionValue, targetAddress, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicGlobalRestrictionTransaction(deadline *Deadline, RestrictionFlags uint16,
+	mosaicId MosaicId,
+	referenceMosaicId MosaicId,
+	restrictionKey uint64,
+	previousRestrictionValue uint64,
+	previousRestrictionType MosaicRestrictionType,
+	newRestrictionValue uint64,
+	newRestrictionType MosaicRestrictionType) (*MosaicGlobalRestrictionTransaction, error) {
+	tx, err := NewMosaicGlobalRestrictionTransaction(deadline,
+		RestrictionFlags,
+		mosaicId,
+		referenceMosaicId,
+		restrictionKey,
+		previousRestrictionValue,
+		previousRestrictionType,
+		newRestrictionValue,
+		newRestrictionType, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
