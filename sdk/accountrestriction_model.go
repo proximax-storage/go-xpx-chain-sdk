@@ -12,11 +12,11 @@ type AccountRestrictionFlags uint16
 
 const (
 	AccountRestrictionFlag_Address         AccountRestrictionFlags = 0x0001
-	AccountRestrictionFlag_MosaicId                                = 0x0002
-	AccountRestrictionFlag_TransactionType                         = 0x0004
-	AccountRestrictionFlag_Sentinel                                = 0x0008
-	AccountRestrictionFlag_Outgoing                                = 0x4000
-	AccountRestrictionFlag_Block                                   = 0x8000
+	AccountRestrictionFlag_MosaicId        AccountRestrictionFlags = 0x0002
+	AccountRestrictionFlag_TransactionType AccountRestrictionFlags = 0x0004
+	AccountRestrictionFlag_Sentinel        AccountRestrictionFlags = 0x0008
+	AccountRestrictionFlag_Outgoing        AccountRestrictionFlags = 0x4000
+	AccountRestrictionFlag_Block           AccountRestrictionFlags = 0x8000
 )
 
 type AccountRestriction struct {
