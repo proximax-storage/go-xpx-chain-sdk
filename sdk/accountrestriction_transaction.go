@@ -27,7 +27,7 @@ func NewAccountAddressRestrictionTransaction(deadline *Deadline, flags uint16, a
 	return &tx, nil
 }
 
-func NewAccountMosaicRestrictionTransaction(deadline *Deadline, flags uint16, additions []*MosaicId, deletions []*MosaicId, networkType NetworkType) (*AccountMosaicRestrictionTransaction, error) {
+func NewAccountMosaicRestrictionTransaction(deadline *Deadline, flags uint16, additions []AssetId, deletions []AssetId, networkType NetworkType) (*AccountMosaicRestrictionTransaction, error) {
 
 	tx := AccountMosaicRestrictionTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -348,26 +348,26 @@ func (dto *AccountMosaicRestrictionTransactionDto) toStruct(*Hash) (Transaction,
 		return nil, err
 	}
 
-	restrictionAdditions := make([]*MosaicId, len(dto.Tx.RestrictionAdditions))
+	restrictionAdditions := make([]AssetId, len(dto.Tx.RestrictionAdditions))
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
 
-		mosaicId, err := entry.toStruct()
+		assetId, err := entry.toStruct()
 		if err != nil {
 			return nil, err
 		}
-		restrictionAdditions[i] = mosaicId
+		restrictionAdditions[i] = assetId
 	}
 
-	restrictionDeletions := make([]*MosaicId, len(dto.Tx.RestrictionAdditions))
+	restrictionDeletions := make([]AssetId, len(dto.Tx.RestrictionAdditions))
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
 
-		mosaicId, err := entry.toStruct()
+		assetId, err := entry.toStruct()
 		if err != nil {
 			return nil, err
 		}
-		restrictionDeletions[i] = mosaicId
+		restrictionDeletions[i] = assetId
 	}
 
 	return &AccountMosaicRestrictionTransaction{

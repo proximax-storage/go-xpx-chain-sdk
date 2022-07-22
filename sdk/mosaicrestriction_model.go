@@ -121,7 +121,7 @@ type MosaicRestrictionsPage struct {
 
 type MosaicAddressRestrictionTransaction struct {
 	AbstractTransaction
-	MosaicId                 MosaicId
+	MosaicId                 AssetId
 	RestrictionKey           uint64
 	PreviousRestrictionValue uint64
 	NewRestrictionValue      uint64
@@ -130,8 +130,8 @@ type MosaicAddressRestrictionTransaction struct {
 
 type MosaicGlobalRestrictionTransaction struct {
 	AbstractTransaction
-	MosaicId                 MosaicId
-	ReferenceMosaicId        MosaicId
+	MosaicId                 AssetId
+	ReferenceMosaicId        AssetId
 	RestrictionKey           uint64
 	PreviousRestrictionValue uint64
 	PreviousRestrictionType  MosaicRestrictionType

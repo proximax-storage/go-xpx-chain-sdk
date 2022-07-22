@@ -117,8 +117,8 @@ type AccountAddressRestrictionTransaction struct {
 type AccountMosaicRestrictionTransaction struct {
 	AbstractTransaction
 	RestrictionFlags     uint16
-	RestrictionAdditions []*MosaicId
-	RestrictionDeletions []*MosaicId
+	RestrictionAdditions []AssetId
+	RestrictionDeletions []AssetId
 }
 
 type AccountOperationRestrictionTransaction struct {

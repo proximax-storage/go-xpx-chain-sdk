@@ -983,7 +983,7 @@ func (c *Client) NewAccountAddressRestrictionTransaction(deadline *Deadline, fla
 	return tx, err
 }
 
-func (c *Client) NewAccountMosaicRestrictionTransaction(deadline *Deadline, flags uint16, additions []*MosaicId, deletions []*MosaicId) (*AccountMosaicRestrictionTransaction, error) {
+func (c *Client) NewAccountMosaicRestrictionTransaction(deadline *Deadline, flags uint16, additions []AssetId, deletions []AssetId) (*AccountMosaicRestrictionTransaction, error) {
 	tx, err := NewAccountMosaicRestrictionTransaction(deadline, flags, additions, deletions, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -1001,7 +1001,7 @@ func (c *Client) NewAccountOperationRestrictionTransaction(deadline *Deadline, f
 	return tx, err
 }
 
-func (c *Client) NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId MosaicId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address) (*MosaicAddressRestrictionTransaction, error) {
+func (c *Client) NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId AssetId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address) (*MosaicAddressRestrictionTransaction, error) {
 	tx, err := NewMosaicAddressRestrictionTransaction(deadline, mosaicId, restrictionKey, previousRestrictionValue, newRestrictionValue, targetAddress, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
@@ -1010,9 +1010,22 @@ func (c *Client) NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosa
 	return tx, err
 }
 
+func (c *Client) NewMosaicAddressRestrictionTransactionFromNamespace(deadline *Deadline, assetId AssetId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *NamespaceId) (*MosaicAddressRestrictionTransaction, error) {
+	address, err := NewAddressFromNamespace(targetAddress)
+	if err != nil {
+		return nil, err
+	}
+	tx, err := NewMosaicAddressRestrictionTransaction(deadline, assetId, restrictionKey, previousRestrictionValue, newRestrictionValue, address, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewMosaicGlobalRestrictionTransaction(deadline *Deadline, RestrictionFlags uint16,
-	mosaicId MosaicId,
-	referenceMosaicId MosaicId,
+	mosaicId AssetId,
+	referenceMosaicId AssetId,
 	restrictionKey uint64,
 	previousRestrictionValue uint64,
 	previousRestrictionType MosaicRestrictionType,

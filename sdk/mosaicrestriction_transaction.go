@@ -10,7 +10,7 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
-func NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId MosaicId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address, networkType NetworkType) (*MosaicAddressRestrictionTransaction, error) {
+func NewMosaicAddressRestrictionTransaction(deadline *Deadline, assetId AssetId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address, networkType NetworkType) (*MosaicAddressRestrictionTransaction, error) {
 
 	tx := MosaicAddressRestrictionTransaction{
 		AbstractTransaction: AbstractTransaction{
@@ -19,7 +19,7 @@ func NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId MosaicI
 			Type:        AccountAddressRestriction,
 			NetworkType: networkType,
 		},
-		MosaicId:                 mosaicId,
+		MosaicId:                 assetId,
 		RestrictionKey:           restrictionKey,
 		PreviousRestrictionValue: previousRestrictionValue,
 		NewRestrictionValue:      newRestrictionValue,
@@ -30,8 +30,8 @@ func NewMosaicAddressRestrictionTransaction(deadline *Deadline, mosaicId MosaicI
 }
 
 func NewMosaicGlobalRestrictionTransaction(deadline *Deadline, RestrictionFlags uint16,
-	mosaicId MosaicId,
-	referenceMosaicId MosaicId,
+	mosaicId AssetId,
+	referenceMosaicId AssetId,
 	restrictionKey uint64,
 	previousRestrictionValue uint64,
 	previousRestrictionType MosaicRestrictionType,
@@ -217,7 +217,7 @@ func (dto *MosaicAddressRestrictionTransactionDto) toStruct(*Hash) (Transaction,
 	}
 	return &MosaicAddressRestrictionTransaction{
 		*atx,
-		*mosaicId,
+		mosaicId,
 		dto.Tx.RestrictionKey.toUint64(),
 		dto.Tx.PreviousRestrictionValue.toUint64(),
 		dto.Tx.NewRestrictionValue.toUint64(),
@@ -247,8 +247,8 @@ func (dto *MosaicGlobalRestrictionTransactionDto) toStruct(*Hash) (Transaction, 
 	}
 	return &MosaicGlobalRestrictionTransaction{
 		*atx,
-		*mosaicId,
-		*referenceMosaicId,
+		mosaicId,
+		referenceMosaicId,
 		dto.Tx.RestrictionKey.toUint64(),
 		dto.Tx.PreviousRestrictionValue.toUint64(),
 		MosaicRestrictionType(dto.Tx.PreviousRestrictionType),
