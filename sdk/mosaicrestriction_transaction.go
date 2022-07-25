@@ -29,7 +29,7 @@ func NewMosaicAddressRestrictionTransaction(deadline *Deadline, assetId AssetId,
 	return &tx, nil
 }
 
-func NewMosaicGlobalRestrictionTransaction(deadline *Deadline, RestrictionFlags uint16,
+func NewMosaicGlobalRestrictionTransaction(deadline *Deadline,
 	mosaicId AssetId,
 	referenceMosaicId AssetId,
 	restrictionKey uint64,

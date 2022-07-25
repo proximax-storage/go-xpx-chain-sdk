@@ -1023,7 +1023,7 @@ func (c *Client) NewMosaicAddressRestrictionTransactionFromNamespace(deadline *D
 	return tx, err
 }
 
-func (c *Client) NewMosaicGlobalRestrictionTransaction(deadline *Deadline, RestrictionFlags uint16,
+func (c *Client) NewMosaicGlobalRestrictionTransaction(deadline *Deadline,
 	mosaicId AssetId,
 	referenceMosaicId AssetId,
 	restrictionKey uint64,
@@ -1032,7 +1032,6 @@ func (c *Client) NewMosaicGlobalRestrictionTransaction(deadline *Deadline, Restr
 	newRestrictionValue uint64,
 	newRestrictionType MosaicRestrictionType) (*MosaicGlobalRestrictionTransaction, error) {
 	tx, err := NewMosaicGlobalRestrictionTransaction(deadline,
-		RestrictionFlags,
 		mosaicId,
 		referenceMosaicId,
 		restrictionKey,
