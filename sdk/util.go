@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
 func bytesToHash(bytes []byte) (*Hash, error) {
@@ -14,6 +16,15 @@ func bytesToHash(bytes []byte) (*Hash, error) {
 	copy(arr[:], bytes[:32])
 
 	return &arr, nil
+}
+
+//Be wary of conflicts
+func GenerateUInt64Key(name string) (uint64, error) {
+	hash, err := crypto.HashesSha3_256([]byte(name))
+	if err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint64(hash[:8]), nil
 }
 
 func Base64ToHex(data string) (*string, error) {
