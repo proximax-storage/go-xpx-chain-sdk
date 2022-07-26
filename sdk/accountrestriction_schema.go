@@ -18,7 +18,12 @@ func accountAddressRestrictionTransactionSchema() *schema {
 			newScalarAttribute("restrictionAdditionsCount", ByteSize),
 			newScalarAttribute("restrictionDeletionsCount", ByteSize),
 			newScalarAttribute("AccountRestrictionTransactionBody_Reserved1", IntSize),
-			newTableArrayAttribute("restrictions", schema{
+			newTableArrayAttribute("restrictionAdditions", schema{
+				[]schemaAttribute{
+					newArrayAttribute("address", ByteSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("restrictionDeletions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("address", ByteSize),
 				},
@@ -41,7 +46,12 @@ func accountMosaicRestrictionTransactionSchema() *schema {
 			newScalarAttribute("RestrictionAdditionsCount", ByteSize),
 			newScalarAttribute("RestrictionDeletionsCount", ByteSize),
 			newScalarAttribute("AccountRestrictionTransactionBody_Reserved1", IntSize),
-			newTableArrayAttribute("restrictions", schema{
+			newTableArrayAttribute("restrictionAdditions", schema{
+				[]schemaAttribute{
+					newArrayAttribute("mosaicId", IntSize),
+				},
+			}.schemaDefinition),
+			newTableArrayAttribute("restrictionDeletions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("mosaicId", IntSize),
 				},
@@ -64,7 +74,8 @@ func accountOperationRestrictionTransactionSchema() *schema {
 			newScalarAttribute("RestrictionAdditionsCount", ByteSize),
 			newScalarAttribute("RestrictionDeletionsCount", ByteSize),
 			newScalarAttribute("AccountRestrictionTransactionBody_Reserved1", IntSize),
-			newArrayAttribute("restrictions", ShortSize),
+			newArrayAttribute("restrictionAdditions", ShortSize),
+			newArrayAttribute("restrictionDeletions", ShortSize),
 		},
 	}
 }

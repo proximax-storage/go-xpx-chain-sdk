@@ -237,7 +237,7 @@ func (tx *AccountMosaicRestrictionTransaction) Bytes() ([]byte, error) {
 	t := transactions.AccountAddressRestrictionTransactionBufferEnd(builder)
 	builder.Finish(t)
 
-	return accountAddressRestrictionTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return accountMosaicRestrictionTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
 func (tx *AccountOperationRestrictionTransaction) Bytes() ([]byte, error) {
@@ -271,7 +271,7 @@ func (tx *AccountOperationRestrictionTransaction) Bytes() ([]byte, error) {
 	t := transactions.AccountAddressRestrictionTransactionBufferEnd(builder)
 	builder.Finish(t)
 
-	return accountAddressRestrictionTransactionSchema().serialize(builder.FinishedBytes()), nil
+	return accountOperationRestrictionTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
 
 type AccountAddressRestrictionTransactionDto struct {
