@@ -135,7 +135,7 @@ func (tx *AccountAddressRestrictionTransaction) Bytes() ([]byte, error) {
 	additionsVector := make([]flatbuffers.UOffsetT, len(tx.RestrictionAdditions))
 
 	for i, mos := range tx.RestrictionAdditions {
-		a, err := mos.Decode()
+		a, err := mos.Encode()
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +155,7 @@ func (tx *AccountAddressRestrictionTransaction) Bytes() ([]byte, error) {
 	deletionsVector := make([]flatbuffers.UOffsetT, len(tx.RestrictionDeletions))
 
 	for i, mos := range tx.RestrictionDeletions {
-		a, err := mos.Decode()
+		a, err := mos.Encode()
 		if err != nil {
 			return nil, err
 		}
