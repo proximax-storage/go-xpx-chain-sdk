@@ -2934,7 +2934,7 @@ func (tx *SignedTransaction) String() string {
 type cosignatureSignedTransactionDto struct {
 	ParentHash string `json:"parentHash"`
 	Signature  string `json:"signature"`
-	Scheme     crypto.DerivationScheme
+	Scheme     string `json:"scheme"`
 	Signer     string `json:"signer"`
 }
 

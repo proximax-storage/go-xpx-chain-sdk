@@ -7,6 +7,7 @@ package sdk
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
@@ -125,7 +126,7 @@ func (txs *TransactionService) AnnounceAggregateBondedCosignature(ctx context.Co
 	dto := cosignatureSignedTransactionDto{
 		c.ParentHash.String(),
 		c.Signature.String(),
-		c.Scheme,
+		hex.EncodeToString([]byte{byte(c.Scheme)}),
 		c.Signer,
 	}
 
