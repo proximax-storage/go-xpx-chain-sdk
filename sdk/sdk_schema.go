@@ -32,7 +32,7 @@ type abstractSchemaAttribute struct {
 func (s abstractSchemaAttribute) findParam(innerObjectPosition uint32, position uint32, buffer []byte, size VarSize) []byte {
 	offset := s.offset(innerObjectPosition, position, buffer)
 	if offset == 0 {
-		return []byte{0}
+		return make([]byte, size)
 	}
 	return buffer[offset+innerObjectPosition : offset+innerObjectPosition+uint32(size)]
 }
