@@ -4,6 +4,11 @@
 
 package sdk
 
+import (
+	"encoding/base32"
+	"encoding/hex"
+)
+
 type AccountRestrictionDto struct {
 	RestrictionFlags AccountRestrictionFlags `json:"restrictionFlags"`
 	Values           []interface{}           `json:"values"`
@@ -25,7 +30,11 @@ func (ref *AccountRestrictionDto) toStruct(networkType NetworkType) (*AccountRes
 	values := make([]interface{}, len(ref.Values))
 	if ref.RestrictionFlags&AccountRestrictionFlag_Address == AccountRestrictionFlag_Address {
 		for i, value := range ref.Values {
-			val := NewAddress(value.(string), networkType)
+			bytes, err := hex.DecodeString(value.(string))
+			if err != nil {
+				return nil, err
+			}
+			val := NewAddress(base32.StdEncoding.EncodeToString(bytes), networkType)
 			values[i] = val
 		}
 	} else if ref.RestrictionFlags&AccountRestrictionFlag_MosaicId == AccountRestrictionFlag_MosaicId {
