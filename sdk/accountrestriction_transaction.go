@@ -321,22 +321,13 @@ func (dto *AccountAddressRestrictionTransactionDto) toStruct(*Hash) (Transaction
 	restrictionAdditions := make([]*Address, len(dto.Tx.RestrictionAdditions))
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
-
-		add, err := NewAddressFromRaw(entry)
-		if err != nil {
-			return nil, err
-		}
-		restrictionAdditions[i] = add
+		restrictionAdditions[i] = NewAddress(entry, NotSupportedNet)
 	}
 
 	restrictionDeletions := make([]*Address, len(dto.Tx.RestrictionAdditions))
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
-		add, err := NewAddressFromRaw(entry)
-		if err != nil {
-			return nil, err
-		}
-		restrictionDeletions[i] = add
+		restrictionDeletions[i] = NewAddress(entry, NotSupportedNet)
 	}
 
 	return &AccountAddressRestrictionTransaction{
