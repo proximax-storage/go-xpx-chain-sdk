@@ -281,8 +281,8 @@ type AccountAddressRestrictionTransactionDto struct {
 	Tx struct {
 		abstractTransactionDTO
 		RestrictionFlags     uint16
-		RestrictionAdditions []*Address
-		RestrictionDeletions []*Address
+		RestrictionAdditions []string
+		RestrictionDeletions []string
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -322,14 +322,21 @@ func (dto *AccountAddressRestrictionTransactionDto) toStruct(*Hash) (Transaction
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
 
-		restrictionAdditions[i] = entry
+		add, err := NewAddressFromRaw(entry)
+		if err != nil {
+			return nil, err
+		}
+		restrictionAdditions[i] = add
 	}
 
 	restrictionDeletions := make([]*Address, len(dto.Tx.RestrictionAdditions))
 
 	for i, entry := range dto.Tx.RestrictionAdditions {
-
-		restrictionDeletions[i] = entry
+		add, err := NewAddressFromRaw(entry)
+		if err != nil {
+			return nil, err
+		}
+		restrictionDeletions[i] = add
 	}
 
 	return &AccountAddressRestrictionTransaction{
