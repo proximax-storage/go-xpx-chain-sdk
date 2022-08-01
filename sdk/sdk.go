@@ -376,12 +376,7 @@ func min(a, b int) int {
 }
 
 func (c *Client) modifyTransaction(tx Transaction) {
-	// We don't change MaxFee for versioning transactions
-	switch tx.GetAbstractTransaction().Type {
-	case NetworkConfigEntityType, BlockchainUpgrade:
-	default:
-		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
-	}
+	tx.GetAbstractTransaction().MaxFee = Amount(int(c.config.FeeCalculationStrategy) * tx.Size())
 }
 
 func (c *Client) NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType) (*AddressAliasTransaction, error) {
