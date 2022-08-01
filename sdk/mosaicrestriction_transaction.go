@@ -150,7 +150,7 @@ func (tx *MosaicAddressRestrictionTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	a, err := tx.TargetAddress.Encode()
+	a, err := tx.TargetAddress.Decode()
 	if err != nil {
 		return nil, err
 	}
