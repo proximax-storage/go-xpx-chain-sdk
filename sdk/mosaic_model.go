@@ -150,16 +150,23 @@ func (m *MosaicInfo) String() string {
 
 const Supply_Mutable = 0x01
 const Transferable = 0x02
+const Restrictable = 0x04
+const Supply_Force_Immutable = 0x08
+const Disable_Locking = 0x10
 
 // structure which includes several properties for defining mosaic
 // `SupplyMutable` - is supply of defined mosaic can be changed in future
 // `Transferable` - if this property is set to "false", only transfer transactions having the creator as sender or as recipient can transfer mosaics of that type. If set to "true" the mosaics can be transferred to and from arbitrary accounts
 // `Divisibility` - divisibility determines up to what decimal place the mosaic can be divided into
 // `Duration` - duration in blocks mosaic will be available. After the renew mosaic is inactive and can be renewed
+
 type MosaicPropertiesHeader struct {
-	SupplyMutable bool
-	Transferable  bool
-	Divisibility  uint8
+	SupplyMutable        bool
+	Transferable         bool
+	Restrictable         bool
+	SupplyForceImmutable bool
+	DisableLocking       bool
+	Divisibility         uint8
 }
 
 type MosaicProperties struct {
@@ -181,7 +188,7 @@ func (mp *MosaicProperty) String() string {
 }
 
 // returns MosaicProperties from actual values
-func NewMosaicProperties(supplyMutable bool, transferable bool, divisibility uint8, duration Duration) *MosaicProperties {
+func NewMosaicProperties(supplyMutable bool, transferable bool, restrictable bool, supplyForceImmutable bool, disableLocking bool, divisibility uint8, duration Duration) *MosaicProperties {
 	properties := make([]MosaicProperty, 0)
 
 	if duration != 0 {
@@ -192,6 +199,9 @@ func NewMosaicProperties(supplyMutable bool, transferable bool, divisibility uin
 		MosaicPropertiesHeader{
 			supplyMutable,
 			transferable,
+			restrictable,
+			supplyForceImmutable,
+			disableLocking,
 			divisibility,
 		},
 		properties,

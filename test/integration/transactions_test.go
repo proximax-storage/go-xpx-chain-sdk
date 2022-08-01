@@ -349,7 +349,7 @@ func TestMosaicDefinitionTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+			sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -364,7 +364,7 @@ func TestMosaicDefinitionTransaction_ZeroDuration(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+			sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(0)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -833,7 +833,7 @@ func TestMosaicAliasTransactionAggregateV1(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+		sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount)
@@ -884,7 +884,7 @@ func TestMosaicAliasTransactionAggregateV2(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+		sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount)
@@ -951,7 +951,7 @@ func TestModifyMosaicMetadataTransaction(t *testing.T) {
 		sdk.NewDeadline(time.Hour),
 		nonce,
 		defaultAccount.PublicAccount.PublicKey,
-		sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+		sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 	)
 	assert.Nil(t, err)
 	mosaicDefinitionTx.ToAggregate(defaultAccount)
@@ -1098,7 +1098,7 @@ func TestAccountPropertiesMosaicTransaction(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
+			sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(defaultDurationNamespaceAndMosaic)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -1245,7 +1245,7 @@ func TestMosaicMetadataTransactionV1(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+			sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(0)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)
@@ -1308,7 +1308,7 @@ func TestMosaicMetadataTransactionV2(t *testing.T) {
 			sdk.NewDeadline(time.Hour),
 			nonce,
 			defaultAccount.PublicAccount.PublicKey,
-			sdk.NewMosaicProperties(true, true, 4, sdk.Duration(0)),
+			sdk.NewMosaicProperties(true, true, false, false, false, 4, sdk.Duration(0)),
 		)
 	}, defaultAccount)
 	assert.Nil(t, result.error)

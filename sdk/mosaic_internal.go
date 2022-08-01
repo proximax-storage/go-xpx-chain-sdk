@@ -129,6 +129,9 @@ func (dto *mosaicPropertiesDTO) toStruct() (*MosaicProperties, error) {
 	return NewMosaicProperties(
 		hasBits(flags, Supply_Mutable),
 		hasBits(flags, Transferable),
+		hasBits(flags, Restrictable),
+		hasBits(flags, Supply_Force_Immutable),
+		hasBits(flags, Disable_Locking),
 		divisibility,
 		duration,
 	), nil

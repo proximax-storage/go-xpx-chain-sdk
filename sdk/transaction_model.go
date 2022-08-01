@@ -1828,6 +1828,15 @@ func (tx *MosaicDefinitionTransaction) Bytes() ([]byte, error) {
 	if tx.MosaicProperties.Transferable {
 		f += Transferable
 	}
+	if tx.MosaicProperties.Restrictable {
+		f += Restrictable
+	}
+	if tx.MosaicProperties.SupplyForceImmutable {
+		f += Supply_Force_Immutable
+	}
+	if tx.MosaicProperties.DisableLocking {
+		f += Disable_Locking
+	}
 
 	nonceB := make([]byte, 4)
 	binary.LittleEndian.PutUint32(nonceB, tx.MosaicNonce)

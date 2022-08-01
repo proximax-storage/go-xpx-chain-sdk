@@ -825,7 +825,7 @@ func TestMosaicDefinitionTransactionSerialization(t *testing.T) {
 		fakeDeadline,
 		0,
 		account.PublicAccount.PublicKey,
-		NewMosaicProperties(true, true, 4, Duration(10000)),
+		NewMosaicProperties(true, true, false, false, false, 4, Duration(10000)),
 		MijinTest)
 	assert.Nil(t, err)
 	tx.MaxFee = Amount(10)
