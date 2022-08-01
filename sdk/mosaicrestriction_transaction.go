@@ -10,6 +10,8 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
+const MosaicAddressRestrictionUnsetValue uint64 = 0xFFFFFFFFFFFFFFFF
+
 func NewMosaicAddressRestrictionTransaction(deadline *Deadline, assetId AssetId, restrictionKey uint64, previousRestrictionValue uint64, newRestrictionValue uint64, targetAddress *Address, networkType NetworkType) (*MosaicAddressRestrictionTransaction, error) {
 
 	tx := MosaicAddressRestrictionTransaction{
