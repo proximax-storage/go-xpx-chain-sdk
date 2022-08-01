@@ -3129,8 +3129,8 @@ const (
 	AccountAddressRestrictionHeaderSize          = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
 	AccountMosaicRestrictionHeaderSize           = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
 	AccountOperationRestrictionHeaderSize        = TransactionHeaderSize + CharCountSize + CharCountSize + HalfWordFlagsSize + IntPaddingSize
-	MosaicGlobalRestrictionHeaderSize            = TransactionHeaderSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + AddressSize
-	MosaicAddressRestrictionHeaderSize           = TransactionHeaderSize + MosaicIdSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + ByteFlagsSize + ByteFlagsSize
+	MosaicAddressRestrictionHeaderSize           = TransactionHeaderSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + AddressSize
+	MosaicGlobalRestrictionHeaderSize            = TransactionHeaderSize + MosaicIdSize + MosaicIdSize + BaseInt64Size + BaseInt64Size + BaseInt64Size + ByteFlagsSize + ByteFlagsSize
 )
 
 type EntityType uint16

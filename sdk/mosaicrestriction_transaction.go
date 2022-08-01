@@ -40,7 +40,7 @@ func NewMosaicGlobalRestrictionTransaction(deadline *Deadline,
 
 	tx := MosaicGlobalRestrictionTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Version:     MosaicAddressRestrictionVersion,
+			Version:     MosaicGlobalRestrictionVersion,
 			Deadline:    deadline,
 			Type:        MosaicGlobalRestriction,
 			NetworkType: networkType,
