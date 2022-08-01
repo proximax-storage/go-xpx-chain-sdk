@@ -138,5 +138,3 @@ type MosaicGlobalRestrictionTransaction struct {
 	NewRestrictionValue      uint64
 	NewRestrictionType       MosaicRestrictionType
 }
-
-// This week I've been implementing my branch's new plugins and modifications to the SDK, and have now started working on the unit testing of these changes.
