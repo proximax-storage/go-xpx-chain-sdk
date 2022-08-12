@@ -19,6 +19,24 @@ func (dto *hashDto) Hash() (*Hash, error) {
 	return StringToHash(s)
 }
 
+type hashDtos []hashDto
+
+func (h *hashDtos) toStruct() ([]*Hash, error) {
+	dtos := *h
+	hashes := make([]*Hash, 0, len(dtos))
+
+	for _, dto := range dtos {
+		status, err := dto.Hash()
+		if err != nil {
+			return nil, err
+		}
+
+		hashes = append(hashes, status)
+	}
+
+	return hashes, nil
+}
+
 type signatureDto string
 
 func (dto *signatureDto) Signature() (*Signature, error) {

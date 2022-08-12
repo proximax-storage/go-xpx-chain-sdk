@@ -6,11 +6,10 @@ package sdk
 
 import (
 	"fmt"
-	"net/http"
-	"testing"
-
 	"github.com/proximax-storage/go-xpx-utils/mock"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"testing"
 )
 
 const (
@@ -91,10 +90,7 @@ const (
 		  0,
 		  0
 		],
-		"duration": [
-		  0,
-		  0
-		],
+		"duration":600000,
 		"shards": []
 	},
     "downloadShards": [
@@ -140,10 +136,6 @@ const (
         "replicator": {
             "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
             "version": 1,
-            "capacity": [
-                1000,
-                0
-            ],
             "drives": [
                 {
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
@@ -154,7 +146,10 @@ const (
 					  0
 					]
                 }
-            ]
+            ],
+			"downloadChannels": [
+				"0300000000000000000000000000000000000000000000000000000000000000"
+			]
         }
     }`
 
@@ -259,7 +254,7 @@ var (
 		Verification: &Verification{
 			VerificationTrigger: &Hash{1},
 			Expiration:          blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
-			Duration:            blockchainTimestampDTO{0, 0}.toStruct().ToTimestamp(),
+			Duration:            600000,
 			Shards:              []*Shard{},
 		},
 		DownloadShards: []*DownloadShard{{&Hash{1}}},
@@ -284,9 +279,9 @@ var (
 	}
 
 	testReplicatorInfo = &Replicator{
-		Account:  testReplicatorV2Account1,
-		Version:  1,
-		Capacity: StorageSize(1000),
+		Account: testReplicatorV2Account1,
+		Version: 1,
+		//Capacity: StorageSize(1000),
 		Drives: []*DriveInfo{
 			{
 				DriveKey:                       testBcDriveAccount,
@@ -294,6 +289,9 @@ var (
 				DataModificationIdIsValid:      false,
 				InitialDownloadWork:            0,
 			},
+		},
+		DownloadChannels: []*Hash{
+			{3},
 		},
 	}
 

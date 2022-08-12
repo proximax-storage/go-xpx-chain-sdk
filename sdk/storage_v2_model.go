@@ -252,10 +252,11 @@ func (info *DriveInfo) String() string {
 }
 
 type Replicator struct {
-	Account  *PublicAccount
-	Version  uint32
-	Capacity Amount
-	Drives   []*DriveInfo // TODO make map
+	Account *PublicAccount
+	Version uint32
+	//Capacity Amount
+	Drives           []*DriveInfo // TODO make map
+	DownloadChannels []*Hash
 }
 
 func (replicator *Replicator) String() string {
@@ -263,13 +264,13 @@ func (replicator *Replicator) String() string {
 		`
 		Account: %s, 
 		Version: %d,
-		Capacity: %d,
 		Drives: %+v,
+		DownloadChannels: %+v,
 		`,
 		replicator.Account,
 		replicator.Version,
-		replicator.Capacity,
 		replicator.Drives,
+		replicator.DownloadChannels,
 	)
 }
 

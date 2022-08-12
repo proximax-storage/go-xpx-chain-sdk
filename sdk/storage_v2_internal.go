@@ -515,10 +515,11 @@ func (ref *driveV2DTOs) toStruct(networkType NetworkType) ([]*DriveInfo, error) 
 
 type replicatorV2DTO struct {
 	Replicator struct {
-		ReplicatorKey string      `json:"key"`
-		Version       uint32      `json:"version"`
-		Capacity      uint64DTO   `json:"capacity"`
-		Drives        driveV2DTOs `json:"drives"`
+		ReplicatorKey string `json:"key"`
+		Version       uint32 `json:"version"`
+		//Capacity      uint64DTO   `json:"capacity"`
+		Drives           driveV2DTOs `json:"drives"`
+		DownloadChannels hashDtos    `json:"downloadChannels"`
 	}
 }
 
@@ -532,7 +533,6 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 
 	replicator.Account = replicatorAccount
 	replicator.Version = ref.Replicator.Version
-	replicator.Capacity = ref.Replicator.Capacity.toStruct()
 
 	drives, err := ref.Replicator.Drives.toStruct(networkType)
 	if err != nil {
@@ -540,6 +540,13 @@ func (ref *replicatorV2DTO) toStruct(networkType NetworkType) (*Replicator, erro
 	}
 
 	replicator.Drives = drives
+
+	downloadChannels, err := ref.Replicator.DownloadChannels.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	replicator.DownloadChannels = downloadChannels
 
 	return &replicator, nil
 }
