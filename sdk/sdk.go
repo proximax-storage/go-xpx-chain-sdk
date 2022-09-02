@@ -168,7 +168,7 @@ type Client struct {
 	Lock          *LockService
 	Contract      *ContractService
 	Metadata      *MetadataService
-	MetadataNem   *MetadataNemService
+	MetadataV2    *MetadataV2Service
 }
 
 type service struct {
@@ -212,7 +212,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
-	c.MetadataNem = (*MetadataNemService)(&c.common)
+	c.MetadataV2 = (*MetadataV2Service)(&c.common)
 
 	return c
 }
@@ -378,12 +378,7 @@ func min(a, b int) int {
 }
 
 func (c *Client) modifyTransaction(tx Transaction) {
-	// We don't change MaxFee for versioning transactions
-	switch tx.GetAbstractTransaction().Type {
-	case NetworkConfigEntityType, BlockchainUpgrade:
-	default:
-		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
-	}
+	tx.GetAbstractTransaction().MaxFee = Amount(int(c.config.FeeCalculationStrategy) * tx.Size())
 }
 
 func (c *Client) NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType) (*AddressAliasTransaction, error) {

@@ -302,7 +302,7 @@ func (levy *MosaicLevy) String() string {
 			"Type": %s,
 			"Fee": %s,
 			"MosaicId": %s,
-			"Revipient": %s,
+			"Recipient": %s,
 		`,
 		levy.Type.String(),
 		levy.Fee.String(),
