@@ -9,52 +9,55 @@ import (
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateLiquidityProviderTransaction(t *testing.T) {
-	mosaicId, err := sdk.NewMosaicId(XPXID)
+	mosaicId, err := sdk.NewMosaicId(0x6DE2C609655D3DBD)
 	assert.Nil(t, err)
 
-	requiredAmount := uint64(10000000)
+	lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
+	assert.Nil(t, err, err)
+
+	currencyDeposit := uint64(1000000)
+	initialMosaicsMinting := uint64(1000000)
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewTransferTransaction(
 			sdk.NewDeadline(time.Hour),
 			managerAccount.Address,
-			[]*sdk.Mosaic{sdk.Xpx(requiredAmount)},
+			[]*sdk.Mosaic{sdk.Xpx(currencyDeposit * 2)},
 			sdk.NewPlainMessage("Test"),
 		)
 	}, defaultAccount)
 	require.Nil(t, result.error, result.error)
 
-	slashingAccount, err := client.NewAccount()
+	slashingAccount, err := client.NewAccountFromPublicKey("0000000000000000000000000000000000000000000000000000000000000000")
 	require.Nil(t, err, err)
 
 	result = sendTransaction(t, func() (sdk.Transaction, error) {
 		return client.NewCreateLiquidityProviderTransaction(
 			sdk.NewDeadline(time.Hour),
 			mosaicId,
-			sdk.Amount(requiredAmount/2),
-			sdk.Amount(10),
-			100,
+			sdk.Amount(currencyDeposit),
+			sdk.Amount(initialMosaicsMinting),
+			500,
 			5,
-			slashingAccount.PublicAccount,
-			10,
-			10,
+			slashingAccount,
+			500,
+			500,
 		)
 	}, managerAccount)
 	assert.Nil(t, result.error, result.error)
 
-	lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
+	lpsAfter, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
 	assert.Nil(t, err, err)
-	require.NotNil(t, lps.LiquidityProviders)
+	assert.True(t, lps.Pagination.TotalEntries < lpsAfter.Pagination.TotalEntries)
 
-	expectedLp := lps.LiquidityProviders[0]
-	lp, err := client.LiquidityProvider.GetLiquidityProvider(ctx, expectedLp.ProviderKey)
+	lp, err := client.LiquidityProvider.GetLiquidityProvider(ctx, defaultAccount.PublicAccount)
 	assert.Nil(t, err, err)
 	assert.NotNil(t, lp)
-	assert.EqualValues(t, expectedLp, lp)
 }
 
 func TestManualRateChangeTransactionTransaction(t *testing.T) {

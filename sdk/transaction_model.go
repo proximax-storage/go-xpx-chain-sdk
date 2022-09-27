@@ -2896,8 +2896,8 @@ const (
 	DownloadApproval               EntityType = 0x4D62
 	DriveClosure                   EntityType = 0x4E62
 	ReplicatorOffboarding          EntityType = 0x4762
-	CreateLiquidityProvider        EntityType = 0x4168
-	ManualRateChange               EntityType = 0x4268
+	CreateLiquidityProvider        EntityType = 0x4169
+	ManualRateChange               EntityType = 0x4269
 )
 
 func (t EntityType) String() string {
