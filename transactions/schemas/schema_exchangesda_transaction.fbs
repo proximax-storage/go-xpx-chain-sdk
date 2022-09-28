@@ -1,0 +1,46 @@
+namespace Catapult.Buffers;
+
+table PlaceSdaExchangeOfferTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    sdaOfferCount: ubyte;
+    offers: [PlaceSdaExchangeOfferBuffer];
+}
+
+table RemoveSdaExchangeOfferTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    sdaOfferCount: ubyte;
+    offers: [RemoveSdaExchangeOfferBuffer];
+}
+
+table PlaceSdaExchangeOfferBuffer {
+    mosaicIdGive: [uint];
+    mosaicAmountGive: [uint];
+    mosaicIdGet: [uint];
+    mosaicAmountGet: [uint];
+    duration: [uint];
+}
+
+table RemoveSdaExchangeOfferBuffer {
+    mosaicIdGive: [uint];
+    mosaicIdGet: [uint];
+}
+
+root_type PlaceSdaExchangeOfferTransactionBuffer;
+
+root_type RemoveSdaExchangeOfferTransactionBuffer;
+
+root_type PlaceSdaExchangeOfferBuffer;
+
+root_type RemoveSdaExchangeOfferBuffer;

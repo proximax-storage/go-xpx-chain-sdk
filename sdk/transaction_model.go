@@ -2824,6 +2824,11 @@ const (
 	CreateLiquidityProviderHeaderSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + AmountSize + 4 + 2 + KeySize + 4 + 4
 	ManualRateChangeHeaderSize                   = TransactionHeaderSize + MosaicIdSize + 1 + AmountSize + 1 + AmountSize
 	HarvesterTransactionSize                     = TransactionHeaderSize + KeySize
+	SdaOffersCountSize                           = 1
+	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
+	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
+	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
+	RemoveSdaExchangeOfferHeaderSize
 )
 
 type EntityType uint16
@@ -2898,6 +2903,8 @@ const (
 	ReplicatorOffboarding          EntityType = 0x4762
 	CreateLiquidityProvider        EntityType = 0x4169
 	ManualRateChange               EntityType = 0x4269
+	PlaceSdaExchangeOffer     EntityType = 0x416A
+	RemoveSdaExchangeOffer    EntityType = 0x426A
 )
 
 func (t EntityType) String() string {
@@ -2972,6 +2979,8 @@ const (
 	ReplicatorOffboardingVersion     EntityVersion = 1
 	CreateLiquidityProviderVersion   EntityVersion = 1
 	ManualRateChangeVersion          EntityVersion = 1
+	PlaceSdaExchangeOfferVersion     EntityVersion = 1
+	RemoveSdaExchangeOfferVersion    EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3269,6 +3278,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &createLiquidityProviderTransactionDTO{}
 	case ManualRateChange:
 		dto = &manualRateChangeTransactionDTO{}
+	case PlaceSdaExchangeOffer:
+		dto = &placeSdaOfferTransactionDTO{}
+	case RemoveSdaExchangeOffer:
+		dto = &removeSdaExchangeOfferTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

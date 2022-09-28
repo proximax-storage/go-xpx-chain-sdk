@@ -133,6 +133,12 @@ const (
 	operationRoute           = "/operation/%s"
 )
 
+// routes for SdaExchangeService
+const (
+	exchangeSdaRoute       = "/account/%s/exchangesda"
+	sdaOffersByMosaicRoute = "/exchangesda/%s/%s"
+)
+
 // routes for ExchangeService
 const (
 	exchangeRoute       = "/account/%s/exchange"
