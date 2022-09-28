@@ -19,6 +19,24 @@ func (dto *hashDto) Hash() (*Hash, error) {
 	return StringToHash(s)
 }
 
+type hashDtos []hashDto
+
+func (h *hashDtos) toStruct() ([]*Hash, error) {
+	dtos := *h
+	hashes := make([]*Hash, 0, len(dtos))
+
+	for _, dto := range dtos {
+		status, err := dto.Hash()
+		if err != nil {
+			return nil, err
+		}
+
+		hashes = append(hashes, status)
+	}
+
+	return hashes, nil
+}
+
 type signatureDto string
 
 func (dto *signatureDto) Signature() (*Signature, error) {
@@ -960,6 +978,7 @@ func (dto *transferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 type harvesterTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
+		HarvesterKey string `json:"harvesterKey"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -975,8 +994,14 @@ func (dto *harvesterTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
+	acc, err := NewAccountFromPublicKey(dto.Tx.HarvesterKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
 	return &HarvesterTransaction{
 		*atx,
+		acc,
 	}, nil
 }
 

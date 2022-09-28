@@ -8,6 +8,7 @@ table HarvesterTransactionBuffer {
     type: ushort;
     maxFee: [uint];
     deadline:[uint];
+    harvesterKey:[ubyte];
 }
 
 root_type HarvesterTransactionBuffer;

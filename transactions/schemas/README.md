@@ -1,6 +1,6 @@
 ## Generate flatbuffers transactions
 
-`flatc -go schema_aggregate_transaction.fbs`
+`flatc --go schema_aggregate_transaction.fbs`
 
 Docs: http://google.github.io/flatbuffers/
 
