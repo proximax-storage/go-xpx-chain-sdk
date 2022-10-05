@@ -2828,7 +2828,7 @@ const (
 	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
-	RemoveSdaExchangeOfferHeaderSize
+	RemoveSdaExchangeOfferHeaderSize             = TransactionHeaderSize + SdaOffersCountSize
 )
 
 type EntityType uint16
@@ -2903,8 +2903,8 @@ const (
 	ReplicatorOffboarding          EntityType = 0x4762
 	CreateLiquidityProvider        EntityType = 0x4169
 	ManualRateChange               EntityType = 0x4269
-	PlaceSdaExchangeOffer     EntityType = 0x416A
-	RemoveSdaExchangeOffer    EntityType = 0x426A
+	PlaceSdaExchangeOffer          EntityType = 0x416A
+	RemoveSdaExchangeOffer         EntityType = 0x426A
 )
 
 func (t EntityType) String() string {
