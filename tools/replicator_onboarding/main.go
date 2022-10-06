@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
@@ -41,9 +44,10 @@ func main() {
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
 	capacity := flag.Uint64("capacity", 0, "capacity of replicator")
 	replicatorPrivateKey := flag.String("privateKey", "", "Replicator private key")
+	cosignersPrivateKey := flag.String("cosigners", "", "Cosigners private keys separated by ','")
 	flag.Parse()
 
-	if err := onboard(*url, *replicatorPrivateKey, *capacity); err != nil {
+	if err := onboard(*url, *replicatorPrivateKey, *cosignersPrivateKey, *capacity); err != nil {
 		fmt.Printf("Replicator onboarding failed: %s\n", err)
 		os.Exit(1)
 	}
@@ -51,7 +55,7 @@ func main() {
 	fmt.Println("Replicator onboarded successfully!!!")
 }
 
-func onboard(url, replicatorPrivateKey string, capacity uint64) error {
+func onboard(url, replicatorPrivateKey, cosignersStr string, capacity uint64) error {
 	if url == "" {
 		return ErrNoUrl
 	}
@@ -78,6 +82,15 @@ func onboard(url, replicatorPrivateKey string, capacity uint64) error {
 		return err
 	}
 
+	cosigners := strings.Split(cosignersStr, ",")
+	cosignersAccs := make([]*sdk.Account, len(cosigners))
+	for i, cosigner := range cosigners {
+		cosignersAccs[i], err = client.NewAccountFromPrivateKey(cosigner)
+		if err != nil {
+			return err
+		}
+	}
+
 	replicatorAccount, err := client.NewAccountFromPrivateKey(replicatorPrivateKey)
 	if err != nil {
 		return err
@@ -91,10 +104,44 @@ func onboard(url, replicatorPrivateKey string, capacity uint64) error {
 		return err
 	}
 
-	res, err := sync.Announce(ctx, cfg, ws, replicatorAccount, replicatorOnboardingTx)
-	if err != nil {
-		return err
-	}
+	switch len(cosigners) {
+	case 0:
+		res, err := sync.Announce(ctx, cfg, ws, replicatorAccount, replicatorOnboardingTx)
+		if err != nil {
+			return err
+		}
 
-	return res.Err()
+		return res.Err()
+	case 1:
+		res, err := sync.Announce(ctx, cfg, ws, cosignersAccs[0], replicatorOnboardingTx)
+		if err != nil {
+			return err
+		}
+
+		return res.Err()
+	default:
+		gp, ctx := errgroup.WithContext(ctx)
+
+		res, err := sync.Announce(ctx, cfg, ws, replicatorAccount, replicatorOnboardingTx)
+		if err != nil {
+			return err
+		}
+
+		if res.Err() != nil {
+			return res.Err()
+		}
+
+		for _, acc := range cosignersAccs[1:] {
+			gp.Go(func() error {
+				syncer, err := sync.NewTransactionSyncer(ctx, cfg, acc, sync.WithWsClient(ws), sync.WithClient(client))
+				if err != nil {
+					return err
+				}
+
+				return syncer.CoSign(ctx, res.Hash(), false)
+			})
+		}
+
+		return nil
+	}
 }

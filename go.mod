@@ -14,4 +14,5 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/supranational/blst v0.3.2
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 )
