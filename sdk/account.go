@@ -122,6 +122,39 @@ func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses ...*Addr
 	return dtos.toStruct(a.client.config.reputationConfig)
 }
 
+func (a *AccountService) GetStakingRecord(ctx context.Context, address *Address, refHeight *Height) (*StakingRecord, error) {
+
+	dto := &stakingRecordInfoDto{}
+
+	url := net.NewUrl(fmt.Sprintf(stakingRecordsSpecificRoute, address.Address, refHeight))
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
+}
+
+func (a *AccountService) GetStakingRecords(ctx context.Context, requestOpts *StakingRecordsPageOptions) (*StakingRecordsPage, error) {
+
+	dto := StakingRecordInfoPageDto{}
+	u, err := addOptions(stakingRecordsRoute, requestOpts)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, u, nil, &dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
+}
+
 func (a *AccountService) GetMultisigAccountInfo(ctx context.Context, address *Address) (*MultisigAccountInfo, error) {
 	if address == nil {
 		return nil, ErrNilAddress

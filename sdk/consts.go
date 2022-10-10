@@ -38,6 +38,8 @@ var (
 // routes for AccountService
 const (
 	accountsRoute                 = "/account"
+	stakingRecordsRoute           = "/stakingRecord"
+	stakingRecordsSpecificRoute   = "/stakingRecord/%s/%s"
 	accountRoute                  = "/account/%s"
 	accountNamesRoute             = "/account/names"
 	accountPropertiesRoute        = "/account/%s/properties"

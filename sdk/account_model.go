@@ -134,6 +134,44 @@ func (a *AccountProperties) String() string {
 	)
 }
 
+type StakingRecord struct {
+	Address        *Address
+	PublicKey      string
+	RegistryHeight Height
+	RefHeight      Height
+	StakedAmount   Amount
+}
+
+func (a *StakingRecord) String() string {
+	return str.StructToString(
+		"AccountInfo",
+		str.NewField("Address", str.StringPattern, a.Address),
+		str.NewField("PublicKey", str.StringPattern, a.PublicKey),
+		str.NewField("RegistryHeight", str.StringPattern, a.RegistryHeight),
+		str.NewField("RefHeight", str.StringPattern, a.RefHeight),
+		str.NewField("StakedAmount", str.StringPattern, a.StakedAmount),
+	)
+}
+
+type StakingRecordsPage struct {
+	StakingRecords []StakingRecord
+	Pagination     Pagination
+}
+
+func (a *StakingRecordsPage) String() string {
+	return str.StructToString(
+		"StakingRecordsPage",
+		str.NewField("StakingRecords", str.StringPattern, a.StakingRecords),
+		str.NewField("Pagination", str.StringPattern, a.Pagination),
+	)
+}
+
+type StakingRecordsPageOptions struct {
+	RefHeight uint   `url:"refHeight,omitempty"`
+	AccountId string `url:"accountId,omitempty"`
+	PaginationOrderingOptions
+}
+
 type AccountInfo struct {
 	Address                *Address
 	AddressHeight          Height

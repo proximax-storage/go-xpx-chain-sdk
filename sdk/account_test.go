@@ -43,6 +43,35 @@ var (
 	}
 
 	accountClient = mockServer.getPublicTestClientUnsafe().Account
+
+	stakingRecord = &StakingRecord{
+		Address:        &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+		PublicKey:      "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+		RefHeight:      uint64DTO{5, 0}.toStruct(),
+		RegistryHeight: uint64DTO{5, 0}.toStruct(),
+		StakedAmount:   uint64DTO{5, 0}.toStruct(),
+	}
+	stakingRecords = &StakingRecordsPage{StakingRecords: []StakingRecord{{
+		Address:        &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+		PublicKey:      "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+		RefHeight:      uint64DTO{0, 0}.toStruct(),
+		RegistryHeight: uint64DTO{0, 0}.toStruct(),
+		StakedAmount:   uint64DTO{0, 0}.toStruct(),
+	},
+		{
+			Address:        &Address{MijinTest, "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"},
+			PublicKey:      "F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+			RefHeight:      uint64DTO{0, 0}.toStruct(),
+			RegistryHeight: uint64DTO{0, 0}.toStruct(),
+			StakedAmount:   uint64DTO{0, 0}.toStruct(),
+		}},
+		Pagination: Pagination{
+			PageNumber:   1,
+			PageSize:     20,
+			TotalEntries: 2,
+			TotalPages:   1,
+		},
+	}
 )
 
 const (
@@ -158,6 +187,73 @@ const (
       "alias3",
       "alias4"
     ]
+}
+`
+	stakingRecordJson = `{
+   "stakingAccount":{  
+      "address":"901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58",
+      "publicKey":"F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+      "refHeight":[  
+         5,
+         0
+      ],
+	  "registryHeight":[  
+         5,
+         0
+      ],
+	  "stakedAmount":[  
+         5,
+         0
+      ]
+   }
+}
+`
+	stakingRecordsJson = `
+{
+	"data": [
+		{
+			"stakingAccount":{  
+			  "address":"901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58",
+			  "publicKey":"F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+			  "refHeight":[  
+				 0,
+				 0
+			  ],
+			  "registryHeight":[  
+				 0,
+				 0
+			  ],
+			  "stakedAmount":[  
+				 0,
+				 0
+			  ]
+			}
+		},
+		{
+			"stakingAccount":{  
+			  "address":"901CD938C5CE4ED22031C5CE398E618EB1205D5344E2539B58",
+			  "publicKey":"F3824119C9F8B9E81007CAA0EDD44F098458F14503D7C8D7C24F60AF11266E57",
+			  "refHeight":[  
+				 0,
+				 0
+			  ],
+			  "registryHeight":[  
+				 0,
+				 0
+			  ],
+			  "stakedAmount":[  
+				 0,
+				 0
+			  ]
+			}
+		}
+	],
+	"pagination": {
+		"totalEntries": 2,
+		"pageNumber": 1,
+		"pageSize": 20,
+		"totalPages": 1
+	}
 }
 `
 )
@@ -280,4 +376,30 @@ func newAddressFromRaw(addressString string) (address *Address) {
 		return nil
 	}
 	return address
+}
+
+func TestAccountService_GetStakingRecord(t *testing.T) {
+	refHeight := Height(100)
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf(stakingRecordsSpecificRoute, nemTestAddress1, refHeight),
+		RespBody: stakingRecordJson,
+	})
+
+	obtStakingRecord, err := accountClient.GetStakingRecord(context.Background(), newAddressFromRaw(nemTestAddress1), &refHeight)
+
+	assert.Nilf(t, err, "AccountService.GetAccountProperties returned error: %s", err)
+
+	tests.ValidateStringers(t, stakingRecord, obtStakingRecord)
+}
+
+func TestAccountService_GetStakingRecords(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     stakingRecordsRoute,
+		RespBody: stakingRecordsJson,
+	})
+	obtStakingRecords, err := accountClient.GetStakingRecords(context.Background(), nil)
+
+	assert.Nilf(t, err, "AccountService.GetAccountProperties returned error: %s", err)
+
+	tests.ValidateStringers(t, stakingRecords, obtStakingRecords)
 }

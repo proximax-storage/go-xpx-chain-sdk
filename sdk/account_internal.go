@@ -190,6 +190,66 @@ func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*Supple
 	return &supplementalPublicKeys, nil
 }
 
+type stakingRecordInfoDto struct {
+	StakingAccount struct {
+		Address        string    `json:"address"`
+		PublicKey      string    `json:"publicKey"`
+		RegistryHeight uint64DTO `json:"registryHeight"`
+		StakedAmount   uint64DTO `json:"stakedAmount"`
+		RefHeight      uint64DTO `json:"refHeight"`
+	} `json:"stakingAccount"`
+}
+
+func (dto *stakingRecordInfoDto) toStruct() (*StakingRecord, error) {
+
+	add, err := NewAddressFromBase32(dto.StakingAccount.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	stakingRecord := &StakingRecord{
+		Address:        add,
+		RegistryHeight: dto.StakingAccount.RegistryHeight.toStruct(),
+		PublicKey:      dto.StakingAccount.PublicKey,
+		StakedAmount:   dto.StakingAccount.StakedAmount.toStruct(),
+		RefHeight:      dto.StakingAccount.RefHeight.toStruct(),
+	}
+
+	return stakingRecord, nil
+}
+
+type StakingRecordInfoPageDto struct {
+	StakingRecords []stakingRecordInfoDto `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *StakingRecordInfoPageDto) toStruct() (*StakingRecordsPage, error) {
+	page := &StakingRecordsPage{
+		StakingRecords: make([]StakingRecord, len(t.StakingRecords)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+	for i, t := range t.StakingRecords {
+		stakingRecord, err := t.toStruct()
+		if err != nil {
+			return nil, err
+		}
+		page.StakingRecords[i] = *stakingRecord
+	}
+
+	return page, nil
+}
+
 type accountInfoDTO struct {
 	Account struct {
 		Address                string                     `json:"address"`
