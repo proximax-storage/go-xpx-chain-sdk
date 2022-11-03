@@ -22,7 +22,7 @@ type unconfirmedAddedHandler struct {
 	errCh         chan<- error
 }
 
-func (h *unconfirmedAddedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *unconfirmedAddedHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapUnconfirmedAdded(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

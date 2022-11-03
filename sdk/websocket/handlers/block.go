@@ -21,7 +21,7 @@ type blockHandler struct {
 	handlers      subscribers.Block
 }
 
-func (h *blockHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *blockHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapBlock(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapping"))

@@ -19,13 +19,13 @@ var statusHandlerFunc2 = func(tx *sdk.StatusInfo) bool {
 
 func Test_statusImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []StatusHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
@@ -95,13 +95,13 @@ func Test_statusImpl_AddHandlers(t *testing.T) {
 
 func Test_statusImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*StatusHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	emptySubscribers := make(map[string][]*StatusHandler)
 	emptySubscribers[handle.String()] = make([]*StatusHandler, 0)
@@ -197,12 +197,12 @@ func Test_statusImpl_RemoveHandlers(t *testing.T) {
 
 func Test_statusImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)
@@ -257,12 +257,12 @@ func Test_statusImpl_HasHandlers(t *testing.T) {
 
 func Test_statusImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	statusHandlerFunc1Ptr := StatusHandler(statusHandlerFunc1)
 	statusHandlerFunc2Ptr := StatusHandler(statusHandlerFunc2)

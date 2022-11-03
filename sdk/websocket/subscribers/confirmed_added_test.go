@@ -18,14 +18,14 @@ var confirmedAddedHandlerFunc2 = func(tx sdk.Transaction) bool {
 
 func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []ConfirmedAddedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	subscribers := make(map[string][]*ConfirmedAddedHandler)
 	subscribers[handle.String()] = make([]*ConfirmedAddedHandler, 0)
@@ -98,14 +98,14 @@ func Test_confirmedAddedImpl_AddHandlers(t *testing.T) {
 
 func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*ConfirmedAddedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	emptySubscribers := make(map[string][]*ConfirmedAddedHandler)
 	emptySubscribers[handle.String()] = make([]*ConfirmedAddedHandler, 0)
@@ -204,13 +204,13 @@ func Test_confirmedAddedImpl_RemoveHandlers(t *testing.T) {
 
 func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
 	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)
 
@@ -264,13 +264,13 @@ func Test_confirmedAddedImpl_HasHandlers(t *testing.T) {
 
 func Test_confirmedAddedImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	confirmedAddedHandlerFunc1Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc1)
 	confirmedAddedHandlerFunc2Ptr := ConfirmedAddedHandler(confirmedAddedHandlerFunc2)

@@ -16,11 +16,11 @@ func Test_driveStateHandler_Handle(t *testing.T) {
 		handlers      subscribers.DriveState
 	}
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 		resp   []byte
 	}
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.DriveStateInfo)
 	messageMapperMock := new(mappers.DriveStateMapper)

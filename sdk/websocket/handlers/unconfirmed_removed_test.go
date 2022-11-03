@@ -19,11 +19,11 @@ func Test_unconfirmedRemovedHandler_Handle(t *testing.T) {
 		handlers      subscribers.UnconfirmedRemoved
 	}
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 		resp   []byte
 	}
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.UnconfirmedRemoved)
 	messageMapperMock := new(mappers.UnconfirmedRemovedMapper)

@@ -228,7 +228,7 @@ func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
 }
 
-//BlockGenerationTime gets value from config. If value not found returns default value - 15s
+// BlockGenerationTime gets value from config. If value not found returns default value - 15s
 func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error) {
 	cfg, err := c.Network.GetNetworkConfig(ctx)
 	if err != nil {
@@ -506,6 +506,15 @@ func (c *Client) NewRemoveExchangeOfferTransaction(deadline *Deadline, removeOff
 
 func (c *Client) NewNetworkConfigTransaction(deadline *Deadline, delta Duration, config *NetworkConfig, entities *SupportedEntities) (*NetworkConfigTransaction, error) {
 	tx, err := NewNetworkConfigTransaction(deadline, delta, config, entities, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewNetworkConfigAbsoluteHeightTransaction(deadline *Deadline, height Height, config *NetworkConfig, entities *SupportedEntities) (*NetworkConfigAbsoluteHeightTransaction, error) {
+	tx, err := NewNetworkConfigAbsoluteHeightTransaction(deadline, height, config, entities, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

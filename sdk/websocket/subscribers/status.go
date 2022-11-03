@@ -9,10 +9,10 @@ type (
 	StatusHandler func(*sdk.StatusInfo) bool
 
 	Status interface {
-		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...StatusHandler) error
-		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*StatusHandler) bool
-		HasHandlers(handle *sdk.TransactionChannelHandle) bool
-		GetHandlers(handle *sdk.TransactionChannelHandle) []*StatusHandler
+		AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...StatusHandler) error
+		RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*StatusHandler) bool
+		HasHandlers(handle *sdk.CompoundChannelHandle) bool
+		GetHandlers(handle *sdk.CompoundChannelHandle) []*StatusHandler
 		GetHandles() []string
 	}
 
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*StatusHandler
 	}
 	statusSubscription struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*StatusHandler
 		resultCh chan bool
 	}
@@ -82,7 +82,7 @@ func (e *statusImpl) removeSubscription(s *statusSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *statusImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...StatusHandler) error {
+func (e *statusImpl) AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...StatusHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -100,7 +100,7 @@ func (e *statusImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers 
 	return nil
 }
 
-func (e *statusImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*StatusHandler) bool {
+func (e *statusImpl) RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*StatusHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
@@ -115,13 +115,13 @@ func (e *statusImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handle
 	return <-resCh
 }
 
-func (e *statusImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
+func (e *statusImpl) HasHandlers(handle *sdk.CompoundChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *statusImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*StatusHandler {
+func (e *statusImpl) GetHandlers(handle *sdk.CompoundChannelHandle) []*StatusHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[handle.String()]; ok && res != nil {

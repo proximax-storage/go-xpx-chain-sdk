@@ -21,7 +21,7 @@ type partialRemovedHandler struct {
 	handlers      subscribers.PartialRemoved
 }
 
-func (h *partialRemovedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *partialRemovedHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapPartialRemoved(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

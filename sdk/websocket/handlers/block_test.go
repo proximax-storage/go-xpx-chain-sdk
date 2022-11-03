@@ -19,7 +19,7 @@ func Test_blockHandler_Handle(t *testing.T) {
 		handlers      subscribers.Block
 	}
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 		resp   []byte
 	}
 

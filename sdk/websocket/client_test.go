@@ -141,12 +141,12 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 		messagePublisher          MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.ConfirmedAddedHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(sdk.Transaction) bool {
 		return false
@@ -162,7 +162,7 @@ func TestCatapultWebsocketClientImpl_AddConfirmedAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -264,12 +264,12 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 		messagePublisher            MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.UnconfirmedAddedHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(sdk.Transaction) bool {
 		return false
@@ -285,7 +285,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -372,12 +372,12 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.UnconfirmedRemovedHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.UnconfirmedRemoved) bool {
 		return false
@@ -393,7 +393,7 @@ func TestCatapultWebsocketClientImpl_AddUnconfirmedRemovedHandlers(t *testing.T)
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -494,12 +494,12 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.PartialAddedHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(sdk.Transaction) bool {
 		return false
@@ -515,7 +515,7 @@ func TestCatapultWebsocketClientImpl_AddPartialAddedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -616,12 +616,12 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.PartialRemovedHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.PartialRemovedInfo) bool {
 		return false
@@ -637,7 +637,7 @@ func TestCatapultWebsocketClientImpl_AddPartialRemovedHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -738,12 +738,12 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.StatusHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.StatusInfo) bool {
 		return false
@@ -759,7 +759,7 @@ func TestCatapultWebsocketClientImpl_AddStatusHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -860,12 +860,12 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 		messagePublisher MessagePublisher
 	}
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []subscribers.CosignatureHandler
 	}
 
 	uid := "123456"
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	handler1 := func(*sdk.SignerInfo) bool {
 		return false
@@ -881,7 +881,7 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 	}
 
 	messagePublisherError := errors.New("message publisher error")
-	mockHandle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	mockHandle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 	mockMessagePublisher := new(MockMessagePublisher)
 	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
 		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
@@ -968,6 +968,257 @@ func TestCatapultWebsocketClientImpl_AddCosignatureHandlers(t *testing.T) {
 				messagePublisher:       tt.fields.messagePublisher,
 			}
 			err := c.AddCosignatureHandlersByHandle(tt.args.handle, tt.args.handlers...)
+			assert.Equal(t, err != nil, tt.wantErr)
+		})
+	}
+}
+
+func TestCatapultWebsocketClientImpl_AddStateStatementHandlers(t *testing.T) {
+	type fields struct {
+		UID                       string
+		stateStatementSubscribers subscribers.Receipt
+
+		topicHandlers    TopicHandlersStorage
+		messagePublisher MessagePublisher
+	}
+	type args struct {
+		handle   *sdk.EntityType
+		handlers []subscribers.ReceiptHandler
+	}
+
+	uid := "123456"
+	handleE := sdk.EntityType(123)
+	handle := &sdk.CompoundChannelHandle{
+		Address:         nil,
+		TransactionType: &handleE,
+	}
+	handler1 := func(*sdk.AnonymousReceipt) bool {
+		return false
+	}
+
+	handler2 := func(*sdk.AnonymousReceipt) bool {
+		return false
+	}
+
+	userHandlers := []subscribers.ReceiptHandler{
+		handler1,
+		handler2,
+	}
+
+	messagePublisherError := errors.New("message publisher error")
+	mockHandle := sdk.EntityType(123)
+	mockMessagePublisher := new(MockMessagePublisher)
+	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
+		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
+
+	mockTopicHandler := new(MockTopicHandlersStorage)
+	mockTopicHandler.On("HasHandler", mock.Anything).Return(false).Once().
+		On("HasHandler", mock.Anything).Return(true).
+		On("SetTopicHandler", mock.Anything, mock.Anything).Return(nil)
+
+	subscribersAddHandlersError := errors.New("error adding handlers")
+	mockSubscribers := new(mocks.Receipt)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "nil handlers",
+			fields: fields{
+				UID: uid,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "message publisher error",
+			fields: fields{
+				UID:                       uid,
+				topicHandlers:             mockTopicHandler,
+				messagePublisher:          mockMessagePublisher,
+				stateStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: true,
+		},
+		{
+			name: "add handlers error",
+			fields: fields{
+				UID:                       uid,
+				topicHandlers:             mockTopicHandler,
+				messagePublisher:          mockMessagePublisher,
+				stateStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: true,
+		},
+		{
+			name: "success",
+			fields: fields{
+				UID:                       uid,
+				topicHandlers:             mockTopicHandler,
+				messagePublisher:          mockMessagePublisher,
+				stateStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &CatapultWebsocketClientImpl{
+				config:                    &sdk.Config{},
+				UID:                       tt.fields.UID,
+				stateStatementSubscribers: tt.fields.stateStatementSubscribers,
+				topicHandlers:             tt.fields.topicHandlers,
+				messagePublisher:          tt.fields.messagePublisher,
+			}
+			err := c.AddStateStatementHandlers(tt.args.handle, tt.args.handlers...)
+			assert.Equal(t, err != nil, tt.wantErr)
+		})
+	}
+}
+
+func TestCatapultWebsocketClientImpl_AddPublicKeyStatementHandlers(t *testing.T) {
+	type fields struct {
+		UID                           string
+		publicKeyStatementSubscribers subscribers.Receipt
+
+		topicHandlers    TopicHandlersStorage
+		messagePublisher MessagePublisher
+	}
+	type args struct {
+		handle   *sdk.EntityType
+		handlers []subscribers.ReceiptHandler
+	}
+
+	uid := "123456"
+	handleE := sdk.EntityType(123)
+	handle := &sdk.CompoundChannelHandle{
+		Address:         nil,
+		TransactionType: &handleE,
+	}
+
+	handler1 := func(*sdk.AnonymousReceipt) bool {
+		return false
+	}
+
+	handler2 := func(*sdk.AnonymousReceipt) bool {
+		return false
+	}
+
+	userHandlers := []subscribers.ReceiptHandler{
+		handler1,
+		handler2,
+	}
+
+	messagePublisherError := errors.New("message publisher error")
+	mockHandle := sdk.EntityType(123)
+	mockMessagePublisher := new(MockMessagePublisher)
+	mockMessagePublisher.On("PublishSubscribeMessage", uid, mock.Anything).Return(messagePublisherError).Once().
+		On("PublishSubscribeMessage", uid, mock.Anything).Return(nil)
+
+	mockTopicHandler := new(MockTopicHandlersStorage)
+	mockTopicHandler.On("HasHandler", mock.Anything).Return(false).Once().
+		On("HasHandler", mock.Anything).Return(true).
+		On("SetTopicHandler", mock.Anything, mock.Anything).Return(nil)
+
+	subscribersAddHandlersError := errors.New("error adding handlers")
+	mockSubscribers := new(mocks.Receipt)
+	mockSubscribers.On("HasHandlers", handle).Return(false).Once().
+		On("HasHandlers", handle).Return(true).
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(subscribersAddHandlersError).Once().
+		On("AddHandlers", handle, mock.Anything, mock.Anything).Return(nil)
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "nil handlers",
+			fields: fields{
+				UID: uid,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "message publisher error",
+			fields: fields{
+				UID:                           uid,
+				topicHandlers:                 mockTopicHandler,
+				messagePublisher:              mockMessagePublisher,
+				publicKeyStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: true,
+		},
+		{
+			name: "add handlers error",
+			fields: fields{
+				UID:                           uid,
+				topicHandlers:                 mockTopicHandler,
+				messagePublisher:              mockMessagePublisher,
+				publicKeyStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: true,
+		},
+		{
+			name: "success",
+			fields: fields{
+				UID:                           uid,
+				topicHandlers:                 mockTopicHandler,
+				messagePublisher:              mockMessagePublisher,
+				publicKeyStatementSubscribers: mockSubscribers,
+			},
+			args: args{
+				handle:   &mockHandle,
+				handlers: userHandlers,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &CatapultWebsocketClientImpl{
+				config:                        &sdk.Config{},
+				UID:                           tt.fields.UID,
+				publicKeyStatementSubscribers: tt.fields.publicKeyStatementSubscribers,
+				topicHandlers:                 tt.fields.topicHandlers,
+				messagePublisher:              tt.fields.messagePublisher,
+			}
+			err := c.AddPublicKeyStatementHandlers(tt.args.handle, tt.args.handlers...)
 			assert.Equal(t, err != nil, tt.wantErr)
 		})
 	}

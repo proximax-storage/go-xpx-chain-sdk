@@ -74,6 +74,11 @@ const (
 	blockStorageRoute  = "/diagnostic/storage"
 )
 
+// routes for ReceiptService
+const (
+	blockStatementsByHeight = "/block/%s/receipts"
+)
+
 // routes for ContractsService
 const (
 	contractsInfoRoute      = "/contract"
@@ -191,4 +196,29 @@ const (
 
 var (
 	regValidNamespace = regexp.MustCompile(`^[a-z0-9][a-z0-9-_]*$`)
+)
+
+const (
+	AddressSize       int = 25
+	CharCountSize     int = 1
+	IntPaddingSize    int = 4
+	ByteFlagsSize     int = 1
+	HalfWordFlagsSize int = 2
+	BaseInt64Size     int = 8
+	AmountSize            = BaseInt64Size
+	KeySize           int = 32
+	Hash256           int = 32
+	MosaicIdSize          = BaseInt64Size
+	NamespaceSize         = BaseInt64Size
+	SizeSize          int = 4
+	MaxStringSize     int = 2
+	SignerSize            = KeySize
+	SignatureSize     int = 64
+	HalfOfSignature       = SignatureSize / 2
+	VersionSize       int = 4
+	TypeSize          int = 2
+	MaxFeeSize            = BaseInt64Size
+	DeadLineSize          = BaseInt64Size
+	DurationSize          = BaseInt64Size
+	StorageSizeSize       = BaseInt64Size
 )

@@ -18,13 +18,13 @@ var unconfirmedRemovedHandlerFunc2 = func(*sdk.UnconfirmedRemoved) bool {
 
 func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []UnconfirmedRemovedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	subscribers := make(map[string][]*UnconfirmedRemovedHandler)
 	subscribers[handle.String()] = make([]*UnconfirmedRemovedHandler, 0)
@@ -97,13 +97,13 @@ func Test_unconfirmedRemovedImpl_AddHandlers(t *testing.T) {
 
 func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*UnconfirmedRemovedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	emptySubscribers := make(map[string][]*UnconfirmedRemovedHandler)
 	emptySubscribers[handle.String()] = make([]*UnconfirmedRemovedHandler, 0)
@@ -199,12 +199,12 @@ func Test_unconfirmedRemovedImpl_RemoveHandlers(t *testing.T) {
 
 func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
@@ -259,12 +259,12 @@ func Test_unconfirmedRemovedImpl_HasHandlers(t *testing.T) {
 
 func Test_unconfirmedRemovedImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	unconfirmedRemovedHandlerFunc1Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc1)
 	unconfirmedRemovedHandlerFunc2Ptr := UnconfirmedRemovedHandler(unconfirmedRemovedHandlerFunc2)

@@ -7,10 +7,10 @@ import (
 
 type (
 	PartialAdded interface {
-		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialAddedHandler) error
-		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialAddedHandler) bool
-		HasHandlers(handle *sdk.TransactionChannelHandle) bool
-		GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialAddedHandler
+		AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...PartialAddedHandler) error
+		RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*PartialAddedHandler) bool
+		HasHandlers(handle *sdk.CompoundChannelHandle) bool
+		GetHandlers(handle *sdk.CompoundChannelHandle) []*PartialAddedHandler
 		GetHandles() []string
 	}
 	PartialAddedHandler func(sdk.Transaction) bool
@@ -22,7 +22,7 @@ type (
 		subscribers        map[string][]*PartialAddedHandler
 	}
 	partialAddedSubscription struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*PartialAddedHandler
 		resultCh chan bool
 	}
@@ -81,7 +81,7 @@ func (e *partialAddedImpl) removeSubscription(s *partialAddedSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *partialAddedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialAddedHandler) error {
+func (e *partialAddedImpl) AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...PartialAddedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -99,7 +99,7 @@ func (e *partialAddedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, han
 	return nil
 }
 
-func (e *partialAddedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialAddedHandler) bool {
+func (e *partialAddedImpl) RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*PartialAddedHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
@@ -114,13 +114,13 @@ func (e *partialAddedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, 
 	return <-resCh
 }
 
-func (e *partialAddedImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
+func (e *partialAddedImpl) HasHandlers(handle *sdk.CompoundChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *partialAddedImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialAddedHandler {
+func (e *partialAddedImpl) GetHandlers(handle *sdk.CompoundChannelHandle) []*PartialAddedHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[handle.String()]; ok && res != nil {

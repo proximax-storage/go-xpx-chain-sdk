@@ -10,7 +10,7 @@ import (
 )
 
 type Handler interface {
-	Handle(*sdk.TransactionChannelHandle, []byte) bool // Is subscription still necessary ?
+	Handle(*sdk.CompoundChannelHandle, []byte) bool // Is subscription still necessary ?
 }
 
 type cosignatureHandler struct {
@@ -25,7 +25,7 @@ func NewCosignatureHandler(messageMapper sdk.CosignatureMapper, handlers subscri
 	}
 }
 
-func (h *cosignatureHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *cosignatureHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapCosignature(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

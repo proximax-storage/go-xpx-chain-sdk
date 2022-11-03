@@ -9,10 +9,10 @@ type (
 	UnconfirmedRemovedHandler func(*sdk.UnconfirmedRemoved) bool
 
 	UnconfirmedRemoved interface {
-		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...UnconfirmedRemovedHandler) error
-		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool
-		HasHandlers(handle *sdk.TransactionChannelHandle) bool
-		GetHandlers(handle *sdk.TransactionChannelHandle) []*UnconfirmedRemovedHandler
+		AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...UnconfirmedRemovedHandler) error
+		RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool
+		HasHandlers(handle *sdk.CompoundChannelHandle) bool
+		GetHandlers(handle *sdk.CompoundChannelHandle) []*UnconfirmedRemovedHandler
 		GetHandles() []string
 	}
 
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*UnconfirmedRemovedHandler
 	}
 	unconfirmedRemovedSubscription struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*UnconfirmedRemovedHandler
 		resultCh chan bool
 	}
@@ -82,7 +82,7 @@ func (e *unconfirmedRemovedImpl) removeSubscription(s *unconfirmedRemovedSubscri
 	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *unconfirmedRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...UnconfirmedRemovedHandler) error {
+func (e *unconfirmedRemovedImpl) AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...UnconfirmedRemovedHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -100,7 +100,7 @@ func (e *unconfirmedRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandl
 	return nil
 }
 
-func (e *unconfirmedRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool {
+func (e *unconfirmedRemovedImpl) RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*UnconfirmedRemovedHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
@@ -115,13 +115,13 @@ func (e *unconfirmedRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHa
 	return <-resCh
 }
 
-func (e *unconfirmedRemovedImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
+func (e *unconfirmedRemovedImpl) HasHandlers(handle *sdk.CompoundChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *unconfirmedRemovedImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*UnconfirmedRemovedHandler {
+func (e *unconfirmedRemovedImpl) GetHandlers(handle *sdk.CompoundChannelHandle) []*UnconfirmedRemovedHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[handle.String()]; ok && res != nil {

@@ -935,6 +935,94 @@ func (tx *NetworkConfigTransaction) Size() int {
 	return NetworkConfigHeaderSize + len(tx.NetworkConfig.String()) + len(tx.SupportedEntities.String())
 }
 
+type NetworkConfigAbsoluteHeightTransaction struct {
+	AbstractTransaction
+	ApplyHeight       Height
+	NetworkConfig     *NetworkConfig
+	SupportedEntities *SupportedEntities
+}
+
+// returns NetworkConfigAbsoluteHeightTransaction from passed ApplyHeight, NetworkConfig and SupportedEntities
+func NewNetworkConfigAbsoluteHeightTransaction(deadline *Deadline, height Height, config *NetworkConfig, entities *SupportedEntities, networkType NetworkType) (*NetworkConfigAbsoluteHeightTransaction, error) {
+	if entities == nil {
+		return nil, errors.New("Entities should not be nil")
+	}
+	if config == nil {
+		return nil, errors.New("NetworkConfig should not be nil")
+	}
+
+	return &NetworkConfigAbsoluteHeightTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Type:        NetworkConfigEntityType,
+			Version:     NetworkConfigVersion,
+			Deadline:    deadline,
+			NetworkType: networkType,
+		},
+		ApplyHeight:       height,
+		NetworkConfig:     config,
+		SupportedEntities: entities,
+	}, nil
+}
+
+func (tx *NetworkConfigAbsoluteHeightTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *NetworkConfigAbsoluteHeightTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"ApplyHeightDelta": %s,
+			"NetworkConfig": %s,
+			"SupportedEntities": %s
+		`,
+		tx.AbstractTransaction.String(),
+		tx.Height,
+		tx.NetworkConfig,
+		tx.SupportedEntities,
+	)
+}
+
+func (tx *NetworkConfigAbsoluteHeightTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, dV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	sup, err := tx.SupportedEntities.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := tx.NetworkConfig.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	heightV := transactions.TransactionBufferCreateUint32Vector(builder, tx.ApplyHeight.toArray())
+	configV := transactions.TransactionBufferCreateByteVector(builder, config)
+	supportedV := transactions.TransactionBufferCreateByteVector(builder, sup)
+
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, dV, fV)
+
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferAddApplyHeight(builder, heightV)
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferAddNetworkConfigSize(builder, uint16(len(config)))
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferAddNetworkConfig(builder, configV)
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferAddSupportedEntityVersionsSize(builder, uint16(len(sup)))
+	transactions.NetworkConfigAbsoluteHeightTransactionBufferAddSupportedEntityVersions(builder, supportedV)
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return networkConfigTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *NetworkConfigAbsoluteHeightTransaction) Size() int {
+	return NetworkConfigHeaderSize + len(tx.NetworkConfig.String()) + len(tx.SupportedEntities.String())
+}
+
 type BlockchainUpgradeTransaction struct {
 	AbstractTransaction
 	UpgradePeriod        Duration
@@ -1945,7 +2033,7 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return MosaicSupplyChangeTransactionSize
 }
 
-/// region modify mosaic levy implementation
+// / region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -2026,7 +2114,7 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 
 /// end region modify mosaic levy
 
-/// region remove mosaic levy
+// / region remove mosaic levy
 type MosaicRemoveLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -3036,28 +3124,6 @@ func (ts *TransactionStatus) String() string {
 }
 
 const (
-	AddressSize                              int = 25
-	CharCountSize                            int = 1
-	IntPaddingSize                           int = 4
-	ByteFlagsSize                            int = 1
-	HalfWordFlagsSize                        int = 2
-	BaseInt64Size                            int = 8
-	AmountSize                                   = BaseInt64Size
-	KeySize                                  int = 32
-	Hash256                                  int = 32
-	MosaicIdSize                                 = BaseInt64Size
-	NamespaceSize                                = BaseInt64Size
-	SizeSize                                 int = 4
-	MaxStringSize                            int = 2
-	SignerSize                                   = KeySize
-	SignatureSize                            int = 64
-	HalfOfSignature                              = SignatureSize / 2
-	VersionSize                              int = 4
-	TypeSize                                 int = 2
-	MaxFeeSize                                   = BaseInt64Size
-	DeadLineSize                                 = BaseInt64Size
-	DurationSize                                 = BaseInt64Size
-	StorageSizeSize                              = BaseInt64Size
 	TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
 	PropertyModificationTypeSize             int = 1

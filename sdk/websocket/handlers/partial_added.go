@@ -21,7 +21,7 @@ type partialAddedHandler struct {
 	handlers      subscribers.PartialAdded
 }
 
-func (h *partialAddedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *partialAddedHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapPartialAdded(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

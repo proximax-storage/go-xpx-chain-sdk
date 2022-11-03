@@ -9,10 +9,10 @@ type (
 	PartialRemovedHandler func(*sdk.PartialRemovedInfo) bool
 
 	PartialRemoved interface {
-		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialRemovedHandler) error
-		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialRemovedHandler) bool
-		HasHandlers(handle *sdk.TransactionChannelHandle) bool
-		GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialRemovedHandler
+		AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...PartialRemovedHandler) error
+		RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*PartialRemovedHandler) bool
+		HasHandlers(handle *sdk.CompoundChannelHandle) bool
+		GetHandlers(handle *sdk.CompoundChannelHandle) []*PartialRemovedHandler
 		GetHandles() []string
 	}
 
@@ -23,7 +23,7 @@ type (
 		subscribers        map[string][]*PartialRemovedHandler
 	}
 	partialRemovedSubscription struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*PartialRemovedHandler
 		resultCh chan bool
 	}
@@ -82,7 +82,7 @@ func (e *partialRemovedImpl) removeSubscription(s *partialRemovedSubscription) {
 	s.resultCh <- itemCount != len(e.subscribers[s.handle.String()])
 }
 
-func (e *partialRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...PartialRemovedHandler) error {
+func (e *partialRemovedImpl) AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...PartialRemovedHandler) error {
 	e.Lock()
 	defer e.Unlock()
 	if len(handlers) == 0 {
@@ -101,7 +101,7 @@ func (e *partialRemovedImpl) AddHandlers(handle *sdk.TransactionChannelHandle, h
 	return nil
 }
 
-func (e *partialRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*PartialRemovedHandler) bool {
+func (e *partialRemovedImpl) RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*PartialRemovedHandler) bool {
 	if len(handlers) == 0 {
 		return false
 	}
@@ -116,13 +116,13 @@ func (e *partialRemovedImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle
 	return <-resCh
 }
 
-func (e *partialRemovedImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
+func (e *partialRemovedImpl) HasHandlers(handle *sdk.CompoundChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *partialRemovedImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*PartialRemovedHandler {
+func (e *partialRemovedImpl) GetHandlers(handle *sdk.CompoundChannelHandle) []*PartialRemovedHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[handle.String()]; ok && res != nil {

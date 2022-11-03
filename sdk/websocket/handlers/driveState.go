@@ -21,7 +21,7 @@ func NewDriveStateHandler(messageMapper sdk.DriveStateMapper, handlers subscribe
 	}
 }
 
-func (h *driveStateHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *driveStateHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapDriveState(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

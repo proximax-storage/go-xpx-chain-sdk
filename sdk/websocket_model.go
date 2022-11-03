@@ -93,7 +93,7 @@ type PartialAddedInfo struct {
 }
 
 type WsMessageInfo struct {
-	Handle      *TransactionChannelHandle
+	Handle      *CompoundChannelHandle
 	ChannelName string
 }
 
@@ -116,13 +116,13 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 			return nil, err
 		}
 		val := binary.BigEndian.Uint16(handle)
-		msg.Handle = NewTransactionChannelHandleFromTransactionType(EntityType(val))
+		msg.Handle = NewCompoundChannelHandleFromEntityType(EntityType(val))
 	} else {
 		address, err := NewAddressFromBase32(dto.Meta.Handle)
 		if err != nil {
 			return nil, err
 		}
-		msg.Handle = NewTransactionChannelHandleFromAddress(address)
+		msg.Handle = NewCompoundChannelHandleFromAddress(address)
 	}
 
 	return msg, nil

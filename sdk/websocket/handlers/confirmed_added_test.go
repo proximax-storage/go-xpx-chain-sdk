@@ -19,11 +19,11 @@ func Test_confirmedAddedHandler_Handle(t *testing.T) {
 		handlers      subscribers.ConfirmedAdded
 	}
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 		resp   []byte
 	}
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.TransferTransaction)
 	messageMapperMock := new(mappers.ConfirmedAddedMapper)

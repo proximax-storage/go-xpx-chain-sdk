@@ -19,11 +19,11 @@ func Test_cosignatureHandler_Handle(t *testing.T) {
 		handlers      subscribers.Cosignature
 	}
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 		resp   []byte
 	}
 
-	handle := sdk.NewTransactionChannelHandleFromAddress(new(sdk.Address))
+	handle := sdk.NewCompoundChannelHandleFromAddress(new(sdk.Address))
 
 	obj := new(sdk.SignerInfo)
 	messageMapperMock := new(mappers.CosignatureMapper)

@@ -18,14 +18,14 @@ var cosignatureHandlerFunc2 = func(tx *sdk.SignerInfo) bool {
 
 func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []CosignatureHandler
 	}
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 	subscribers := make(map[string][]*CosignatureHandler)
 	subscribers[handle.String()] = make([]*CosignatureHandler, 0)
 
@@ -94,13 +94,13 @@ func Test_cosignatureImpl_AddHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*CosignatureHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 	emptySubscribers := make(map[string][]*CosignatureHandler)
 	emptySubscribers[handle.String()] = make([]*CosignatureHandler, 0)
 
@@ -195,12 +195,12 @@ func Test_cosignatureImpl_RemoveHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 
@@ -254,12 +254,12 @@ func Test_cosignatureImpl_HasHandlers(t *testing.T) {
 
 func Test_cosignatureImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 	cosignatureHandlerFunc1Ptr := CosignatureHandler(cosignatureHandlerFunc1)
 	cosignatureHandlerFunc2Ptr := CosignatureHandler(cosignatureHandlerFunc2)
 

@@ -31,6 +31,27 @@ func (p BlockMapperFn) MapBlock(m []byte) (*BlockInfo, error) {
 
 //======================================================================================================================
 
+func MapReceipt(m []byte) (*AnonymousReceipt, error) {
+	dto := &anonymousReceiptDto{}
+	if err := json.Unmarshal(m, dto); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
+}
+
+type ReceiptMapper interface {
+	MapReceipt(m []byte) (*AnonymousReceipt, error)
+}
+
+type ReceiptMapperFn func(m []byte) (*AnonymousReceipt, error)
+
+func (p ReceiptMapperFn) MapReceipt(m []byte) (*AnonymousReceipt, error) {
+	return p(m)
+}
+
+//======================================================================================================================
+
 func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) ConfirmedAddedMapper {
 	return &confirmedAddedMapperImpl{
 		mapTransactionFunc: mapTransactionFunc,

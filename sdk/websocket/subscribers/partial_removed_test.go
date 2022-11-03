@@ -19,13 +19,13 @@ var partialRemovedHandlerFunc2 = func(info *sdk.PartialRemovedInfo) bool {
 
 func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []PartialRemovedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc2)
@@ -97,13 +97,13 @@ func Test_partialRemovedImpl_AddHandlers(t *testing.T) {
 
 func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 	type args struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*PartialRemovedHandler
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	emptySubscribers := make(map[string][]*PartialRemovedHandler)
 	emptySubscribers[handle.String()] = make([]*PartialRemovedHandler, 0)
@@ -199,12 +199,12 @@ func Test_partialRemovedImpl_RemoveHandlers(t *testing.T) {
 
 func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc2)
@@ -259,12 +259,12 @@ func Test_partialRemovedImpl_HasHandlers(t *testing.T) {
 
 func Test_partialRemovedImpl_GetHandlers(t *testing.T) {
 	type args struct {
-		handle *sdk.TransactionChannelHandle
+		handle *sdk.CompoundChannelHandle
 	}
 
 	address := &sdk.Address{}
 	address.Address = "test-address"
-	handle := sdk.NewTransactionChannelHandleFromAddress(address)
+	handle := sdk.NewCompoundChannelHandleFromAddress(address)
 
 	partialRemovedHandlerFunc1Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)
 	partialRemovedHandlerFunc2Ptr := PartialRemovedHandler(partialRemovedHandlerFunc1)

@@ -126,6 +126,25 @@ func networkConfigTransactionSchema() *schema {
 	}
 }
 
+func networkConfigAbsoluteHeightTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("applyHeight", IntSize),
+			newScalarAttribute("networkConfigSize", ShortSize),
+			newScalarAttribute("supportedEntityVersionsSize", ShortSize),
+			newArrayAttribute("networkConfig", ByteSize),
+			newArrayAttribute("supportedEntityVersions", ByteSize),
+		},
+	}
+}
+
 func blockchainUpgradeTransactionSchema() *schema {
 	return &schema{
 		[]schemaAttribute{

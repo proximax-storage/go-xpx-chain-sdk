@@ -30,6 +30,8 @@ const (
 	pathPartialRemoved     Path = "partialRemoved"
 	pathCosignature        Path = "cosignature"
 	driveState             Path = "driveState"
+	pathStateStatement     Path = "stateStatement"
+	pathPublicKeyStatement Path = "publicKeyStatement"
 )
 
 var (
@@ -58,6 +60,8 @@ type (
 		confirmedAddedSubscribers     subscribers.ConfirmedAdded
 		unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
 		unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
+		stateStatementSubscribers     subscribers.Receipt
+		publicKeyStatementSubscribers subscribers.Receipt
 
 		messageRouter    Router
 		topicHandlers    TopicHandlersStorage
@@ -87,9 +91,16 @@ type (
 		AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error
 		AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error
 		AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
+		AddConfirmedAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.ConfirmedAddedHandler) error
+		AddUnconfirmedAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.UnconfirmedAddedHandler) error
+		AddUnconfirmedRemovedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.UnconfirmedRemovedHandler) error
+		AddPartialAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.PartialAddedHandler) error
+		AddPartialRemovedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.PartialRemovedHandler) error
 		AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
 		AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
 		AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error
+		AddPublicKeyStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error
+		AddStateStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error
 	}
 )
 
@@ -173,7 +184,60 @@ func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.B
 
 	return nil
 }
-func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.ConfirmedAddedHandler) error {
+
+func (c *CatapultWebsocketClientImpl) AddStateStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error {
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	handle := sdk.NewCompoundChannelHandleFromEntityType(*entityType)
+	if !c.topicHandlers.HasHandler(pathStateStatement) {
+		c.topicHandlers.SetTopicHandler(pathStateStatement, &TopicHandler{
+			Handler: hdlrs.NewReceiptHandler(sdk.ReceiptMapperFn(sdk.MapReceipt), c.stateStatementSubscribers),
+			Topic:   topicFormatFn(formatPlainTopic),
+		})
+	}
+
+	if !c.stateStatementSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathStateStatement); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
+		}
+	}
+
+	if err := c.stateStatementSubscribers.AddHandlers(handle, handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddPublicKeyStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error {
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	handle := sdk.NewCompoundChannelHandleFromEntityType(*entityType)
+	if !c.topicHandlers.HasHandler(pathPublicKeyStatement) {
+		c.topicHandlers.SetTopicHandler(pathPublicKeyStatement, &TopicHandler{
+			Handler: hdlrs.NewReceiptHandler(sdk.ReceiptMapperFn(sdk.MapReceipt), c.publicKeyStatementSubscribers),
+			Topic:   topicFormatFn(formatPlainTopic),
+		})
+	}
+
+	if !c.publicKeyStatementSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathPublicKeyStatement); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
+		}
+	}
+
+	if err := c.publicKeyStatementSubscribers.AddHandlers(handle, handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.ConfirmedAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -200,10 +264,10 @@ func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlersByHandle(handle *
 }
 
 func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error {
-	return c.AddConfirmedAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddConfirmedAddedHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.UnconfirmedAddedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.UnconfirmedAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -229,10 +293,10 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlersByHandle(handle
 	return nil
 }
 func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error {
-	return c.AddUnconfirmedAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddUnconfirmedAddedHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.UnconfirmedRemovedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.UnconfirmedRemovedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -259,10 +323,10 @@ func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlersByHandle(hand
 }
 
 func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error {
-	return c.AddUnconfirmedRemovedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddUnconfirmedRemovedHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.PartialAddedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.PartialAddedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -289,10 +353,10 @@ func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlersByHandle(handle *sd
 }
 
 func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error {
-	return c.AddPartialAddedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddPartialAddedHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.PartialRemovedHandler) error {
+func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.PartialRemovedHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -319,10 +383,10 @@ func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlersByHandle(handle *
 }
 
 func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error {
-	return c.AddPartialRemovedHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddPartialRemovedHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddStatusHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.StatusHandler) error {
+func (c *CatapultWebsocketClientImpl) AddStatusHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.StatusHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -349,10 +413,10 @@ func (c *CatapultWebsocketClientImpl) AddStatusHandlersByHandle(handle *sdk.Tran
 }
 
 func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error {
-	return c.AddStatusHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddStatusHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
-func (c *CatapultWebsocketClientImpl) AddCosignatureHandlersByHandle(handle *sdk.TransactionChannelHandle, handlers ...subscribers.CosignatureHandler) error {
+func (c *CatapultWebsocketClientImpl) AddCosignatureHandlersByHandle(handle *sdk.CompoundChannelHandle, handlers ...subscribers.CosignatureHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
@@ -378,7 +442,7 @@ func (c *CatapultWebsocketClientImpl) AddCosignatureHandlersByHandle(handle *sdk
 }
 
 func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error {
-	return c.AddCosignatureHandlersByHandle(sdk.NewTransactionChannelHandleFromAddress(address), handlers...)
+	return c.AddCosignatureHandlersByHandle(sdk.NewCompoundChannelHandleFromAddress(address), handlers...)
 }
 
 func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {

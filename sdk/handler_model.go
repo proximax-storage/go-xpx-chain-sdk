@@ -4,36 +4,36 @@ import (
 	"fmt"
 )
 
-type TransactionChannelHandle struct {
+type CompoundChannelHandle struct {
 	Address         *Address
 	TransactionType *EntityType
 }
 
-func (ref *TransactionChannelHandle) String() string {
+func (ref *CompoundChannelHandle) String() string {
 	if ref.TransactionType != nil {
 		return fmt.Sprintf("%x", ref.TransactionType)
 	}
 	return ref.Address.Address
 }
 
-func (ref *TransactionChannelHandle) IsAddress() bool {
+func (ref *CompoundChannelHandle) IsAddress() bool {
 	return ref.TransactionType == nil
 }
 
-func (ref *TransactionChannelHandle) IsTransactionType() bool {
+func (ref *CompoundChannelHandle) IsTransactionType() bool {
 	return ref.TransactionType != nil
 }
 
-func NewTransactionChannelHandleFromAddress(address *Address) *TransactionChannelHandle {
-	handle := TransactionChannelHandle{
+func NewCompoundChannelHandleFromAddress(address *Address) *CompoundChannelHandle {
+	handle := CompoundChannelHandle{
 		Address:         address,
 		TransactionType: nil,
 	}
 	return &handle
 }
 
-func NewTransactionChannelHandleFromTransactionType(entityType EntityType) *TransactionChannelHandle {
-	handle := TransactionChannelHandle{
+func NewCompoundChannelHandleFromEntityType(entityType EntityType) *CompoundChannelHandle {
+	handle := CompoundChannelHandle{
 		Address:         nil,
 		TransactionType: &entityType,
 	}

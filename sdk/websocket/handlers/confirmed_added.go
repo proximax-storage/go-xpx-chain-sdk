@@ -21,7 +21,7 @@ type confirmedAddedHandler struct {
 	handlers      subscribers.ConfirmedAdded
 }
 
-func (h *confirmedAddedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *confirmedAddedHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapConfirmedAdded(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

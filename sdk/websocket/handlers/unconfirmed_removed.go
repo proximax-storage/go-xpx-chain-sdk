@@ -21,7 +21,7 @@ type unconfirmedRemovedHandler struct {
 	handlers      subscribers.UnconfirmedRemoved
 }
 
-func (h *unconfirmedRemovedHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *unconfirmedRemovedHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapUnconfirmedRemoved(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

@@ -21,7 +21,7 @@ type statusHandler struct {
 	handlers      subscribers.Status
 }
 
-func (h *statusHandler) Handle(handle *sdk.TransactionChannelHandle, resp []byte) bool {
+func (h *statusHandler) Handle(handle *sdk.CompoundChannelHandle, resp []byte) bool {
 	res, err := h.messageMapper.MapStatus(resp)
 	if err != nil {
 		panic(errors.Wrap(err, "message mapper error"))

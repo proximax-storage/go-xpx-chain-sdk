@@ -153,6 +153,12 @@ const (
 	testAccountRestrictionEntryJsonArr = "[" + testAccountRestrictionEntryJson + "]"
 )
 
+func newAddressFromRawForceType(address string, networkType NetworkType) *Address {
+	addressResult := newAddressFromRaw(address)
+	addressResult.Type = networkType
+	return addressResult
+}
+
 var (
 	testAccountRestrictionEntry = AccountRestrictions{
 		Version: 1,
@@ -161,9 +167,9 @@ var (
 			AccountRestriction{
 				RestrictionFlags: AccountRestrictionFlag_Address,
 				Values: []interface{}{
-					NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3A", PublicTest),
-					NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3B", PublicTest),
-					NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3C", PublicTest),
+					newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR2", NetworkType(168)),
+					newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR3", NetworkType(168)),
+					newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR4", NetworkType(168)),
 				},
 			},
 			AccountRestriction{
@@ -193,9 +199,9 @@ var (
 					AccountRestriction{
 						RestrictionFlags: AccountRestrictionFlag_Address,
 						Values: []interface{}{
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3A", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3B", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3C", PublicTest),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR2", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR3", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR4", NetworkType(168)),
 						},
 					},
 					AccountRestriction{
@@ -223,9 +229,9 @@ var (
 					AccountRestriction{
 						RestrictionFlags: AccountRestrictionFlag_Address,
 						Values: []interface{}{
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3A", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3B", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3C", PublicTest),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR2", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR3", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR4", NetworkType(168)),
 						},
 					},
 					AccountRestriction{
@@ -253,9 +259,9 @@ var (
 					AccountRestriction{
 						RestrictionFlags: AccountRestrictionFlag_Address,
 						Values: []interface{}{
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3A", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3B", PublicTest),
-							NewAddress("905BD08D85AF3224A62C2EDAB004CFF4432271E662B333BA3C", PublicTest),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR2", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR3", NetworkType(168)),
+							newAddressFromRawForceType("SBN5BDMFV4ZCJJRMF3NLABGP6RBSE4PGMKZTHOR4", NetworkType(168)),
 						},
 					},
 					AccountRestriction{

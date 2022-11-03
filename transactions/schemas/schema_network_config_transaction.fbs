@@ -15,4 +15,19 @@ table NetworkConfigTransactionBuffer {
     supportedEntityVersions: [ubyte];
 }
 
+table NetworkConfigAbsoluteHeightTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline:[uint];
+    applyHeight: [uint];
+    networkConfigSize: ushort;
+    supportedEntityVersionsSize: ushort;
+    networkConfig: [ubyte];
+    supportedEntityVersions: [ubyte];
+}
+
 root_type NetworkConfigTransactionBuffer;

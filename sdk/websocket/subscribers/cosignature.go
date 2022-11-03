@@ -10,14 +10,14 @@ type (
 	CosignatureHandler func(*sdk.SignerInfo) bool
 
 	Cosignature interface {
-		AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...CosignatureHandler) error
-		RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*CosignatureHandler) bool
-		HasHandlers(handle *sdk.TransactionChannelHandle) bool
-		GetHandlers(handle *sdk.TransactionChannelHandle) []*CosignatureHandler
+		AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...CosignatureHandler) error
+		RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*CosignatureHandler) bool
+		HasHandlers(handle *sdk.CompoundChannelHandle) bool
+		GetHandlers(handle *sdk.CompoundChannelHandle) []*CosignatureHandler
 		GetHandles() []string
 	}
 	cosignatureSubscription struct {
-		handle   *sdk.TransactionChannelHandle
+		handle   *sdk.CompoundChannelHandle
 		handlers []*CosignatureHandler
 		resultCh chan bool
 	}
@@ -82,7 +82,7 @@ func (e *cosignatureImpl) handleNewSubscription() {
 	}
 }
 
-func (e *cosignatureImpl) AddHandlers(handle *sdk.TransactionChannelHandle, handlers ...CosignatureHandler) error {
+func (e *cosignatureImpl) AddHandlers(handle *sdk.CompoundChannelHandle, handlers ...CosignatureHandler) error {
 
 	if len(handlers) == 0 {
 		return nil
@@ -100,7 +100,7 @@ func (e *cosignatureImpl) AddHandlers(handle *sdk.TransactionChannelHandle, hand
 	return nil
 }
 
-func (e *cosignatureImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, handlers ...*CosignatureHandler) bool {
+func (e *cosignatureImpl) RemoveHandlers(handle *sdk.CompoundChannelHandle, handlers ...*CosignatureHandler) bool {
 
 	if len(handlers) == 0 {
 		return false
@@ -117,13 +117,13 @@ func (e *cosignatureImpl) RemoveHandlers(handle *sdk.TransactionChannelHandle, h
 	return <-resCh
 }
 
-func (e *cosignatureImpl) HasHandlers(handle *sdk.TransactionChannelHandle) bool {
+func (e *cosignatureImpl) HasHandlers(handle *sdk.CompoundChannelHandle) bool {
 	e.Lock()
 	defer e.Unlock()
 	return len(e.subscribers[handle.String()]) > 0 && e.subscribers[handle.String()] != nil
 }
 
-func (e *cosignatureImpl) GetHandlers(handle *sdk.TransactionChannelHandle) []*CosignatureHandler {
+func (e *cosignatureImpl) GetHandlers(handle *sdk.CompoundChannelHandle) []*CosignatureHandler {
 	e.Lock()
 	defer e.Unlock()
 	if res, ok := e.subscribers[handle.String()]; ok && res != nil {
