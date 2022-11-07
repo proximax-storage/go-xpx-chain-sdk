@@ -223,7 +223,28 @@ type BcDrivesPage struct {
 }
 
 type BcDrivesPageOptions struct {
+	BcDrivesPageFilters
 	PaginationOrderingOptions
+}
+
+type BcDrivesPageFilters struct {
+	Owner string `url:"owner,omitempty"`
+
+	Size     uint64 `url:"size,omitempty"`
+	ToSize   uint64 `url:"toSize,omitempty"`
+	FromSize uint64 `url:"toSize,omitempty"`
+
+	UsedSize     uint64 `url:"usedSize,omitempty"`
+	ToUsedSize   uint64 `url:"toUsedSize,omitempty"`
+	FromUsedSize uint64 `url:"toUsedSize,omitempty"`
+
+	MetaFilesSize     uint64 `url:"metaFilesSize,omitempty"`
+	ToMetaFilesSize   uint64 `url:"toMetaFilesSize,omitempty"`
+	FromMetaFilesSize uint64 `url:"toMetaFilesSize,omitempty"`
+
+	ReplicatorCount     uint64 `url:"replicatorCount,omitempty"`
+	ToReplicatorCount   uint64 `url:"toReplicatorCount,omitempty"`
+	FromReplicatorCount uint64 `url:"toReplicatorCount,omitempty"`
 }
 
 type DriveInfo struct {
@@ -280,7 +301,18 @@ type ReplicatorsPage struct {
 }
 
 type ReplicatorsPageOptions struct {
+	ReplicatorsPageFilters
 	PaginationOrderingOptions
+}
+
+type ReplicatorsPageFilters struct {
+	Version     uint32 `url:"version,omitempty"`
+	ToVersion   uint32 `url:"toVersion,omitempty"`
+	FromVersion uint32 `url:"fromVersion,omitempty"`
+
+	Capacity     uint64 `url:"capacity,omitempty"`
+	ToCapacity   uint64 `url:"toCapacity,omitempty"`
+	FromCapacity uint64 `url:"fromCapacity,omitempty"`
 }
 
 type Payment struct {
@@ -338,7 +370,20 @@ type DownloadChannelsPage struct {
 }
 
 type DownloadChannelsPageOptions struct {
+	DownloadChannelsFilters
 	PaginationOrderingOptions
+}
+
+type DownloadChannelsFilters struct {
+	Consumer string `url:"consumerKey,omitempty"`
+
+	DownloadSize     uint64 `url:"downloadSize,omitempty"`
+	ToDownloadSize   uint32 `url:"toDownloadSize,omitempty"`
+	FromDownloadSize uint64 `url:"fromDownloadSize,omitempty"`
+
+	DownloadApprovalCount     uint64 `url:"downloadApprovalCount,omitempty"`
+	ToDownloadApprovalCount   uint64 `url:"toDownloadApprovalCount,omitempty"`
+	FromDownloadApprovalCount uint64 `url:"fromDownloadApprovalCount,omitempty"`
 }
 
 // Replicator Onboarding Transaction
