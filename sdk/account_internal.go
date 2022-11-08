@@ -18,6 +18,40 @@ var addressNet = map[uint8]NetworkType{
 	176: PrivateTest,
 }
 
+type AddressDTO string
+
+func (d *AddressDTO) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	result, err := HexToBase32(v)
+	if err != nil {
+		return err
+	}
+	*d = AddressDTO(*result)
+	return nil
+}
+
+func (d *AddressDTO) ToString() string {
+	return string(*d)
+}
+
+type PublicKeyDTO string
+
+func (d *PublicKeyDTO) ToString() string {
+	return string(*d)
+}
+
+func (d *PublicKeyDTO) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*d = PublicKeyDTO(v)
+	return nil
+}
+
 type propertiesDTO struct {
 	PropertyType PropertyType `json:"propertyType"`
 	MosaicIds    mosaicIdDTOs
@@ -85,7 +119,7 @@ func (ref *accountPropertiesDTO) toStruct() (*AccountProperties, error) {
 		BlockedEntityTypes: make([]EntityType, 0),
 	}
 
-	properties.Address, err = NewAddressFromBase32(ref.AccountProperties.Address)
+	properties.Address, err = NewAddressFromHexString(ref.AccountProperties.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +236,7 @@ type stakingRecordInfoDto struct {
 
 func (dto *stakingRecordInfoDto) toStruct() (*StakingRecord, error) {
 
-	add, err := NewAddressFromBase32(dto.StakingAccount.Address)
+	add, err := NewAddressFromHexString(dto.StakingAccount.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +319,7 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		}
 	}
 
-	add, err := NewAddressFromBase32(dto.Account.Address)
+	add, err := NewAddressFromHexString(dto.Account.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -468,7 +502,7 @@ type accountNamesDTOs []*accountNamesDTO
 
 func (m *accountNamesDTO) toStruct() (*AccountName, error) {
 
-	address, err := NewAddressFromBase32(m.Address)
+	address, err := NewAddressFromHexString(m.Address)
 	if err != nil {
 		return nil, err
 	}

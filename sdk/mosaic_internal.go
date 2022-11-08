@@ -261,7 +261,7 @@ func (dto *mosaicLevyDTO) toStruct() (*MosaicLevy, error) {
 		f = dto.Fee.toStruct()
 	}
 
-	a, err := NewAddressFromBase32(dto.Recipient)
+	a, err := NewAddressFromHexString(dto.Recipient)
 	if err != nil {
 		a = NewAddress("", NotSupportedNet)
 	}

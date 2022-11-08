@@ -59,7 +59,7 @@ func (ref *metadataV2InfoDTO) toStruct(networkType NetworkType) (*MetadataV2Tupl
 		return nil, err
 	}
 
-	commonMetadata.SourceAddress, err = NewAddressFromBase32(ref.Metadata.SourceAddress)
+	commonMetadata.SourceAddress, err = NewAddressFromHexString(ref.Metadata.SourceAddress)
 	if err != nil {
 		return nil, err
 	}

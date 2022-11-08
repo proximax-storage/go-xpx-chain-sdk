@@ -118,7 +118,7 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 		val := binary.BigEndian.Uint16(handle)
 		msg.Handle = NewCompoundChannelHandleFromEntityType(EntityType(val))
 	} else {
-		address, err := NewAddressFromBase32(dto.Meta.Handle)
+		address, err := NewAddressFromHexString(dto.Meta.Handle)
 		if err != nil {
 			return nil, err
 		}

@@ -78,7 +78,7 @@ func (dto *namespaceAliasDTO) toStruct() (*NamespaceAlias, error) {
 
 	switch alias.Type {
 	case AddressAliasType:
-		a, err := NewAddressFromBase32(dto.Address)
+		a, err := NewAddressFromHexString(dto.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -116,9 +116,9 @@ type namespaceInfoDTO struct {
 	Namespace namespaceDTO
 }
 
-//toStruct create & return new NamespaceInfo from namespaceInfoDTO
+// toStruct create & return new NamespaceInfo from namespaceInfoDTO
 func (ref *namespaceInfoDTO) toStruct() (*NamespaceInfo, error) {
-	address, err := NewAddressFromBase32(ref.Namespace.OwnerAddress)
+	address, err := NewAddressFromHexString(ref.Namespace.OwnerAddress)
 	if err != nil {
 		return nil, err
 	}

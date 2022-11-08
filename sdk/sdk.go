@@ -171,6 +171,7 @@ type Client struct {
 	LockFund           *LockFundService
 	AccountRestriction *AccountRestrictionService
 	MosaicRestriction  *MosaicRestrictionService
+	Receipt            *ReceiptService
 }
 
 type service struct {
@@ -217,6 +218,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.LockFund = (*LockFundService)(&c.common)
 	c.AccountRestriction = (*AccountRestrictionService)(&c.common)
 	c.MosaicRestriction = (*MosaicRestrictionService)(&c.common)
+	c.Receipt = (*ReceiptService)(&c.common)
 	return c
 }
 

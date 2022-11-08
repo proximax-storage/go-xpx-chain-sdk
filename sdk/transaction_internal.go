@@ -183,7 +183,7 @@ type accountPropertiesAddressModificationDTO struct {
 }
 
 func (dto *accountPropertiesAddressModificationDTO) toStruct() (*AccountPropertiesAddressModification, error) {
-	a, err := NewAddressFromBase32(dto.Address)
+	a, err := NewAddressFromHexString(dto.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -374,7 +374,7 @@ func (dto *addressAliasTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromBase32(dto.Tx.Address)
+	a, err := NewAddressFromHexString(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -908,7 +908,7 @@ func (dto *modifyMetadataAddressTransactionDTO) toStruct(*Hash) (Transaction, er
 		return nil, err
 	}
 
-	a, err := NewAddressFromBase32(dto.Tx.Address)
+	a, err := NewAddressFromHexString(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -1084,7 +1084,7 @@ func (dto *transferTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		mosaics[i] = msc
 	}
 
-	a, err := NewAddressFromBase32(dto.Tx.Address)
+	a, err := NewAddressFromHexString(dto.Tx.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -1331,7 +1331,7 @@ func (dto *secretLockTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromBase32(dto.Tx.Recipient)
+	a, err := NewAddressFromHexString(dto.Tx.Recipient)
 	if err != nil {
 		return nil, err
 	}
@@ -1386,7 +1386,7 @@ func (dto *secretProofTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	a, err := NewAddressFromBase32(dto.Tx.Recipient)
+	a, err := NewAddressFromHexString(dto.Tx.Recipient)
 	if err != nil {
 		return nil, err
 	}

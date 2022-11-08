@@ -100,6 +100,10 @@ var ReceiptDefinitionMap = map[EntityType]ReceiptDefinition{
 	DriveDownloadExpiredReceiptEntityType:      MakeDefinition(reflect.TypeOf((*BalanceChangeReceipt)(nil)).Elem(), reflect.TypeOf((*BalanceChangeReceiptDto)(nil)).Elem(), DriveDownloadExpiredReceiptVersion, DriveReceiptSize),
 }
 
+func GetReceiptHeader(entityType EntityType) ReceiptHeader {
+	return MakeHeader(entityType, ReceiptDefinitionMap[entityType].Version, ReceiptDefinitionMap[entityType].Size)
+}
+
 const (
 	BalanceTransferReceiptVersion         EntityVersion = 1
 	NamespaceRentalReceiptVersion         EntityVersion = 1
@@ -236,7 +240,7 @@ type GlobalStateChangeReceipt struct {
 }
 
 type TotalStakedReceipt struct {
-	TotalStaked Amount
+	Amount Amount
 }
 
 type BlockStatement struct {

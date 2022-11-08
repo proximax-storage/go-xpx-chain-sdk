@@ -365,7 +365,7 @@ func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, er
 	return NewAddress(ad, networkType), nil
 }
 
-func NewAddressFromBase32(encoded string) (*Address, error) {
+func NewAddressFromHexString(encoded string) (*Address, error) {
 	pH, err := hex.DecodeString(encoded)
 	if err != nil {
 		return nil, err
@@ -384,7 +384,7 @@ func EncodedStringToAddresses(addresses ...string) ([]*Address, error) {
 	result := make([]*Address, len(addresses))
 	for i, a := range addresses {
 		var err error = nil
-		result[i], err = NewAddressFromBase32(a)
+		result[i], err = NewAddressFromHexString(a)
 		if err != nil {
 			return nil, err
 		}

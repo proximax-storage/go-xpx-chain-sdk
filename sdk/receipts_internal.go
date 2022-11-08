@@ -10,17 +10,43 @@ import (
 	"reflect"
 )
 
+type AddressResolutionEntryDto struct {
+	Resolved AddressDTO `json:"resolved"`
+}
+
+func (a *AddressResolutionEntryDto) toStruct() (*Address, error) {
+	address, err := NewAddressFromRaw(a.Resolved.ToString())
+	if err != nil {
+		return nil, err
+	}
+	return address, nil
+}
+
+type MosaicResolutionEntryDto struct {
+	Resolved uint64DTO `json:"resolved"`
+}
+
+func (a *MosaicResolutionEntryDto) toStruct() uint64 {
+	return a.Resolved.toUint64()
+}
+
 type AddressResolutionStatementDto struct {
-	Height            uint64DTO
-	UnresolvedAddress string
-	ResolutionEntries []string
+	Height            uint64DTO                   `json:"height"`
+	UnresolvedAddress AddressDTO                  `json:"unresolved"`
+	ResolutionEntries []AddressResolutionEntryDto `json:"resolutionEntries"`
 }
 
 func (a *AddressResolutionStatementDto) toStruct(networkType NetworkType) (*AddressResolutionStatement, error) {
-	address := NewAddress(a.UnresolvedAddress, networkType)
+	address, err := NewAddressFromRaw(a.UnresolvedAddress.ToString())
+	if err != nil {
+		return nil, err
+	}
 	entries := make([]*Address, len(a.ResolutionEntries))
 	for i := 0; i < len(a.ResolutionEntries); i++ {
-		entries[i] = NewAddress(a.ResolutionEntries[i], networkType)
+		entries[i], err = a.ResolutionEntries[i].toStruct()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &AddressResolutionStatement{
 		Height:            a.Height.toStruct(),
@@ -30,9 +56,9 @@ func (a *AddressResolutionStatementDto) toStruct(networkType NetworkType) (*Addr
 }
 
 type MosaicResolutionStatementDto struct {
-	Height            uint64DTO
-	UnresolvedMosaic  uint64DTO
-	ResolutionEntries []uint64DTO
+	Height            uint64DTO                  `json:"height"`
+	UnresolvedMosaic  uint64DTO                  `json:"unresolved"`
+	ResolutionEntries []MosaicResolutionEntryDto `json:"resolutionEntries"`
 }
 
 func (a *MosaicResolutionStatementDto) toStruct(networkType NetworkType) (*MosaicResolutionStatement, error) {
@@ -42,7 +68,7 @@ func (a *MosaicResolutionStatementDto) toStruct(networkType NetworkType) (*Mosai
 	}
 	entries := make([]*MosaicId, len(a.ResolutionEntries))
 	for i := 0; i < len(a.ResolutionEntries); i++ {
-		entries[i], err = NewMosaicId(a.ResolutionEntries[i].toUint64())
+		entries[i], err = NewMosaicId(a.ResolutionEntries[i].toStruct())
 		if err != nil {
 			return nil, err
 		}
@@ -55,13 +81,13 @@ func (a *MosaicResolutionStatementDto) toStruct(networkType NetworkType) (*Mosai
 }
 
 type BalanceChangeReceiptDto struct {
-	Account  string
-	Amount   uint64DTO
-	MosaicId uint64DTO
+	Account  PublicKeyDTO `json:"account"`
+	Amount   uint64DTO    `json:"amount"`
+	MosaicId uint64DTO    `json:"mosaicId"`
 }
 
-func (a *BalanceChangeReceiptDto) toStruct(networkType NetworkType) (*BalanceChangeReceipt, error) {
-	account, err := NewAccountFromPublicKey(a.Account, networkType)
+func (a *BalanceChangeReceiptDto) ToStruct(networkType NetworkType) (*BalanceChangeReceipt, error) {
+	account, err := NewAccountFromPublicKey(a.Account.ToString(), networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -77,13 +103,13 @@ func (a *BalanceChangeReceiptDto) toStruct(networkType NetworkType) (*BalanceCha
 }
 
 type BalanceDebitReceiptDto struct {
-	Account  string
-	Amount   uint64DTO
-	MosaicId uint64DTO
+	Account  PublicKeyDTO `json:"account"`
+	Amount   uint64DTO    `json:"amount"`
+	MosaicId uint64DTO    `json:"mosaicId"`
 }
 
-func (a *BalanceDebitReceiptDto) toStruct(networkType NetworkType) (*BalanceDebitReceipt, error) {
-	account, err := NewAccountFromPublicKey(a.Account, networkType)
+func (a *BalanceDebitReceiptDto) ToStruct(networkType NetworkType) (*BalanceDebitReceipt, error) {
+	account, err := NewAccountFromPublicKey(a.Account.ToString(), networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -99,18 +125,25 @@ func (a *BalanceDebitReceiptDto) toStruct(networkType NetworkType) (*BalanceDebi
 }
 
 type BalanceTransferReceiptDto struct {
-	Sender    string
-	Recipient string
-	Amount    uint64DTO
-	MosaicId  uint64DTO
+	Sender    PublicKeyDTO `json:"sender"`
+	Recipient string       `json:"recipient"`
+	Amount    uint64DTO    `json:"amount"`
+	MosaicId  uint64DTO    `json:"mosaicId"`
 }
 
-func (a *BalanceTransferReceiptDto) toStruct(networkType NetworkType) (*BalanceTransferReceipt, error) {
-	sender, err := NewAccountFromPublicKey(a.Sender, networkType)
+func (a *BalanceTransferReceiptDto) ToStruct(networkType NetworkType) (*BalanceTransferReceipt, error) {
+	sender, err := NewAccountFromPublicKey(a.Sender.ToString(), networkType)
 	if err != nil {
 		return nil, err
 	}
-	recipient := NewAddress(a.Recipient, networkType)
+	address, err := HexToBase32(a.Recipient)
+	if err != nil {
+		return nil, err
+	}
+	recipient, err := NewAddressFromRaw(*address)
+	if err != nil {
+		return nil, err
+	}
 	mosaicId, err := NewMosaicId(a.MosaicId.toUint64())
 	if err != nil {
 		return nil, err
@@ -124,11 +157,11 @@ func (a *BalanceTransferReceiptDto) toStruct(networkType NetworkType) (*BalanceT
 }
 
 type InflationReceiptDto struct {
-	Amount   uint64DTO
-	MosaicId uint64DTO
+	Amount   uint64DTO `json:"amount"`
+	MosaicId uint64DTO `json:"mosaicId"`
 }
 
-func (a *InflationReceiptDto) toStruct(networkType NetworkType) (*InflationReceipt, error) {
+func (a *InflationReceiptDto) ToStruct(networkType NetworkType) (*InflationReceipt, error) {
 	mosaicId, err := NewMosaicId(a.MosaicId.toUint64())
 	if err != nil {
 		return nil, err
@@ -140,21 +173,21 @@ func (a *InflationReceiptDto) toStruct(networkType NetworkType) (*InflationRecei
 }
 
 type ArtifactExpiryReceiptDto struct {
-	ArtifactId uint64DTO
+	ArtifactId uint64DTO `json:"artifactId"`
 }
 
-func (a *ArtifactExpiryReceiptDto) toStruct(networkType NetworkType) (*ArtifactExpiryReceipt, error) {
+func (a *ArtifactExpiryReceiptDto) ToStruct(networkType NetworkType) (*ArtifactExpiryReceipt, error) {
 	return &ArtifactExpiryReceipt{
 		ArtifactId: a.ArtifactId.toUint64(),
 	}, nil
 }
 
 type DriveStateReceiptDto struct {
-	DriveKey   string
-	DriveState uint8
+	DriveKey   string `json:"driveKey"`
+	DriveState uint8  `json:"driveState"`
 }
 
-func (a *DriveStateReceiptDto) toStruct(networkType NetworkType) (*DriveStateReceipt, error) {
+func (a *DriveStateReceiptDto) ToStruct(networkType NetworkType) (*DriveStateReceipt, error) {
 	key, err := NewAccountFromPublicKey(a.DriveKey, networkType)
 	if err != nil {
 		return nil, err
@@ -166,11 +199,11 @@ func (a *DriveStateReceiptDto) toStruct(networkType NetworkType) (*DriveStateRec
 }
 
 type SignerBalanceReceiptDto struct {
-	Amount       uint64DTO
-	LockedAmount uint64DTO
+	Amount       uint64DTO `json:"amount"`
+	LockedAmount uint64DTO `json:"lockedAmount"`
 }
 
-func (a *SignerBalanceReceiptDto) toStruct(networkType NetworkType) (*SignerBalanceReceipt, error) {
+func (a *SignerBalanceReceiptDto) ToStruct(networkType NetworkType) (*SignerBalanceReceipt, error) {
 	return &SignerBalanceReceipt{
 		Amount:       a.Amount.toStruct(),
 		LockedAmount: a.LockedAmount.toStruct(),
@@ -178,22 +211,22 @@ func (a *SignerBalanceReceiptDto) toStruct(networkType NetworkType) (*SignerBala
 }
 
 type GlobalStateChangeReceiptDto struct {
-	Flags uint64DTO
+	Flags uint64DTO `json:"flags"`
 }
 
-func (a *GlobalStateChangeReceiptDto) toStruct(networkType NetworkType) (*GlobalStateChangeReceipt, error) {
+func (a *GlobalStateChangeReceiptDto) ToStruct(networkType NetworkType) (*GlobalStateChangeReceipt, error) {
 	return &GlobalStateChangeReceipt{
 		Flags: a.Flags.toUint64(),
 	}, nil
 }
 
 type TotalStakedReceiptDto struct {
-	TotalStaked uint64DTO
+	Amount uint64DTO `json:"amount"`
 }
 
-func (a *TotalStakedReceiptDto) toStruct(networkType NetworkType) (*TotalStakedReceipt, error) {
+func (a *TotalStakedReceiptDto) ToStruct(networkType NetworkType) (*TotalStakedReceipt, error) {
 	return &TotalStakedReceipt{
-		TotalStaked: a.TotalStaked.toStruct(),
+		Amount: a.Amount.toStruct(),
 	}, nil
 }
 
@@ -201,13 +234,14 @@ type ReceiptBody interface {
 	toStruct() interface{}
 }
 type ReceiptDto struct {
-	Type    uint16
-	Version uint32
-	Body    interface{}
+	Type    uint16      `json:"type"`
+	Version uint32      `json:"version"`
+	Body    interface{} `json:"body"`
 }
 
 func (r *ReceiptDto) toStruct(networkType NetworkType) (*Receipt, error) {
-	results := reflect.ValueOf(r.Body).MethodByName("toStruct").Call([]reflect.Value{reflect.ValueOf(networkType)})
+	value := reflect.ValueOf(r.Body)
+	results := value.MethodByName("ToStruct").Call([]reflect.Value{reflect.ValueOf(networkType)})
 	err := results[1].Interface()
 	if err != nil {
 		return nil, err.(error)
@@ -219,8 +253,8 @@ func (r *ReceiptDto) toStruct(networkType NetworkType) (*Receipt, error) {
 }
 
 type ReceiptStatementDto struct {
-	Height   uint64DTO
-	Receipts []ReceiptDto
+	Height   uint64DTO    `json:"height"`
+	Receipts []ReceiptDto `json:"receipts"`
 }
 
 func (r *ReceiptStatementDto) toStruct(networkType NetworkType) (*ReceiptStatement, error) {
@@ -340,7 +374,7 @@ func (b *ReceiptDto) UnmarshalJSON(data []byte) error {
 	}
 	b.Type = uint16(v["type"].(float64))
 	b.Version = uint32(v["version"].(float64))
-	b.Body = reflect.New(ReceiptDefinitionMap[EntityType(b.Type)].DtoType)
+	b.Body = reflect.New(ReceiptDefinitionMap[EntityType(b.Type)].DtoType).Interface()
 	mapstructure.Decode(v, b.Body)
 	return nil
 }

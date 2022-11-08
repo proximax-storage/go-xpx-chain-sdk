@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/base32"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
@@ -18,7 +19,7 @@ func bytesToHash(bytes []byte) (*Hash, error) {
 	return &arr, nil
 }
 
-//Be wary of conflicts
+// Be wary of conflicts
 func GenerateUInt64Key(name string) (uint64, error) {
 	hash, err := crypto.HashesSha3_256([]byte(name))
 	if err != nil {
@@ -28,11 +29,29 @@ func GenerateUInt64Key(name string) (uint64, error) {
 }
 
 func Base64ToHex(data string) (*string, error) {
-	p, err := base64.StdEncoding.DecodeString("QVJWSU4=")
+	p, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return nil, err
 	}
 	h := hex.EncodeToString(p)
+	return &h, nil
+}
+
+func Base64ToBase32(data string) (*string, error) {
+	p, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		return nil, err
+	}
+	h := base32.StdEncoding.EncodeToString(p)
+	return &h, nil
+}
+
+func HexToBase32(data string) (*string, error) {
+	p, err := hex.DecodeString(data)
+	if err != nil {
+		return nil, err
+	}
+	h := base32.StdEncoding.EncodeToString(p)
 	return &h, nil
 }
 

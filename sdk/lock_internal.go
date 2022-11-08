@@ -82,7 +82,7 @@ func (ref *secretLockInfoDTO) toStruct(networkType NetworkType) (*SecretLockInfo
 		return nil, err
 	}
 
-	recipient, err := NewAddressFromBase32(ref.Lock.Recipient)
+	recipient, err := NewAddressFromHexString(ref.Lock.Recipient)
 	if err != nil {
 		return nil, err
 	}

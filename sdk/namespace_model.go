@@ -298,5 +298,5 @@ func NewAddressFromNamespace(namespaceId *NamespaceId) (*Address, error) {
 	a += hex.EncodeToString(namespaceB)
 	a += strings.Repeat("00", 16)
 
-	return NewAddressFromBase32(a)
+	return NewAddressFromHexString(a)
 }

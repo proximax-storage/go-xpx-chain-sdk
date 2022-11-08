@@ -378,6 +378,22 @@ func newAddressFromRaw(addressString string) (address *Address) {
 	return address
 }
 
+func newAccountFromPublicKey(publicKey string, networkType NetworkType) *PublicAccount {
+	acc, err := NewAccountFromPublicKey(publicKey, networkType)
+	if err != nil {
+		return nil
+	}
+	return acc
+}
+
+func newAddressFromHexString(addressString string) (address *Address) {
+	address, err := NewAddressFromHexString(addressString)
+	if err != nil {
+		return nil
+	}
+	return address
+}
+
 func TestAccountService_GetStakingRecord(t *testing.T) {
 	refHeight := Height(100)
 	mockServer.AddRouter(&mock.Router{

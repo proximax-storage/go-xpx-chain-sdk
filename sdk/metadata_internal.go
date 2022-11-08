@@ -114,7 +114,7 @@ func (ref *addressMetadataInfoDTO) toStruct(networkType NetworkType) (*AddressMe
 	var a *Address = nil
 
 	if len(metadata.Address) != 0 {
-		a, err = NewAddressFromBase32(metadata.Address)
+		a, err = NewAddressFromHexString(metadata.Address)
 		if err != nil {
 			return nil, err
 		}
