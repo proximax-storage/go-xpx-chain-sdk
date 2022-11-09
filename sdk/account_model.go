@@ -355,6 +355,20 @@ func NewAddressFromRaw(address string) (*Address, error) {
 	return nil, ErrInvalidAddress
 }
 
+// returns Address from passed address bytes
+func NewAddressFromBytes(address []byte) (*Address, error) {
+	strAddress := base32.StdEncoding.EncodeToString(address)
+
+	if nType, ok := addressNet[address[0]]; ok {
+		return &Address{
+			Type:    nType,
+			Address: strAddress,
+		}, nil
+	}
+
+	return nil, ErrInvalidAddress
+}
+
 // returns an Address from public key for passed NetworkType
 func NewAddressFromPublicKey(pKey string, networkType NetworkType) (*Address, error) {
 	ad, err := generateEncodedAddress(pKey, networkType)

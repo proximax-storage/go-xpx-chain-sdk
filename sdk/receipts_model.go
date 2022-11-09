@@ -4,7 +4,12 @@
 
 package sdk
 
-import "reflect"
+import (
+	"bytes"
+	"encoding/binary"
+	"encoding/hex"
+	"reflect"
+)
 
 const (
 	BalanceTransferReceiptEntityType         EntityType = 0x1143
@@ -203,10 +208,72 @@ type BalanceChangeReceipt struct {
 	Amount   Amount
 }
 
+func (r *BalanceChangeReceipt) ParseInto(data []byte, networkType NetworkType) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+	accountBytes := make([]byte, KeySize)
+	_, err := buf.Read(accountBytes)
+	if err != nil {
+		return err
+	}
+	r.Account, err = NewAccountFromPublicKey(hex.EncodeToString(accountBytes), networkType)
+	if err != nil {
+		return err
+	}
+	mosaicId := make([]byte, MosaicIdSize)
+	_, err = buf.Read(mosaicId)
+	if err != nil {
+		return err
+	}
+	r.MosaicId, err = NewMosaicId(binary.LittleEndian.Uint64(mosaicId))
+	if err != nil {
+		return err
+	}
+
+	amount := make([]byte, AmountSize)
+	_, err = buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+	return nil
+}
+
 type BalanceDebitReceipt struct {
 	Account  *PublicAccount
 	MosaicId *MosaicId
 	Amount   Amount
+}
+
+func (r *BalanceDebitReceipt) ParseInto(data []byte, networkType NetworkType) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+	accountBytes := make([]byte, KeySize)
+	_, err := buf.Read(accountBytes)
+	if err != nil {
+		return err
+	}
+	r.Account, err = NewAccountFromPublicKey(hex.EncodeToString(accountBytes), networkType)
+	if err != nil {
+		return err
+	}
+	mosaicId := make([]byte, MosaicIdSize)
+	_, err = buf.Read(mosaicId)
+	if err != nil {
+		return err
+	}
+	r.MosaicId, err = NewMosaicId(binary.LittleEndian.Uint64(mosaicId))
+	if err != nil {
+		return err
+	}
+
+	amount := make([]byte, AmountSize)
+	_, err = buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+	return nil
 }
 
 type BalanceTransferReceipt struct {
@@ -216,13 +283,88 @@ type BalanceTransferReceipt struct {
 	Amount    Amount
 }
 
+func (r *BalanceTransferReceipt) ParseInto(data []byte, networkType NetworkType) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+	accountBytes := make([]byte, KeySize)
+	_, err := buf.Read(accountBytes)
+	if err != nil {
+		return err
+	}
+	r.Sender, err = NewAccountFromPublicKey(hex.EncodeToString(accountBytes), networkType)
+	if err != nil {
+		return err
+	}
+
+	addressBytes := make([]byte, AddressSize)
+	_, err = buf.Read(addressBytes)
+	if err != nil {
+		return err
+	}
+	r.Recipient, err = NewAddressFromBytes(addressBytes)
+	if err != nil {
+		return err
+	}
+
+	mosaicId := make([]byte, MosaicIdSize)
+	_, err = buf.Read(mosaicId)
+	if err != nil {
+		return err
+	}
+	r.MosaicId, err = NewMosaicId(binary.LittleEndian.Uint64(mosaicId))
+	if err != nil {
+		return err
+	}
+
+	amount := make([]byte, AmountSize)
+	_, err = buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+	return nil
+}
+
 type InflationReceipt struct {
 	MosaicId *MosaicId
 	Amount   Amount
 }
 
+func (r *InflationReceipt) ParseInto(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+
+	mosaicId := make([]byte, MosaicIdSize)
+	_, err := buf.Read(mosaicId)
+	if err != nil {
+		return err
+	}
+	r.MosaicId, err = NewMosaicId(binary.LittleEndian.Uint64(mosaicId))
+
+	amount := make([]byte, AmountSize)
+	_, err = buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+	return nil
+}
+
 type ArtifactExpiryReceipt struct {
 	ArtifactId uint64
+}
+
+func (r *ArtifactExpiryReceipt) ParseInto(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+
+	artifactId := make([]byte, AmountSize)
+	_, err := buf.Read(artifactId)
+	if err != nil {
+		return err
+	}
+	r.ArtifactId = binary.LittleEndian.Uint64(artifactId)
+	return nil
 }
 
 type DriveStateReceipt struct {
@@ -230,17 +372,83 @@ type DriveStateReceipt struct {
 	DriveState uint8
 }
 
+func (r *DriveStateReceipt) ParseInto(data []byte, networkType NetworkType) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+	accountBytes := make([]byte, KeySize)
+	_, err := buf.Read(accountBytes)
+	if err != nil {
+		return err
+	}
+	r.DriveKey, err = NewAccountFromPublicKey(hex.EncodeToString(accountBytes), networkType)
+	if err != nil {
+		return err
+	}
+
+	r.DriveState, err = buf.ReadByte()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type SignerBalanceReceipt struct {
 	Amount       Amount
 	LockedAmount Amount
+}
+
+func (r *SignerBalanceReceipt) ParseInto(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+
+	amount := make([]byte, AmountSize)
+	_, err := buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+
+	lockedAmount := make([]byte, AmountSize)
+	_, err = buf.Read(lockedAmount)
+	if err != nil {
+		return err
+	}
+	r.LockedAmount = Amount(binary.LittleEndian.Uint64(lockedAmount))
+	return nil
 }
 
 type GlobalStateChangeReceipt struct {
 	Flags uint64
 }
 
+func (r *GlobalStateChangeReceipt) ParseInto(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+
+	flags := make([]byte, AmountSize)
+	_, err := buf.Read(flags)
+	if err != nil {
+		return err
+	}
+	r.Flags = binary.LittleEndian.Uint64(flags)
+	return nil
+}
+
 type TotalStakedReceipt struct {
 	Amount Amount
+}
+
+func (r *TotalStakedReceipt) ParseInto(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	buf.Next(ReceiptHeaderSize)
+
+	amount := make([]byte, AmountSize)
+	_, err := buf.Read(amount)
+	if err != nil {
+		return err
+	}
+	r.Amount = Amount(binary.LittleEndian.Uint64(amount))
+	return nil
 }
 
 type BlockStatement struct {
