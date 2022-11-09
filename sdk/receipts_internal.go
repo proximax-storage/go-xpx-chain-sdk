@@ -303,9 +303,10 @@ type BlockStatementDto struct {
 
 type anonymousReceiptDto struct {
 	MetaDto struct {
-		Size    uint32 `json:"size"`
-		Version uint32 `json:"version"`
-		Type    uint16 `json:"type"`
+		Height  uint64DTO `json:"height"`
+		Size    uint32    `json:"size"`
+		Version uint32    `json:"version"`
+		Type    uint16    `json:"type"`
 	} `json:"meta"`
 	Receipt string `json:"receipt"`
 }
@@ -316,6 +317,7 @@ func (dto *anonymousReceiptDto) toStruct() (*AnonymousReceipt, error) {
 		return nil, err
 	}
 	return &AnonymousReceipt{
+		Height:  dto.MetaDto.Height.toStruct(),
 		Header:  MakeHeader(EntityType(dto.MetaDto.Type), EntityVersion(dto.MetaDto.Version), dto.MetaDto.Size),
 		Receipt: data,
 	}, nil

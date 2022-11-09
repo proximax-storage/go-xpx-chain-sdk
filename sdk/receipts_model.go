@@ -194,6 +194,7 @@ type ReceiptHeader struct {
 	Type    EntityType
 }
 type AnonymousReceipt struct {
+	Height  Height
 	Header  ReceiptHeader
 	Receipt []uint8
 }
@@ -210,7 +211,7 @@ type BalanceChangeReceipt struct {
 
 func (r *BalanceChangeReceipt) ParseInto(data []byte, networkType NetworkType) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
+
 	accountBytes := make([]byte, KeySize)
 	_, err := buf.Read(accountBytes)
 	if err != nil {
@@ -247,7 +248,7 @@ type BalanceDebitReceipt struct {
 
 func (r *BalanceDebitReceipt) ParseInto(data []byte, networkType NetworkType) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
+
 	accountBytes := make([]byte, KeySize)
 	_, err := buf.Read(accountBytes)
 	if err != nil {
@@ -285,7 +286,7 @@ type BalanceTransferReceipt struct {
 
 func (r *BalanceTransferReceipt) ParseInto(data []byte, networkType NetworkType) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
+
 	accountBytes := make([]byte, KeySize)
 	_, err := buf.Read(accountBytes)
 	if err != nil {
@@ -332,7 +333,6 @@ type InflationReceipt struct {
 
 func (r *InflationReceipt) ParseInto(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
 
 	mosaicId := make([]byte, MosaicIdSize)
 	_, err := buf.Read(mosaicId)
@@ -356,8 +356,6 @@ type ArtifactExpiryReceipt struct {
 
 func (r *ArtifactExpiryReceipt) ParseInto(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
-
 	artifactId := make([]byte, AmountSize)
 	_, err := buf.Read(artifactId)
 	if err != nil {
@@ -374,7 +372,6 @@ type DriveStateReceipt struct {
 
 func (r *DriveStateReceipt) ParseInto(data []byte, networkType NetworkType) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
 	accountBytes := make([]byte, KeySize)
 	_, err := buf.Read(accountBytes)
 	if err != nil {
@@ -399,8 +396,6 @@ type SignerBalanceReceipt struct {
 
 func (r *SignerBalanceReceipt) ParseInto(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
-
 	amount := make([]byte, AmountSize)
 	_, err := buf.Read(amount)
 	if err != nil {
@@ -423,7 +418,6 @@ type GlobalStateChangeReceipt struct {
 
 func (r *GlobalStateChangeReceipt) ParseInto(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
 
 	flags := make([]byte, AmountSize)
 	_, err := buf.Read(flags)
@@ -440,7 +434,6 @@ type TotalStakedReceipt struct {
 
 func (r *TotalStakedReceipt) ParseInto(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	buf.Next(ReceiptHeaderSize)
 
 	amount := make([]byte, AmountSize)
 	_, err := buf.Read(amount)
