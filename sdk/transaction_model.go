@@ -130,6 +130,7 @@ type TransactionsPageOptions struct {
 	RecipientAddress string `url:"recipientAddress,omitempty"`
 	Type             []uint `url:"type[],omitempty"`
 	Embedded         bool   `url:"embedded,omitempty"`
+	FirstLevel       bool   `url:"firstLevel,omitempty"`
 	PaginationOrderingOptions
 }
 
@@ -1632,7 +1633,7 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return MosaicSupplyChangeTransactionSize
 }
 
-/// region modify mosaic levy implementation
+// / region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -1713,7 +1714,7 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 
 /// end region modify mosaic levy
 
-/// region remove mosaic levy
+// / region remove mosaic levy
 type MosaicRemoveLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
