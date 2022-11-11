@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 )
 
@@ -63,6 +64,22 @@ func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*BlockchainCon
 	}
 
 	return ref.GetNetworkConfigAtHeight(ctx, height)
+}
+
+func (ref *NetworkService) GetNetworkConfigs(ctx context.Context, tpOpts *BlockchainConfigPageOptions) (*BlockchainConfigPage, error) {
+	configPageDto := BlockChainConfigPageDTO{}
+
+	url := net.NewUrl(fmt.Sprintf(configRoute, ""))
+
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &configPageDto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+	return configPageDto.toStruct()
 }
 
 func (ref *NetworkService) GetActiveAccountVersion(ctx context.Context) (uint32, error) {

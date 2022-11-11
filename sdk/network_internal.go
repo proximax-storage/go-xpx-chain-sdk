@@ -92,3 +92,35 @@ func (dto *networkVersionDTO) toStruct() *NetworkVersion {
 		BlockChainVersion(dto.DTO.BlockChainVersion.toUint64()),
 	}
 }
+
+type BlockChainConfigPageDTO struct {
+	BlockchainConfigs []blockchainConfigDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *BlockChainConfigPageDTO) toStruct() (*BlockchainConfigPage, error) {
+	page := &BlockchainConfigPage{
+		BlockchainConfigs: make([]BlockchainConfig, len(t.BlockchainConfigs)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+	for i, t := range t.BlockchainConfigs {
+		config, err := t.toStruct()
+		if err != nil {
+			return nil, err
+		}
+		page.BlockchainConfigs[i] = *config
+	}
+
+	return page, nil
+}

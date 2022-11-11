@@ -353,3 +353,14 @@ func (nv NetworkVersion) String() string {
 		str.NewField("BlockChainVersion", str.StringPattern, nv.BlockChainVersion),
 	)
 }
+
+type BlockchainConfigPage struct {
+	BlockchainConfigs []BlockchainConfig
+	Pagination        Pagination
+}
+
+type BlockchainConfigPageOptions struct {
+	Height   *Height `json:"height"`
+	Operator string  `json:"operator"`
+	PaginationOrderingOptions
+}

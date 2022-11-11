@@ -8,6 +8,15 @@ import (
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
+const (
+	QueryOperator_LTE = "lte"
+	QueryOperator_LT  = "lt"
+	QueryOperator_GT  = "gt"
+	QueryOperator_GTE = "gte"
+	QueryOperator_EQ  = "eq"
+	QueryOperator_NE  = "ne"
+)
+
 func bytesToHash(bytes []byte) (*Hash, error) {
 	if len(bytes) != 32 {
 		return nil, ErrInvalidHashLength
