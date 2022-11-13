@@ -223,13 +223,33 @@ type BcDrivesPage struct {
 }
 
 type BcDrivesPageOptions struct {
+	BcDrivesPageFilters
 	PaginationOrderingOptions
+}
+
+type BcDrivesPageFilters struct {
+	Owner string `url:"owner,omitempty"`
+
+	Size     uint64 `url:"size,omitempty"`
+	ToSize   uint64 `url:"toSize,omitempty"`
+	FromSize uint64 `url:"toSize,omitempty"`
+
+	UsedSize     uint64 `url:"usedSize,omitempty"`
+	ToUsedSize   uint64 `url:"toUsedSize,omitempty"`
+	FromUsedSize uint64 `url:"toUsedSize,omitempty"`
+
+	MetaFilesSize     uint64 `url:"metaFilesSize,omitempty"`
+	ToMetaFilesSize   uint64 `url:"toMetaFilesSize,omitempty"`
+	FromMetaFilesSize uint64 `url:"toMetaFilesSize,omitempty"`
+
+	ReplicatorCount     uint64 `url:"replicatorCount,omitempty"`
+	ToReplicatorCount   uint64 `url:"toReplicatorCount,omitempty"`
+	FromReplicatorCount uint64 `url:"toReplicatorCount,omitempty"`
 }
 
 type DriveInfo struct {
 	DriveKey                            *PublicAccount
 	LastApprovedDataModificationId      *Hash
-	DataModificationIdIsValid           bool
 	InitialDownloadWork                 StorageSize
 	LastCompletedCumulativeDownloadWork StorageSize
 }
@@ -239,22 +259,19 @@ func (info *DriveInfo) String() string {
 		`
 			"DriveKey": %s, 
 		    "LastApprovedDataModificationId": %s,
-			"DataModificationIdIsValid": %t,
 			"InitialDownloadWork": %d,
 			"LastCompletedCumulativeDownloadWork": %d,
 		`,
 		info.DriveKey,
 		info.LastApprovedDataModificationId,
-		info.DataModificationIdIsValid,
 		info.InitialDownloadWork,
 		info.LastCompletedCumulativeDownloadWork,
 	)
 }
 
 type Replicator struct {
-	Account *PublicAccount
-	Version uint32
-	//Capacity Amount
+	Account          *PublicAccount
+	Version          uint32
 	Drives           []*DriveInfo // TODO make map
 	DownloadChannels []*Hash
 }
@@ -280,19 +297,30 @@ type ReplicatorsPage struct {
 }
 
 type ReplicatorsPageOptions struct {
+	ReplicatorsPageFilters
 	PaginationOrderingOptions
 }
 
-type Payment struct {
+type ReplicatorsPageFilters struct {
+	Version     uint32 `url:"version,omitempty"`
+	ToVersion   uint32 `url:"toVersion,omitempty"`
+	FromVersion uint32 `url:"fromVersion,omitempty"`
+
+	Capacity     uint64 `url:"capacity,omitempty"`
+	ToCapacity   uint64 `url:"toCapacity,omitempty"`
+	FromCapacity uint64 `url:"fromCapacity,omitempty"`
+}
+
+type CumulativePayment struct {
 	Replicator *PublicAccount
 	Payment    Amount
 }
 
-func (payment *Payment) String() string {
+func (payment *CumulativePayment) String() string {
 	return fmt.Sprintf(
 		`
 			"Replicator": %s,
-			"Payment:" %d,
+			"CumulativePayment:" %d,
 		`,
 		payment.Replicator,
 		payment.Payment,
@@ -308,7 +336,7 @@ type DownloadChannel struct {
 	Finished              bool
 	ListOfPublicKeys      []*PublicAccount
 	ShardReplicators      []*PublicAccount
-	CumulativePayments    []*Payment
+	CumulativePayments    []*CumulativePayment
 }
 
 func (downloadChannel *DownloadChannel) String() string {
@@ -338,7 +366,20 @@ type DownloadChannelsPage struct {
 }
 
 type DownloadChannelsPageOptions struct {
+	DownloadChannelsFilters
 	PaginationOrderingOptions
+}
+
+type DownloadChannelsFilters struct {
+	Consumer string `url:"consumerKey,omitempty"`
+
+	DownloadSize     uint64 `url:"downloadSize,omitempty"`
+	ToDownloadSize   uint32 `url:"toDownloadSize,omitempty"`
+	FromDownloadSize uint64 `url:"fromDownloadSize,omitempty"`
+
+	DownloadApprovalCount     uint64 `url:"downloadApprovalCount,omitempty"`
+	ToDownloadApprovalCount   uint64 `url:"toDownloadApprovalCount,omitempty"`
+	FromDownloadApprovalCount uint64 `url:"fromDownloadApprovalCount,omitempty"`
 }
 
 // Replicator Onboarding Transaction

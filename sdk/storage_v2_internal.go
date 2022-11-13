@@ -468,7 +468,6 @@ func (ref *bcDriveDTO) toStruct(networkType NetworkType) (*BcDrive, error) {
 type driveV2DTO struct {
 	Drive                               string    `json:"drive"`
 	LastApprovedDataModificationId      *hashDto  `json:"lastApprovedDataModificationId"`
-	DataModificationIdIsValid           bool      `json:"dataModificationIdIsValid"`
 	InitialDownloadWork                 uint64DTO `json:"initialDownloadWork"`
 	LastCompletedCumulativeDownloadWork uint64DTO `json:"lastCompletedCumulativeDownloadWork"`
 }
@@ -487,7 +486,6 @@ func (ref *driveV2DTO) toStruct(networkType NetworkType) (*DriveInfo, error) {
 	return &DriveInfo{
 		DriveKey:                            driveKey,
 		LastApprovedDataModificationId:      lastApprovedDataModificationId,
-		DataModificationIdIsValid:           ref.DataModificationIdIsValid,
 		InitialDownloadWork:                 ref.InitialDownloadWork.toStruct(),
 		LastCompletedCumulativeDownloadWork: ref.LastCompletedCumulativeDownloadWork.toStruct(),
 	}, nil
@@ -558,10 +556,10 @@ type paymentV2DTO struct {
 
 type paymentsV2DTOs []*paymentV2DTO
 
-func (ref *paymentsV2DTOs) toStruct(networkType NetworkType) ([]*Payment, error) {
+func (ref *paymentsV2DTOs) toStruct(networkType NetworkType) ([]*CumulativePayment, error) {
 	var (
 		dtos     = *ref
-		payments = make([]*Payment, 0, len(dtos))
+		payments = make([]*CumulativePayment, 0, len(dtos))
 	)
 
 	for _, dto := range dtos {
@@ -570,7 +568,7 @@ func (ref *paymentsV2DTOs) toStruct(networkType NetworkType) ([]*Payment, error)
 			return nil, err
 		}
 
-		payment := &Payment{
+		payment := &CumulativePayment{
 			Replicator: replicator,
 			Payment:    dto.Payment.toStruct(),
 		}

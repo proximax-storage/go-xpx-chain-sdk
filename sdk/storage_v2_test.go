@@ -140,7 +140,6 @@ const (
                 {
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
                     "lastApprovedDataModificationId": "0100000000000000000000000000000000000000000000000000000000000000",
-                    "dataModificationIdIsValid": false,
                     "initialDownloadWork": [
 					  0,
 					  0
@@ -281,12 +280,10 @@ var (
 	testReplicatorInfo = &Replicator{
 		Account: testReplicatorV2Account1,
 		Version: 1,
-		//Capacity: StorageSize(1000),
 		Drives: []*DriveInfo{
 			{
 				DriveKey:                       testBcDriveAccount,
 				LastApprovedDataModificationId: &Hash{1},
-				DataModificationIdIsValid:      false,
 				InitialDownloadWork:            0,
 			},
 		},
@@ -309,7 +306,7 @@ var (
 			testReplicatorV2Account1,
 			testReplicatorV2Account2,
 		},
-		CumulativePayments: []*Payment{
+		CumulativePayments: []*CumulativePayment{
 			{
 				Replicator: testReplicatorV2Account1,
 				Payment:    Amount(300),
