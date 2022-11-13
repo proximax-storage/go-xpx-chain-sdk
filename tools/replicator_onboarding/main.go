@@ -15,35 +15,40 @@ import (
 	sync "github.com/proximax-storage/go-xpx-chain-sync"
 )
 
+const (
+	low    = "low"
+	middle = "middle"
+	high   = "high"
+)
+
 var (
 	ErrNoUrl                  = errors.New("url is not provided")
 	ErrZeroCapacity           = errors.New("capacity is zero")
+	ErrUnknownFeeStrategy     = errors.New("unknown fee calculation strategy")
 	ErrNoReplicatorPrivateKey = errors.New("replicator private key is not provided")
 )
 
 func main() {
-	fmt.Println(`	
-		░░░░░▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░
-		░░░▓▓▓▓▓▓▒▒▒▒▒▒▓▓░░░░░░░
-		░░▓▓▓▓▒░░▒▒▓▓▒▒▓▓▓▓░░░░░
-		░▓▓▓▓▒░░▓▓▓▒▄▓░▒▄▄▄▓░░░░
-		▓▓▓▓▓▒░░▒▀▀▀▀▒░▄░▄▒▓▓░░░
-		▓▓▓▓▓▒░░▒▒▒▒▒▓▒▀▒▀▒▓▒▓░░
-		▓▓▓▓▓▒▒░░░▒▒▒░░▄▀▀▀▄▓▒▓░
-		▓▓▓▓▓▓▒▒░░░▒▒▓▀▄▄▄▄▓▒▒▒▓
-		░▓█▀▄▒▓▒▒░░░▒▒░░▀▀▀▒▒▒▒░
-		░░▓█▒▒▄▒▒▒▒▒▒▒░░▒▒▒▒▒▒▓░
-		░░░▓▓▓▓▒▒▒▒▒▒▒▒░░░▒▒▒▓▓░
-		░░░░░▓▓▒░░▒▒▒▒▒▒▒▒▒▒▒▓▓░
-		░░░░░░▓▒▒░░░░▒▒▒▒▒▒▒▓▓░░
-	`)
-
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
 	capacity := flag.Uint64("capacity", 0, "capacity of replicator")
+	feeStrategy := flag.String("url", middle, "fee calculation strategy (low, middle, high)")
 	replicatorPrivateKey := flag.String("privateKey", "", "Replicator private key")
 	flag.Parse()
 
-	if err := onboard(*url, *replicatorPrivateKey, *capacity); err != nil {
+	fee := sdk.FeeCalculationStrategy(0)
+	switch *feeStrategy {
+	case low:
+		fee = sdk.LowCalculationStrategy
+	case middle:
+		fee = sdk.MiddleCalculationStrategy
+	case high:
+		fee = sdk.HighCalculationStrategy
+	default:
+		fmt.Printf("%s: %s\n", ErrUnknownFeeStrategy, *feeStrategy)
+		os.Exit(1)
+	}
+
+	if err := onboard(*url, *replicatorPrivateKey, fee, *capacity); err != nil {
 		fmt.Printf("Replicator onboarding failed: %s\n", err)
 		os.Exit(1)
 	}
@@ -51,7 +56,7 @@ func main() {
 	fmt.Println("Replicator onboarded successfully!!!")
 }
 
-func onboard(url, replicatorPrivateKey string, capacity uint64) error {
+func onboard(url, replicatorPrivateKey string, feeStrategy sdk.FeeCalculationStrategy, capacity uint64) error {
 	if url == "" {
 		return ErrNoUrl
 	}
@@ -70,7 +75,7 @@ func onboard(url, replicatorPrivateKey string, capacity uint64) error {
 		return err
 	}
 
-	cfg.FeeCalculationStrategy = sdk.MiddleCalculationStrategy
+	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
 	ws, err := websocket.NewClient(ctx, cfg)
