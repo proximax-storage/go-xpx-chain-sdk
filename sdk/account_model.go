@@ -167,7 +167,7 @@ func (a *StakingRecordsPage) String() string {
 }
 
 type StakingRecordsPageOptions struct {
-	RefHeight uint   `url:"refHeight,omitempty"`
+	RefHeight uint64 `url:"refHeight,omitempty"`
 	AccountId string `url:"accountId,omitempty"`
 	PaginationOrderingOptions
 }
