@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/net"
 	"net/http"
 )
 
@@ -69,9 +68,12 @@ func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*BlockchainCon
 func (ref *NetworkService) GetNetworkConfigs(ctx context.Context, tpOpts *BlockchainConfigPageOptions) (*BlockchainConfigPage, error) {
 	configPageDto := BlockChainConfigPageDTO{}
 
-	url := net.NewUrl(fmt.Sprintf(configRoute, ""))
+	url, err := addOptions(fmt.Sprintf(configRoute, ""), tpOpts)
+	if err != nil {
+		return nil, err
+	}
 
-	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &configPageDto)
+	resp, err := ref.client.doNewRequest(ctx, http.MethodGet, url, nil, &configPageDto)
 	if err != nil {
 		return nil, err
 	}
