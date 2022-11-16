@@ -109,7 +109,7 @@ func (dto *abstractTransactionDTO) toStruct(tInfo *TransactionInfo) (*AbstractTr
 }
 
 type transactionsPageDTO struct {
-	Tranactions []jsonLib.RawMessage `json:"data"`
+	Transactions []jsonLib.RawMessage `json:"data"`
 
 	Pagination struct {
 		TotalEntries uint64 `json:"totalEntries"`
@@ -122,7 +122,7 @@ type transactionsPageDTO struct {
 func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage, error) {
 	var wg sync.WaitGroup
 	page := &TransactionsPage{
-		Transactions: make([]Transaction, len(t.Tranactions)),
+		Transactions: make([]Transaction, len(t.Transactions)),
 		Pagination: Pagination{
 			TotalEntries: t.Pagination.TotalEntries,
 			PageNumber:   t.Pagination.PageNumber,
@@ -131,8 +131,8 @@ func (t *transactionsPageDTO) toStruct(generationHash *Hash) (*TransactionsPage,
 		},
 	}
 
-	errs := make([]error, len(t.Tranactions))
-	for i, t := range t.Tranactions {
+	errs := make([]error, len(t.Transactions))
+	for i, t := range t.Transactions {
 		wg.Add(1)
 		go func(i int, t jsonLib.RawMessage) {
 			defer wg.Done()
