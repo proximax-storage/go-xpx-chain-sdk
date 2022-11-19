@@ -2717,6 +2717,7 @@ const (
 	MaxStringSize                            int = 2
 	SignerSize                                   = KeySize
 	SignatureSize                            int = 64
+	AggregateCosignatureSize                     = SignerSize + SignatureSize
 	HalfOfSignature                              = SignatureSize / 2
 	VersionSize                              int = 4
 	TypeSize                                 int = 2
