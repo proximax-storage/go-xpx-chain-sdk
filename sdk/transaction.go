@@ -8,8 +8,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type TransactionService struct {
@@ -218,5 +219,10 @@ func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, t
 		return -1, err
 	}
 
-	return int(block.FeeMultiplier) * tx.Size(), nil
+	cosign := 0
+	if aggTx, ok := tx.(*AggregateTransaction); ok {
+		cosign = len(aggTx.Cosignatures) * AggregateCosignatureSize
+	}
+
+	return int(block.FeeMultiplier) * (tx.Size() + cosign), nil
 }
