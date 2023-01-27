@@ -7,6 +7,7 @@ package sdk
 import (
 	"encoding/binary"
 	"encoding/hex"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
 type statusInfoDto struct {
@@ -20,15 +21,17 @@ type StatusInfo struct {
 }
 
 type signerInfoDto struct {
-	Signer     string       `json:"signer"`
-	Signature  signatureDto `json:"signature"`
-	ParentHash hashDto      `json:"parentHash"`
+	Signer           string       `json:"signer"`
+	Signature        signatureDto `json:"signature"`
+	DerivationScheme uint8        `json:"derivationScheme"`
+	ParentHash       hashDto      `json:"parentHash"`
 }
 
 type SignerInfo struct {
-	Signer     string
-	Signature  *Signature
-	ParentHash *Hash
+	Signer           string
+	Signature        *Signature
+	DerivationScheme crypto.DerivationScheme
+	ParentHash       *Hash
 }
 
 type driveStateDto struct {

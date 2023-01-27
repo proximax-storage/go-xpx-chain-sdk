@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"bytes"
+	crypto "github.com/proximax-storage/go-xpx-crypto"
 
 	"github.com/pkg/errors"
 )
@@ -224,6 +225,7 @@ func MapCosignature(m []byte) (*SignerInfo, error) {
 	return &SignerInfo{
 		signerInfoDto.Signer,
 		signature,
+		crypto.DerivationScheme(signerInfoDto.DerivationScheme),
 		parentHash,
 	}, nil
 }
