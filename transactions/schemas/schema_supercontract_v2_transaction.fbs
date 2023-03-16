@@ -1,0 +1,74 @@
+namespace Catapult.Buffers;
+
+table MosaicBuffer {
+    id: [uint];
+    amount: [uint];
+}
+
+table DeployContractTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    fileNameSize: ushort;
+    functionNameSize: ushort;
+    actualArgumentsSize: ushort;
+    executionCallPayment: [uint];
+    downloadCallPayment: [uint];
+    servicePaymentsCount: ubyte;
+    automaticExecutionFileNameSize: ushort;
+    automaticExecutionFunctionNameSize: ushort;
+    automaticExecutionCallPayment: [uint];
+    automaticDownloadCallPayment: [uint];
+    automaticExecutionsNumber: uint;
+    assignee: [ubyte];
+    fileName: string;
+    functionName: string;
+    actualArguments: string;
+    servicePayments: [MosaicBuffer];
+    automaticExecutionFileName: string;
+    automaticExecutionFunctionName: string;
+}
+
+table AutomaticExecutionsPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    contractKey: [ubyte];
+    automaticExecutionsNumber: uint;
+}
+
+table ManualCallTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    contractKey: [ubyte];
+    fileNameSize: ushort;
+    functionNameSize: ushort;
+    actualArgumentsSize: ushort;
+    executionCallPayment: [uint];
+    downloadCallPayment: [uint];
+    servicePaymentsCount: ubyte;
+    fileName: string;
+    functionName: string;
+    actualArguments: string;
+    servicePayments: [MosaicBuffer];
+}
+
+root_type DeployContractTransactionBuffer;
+
+root_type AutomaticExecutionsPaymentTransactionBuffer;
+
+root_type ManualCallTransactionBuffer;
