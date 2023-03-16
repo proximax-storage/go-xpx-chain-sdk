@@ -1668,7 +1668,7 @@ func (tx *DataModificationSingleApprovalTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DataModificationSingleApprovalTransaction) Size() int {
-	return DataModificationSignleApprovalHeaderSize +
+	return DataModificationSingleApprovalHeaderSize +
 		len(tx.PublicKeys)*KeySize +
 		len(tx.Opinions)*OpinionSizeSize
 }

@@ -2817,7 +2817,7 @@ const (
 	OpinionElementCountSize                      = 2
 	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
 	DataModificationApprovalHeaderSize           = TransactionHeaderSize + KeySize + Hash256 + Hash256 + 8 + 8 + 8
-	DataModificationSignleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
+	DataModificationSingleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
 	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize + OpinionElementCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
