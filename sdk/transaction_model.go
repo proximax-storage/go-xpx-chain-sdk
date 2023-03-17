@@ -2829,6 +2829,9 @@ const (
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
 	RemoveSdaExchangeOfferHeaderSize
+	AutomaticExecutionsPaymentHeaderSize		 = TransactionHeaderSize + KeySize + 4
+	ManualCallHeaderSize						 = TransactionHeaderSize + KeySize + 2 + 2 + 2 + AmountSize + AmountSize + 1
+	DeployContractHeaderSize		 			 = TransactionHeaderSize + KeySize + 2 + 2 + 2 + AmountSize + AmountSize + 1 + 2 + 2 + AmountSize + AmountSize + 4 + KeySize
 )
 
 type EntityType uint16
@@ -2903,8 +2906,11 @@ const (
 	ReplicatorOffboarding          EntityType = 0x4762
 	CreateLiquidityProvider        EntityType = 0x4169
 	ManualRateChange               EntityType = 0x4269
-	PlaceSdaExchangeOffer     EntityType = 0x416A
-	RemoveSdaExchangeOffer    EntityType = 0x426A
+	PlaceSdaExchangeOffer     	   EntityType = 0x416A
+	RemoveSdaExchangeOffer    	   EntityType = 0x426A
+	DeployContract				   EntityType = 0x416E
+	ManualCall					   EntityType = 0x426E
+	AutomaticExecutionsPayment	   EntityType = 0x436E
 )
 
 func (t EntityType) String() string {
@@ -2914,73 +2920,76 @@ func (t EntityType) String() string {
 type EntityVersion uint32
 
 const (
-	AccountPropertyAddressVersion    EntityVersion = 1
-	AccountPropertyMosaicVersion     EntityVersion = 1
-	AccountPropertyEntityTypeVersion EntityVersion = 1
-	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 3
-	AggregateCompletedVersion        EntityVersion = 3
-	AddExchangeOfferVersion          EntityVersion = 4
-	ExchangeOfferVersion             EntityVersion = 2
-	RemoveExchangeOfferVersion       EntityVersion = 2
-	NetworkConfigVersion             EntityVersion = 1
-	BlockchainUpgradeVersion         EntityVersion = 1
-	LinkAccountVersion               EntityVersion = 2
-	LockVersion                      EntityVersion = 1
-	AccountMetadataVersion           EntityVersion = 1
-	MosaicMetadataVersion            EntityVersion = 1
-	NamespaceMetadataVersion         EntityVersion = 1
-	MetadataAddressVersion           EntityVersion = 1
-	MetadataMosaicVersion            EntityVersion = 1
-	MetadataNamespaceVersion         EntityVersion = 1
-	ModifyContractVersion            EntityVersion = 3
-	ModifyMultisigVersion            EntityVersion = 3
-	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
-	MosaicSupplyChangeVersion        EntityVersion = 2
-	MosaicModifyLevyVersion          EntityVersion = 1
-	MosaicRemoveLevyVersion          EntityVersion = 1
-	RegisterNamespaceVersion         EntityVersion = 2
-	SecretLockVersion                EntityVersion = 1
-	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 3
-	PrepareDriveVersion              EntityVersion = 3
-	JoinToDriveVersion               EntityVersion = 1
-	DriveFileSystemVersion           EntityVersion = 1
-	FilesDepositVersion              EntityVersion = 1
-	EndDriveVersion                  EntityVersion = 1
-	DriveFilesRewardVersion          EntityVersion = 1
-	StartDriveVerificationVersion    EntityVersion = 1
-	EndDriveVerificationVersion      EntityVersion = 1
-	StartFileDownloadVersion         EntityVersion = 1
-	EndFileDownloadVersion           EntityVersion = 1
-	DeployVersion                    EntityVersion = 1
-	StartExecuteVersion              EntityVersion = 1
-	EndExecuteVersion                EntityVersion = 1
-	StartOperationVersion            EntityVersion = 1
-	EndOperationVersion              EntityVersion = 1
-	HarvesterVersion                 EntityVersion = 1
-	OperationIdentifyVersion         EntityVersion = 1
-	SuperContractFileSystemVersion   EntityVersion = 1
-	DeactivateVersion                EntityVersion = 1
-	ReplicatorOnboardingVersion      EntityVersion = 1
-	PrepareBcDriveVersion            EntityVersion = 1
-	DataModificationVersion          EntityVersion = 1
-	DataModificationApprovalVersion  EntityVersion = 1 // TODO delete?
-	DataModificationCancelVersion    EntityVersion = 1
-	StoragePaymentVersion            EntityVersion = 1
-	DownloadPaymentVersion           EntityVersion = 1
-	DownloadVersion                  EntityVersion = 1
-	FinishDownloadVersion            EntityVersion = 1
-	VerificationPaymentVersion       EntityVersion = 1
-	EndDriveVerificationV2Version    EntityVersion = 1
-	DownloadApprovalVersion          EntityVersion = 1
-	DriveClosureVersion              EntityVersion = 1
-	ReplicatorOffboardingVersion     EntityVersion = 1
-	CreateLiquidityProviderVersion   EntityVersion = 1
-	ManualRateChangeVersion          EntityVersion = 1
-	PlaceSdaExchangeOfferVersion     EntityVersion = 1
-	RemoveSdaExchangeOfferVersion    EntityVersion = 1
+	AccountPropertyAddressVersion    	EntityVersion = 1
+	AccountPropertyMosaicVersion     	EntityVersion = 1
+	AccountPropertyEntityTypeVersion 	EntityVersion = 1
+	AddressAliasVersion              	EntityVersion = 1
+	AggregateBondedVersion          	EntityVersion = 3
+	AggregateCompletedVersion      		EntityVersion = 3
+	AddExchangeOfferVersion        	  	EntityVersion = 4
+	ExchangeOfferVersion             	EntityVersion = 2
+	RemoveExchangeOfferVersion       	EntityVersion = 2
+	NetworkConfigVersion             	EntityVersion = 1
+	BlockchainUpgradeVersion         	EntityVersion = 1
+	LinkAccountVersion               	EntityVersion = 2
+	LockVersion                      	EntityVersion = 1
+	AccountMetadataVersion           	EntityVersion = 1
+	MosaicMetadataVersion            	EntityVersion = 1
+	NamespaceMetadataVersion         	EntityVersion = 1
+	MetadataAddressVersion           	EntityVersion = 1
+	MetadataMosaicVersion            	EntityVersion = 1
+	MetadataNamespaceVersion         	EntityVersion = 1
+	ModifyContractVersion            	EntityVersion = 3
+	ModifyMultisigVersion            	EntityVersion = 3
+	MosaicAliasVersion               	EntityVersion = 1
+	MosaicDefinitionVersion          	EntityVersion = 3
+	MosaicSupplyChangeVersion        	EntityVersion = 2
+	MosaicModifyLevyVersion          	EntityVersion = 1
+	MosaicRemoveLevyVersion          	EntityVersion = 1
+	RegisterNamespaceVersion        	EntityVersion = 2
+	SecretLockVersion                	EntityVersion = 1
+	SecretProofVersion               	EntityVersion = 1
+	TransferVersion                  	EntityVersion = 3
+	PrepareDriveVersion              	EntityVersion = 3
+	JoinToDriveVersion               	EntityVersion = 1
+	DriveFileSystemVersion           	EntityVersion = 1
+	FilesDepositVersion              	EntityVersion = 1
+	EndDriveVersion                  	EntityVersion = 1
+	DriveFilesRewardVersion          	EntityVersion = 1
+	StartDriveVerificationVersion    	EntityVersion = 1
+	EndDriveVerificationVersion      	EntityVersion = 1
+	StartFileDownloadVersion         	EntityVersion = 1
+	EndFileDownloadVersion           	EntityVersion = 1
+	DeployVersion                    	EntityVersion = 1
+	StartExecuteVersion              	EntityVersion = 1
+	EndExecuteVersion                	EntityVersion = 1
+	StartOperationVersion            	EntityVersion = 1
+	EndOperationVersion             	EntityVersion = 1
+	HarvesterVersion                 	EntityVersion = 1
+	OperationIdentifyVersion         	EntityVersion = 1
+	SuperContractFileSystemVersion   	EntityVersion = 1
+	DeactivateVersion                	EntityVersion = 1
+	ReplicatorOnboardingVersion      	EntityVersion = 1
+	PrepareBcDriveVersion            	EntityVersion = 1
+	DataModificationVersion          	EntityVersion = 1
+	DataModificationApprovalVersion  	EntityVersion = 1 // TODO delete?
+	DataModificationCancelVersion    	EntityVersion = 1
+	StoragePaymentVersion            	EntityVersion = 1
+	DownloadPaymentVersion           	EntityVersion = 1
+	DownloadVersion                  	EntityVersion = 1
+	FinishDownloadVersion            	EntityVersion = 1
+	VerificationPaymentVersion       	EntityVersion = 1
+	EndDriveVerificationV2Version    	EntityVersion = 1
+	DownloadApprovalVersion          	EntityVersion = 1
+	DriveClosureVersion              	EntityVersion = 1
+	ReplicatorOffboardingVersion     	EntityVersion = 1
+	CreateLiquidityProviderVersion   	EntityVersion = 1
+	ManualRateChangeVersion          	EntityVersion = 1
+	PlaceSdaExchangeOfferVersion     	EntityVersion = 1
+	RemoveSdaExchangeOfferVersion    	EntityVersion = 1
+	AutomaticExecutionsPaymentVersion 	EntityVersion = 1
+	ManuanCallVersion				 	EntityVersion = 1
+	DeployContractVersion				EntityVersion = 1
 )
 
 type AccountLinkAction uint8
