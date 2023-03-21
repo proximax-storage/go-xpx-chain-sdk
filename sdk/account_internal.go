@@ -203,6 +203,13 @@ type supplementalPublicKeysDTO struct {
 }
 
 func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*SupplementalPublicKeys, error) {
+	if dto == nil {
+		return &SupplementalPublicKeys{
+			LinkedPublicKey: nil,
+			NodePublicKey:   nil,
+			VrfPublicKey:    nil,
+		}, nil
+	}
 	var err error
 	var linkedAccount *PublicAccount = nil
 	var nodeAccount *PublicAccount = nil
