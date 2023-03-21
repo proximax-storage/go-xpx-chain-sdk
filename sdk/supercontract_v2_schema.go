@@ -15,7 +15,7 @@ func automaticExecutionsPaymentTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("contractKey", ByteSize),
-			newScalarAttribute("automaticExecutionsNumber", IntSize),
+			newArrayAttribute("automaticExecutionsNumber", IntSize),
 		},
 	}
 }
@@ -37,9 +37,9 @@ func manualCallTransactionSchema() *schema {
 			newArrayAttribute("ExecutionCallPayment", IntSize),
 			newArrayAttribute("DownloadCallPayment", IntSize),
 			newScalarAttribute("ServicePaymentsCount", ByteSize),
-			newArrayAttribute("FileName", IntSize),
-			newArrayAttribute("FunctionName", IntSize),
-			newArrayAttribute("ActualArguments", IntSize),
+			newArrayAttribute("FileName", ByteSize),
+			newArrayAttribute("FunctionName", ByteSize),
+			newArrayAttribute("ActualArguments", ByteSize),
 			newArrayAttribute("ServicePayments", IntSize),
 		},
 	}
@@ -68,12 +68,12 @@ func deployContractTransactionSchema() *schema {
 			newArrayAttribute("AutomaticDownloadCallPayment", IntSize),
 			newScalarAttribute("AutomaticExecutionsNumber", IntSize),
 			newArrayAttribute("Assignee", ByteSize),
-			newArrayAttribute("FileName", IntSize),
-			newArrayAttribute("FunctionName", IntSize),
-			newArrayAttribute("ActualArguments", IntSize),
+			newArrayAttribute("FileName", ByteSize),
+			newArrayAttribute("FunctionName", ByteSize),
+			newArrayAttribute("ActualArguments", ByteSize),
 			newArrayAttribute("ServicePayments", IntSize),
-			newArrayAttribute("AutomaticExecutionFileName", IntSize),
-			newArrayAttribute("AutomaticExecutionFunctionName", IntSize),
+			newArrayAttribute("AutomaticExecutionFileName", ByteSize),
+			newArrayAttribute("AutomaticExecutionFunctionName", ByteSize),
 		},
 	}
 }
