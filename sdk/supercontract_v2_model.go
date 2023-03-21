@@ -176,7 +176,7 @@ func (batch *Batch) String() string {
 	)
 }
 
-type SuperContractEntry struct {
+type SuperContractV2 struct {
 	SuperContractKey 					*PublicAccount
 	DriveKey 							*PublicAccount
 	ExecutionPaymentKey					*PublicAccount
@@ -190,7 +190,7 @@ type SuperContractEntry struct {
 	ReleasedTransactions 				[]*Hash
 }
 
-func (superContractEntry *SuperContractEntry) String() string {
+func (superContractV2 *SuperContractV2) String() string {
 	return fmt.Sprintf(
 		`
 			"SuperContractKey": %s,
@@ -205,22 +205,22 @@ func (superContractEntry *SuperContractEntry) String() string {
 			"Batches": %+v,
 			"ReleasedTransactions": %v,
 		`,
-		superContractEntry.SuperContractKey.String(),
-		superContractEntry.DriveKey.String(),
-		superContractEntry.ExecutionPaymentKey.String(),
-		superContractEntry.Assignee.String(),
-		superContractEntry.Creator.String(),
-		superContractEntry.DeploymentBaseModificationsInfo.String(),
-		superContractEntry.AutomaticExecutionsInfo,
-		superContractEntry.RequestedCalls,
-		superContractEntry.ExecutorsInfo,
-		superContractEntry.Batches,
-		superContractEntry.ReleasedTransactions,
+		superContractV2.SuperContractKey.String(),
+		superContractV2.DriveKey.String(),
+		superContractV2.ExecutionPaymentKey.String(),
+		superContractV2.Assignee.String(),
+		superContractV2.Creator.String(),
+		superContractV2.DeploymentBaseModificationsInfo.String(),
+		superContractV2.AutomaticExecutionsInfo,
+		superContractV2.RequestedCalls,
+		superContractV2.ExecutorsInfo,
+		superContractV2.Batches,
+		superContractV2.ReleasedTransactions,
 	)
 }
 
 type SuperContractEntriesPage struct {
-	SuperContractEntries []*SuperContractEntry
+	SuperContractEntries []*SuperContractV2
 	Pagination Pagination
 }
 
