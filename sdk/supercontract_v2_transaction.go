@@ -173,9 +173,14 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	contractKeyV := transactions.TransactionBufferCreateByteVector(builder, contractKeyB)
 	executionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.ExecutionCallPayment.toArray())
 	downloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadCallPayment.toArray())
-	fileName := builder.CreateString(tx.FileName)
-	functionName := builder.CreateString(tx.FunctionName)
-	actualArguments := builder.CreateString(tx.ActualArguments)
+
+	fileBytes := []byte(tx.FileName)
+	fileName := transactions.TransactionBufferCreateByteVector(builder, fileBytes)
+	functionBytes := []byte(tx.FunctionName)
+	functionName := transactions.TransactionBufferCreateByteVector(builder, functionBytes)
+	argumentBytes := []byte(tx.ActualArguments)
+	actualArguments := transactions.TransactionBufferCreateByteVector(builder, argumentBytes)
+
 
 	mb := make([]flatbuffers.UOffsetT, len(tx.ServicePayments))
 	for i, mos := range tx.ServicePayments {
@@ -359,11 +364,16 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	executionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.ExecutionCallPayment.toArray())
 	downloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadCallPayment.toArray())
 
-	fileName := builder.CreateString(tx.FileName)
-	functionName := builder.CreateString(tx.FunctionName)
-	actualArguments := builder.CreateString(tx.ActualArguments)
-	automaticExecutionFileName := builder.CreateString(tx.AutomaticExecutionFileName)
-	automaticExecutionFunctionName := builder.CreateString(tx.AutomaticExecutionFunctionName)
+	fileBytes := []byte(tx.FileName)
+	fileName := transactions.TransactionBufferCreateByteVector(builder, fileBytes)
+	functionBytes := []byte(tx.FunctionName)
+	functionName := transactions.TransactionBufferCreateByteVector(builder, functionBytes)
+	argumentBytes := []byte(tx.ActualArguments)
+	actualArguments := transactions.TransactionBufferCreateByteVector(builder, argumentBytes)
+	automaticExecutionFileBytes := []byte(tx.FileName)
+	automaticExecutionFileName := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionFileBytes)
+	automaticExecutionFunction := []byte(tx.FileName)
+	automaticExecutionFunctionName := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionFunction)
 
 	automaticExecutionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticExecutionCallPayment.toArray())
 	automaticDownloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticDownloadCallPayment.toArray())
