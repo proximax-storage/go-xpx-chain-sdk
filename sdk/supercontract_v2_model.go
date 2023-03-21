@@ -7,36 +7,36 @@ package sdk
 import "fmt"
 
 
-// drive contract entry
-type DriveContract struct {
-	DriveContractKey 				*PublicAccount
-	ContractKey 					*PublicAccount
-}
+// drive contract entry (will be implement in the future)
+// type DriveContract struct {
+// 	DriveContractKey 				*PublicAccount
+// 	ContractKey 					*PublicAccount
+// }
 
-func (driveContract *DriveContract) String() string {
-	return fmt.Sprintf(
-		`
-			"DriveContractKey": %s,
-			"ContractKey": %s,
-		`,
-		driveContract.DriveContractKey.String(),
-		driveContract.ContractKey.String(),
-	)
-}
+// func (driveContract *DriveContract) String() string {
+// 	return fmt.Sprintf(
+// 		`
+// 			"DriveContractKey": %s,
+// 			"ContractKey": %s,
+// 		`,
+// 		driveContract.DriveContractKey.String(),
+// 		driveContract.ContractKey.String(),
+// 	)
+// }
 
-type DriveContractPage struct {
-	DriveContracts 	[]*DriveContract
-	Pagination 		Pagination
-}
+// type DriveContractPage struct {
+// 	DriveContracts 	[]*DriveContract
+// 	Pagination 		Pagination
+// }
 
-type DriveContractFileters struct {
-	ContractKey string `url:"consumerKey, omitempty"`
-}
+// type DriveContractFileters struct {
+// 	ContractKey string `url:"consumerKey, omitempty"`
+// }
 
-type DriveContractPageOptions struct {
-	BcDrivesPageFilters
-	PaginationOrderingOptions
-}
+// type DriveContractPageOptions struct {
+// 	BcDrivesPageFilters
+// 	PaginationOrderingOptions
+// }
 // end of drive contract entry
 
 // supercontract entry
