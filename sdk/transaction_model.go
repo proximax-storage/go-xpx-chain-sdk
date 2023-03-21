@@ -3296,7 +3296,7 @@ const (
 	AddExchangeOfferVersion            EntityVersion = 4
 	ExchangeOfferVersion               EntityVersion = 2
 	RemoveExchangeOfferVersion         EntityVersion = 2
-	NetworkConfigVersion               EntityVersion = 1
+	NetworkConfigVersion               EntityVersion = 2
 	BlockchainUpgradeVersion           EntityVersion = 1
 	AccountV2UpgradeVersion            EntityVersion = 1
 	LinkAccountVersion                 EntityVersion = 2
