@@ -723,7 +723,24 @@ func (rcv *DeployContractTransactionBuffer) MutateAssignee(j int, n byte) bool {
 	return false
 }
 
-func (rcv *DeployContractTransactionBuffer) FileName() []byte {
+func (rcv *DeployContractTransactionBuffer) FileName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(44))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) FileNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(44))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) FileNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(44))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -731,7 +748,33 @@ func (rcv *DeployContractTransactionBuffer) FileName() []byte {
 	return nil
 }
 
-func (rcv *DeployContractTransactionBuffer) FunctionName() []byte {
+func (rcv *DeployContractTransactionBuffer) MutateFileName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(44))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *DeployContractTransactionBuffer) FunctionName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(46))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) FunctionNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(46))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) FunctionNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(46))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -739,12 +782,47 @@ func (rcv *DeployContractTransactionBuffer) FunctionName() []byte {
 	return nil
 }
 
-func (rcv *DeployContractTransactionBuffer) ActualArguments() []byte {
+func (rcv *DeployContractTransactionBuffer) MutateFunctionName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(46))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *DeployContractTransactionBuffer) ActualArguments(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(48))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) ActualArgumentsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(48))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) ActualArgumentsBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(48))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
 	return nil
+}
+
+func (rcv *DeployContractTransactionBuffer) MutateActualArguments(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(48))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *DeployContractTransactionBuffer) ServicePayments(obj *MosaicBuffer, j int) bool {
@@ -767,7 +845,24 @@ func (rcv *DeployContractTransactionBuffer) ServicePaymentsLength() int {
 	return 0
 }
 
-func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileName() []byte {
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(52))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(52))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(52))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -775,12 +870,47 @@ func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileName() []byte 
 	return nil
 }
 
-func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFunctionName() []byte {
+func (rcv *DeployContractTransactionBuffer) MutateAutomaticExecutionFileName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(52))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFunctionName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(54))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFunctionNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(54))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFunctionNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(54))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
 	return nil
+}
+
+func (rcv *DeployContractTransactionBuffer) MutateAutomaticExecutionFunctionName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(54))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func DeployContractTransactionBufferStart(builder *flatbuffers.Builder) {
@@ -879,11 +1009,20 @@ func DeployContractTransactionBufferStartAssigneeVector(builder *flatbuffers.Bui
 func DeployContractTransactionBufferAddFileName(builder *flatbuffers.Builder, fileName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(20, flatbuffers.UOffsetT(fileName), 0)
 }
+func DeployContractTransactionBufferStartFileNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func DeployContractTransactionBufferAddFunctionName(builder *flatbuffers.Builder, functionName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(21, flatbuffers.UOffsetT(functionName), 0)
 }
+func DeployContractTransactionBufferStartFunctionNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func DeployContractTransactionBufferAddActualArguments(builder *flatbuffers.Builder, actualArguments flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(22, flatbuffers.UOffsetT(actualArguments), 0)
+}
+func DeployContractTransactionBufferStartActualArgumentsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func DeployContractTransactionBufferAddServicePayments(builder *flatbuffers.Builder, servicePayments flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(23, flatbuffers.UOffsetT(servicePayments), 0)
@@ -894,8 +1033,14 @@ func DeployContractTransactionBufferStartServicePaymentsVector(builder *flatbuff
 func DeployContractTransactionBufferAddAutomaticExecutionFileName(builder *flatbuffers.Builder, automaticExecutionFileName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(24, flatbuffers.UOffsetT(automaticExecutionFileName), 0)
 }
+func DeployContractTransactionBufferStartAutomaticExecutionFileNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func DeployContractTransactionBufferAddAutomaticExecutionFunctionName(builder *flatbuffers.Builder, automaticExecutionFunctionName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(25, flatbuffers.UOffsetT(automaticExecutionFunctionName), 0)
+}
+func DeployContractTransactionBufferStartAutomaticExecutionFunctionNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func DeployContractTransactionBufferEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -1218,7 +1363,24 @@ func (rcv *ManualCallTransactionBuffer) MutateServicePaymentsCount(n byte) bool 
 	return rcv._tab.MutateByteSlot(30, n)
 }
 
-func (rcv *ManualCallTransactionBuffer) FileName() []byte {
+func (rcv *ManualCallTransactionBuffer) FileName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) FileNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) FileNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1226,7 +1388,33 @@ func (rcv *ManualCallTransactionBuffer) FileName() []byte {
 	return nil
 }
 
-func (rcv *ManualCallTransactionBuffer) FunctionName() []byte {
+func (rcv *ManualCallTransactionBuffer) MutateFileName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(32))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *ManualCallTransactionBuffer) FunctionName(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) FunctionNameLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) FunctionNameBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -1234,12 +1422,47 @@ func (rcv *ManualCallTransactionBuffer) FunctionName() []byte {
 	return nil
 }
 
-func (rcv *ManualCallTransactionBuffer) ActualArguments() []byte {
+func (rcv *ManualCallTransactionBuffer) MutateFunctionName(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(34))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *ManualCallTransactionBuffer) ActualArguments(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) ActualArgumentsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *ManualCallTransactionBuffer) ActualArgumentsBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
 	return nil
+}
+
+func (rcv *ManualCallTransactionBuffer) MutateActualArguments(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(36))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *ManualCallTransactionBuffer) ServicePayments(obj *MosaicBuffer, j int) bool {
@@ -1331,11 +1554,20 @@ func ManualCallTransactionBufferAddServicePaymentsCount(builder *flatbuffers.Bui
 func ManualCallTransactionBufferAddFileName(builder *flatbuffers.Builder, fileName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(14, flatbuffers.UOffsetT(fileName), 0)
 }
+func ManualCallTransactionBufferStartFileNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func ManualCallTransactionBufferAddFunctionName(builder *flatbuffers.Builder, functionName flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(15, flatbuffers.UOffsetT(functionName), 0)
 }
+func ManualCallTransactionBufferStartFunctionNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func ManualCallTransactionBufferAddActualArguments(builder *flatbuffers.Builder, actualArguments flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(16, flatbuffers.UOffsetT(actualArguments), 0)
+}
+func ManualCallTransactionBufferStartActualArgumentsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
 }
 func ManualCallTransactionBufferAddServicePayments(builder *flatbuffers.Builder, servicePayments flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(17, flatbuffers.UOffsetT(servicePayments), 0)

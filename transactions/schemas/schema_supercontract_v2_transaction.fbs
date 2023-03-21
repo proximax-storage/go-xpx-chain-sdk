@@ -26,12 +26,12 @@ table DeployContractTransactionBuffer {
     automaticDownloadCallPayment: [uint];
     automaticExecutionsNumber: uint;
     assignee: [ubyte];
-    fileName: string;
-    functionName: string;
-    actualArguments: string;
+    fileName: [ubyte];
+    functionName: [ubyte];
+    actualArguments: [ubyte];
     servicePayments: [MosaicBuffer];
-    automaticExecutionFileName: string;
-    automaticExecutionFunctionName: string;
+    automaticExecutionFileName: [ubyte];
+    automaticExecutionFunctionName: [ubyte];
 }
 
 table AutomaticExecutionsPaymentTransactionBuffer {
@@ -61,9 +61,9 @@ table ManualCallTransactionBuffer {
     executionCallPayment: [uint];
     downloadCallPayment: [uint];
     servicePaymentsCount: ubyte;
-    fileName: string;
-    functionName: string;
-    actualArguments: string;
+    fileName: [ubyte];
+    functionName: [ubyte];
+    actualArguments: [ubyte];
     servicePayments: [MosaicBuffer];
 }
 
