@@ -128,7 +128,7 @@ func NewManualCallTransaction(
 	fileName 				string,
 	functionName 			string,
 	actualArguments 		string,
-	servicePayments 		[]*Mosaic,
+	servicePayments 		[]*MosaicId,
 	networkType 			NetworkType,
 ) (*ManualCallTransaction, error) {
 	tx := ManualCallTransaction{
@@ -183,12 +183,10 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 
 
 	mb := make([]flatbuffers.UOffsetT, len(tx.ServicePayments))
-	for i, mos := range tx.ServicePayments {
-		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.AssetId.toArray())
-		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.toArray())
+	for i, it := range tx.ServicePayments {
+		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
 		transactions.MosaicBufferStart(builder)
-		transactions.MosaicBufferAddId(builder, id)
-		transactions.MosaicBufferAddAmount(builder, am)
+		transactions.MosaicBufferAddId(builder, mos)
 		mb[i] = transactions.MosaicBufferEnd(builder)
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
@@ -232,7 +230,7 @@ type manualCallTransactionDTO struct {
 		FileName 					string 			`json:"fileName"`
 		FunctionName 				string 			`json:"functionName"`
 		ActualArguments 			string 			`json:"actualArguments"`
-		ServicePayments 			[]*mosaicDTO	`json:"servicePayments"`
+		ServicePayments 			[]*mosaicIdDTO	`json:"servicePayments"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -253,7 +251,7 @@ func (dto *manualCallTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	mosaics := make([]*Mosaic, len(dto.Tx.ServicePayments))
+	mosaics := make([]*MosaicId, len(dto.Tx.ServicePayments))
 
 	for i, mosaic := range dto.Tx.ServicePayments {
 		msc, err := mosaic.toStruct()
@@ -299,7 +297,7 @@ func NewDeployContractTransaction(
 	fileName 							string,
 	functionName 						string,
 	actualArguments 					string,
-	servicePayments 					[]*Mosaic,
+	servicePayments 					[]*MosaicId,
 	automaticExecutionFileName			string,
 	automaticExecutionFunctionName		string,
 	networkType 			NetworkType,
@@ -378,12 +376,10 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	automaticExecutionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticExecutionCallPayment.toArray())
 	automaticDownloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticDownloadCallPayment.toArray())
 	mb := make([]flatbuffers.UOffsetT, len(tx.ServicePayments))
-	for i, mos := range tx.ServicePayments {
-		id := transactions.TransactionBufferCreateUint32Vector(builder, mos.AssetId.toArray())
-		am := transactions.TransactionBufferCreateUint32Vector(builder, mos.Amount.toArray())
+	for i, it := range tx.ServicePayments {
+		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
 		transactions.MosaicBufferStart(builder)
-		transactions.MosaicBufferAddId(builder, id)
-		transactions.MosaicBufferAddAmount(builder, am)
+		transactions.MosaicBufferAddId(builder, mos)
 		mb[i] = transactions.MosaicBufferEnd(builder)
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
@@ -441,7 +437,7 @@ type deployContractTransactionDTO struct {
 		FileName 							string 			`json:"fileName"`
 		FunctionName 						string 			`json:"functionName"`
 		ActualArguments 					string 			`json:"actualArguments"`
-		ServicePayments 					[]*mosaicDTO	`json:"servicePayments"`
+		ServicePayments 					[]*mosaicIdDTO	`json:"servicePayments"`
 		AutomaticExecutionFileName 			string 			`json:"automaticExecutionFileName"`
 		AutomaticExecutionFunctionName 		string 			`json:"automaticExecutionFunctionName"`
 	} `json:"transaction"`
@@ -469,7 +465,7 @@ func (dto *deployContractTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	mosaics := make([]*Mosaic, len(dto.Tx.ServicePayments))
+	mosaics := make([]*MosaicId, len(dto.Tx.ServicePayments))
 
 	for i, mosaic := range dto.Tx.ServicePayments {
 		msc, err := mosaic.toStruct()

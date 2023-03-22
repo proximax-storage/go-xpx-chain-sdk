@@ -72,7 +72,7 @@ func (executionsInfo *AutomaticExecutionsInfo) String() string {
 }
 
 type ServicePayment struct {
-	MosaicId 	*Mosaic
+	MosaicId 	*MosaicId
 	Amount 		Amount
 }
 
@@ -256,7 +256,7 @@ type ManualCallTransaction struct {
 	FileName							string
 	FunctionName						string
 	ActualArguments						string
-	ServicePayments						[]*Mosaic
+	ServicePayments						[]*MosaicId
 }
 
 // Deploy Contract Transaction
@@ -278,7 +278,7 @@ type DeployContractTransaction struct {
 	FileName							string
 	FunctionName						string
 	ActualArguments						string
-	ServicePayments						[]*Mosaic
+	ServicePayments						[]*MosaicId
 	AutomaticExecutionFileName			string
 	AutomaticExecutionFunctionName		string
 }
