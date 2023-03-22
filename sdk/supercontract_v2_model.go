@@ -144,6 +144,7 @@ func (proofOfExecution *ProofOfExecution) String() string {
 }
 
 type ExecutorInfo struct {
+	ExecutorKey							*PublicAccount
 	NextBatchToApproave 				uint64 `default:"0"`
 	PoEx 								ProofOfExecution
 }
@@ -151,29 +152,66 @@ type ExecutorInfo struct {
 func (executorInfo *ExecutorInfo) String() string {
 	return fmt.Sprintf(
 		`
+			"ExecutorKey": %s,
 			"NextBatchToApproave": %d,
 			"PoEx": %+v,
 		`,
+		executorInfo.ExecutorKey,
 		executorInfo.NextBatchToApproave,
 		executorInfo.PoEx,
 	)
 }
 
+type CompletedCall struct {
+	CallId			*Hash
+	Caller			*PublicAccount
+	Status			uint16
+	ExecutionWork	Amount
+	DownloadWork	Amount
+}
+
+func (completedCall *CompletedCall) String() string {
+	return fmt.Sprintf(
+		`
+			"CallId": %s,
+			"Caller": %s,
+			"Status": %d,
+			"ExecutionWork": %d,
+			"DownloadWork": %d,
+		`,
+		completedCall.CallId,
+		completedCall.Caller,
+		completedCall.Status,
+		completedCall.ExecutionWork,
+		completedCall.DownloadWork,
+	)
+}
+
 type Batch struct {
-	Success bool
+	BatchId								uint64
+	Success 							bool
 	PoExVerificationInformation			[]byte
+	CompletedCalls						[]*CompletedCall
 
 }
 
 func (batch *Batch) String() string {
 	return fmt.Sprintf(
 		`
+			"BatchId": %d,
 			"Success": %t,
 			"PoExVerificationInformation": %v,
+			"CompletedCalls": %+v,
 		`,
+		batch.BatchId,
 		batch.Success,
 		batch.PoExVerificationInformation,
+		batch.CompletedCalls,
 	)
+}
+
+type ReleasedTransaction struct {
+	ReleasedTransactionHash			*Hash
 }
 
 type SuperContractV2 struct {
@@ -183,11 +221,11 @@ type SuperContractV2 struct {
 	Assignee 							*PublicAccount
 	Creator 							*PublicAccount
 	DeploymentBaseModificationsInfo 	*Hash
-	AutomaticExecutionsInfo 			AutomaticExecutionsInfo
+	AutomaticExecutionsInfo 			*AutomaticExecutionsInfo
 	RequestedCalls 						[]*ContractCall
-	ExecutorsInfo 						map[PublicAccount]ExecutorInfo
-	Batches 							map[uint64]Batch
-	ReleasedTransactions 				[]*Hash
+	ExecutorsInfo 						[]*ExecutorInfo
+	Batches 							[]*Batch
+	ReleasedTransactions 				[]*ReleasedTransaction
 }
 
 func (superContractV2 *SuperContractV2) String() string {
