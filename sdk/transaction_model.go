@@ -954,8 +954,8 @@ func NewNetworkConfigAbsoluteHeightTransaction(deadline *Deadline, height Height
 
 	return &NetworkConfigAbsoluteHeightTransaction{
 		AbstractTransaction: AbstractTransaction{
-			Type:        NetworkConfigEntityType,
-			Version:     NetworkConfigVersion,
+			Type:        NetworkConfigAbsoluteHeightEntityType,
+			Version:     NetworkConfigAbsoluteHeightVersion,
 			Deadline:    deadline,
 			NetworkType: networkType,
 		},
@@ -1021,7 +1021,7 @@ func (tx *NetworkConfigAbsoluteHeightTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *NetworkConfigAbsoluteHeightTransaction) Size() int {
-	return NetworkConfigHeaderSize + len(tx.NetworkConfig.String()) + len(tx.SupportedEntities.String())
+	return NetworkConfigAbsoluteHeightHeaderSize + len(tx.NetworkConfig.String()) + len(tx.SupportedEntities.String())
 }
 
 type BlockchainUpgradeTransaction struct {
@@ -3142,6 +3142,7 @@ const (
 	AliasTransactionHeaderSize                   = TransactionHeaderSize + NamespaceSize + AliasActionSize
 	AggregateBondedHeaderSize                    = TransactionHeaderSize + SizeSize
 	NetworkConfigHeaderSize                      = TransactionHeaderSize + BaseInt64Size + MaxStringSize + MaxStringSize
+	NetworkConfigAbsoluteHeightHeaderSize        = NetworkConfigHeaderSize
 	BlockchainUpgradeTransactionSize             = TransactionHeaderSize + DurationSize + BaseInt64Size
 	AccountV2UpgradeTransactionSize              = TransactionHeaderSize + KeySize
 	HashTypeSize                             int = 1
@@ -3212,70 +3213,71 @@ const (
 type EntityType uint16
 
 const (
-	AccountPropertyAddress      EntityType = 0x4150
-	AccountPropertyMosaic       EntityType = 0x4250
-	AccountPropertyEntityType   EntityType = 0x4350
-	AddressAlias                EntityType = 0x424e
-	AggregateBondedV1           EntityType = 0x4241
-	AggregateCompletedV1        EntityType = 0x4141
-	AggregateBondedV2           EntityType = 0x4441
-	AggregateCompletedV2        EntityType = 0x4341
-	AddExchangeOffer            EntityType = 0x415D
-	AddHarvesterEntityType      EntityType = 0x4161
-	ExchangeOffer               EntityType = 0x425D
-	RemoveExchangeOffer         EntityType = 0x435D
-	RemoveHarvesterEntityType   EntityType = 0x4261
-	Block                       EntityType = 0x8143
-	NemesisBlock                EntityType = 0x8043
-	NetworkConfigEntityType     EntityType = 0x4159
-	BlockchainUpgrade           EntityType = 0x4158
-	AccountV2Upgrade            EntityType = 0x4258
-	LinkAccount                 EntityType = 0x414c
-	NodeKeyLink                 EntityType = 0x424c
-	VrfKeyLink                  EntityType = 0x434c
-	Lock                        EntityType = 0x4148
-	MetadataAddress             EntityType = 0x413d
-	MetadataMosaic              EntityType = 0x423d
-	MetadataNamespace           EntityType = 0x433d
-	AccountMetadata             EntityType = 0x413f
-	MosaicMetadata              EntityType = 0x423f
-	NamespaceMetadata           EntityType = 0x433f
-	ModifyContract              EntityType = 0x4157
-	ModifyMultisig              EntityType = 0x4155
-	MosaicAlias                 EntityType = 0x434e
-	MosaicDefinition            EntityType = 0x414d
-	MosaicSupplyChange          EntityType = 0x424d
-	MosaicModifyLevy            EntityType = 0x434d
-	MosaicRemoveLevy            EntityType = 0x444d
-	RegisterNamespace           EntityType = 0x414e
-	SecretLock                  EntityType = 0x4152
-	SecretProof                 EntityType = 0x4252
-	Transfer                    EntityType = 0x4154
-	PrepareDrive                EntityType = 0x415A
-	JoinToDrive                 EntityType = 0x425A
-	DriveFileSystem             EntityType = 0x435A
-	FilesDeposit                EntityType = 0x445A
-	EndDrive                    EntityType = 0x455A
-	DriveFilesReward            EntityType = 0x465A
-	StartDriveVerification      EntityType = 0x475A
-	EndDriveVerification        EntityType = 0x485A
-	StartFileDownload           EntityType = 0x495A
-	EndFileDownload             EntityType = 0x4A5A
-	OperationIdentify           EntityType = 0x415F
-	StartOperation              EntityType = 0x425F
-	EndOperation                EntityType = 0x435F
-	Deploy                      EntityType = 0x4160
-	StartExecute                EntityType = 0x4260
-	EndExecute                  EntityType = 0x4360
-	SuperContractFileSystem     EntityType = 0x4460
-	Deactivate                  EntityType = 0x4560
-	LockFundTransfer            EntityType = 0x4162
-	LockFundCancelUnlock        EntityType = 0x4262
-	AccountAddressRestriction   EntityType = 0x4163
-	AccountMosaicRestriction    EntityType = 0x4263
-	AccountOperationRestriction EntityType = 0x4363
-	MosaicGlobalRestriction     EntityType = 0x4164
-	MosaicAddressRestriction    EntityType = 0x4264
+	AccountPropertyAddress                EntityType = 0x4150
+	AccountPropertyMosaic                 EntityType = 0x4250
+	AccountPropertyEntityType             EntityType = 0x4350
+	AddressAlias                          EntityType = 0x424e
+	AggregateBondedV1                     EntityType = 0x4241
+	AggregateCompletedV1                  EntityType = 0x4141
+	AggregateBondedV2                     EntityType = 0x4441
+	AggregateCompletedV2                  EntityType = 0x4341
+	AddExchangeOffer                      EntityType = 0x415D
+	AddHarvesterEntityType                EntityType = 0x4161
+	ExchangeOffer                         EntityType = 0x425D
+	RemoveExchangeOffer                   EntityType = 0x435D
+	RemoveHarvesterEntityType             EntityType = 0x4261
+	Block                                 EntityType = 0x8143
+	NemesisBlock                          EntityType = 0x8043
+	NetworkConfigEntityType               EntityType = 0x4159
+	NetworkConfigAbsoluteHeightEntityType EntityType = 0x4259
+	BlockchainUpgrade                     EntityType = 0x4158
+	AccountV2Upgrade                      EntityType = 0x4258
+	LinkAccount                           EntityType = 0x414c
+	NodeKeyLink                           EntityType = 0x424c
+	VrfKeyLink                            EntityType = 0x434c
+	Lock                                  EntityType = 0x4148
+	MetadataAddress                       EntityType = 0x413d
+	MetadataMosaic                        EntityType = 0x423d
+	MetadataNamespace                     EntityType = 0x433d
+	AccountMetadata                       EntityType = 0x413f
+	MosaicMetadata                        EntityType = 0x423f
+	NamespaceMetadata                     EntityType = 0x433f
+	ModifyContract                        EntityType = 0x4157
+	ModifyMultisig                        EntityType = 0x4155
+	MosaicAlias                           EntityType = 0x434e
+	MosaicDefinition                      EntityType = 0x414d
+	MosaicSupplyChange                    EntityType = 0x424d
+	MosaicModifyLevy                      EntityType = 0x434d
+	MosaicRemoveLevy                      EntityType = 0x444d
+	RegisterNamespace                     EntityType = 0x414e
+	SecretLock                            EntityType = 0x4152
+	SecretProof                           EntityType = 0x4252
+	Transfer                              EntityType = 0x4154
+	PrepareDrive                          EntityType = 0x415A
+	JoinToDrive                           EntityType = 0x425A
+	DriveFileSystem                       EntityType = 0x435A
+	FilesDeposit                          EntityType = 0x445A
+	EndDrive                              EntityType = 0x455A
+	DriveFilesReward                      EntityType = 0x465A
+	StartDriveVerification                EntityType = 0x475A
+	EndDriveVerification                  EntityType = 0x485A
+	StartFileDownload                     EntityType = 0x495A
+	EndFileDownload                       EntityType = 0x4A5A
+	OperationIdentify                     EntityType = 0x415F
+	StartOperation                        EntityType = 0x425F
+	EndOperation                          EntityType = 0x435F
+	Deploy                                EntityType = 0x4160
+	StartExecute                          EntityType = 0x4260
+	EndExecute                            EntityType = 0x4360
+	SuperContractFileSystem               EntityType = 0x4460
+	Deactivate                            EntityType = 0x4560
+	LockFundTransfer                      EntityType = 0x4162
+	LockFundCancelUnlock                  EntityType = 0x4262
+	AccountAddressRestriction             EntityType = 0x4163
+	AccountMosaicRestriction              EntityType = 0x4263
+	AccountOperationRestriction           EntityType = 0x4363
+	MosaicGlobalRestriction               EntityType = 0x4164
+	MosaicAddressRestriction              EntityType = 0x4264
 )
 
 func (t EntityType) String() string {
@@ -3297,6 +3299,7 @@ const (
 	ExchangeOfferVersion               EntityVersion = 2
 	RemoveExchangeOfferVersion         EntityVersion = 2
 	NetworkConfigVersion               EntityVersion = 2
+	NetworkConfigAbsoluteHeightVersion EntityVersion = 1
 	BlockchainUpgradeVersion           EntityVersion = 1
 	AccountV2UpgradeVersion            EntityVersion = 1
 	LinkAccountVersion                 EntityVersion = 2
