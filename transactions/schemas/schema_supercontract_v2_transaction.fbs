@@ -29,7 +29,7 @@ table DeployContractTransactionBuffer {
     fileName: [ubyte];
     functionName: [ubyte];
     actualArguments: [ubyte];
-    servicePayments: [MosaicBuffer];
+    servicePayments: [uint];
     automaticExecutionFileName: [ubyte];
     automaticExecutionFunctionName: [ubyte];
 }
@@ -64,7 +64,7 @@ table ManualCallTransactionBuffer {
     fileName: [ubyte];
     functionName: [ubyte];
     actualArguments: [ubyte];
-    servicePayments: [MosaicBuffer];
+    servicePayments: [uint];
 }
 
 root_type DeployContractTransactionBuffer;
