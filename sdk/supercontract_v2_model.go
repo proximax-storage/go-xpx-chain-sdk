@@ -320,3 +320,121 @@ type DeployContractTransaction struct {
 	AutomaticExecutionFileName			string
 	AutomaticExecutionFunctionName		string
 }
+
+// Successful End Batch Execution Transaction
+type RawProofsOfExecution struct {
+	StartBatchId	uint64
+	T				[]byte
+	R				[]byte
+	F				[]byte
+	K				[]byte
+}
+
+func (rawPoex *RawProofsOfExecution) String() string {
+	return fmt.Sprintf(
+		`
+			"StartBatchId": %d,
+			"T": %v,
+			"R": %v,
+			"F": %v,
+			"K": %v,
+		`,
+		rawPoex.StartBatchId,
+		rawPoex.T,
+		rawPoex.R,
+		rawPoex.F,
+		rawPoex.K,
+	)
+}
+
+type ExtendedCallDigest struct {
+	CallId						*Hash
+	Manual						bool
+	Block						Height
+	Status						uint16
+	ReleasedTransactionHash		*Hash
+}
+
+func (extendedCallDigest *ExtendedCallDigest) String() string {
+	return fmt.Sprintf(
+		`
+			"CallId": %s,
+			"Manual": %t,
+			"Block": %d,
+			"Status": %d,
+			"ReleasedTransactionHash": %s,
+		`,
+		extendedCallDigest.CallId,
+		extendedCallDigest.Manual,
+		extendedCallDigest.Block,
+		extendedCallDigest.Status,
+		extendedCallDigest.ReleasedTransactionHash,
+	)
+}
+
+type CallPayment struct {
+	ExecutionPayment	Amount
+	DownloadPayment		Amount
+}
+
+func (callPayment *CallPayment) String() string {
+	return fmt.Sprintf(
+		`
+			"ExecutionPayment": %d,
+			"DownloadPayment": %d,
+		`,
+		callPayment.ExecutionPayment,
+		callPayment.DownloadPayment,
+	)
+}
+
+type SuccessfulEndBatchExecutionTransaction struct{
+	AbstractTransaction
+	ContractKey									*PublicAccount
+	BatchId										uint64
+	StorageHash									*Hash
+	UsedSizedBytes 								uint64
+	MetaFilesSizeBytes 							uint64
+	ProofOfExecutionVerificationInformation 	[]byte
+	AutomaticExecutionsNextBlockToCheck			Height
+	CosignersNumber								uint16
+	CallsNumber									uint16
+	PublicKeys             						[]*PublicAccount
+	Signatures             						[]*Signature
+	ProofsOfExecution							[]*RawProofsOfExecution
+	CallDigests									[]*ExtendedCallDigest
+	CallPayments								[]*CallPayment
+}
+
+// Unsuccessful End Batch Execution Transaction
+type ShortCallDigest struct {
+	CallId			*Hash
+	Manual			bool
+	Block			Height
+}
+
+func (shortCallDigest *ShortCallDigest) String() string {
+	return fmt.Sprintf(
+		`
+			"CallId": %s,
+			"Manual": %t,
+			"Block": %d,
+		`,
+		shortCallDigest.CallId,
+		shortCallDigest.Manual,
+		shortCallDigest.Block,
+	)
+}
+
+type UnsuccessfulEndBatchExecutionTransaction struct {
+	ContractKey								*PublicAccount
+	BatchId									uint64
+	AutomaticExecutionsNextBlockToCheck		Height
+	CosignersNumber							uint16
+	CallsNumber								uint16
+	PublicKeys             					[]*PublicAccount
+	Signatures             					[]*Signature
+	ProofsOfExecution						[]*RawProofsOfExecution
+	CallDigests								[]*ShortCallDigest
+	CallPayments							[]*CallPayment	
+}
