@@ -139,7 +139,7 @@ func (ref *proofOfExecutionDTO) toStruct(networkType NetworkType) (*ProofOfExecu
 	return &ProofOfExecution{
 		StartBatchId: ref.StartBatchId,
 		T: []byte(ref.T),
-		R: []byte(ref.T),
+		R: []byte(ref.R),
 	}, nil
 } 
 
@@ -376,5 +376,115 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		ExecutorsInfo: executorsInfo,
 		Batches: batches,
 		ReleasedTransactions: releasedTransaction,
+	}, nil
+}
+
+type superContractV2PageDTO struct {
+	SuperContractsV2 []superContractV2DTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (t *superContractV2PageDTO) toStruct(networkType NetworkType) (*SuperContractsV2Page, error) {
+	page := &SuperContractsV2Page{
+		SuperContractsV2: make([]*SuperContractV2, len(t.SuperContractsV2)),
+		Pagination: Pagination{
+			TotalEntries: t.Pagination.TotalEntries,
+			PageNumber:   t.Pagination.PageNumber,
+			PageSize:     t.Pagination.PageSize,
+			TotalPages:   t.Pagination.TotalPages,
+		},
+	}
+
+	var err error
+	for i, t := range t.SuperContractsV2 {
+		page.SuperContractsV2[i], err = t.toStruct(networkType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return page, nil
+}
+
+type rawProofsOfExecutionDTO struct {
+	StartBatchId	uint64	`json:"startBatchId"`
+	T				string	`json:"t"`
+	R				string	`json:"r"`
+	F				string	`json:"f"`
+	K				string	`json:"k"`
+}
+
+func (ref *rawProofsOfExecutionDTO) toStruct(networkType NetworkType) (*RawProofsOfExecution, error) {
+	return &RawProofsOfExecution{
+		StartBatchId: ref.StartBatchId,
+		T: []byte(ref.T),
+		R: []byte(ref.R),
+		F: []byte(ref.F),
+		K: []byte(ref.K),
+	}, nil
+}
+
+type extendedCallDigestDTO struct {
+	CallId						hashDto			`json:"callId"`
+	Manual						bool			`json:"manual"`
+	Block						uint64DTO		`json:"block"`
+	Status						uint16			`json:"status"`
+	ReleasedTransactionHash		hashDto			`json:"releasedTransactionHash"`
+}
+
+func (ref *extendedCallDigestDTO) toStruct(networkType NetworkType) (*ExtendedCallDigest, error) {
+	callId, err := ref.CallId.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	releasedTransactionHash, err := ref.ReleasedTransactionHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExtendedCallDigest{
+		CallId: callId,
+		Manual: ref.Manual,
+		Block: ref.Block.toStruct(),
+		Status: ref.Status,
+		ReleasedTransactionHash: releasedTransactionHash,
+	}, nil
+}
+
+type callPaymentDTO struct {
+	ExecutionPayment	uint64DTO	`json:"ExecutionPayment"`
+	DownloadPayment		uint64DTO	`json:"DownloadPayment"`
+}
+
+func (ref *callPaymentDTO) toStruct(networkType NetworkType) (*CallPayment, error) {
+	return &CallPayment{
+		ExecutionPayment: ref.ExecutionPayment.toStruct(),
+		DownloadPayment: ref.DownloadPayment.toStruct(),
+	}, nil
+}
+
+type shortCallDigestDTO struct {
+	CallId						hashDto			`json:"callId"`
+	Manual						bool			`json:"manual"`
+	Block						uint64DTO		`json:"block"`
+}
+
+func (ref *shortCallDigestDTO) toStruct(networkType NetworkType) (*ShortCallDigest, error) {
+	callId, err := ref.CallId.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ShortCallDigest{
+		CallId: callId,
+		Manual: ref.Manual,
+		Block: ref.Block.toStruct(),
 	}, nil
 }
