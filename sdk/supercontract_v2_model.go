@@ -257,17 +257,17 @@ func (superContractV2 *SuperContractV2) String() string {
 	)
 }
 
-type SuperContractEntriesPage struct {
-	SuperContractEntries []*SuperContractV2
+type SuperContractsV2Page struct {
+	SuperContractsV2 []*SuperContractV2
 	Pagination Pagination
 }
 
-type SuperContractEntriesPageOption struct {
-	SuperContractEntriesPageFilters
+type SuperContractsV2PageOptions struct {
+	SuperContractsV2PageFilters
 	PaginationOrderingOptions
 }
 
-type SuperContractEntriesPageFilters struct {
+type SuperContractsV2PageFilters struct {
 	DriveKey string `url:"owner,omitempty"`
 
 	Creator string `url:"owner,omitempty"`     
