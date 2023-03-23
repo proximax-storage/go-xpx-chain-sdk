@@ -551,6 +551,51 @@ func (dto *networkConfigTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	}, nil
 }
 
+type networkConfigAbsoluteHeightTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		ApplyHeight             uint64DTO `json:"applyHeight"`
+		NetworkConfig           string    `json:"networkConfig"`
+		SupportedEntityVersions string    `json:"supportedEntityVersions"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *networkConfigAbsoluteHeightTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	applyHeight := dto.Tx.ApplyHeight.toUint64()
+
+	s := NewSupportedEntities()
+
+	err = s.UnmarshalBinary([]byte(dto.Tx.SupportedEntityVersions))
+	if err != nil {
+		return nil, err
+	}
+
+	c := NewNetworkConfig()
+
+	err = c.UnmarshalBinary([]byte(dto.Tx.NetworkConfig))
+	if err != nil {
+		return nil, err
+	}
+
+	return &NetworkConfigAbsoluteHeightTransaction{
+		*atx,
+		Height(applyHeight),
+		c,
+		s,
+	}, nil
+}
+
 type blockchainUpgradeTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO

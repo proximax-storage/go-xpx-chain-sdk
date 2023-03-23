@@ -3538,6 +3538,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &removeExchangeOfferTransactionDTO{}
 	case NetworkConfigEntityType:
 		dto = &networkConfigTransactionDTO{}
+	case NetworkConfigAbsoluteHeightEntityType:
+		dto = &networkConfigTransactionDTO{}
 	case BlockchainUpgrade:
 		dto = &blockchainUpgradeTransactionDTO{}
 	case AccountV2Upgrade:
