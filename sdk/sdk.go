@@ -166,6 +166,7 @@ type Client struct {
 	Storage           *StorageService
 	StorageV2         *StorageV2Service
 	SuperContract     *SuperContractService
+	SuperContractV2   *SuperContractV2Service
 	Lock              *LockService
 	Contract          *ContractService
 	Metadata          *MetadataService

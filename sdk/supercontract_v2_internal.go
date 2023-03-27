@@ -4,8 +4,7 @@
 
 package sdk
 
-import (
-)
+import "fmt"
 
 type automaticExecutionsInfoDTO struct {
 	AutomaticExecutionFileName 			string		`json:"automaticExecutionFileName"`
@@ -76,7 +75,7 @@ type contractCallDTO struct {
 	ActualArguments			string 		`json:"actualArguments"`
 	ExecutionCallPayment 	uint64DTO 	`json:"executionCallPayment"`
 	DownloadCallPayment 	uint64DTO 	`json:"downloadCallPayment"`
-	servicePaymentDtos 
+	servicePaymentDtos		 
 	BlockHeight				uint64DTO	`json:"blockHeight"`
 }
 
@@ -312,56 +311,64 @@ func (ref *releasedTransactionDTOs) toStruct(networkType NetworkType) ([]*Releas
 }
 
 type superContractV2DTO struct {
-	SuperContractKey 					string
-	DriveKey 							string
-	ExecutionPaymentKey					string
-	Assignee 							string
-	Creator 							string
-	DeploymentBaseModificationsInfo 	hashDto
-	automaticExecutionsInfoDTO 			
-	contractCallDTOs 						
-	executorInfoDTOs 						
-	batchDTOs 							
-	releasedTransactionDTOs
+	SuperContractV2 struct {
+		SuperContractKey 					string						`json:"superContractKey"`
+		DriveKey 							string						`json:"driveKey"`
+		ExecutionPaymentKey					string						`json:"executionPaymentKey"`
+		Assignee 							string						`json:"assignee"`
+		Creator 							string						`json:"creator"`
+		DeploymentBaseModificationsInfo 	hashDto						`json:"deploymentBaseModificationsInfo"`
+		AutomaticExecutionsInfos 			*automaticExecutionsInfoDTO	`json:"automaticExecutionsInfoDTO"`
+		ContractCalls 						contractCallDTOs			`json:"contractCallDTOs"`
+		ExecutorInfos 						executorInfoDTOs			`json:"executorInfoDTOs"`
+		Batches 							batchDTOs					`json:"batchDTOs"`
+		ReleasedTransactions				releasedTransactionDTOs		`json:"releasedTransactionDTOs"`
+	}
 }
 
 func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContractV2, error) {
-	superContractKey, err := NewAccountFromPublicKey(ref.SuperContractKey, networkType)
+	superContractKey, err := NewAccountFromPublicKey(ref.SuperContractV2.SuperContractKey, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	driveKey, err := NewAccountFromPublicKey(ref.DriveKey, networkType)
+	driveKey, err := NewAccountFromPublicKey(ref.SuperContractV2.DriveKey, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	executionPaymentKey, err := NewAccountFromPublicKey(ref.ExecutionPaymentKey, networkType)
+	executionPaymentKey, err := NewAccountFromPublicKey(ref.SuperContractV2.ExecutionPaymentKey, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	assignee, err := NewAccountFromPublicKey(ref.Assignee, networkType)
+	assignee, err := NewAccountFromPublicKey(ref.SuperContractV2.Assignee, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	creator, err := NewAccountFromPublicKey(ref.Creator, networkType)
+	creator, err := NewAccountFromPublicKey(ref.SuperContractV2.Creator, networkType)
 	if err != nil {
 		return nil, err
 	}
 
-	deploymentBaseModificationsInfo, err := ref.DeploymentBaseModificationsInfo.Hash()
+	deploymentBaseModificationsInfo, err := ref.SuperContractV2.DeploymentBaseModificationsInfo.Hash()
 	if err != nil {
 		return nil, err
 	}
 
-	automaticExecutionsInfo, err := ref.automaticExecutionsInfoDTO.toStruct(networkType)
+	automaticExecutionsInfo := &AutomaticExecutionsInfo{}
+	if ref.SuperContractV2.AutomaticExecutionsInfos != nil {
+		automaticExecutionsInfo, err = ref.SuperContractV2.AutomaticExecutionsInfos.toStruct(networkType)
+		if err != nil {
+			return nil, fmt.Errorf("sdk.superContractDto.toStruct SuperContractV2.AutomaticExecutionsInfos.toStruct: %v", err)
+		}
+	}
 
-	requestedCalls, err := ref.contractCallDTOs.toStruct(networkType)
-	executorsInfo, err := ref.executorInfoDTOs.toStruct(networkType)
-	batches, err := ref.batchDTOs.toStruct(networkType)
-	releasedTransaction, err := ref.releasedTransactionDTOs.toStruct(networkType)
+	requestedCalls, err := ref.SuperContractV2.ContractCalls.toStruct(networkType)
+	executorsInfo, err := ref.SuperContractV2.ExecutorInfos.toStruct(networkType)
+	batches, err := ref.SuperContractV2.Batches.toStruct(networkType)
+	releasedTransaction, err := ref.SuperContractV2.ReleasedTransactions.toStruct(networkType)
 	
 
 	return &SuperContractV2{

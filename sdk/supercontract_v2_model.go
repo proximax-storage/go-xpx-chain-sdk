@@ -46,7 +46,7 @@ type AutomaticExecutionsInfo struct {
 	AutomaticExecutionsNextBlockToCheck Height
 	AutomaticExecutionCallPayment 		Amount
 	AutomaticDownloadCallPayment 		Amount
-	AutomatedExecutionsNumber 			uint32 `default:"0"`
+	AutomatedExecutionsNumber 			uint32
 	AutomaticExecutionsPrepaidSince 	Height
 }
 
@@ -125,7 +125,7 @@ func (contractCall *ContractCall) String() string {
 }
 
 type ProofOfExecution struct {
-	StartBatchId 						uint64 `default:"0"`
+	StartBatchId 						uint64
 	T  									[]byte
 	R  									[]byte
 }	
@@ -145,7 +145,7 @@ func (proofOfExecution *ProofOfExecution) String() string {
 
 type ExecutorInfo struct {
 	ExecutorKey							*PublicAccount
-	NextBatchToApproave 				uint64 `default:"0"`
+	NextBatchToApproave 				uint64
 	PoEx 								ProofOfExecution
 }
 
@@ -192,7 +192,6 @@ type Batch struct {
 	Success 							bool
 	PoExVerificationInformation			[]byte
 	CompletedCalls						[]*CompletedCall
-
 }
 
 func (batch *Batch) String() string {
@@ -243,12 +242,12 @@ func (superContractV2 *SuperContractV2) String() string {
 			"Batches": %+v,
 			"ReleasedTransactions": %v,
 		`,
-		superContractV2.SuperContractKey.String(),
-		superContractV2.DriveKey.String(),
-		superContractV2.ExecutionPaymentKey.String(),
-		superContractV2.Assignee.String(),
-		superContractV2.Creator.String(),
-		superContractV2.DeploymentBaseModificationsInfo.String(),
+		superContractV2.SuperContractKey,
+		superContractV2.DriveKey,
+		superContractV2.ExecutionPaymentKey,
+		superContractV2.Assignee,
+		superContractV2.Creator,
+		superContractV2.DeploymentBaseModificationsInfo,
 		superContractV2.AutomaticExecutionsInfo,
 		superContractV2.RequestedCalls,
 		superContractV2.ExecutorsInfo,
