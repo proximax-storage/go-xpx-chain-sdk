@@ -366,9 +366,21 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 	}
 
 	requestedCalls, err := ref.SuperContractV2.ContractCalls.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.ContractCalls.toStruct: %v", err)
+	}
 	executorsInfo, err := ref.SuperContractV2.ExecutorInfos.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.ExecutorInfos.toStruct: %v", err)
+	}
 	batches, err := ref.SuperContractV2.Batches.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.Batches.toStruct: %v", err)
+	}
 	releasedTransaction, err := ref.SuperContractV2.ReleasedTransactions.toStruct(networkType)
+	if err != nil {
+		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.ReleasedTransactions.toStruct: %v", err)
+	}
 	
 
 	return &SuperContractV2{
