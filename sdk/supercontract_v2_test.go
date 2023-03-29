@@ -6,10 +6,11 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/proximax-storage/go-xpx-utils/mock"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/proximax-storage/go-xpx-utils/mock"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -78,7 +79,7 @@ const (
     "executorsInfo": [
       {
         "executorKey": "2130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
-        "nextBatchToApproave": 1,
+        "nextBatchToApprove": 1,
         "poEx": {
           "startBatchId": 1,
           "t": [1,2,3],
@@ -93,14 +94,14 @@ const (
         "poExVerificationInformation": [1,2,3],
         "CompletedCalls": [
           {
-            "CallId": "0100000000000000000000000000000000000000000000000000000000000000",
-            "Caller": "7130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
-            "Status": 1,
-            "ExecutionWork": [
+            "callId": "0100000000000000000000000000000000000000000000000000000000000000",
+            "caller": "7130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
+            "status": 1,
+            "executionWork": [
               1,
               0
             ],
-            "DownloadWork": [
+            "downloadWork": [
               1,
               0
             ]
@@ -128,37 +129,36 @@ var testDeploymentBaseModificationsInfo = stringToHashPanic("AA2D2427E105A9B60DF
 var testCaller, _ = NewAccountFromPublicKey("7130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB", PublicTest)
 var testExecutorKey, _ = NewAccountFromPublicKey("2130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB", PublicTest)
 
-
 var (
 	testSuperContractInfo = &SuperContractV2{
-		SuperContractKey: testSCKey,
-		DriveKey: testDriveKey,
-		ExecutionPaymentKey: testExecutionPaymentKey,
-		Assignee: testAssignee,
-		Creator: testCreator,
+		SuperContractKey:                testSCKey,
+		DriveKey:                        testDriveKey,
+		ExecutionPaymentKey:             testExecutionPaymentKey,
+		Assignee:                        testAssignee,
+		Creator:                         testCreator,
 		DeploymentBaseModificationsInfo: testDeploymentBaseModificationsInfo,
 		AutomaticExecutionsInfo: &AutomaticExecutionsInfo{
-			AutomaticExecutionFileName: "abc",
-			AutomaticExecutionsFunctionName: "def",
+			AutomaticExecutionFileName:          "abc",
+			AutomaticExecutionsFunctionName:     "def",
 			AutomaticExecutionsNextBlockToCheck: Height(1),
-			AutomaticExecutionCallPayment: Amount(1),
-			AutomaticDownloadCallPayment: Amount(1),
-			AutomatedExecutionsNumber: 1,
-			AutomaticExecutionsPrepaidSince: Height(1),
+			AutomaticExecutionCallPayment:       Amount(1),
+			AutomaticDownloadCallPayment:        Amount(1),
+			AutomatedExecutionsNumber:           1,
+			AutomaticExecutionsPrepaidSince:     Height(1),
 		},
 		RequestedCalls: []*ContractCall{
 			{
-				CallId: &Hash{1},
-				Caller: testCaller,
-				FileName: "xyz",
-				FunctionName: "wst",
-				ActualArguments: "uvw",
+				CallId:               &Hash{1},
+				Caller:               testCaller,
+				FileName:             "xyz",
+				FunctionName:         "wst",
+				ActualArguments:      "uvw",
 				ExecutionCallPayment: Amount(1),
-				DownloadCallPayment: Amount(1),
+				DownloadCallPayment:  Amount(1),
 				ServicePayments: []*ServicePayment{
 					{
 						MosaicId: &MosaicId{1},
-						Amount: Amount(1),
+						Amount:   Amount(1),
 					},
 				},
 				BlockHeight: Height(1),
@@ -166,27 +166,27 @@ var (
 		},
 		ExecutorsInfo: []*ExecutorInfo{
 			{
-				ExecutorKey: testExecutorKey,
-				NextBatchToApproave: 1,
+				ExecutorKey:        testExecutorKey,
+				NextBatchToApprove: 1,
 				PoEx: ProofOfExecution{
 					StartBatchId: 1,
-					T: []byte{1,2,3},
-					R: []byte{3,2,1},
+					T:            []byte{1, 2, 3},
+					R:            []byte{3, 2, 1},
 				},
 			},
 		},
 		Batches: []*Batch{
 			{
-				BatchId: 1,
-				Success: true,
-				PoExVerificationInformation: []byte{7,8,9},
+				BatchId:                     1,
+				Success:                     true,
+				PoExVerificationInformation: []byte{7, 8, 9},
 				CompletedCalls: []*CompletedCall{
 					{
-						CallId: &Hash{1},
-						Caller: testCaller,
-						Status: 1,
+						CallId:        &Hash{1},
+						Caller:        testCaller,
+						Status:        1,
 						ExecutionWork: Amount(1),
-						DownloadWork: Amount(1),
+						DownloadWork:  Amount(1),
 					},
 				},
 			},
@@ -215,7 +215,7 @@ func TestSuperContractV2Service_GetSuperContractV2(t *testing.T) {
 	exchangeClient := mock.getPublicTestClientUnsafe().SuperContractV2
 
 	defer mock.Close()
-	// fmt.Println(testSuperContractV2InfoJson)
+
 	superContract, err := exchangeClient.GetSuperContractV2(ctx, testSCKey)
 	assert.Nil(t, err)
 	assert.NotNil(t, superContract)

@@ -6,7 +6,6 @@ package sdk
 
 import "fmt"
 
-
 // drive contract entry (will be implement in the future)
 // type DriveContract struct {
 // 	DriveContractKey 				*PublicAccount
@@ -41,13 +40,13 @@ import "fmt"
 
 // supercontract entry
 type AutomaticExecutionsInfo struct {
-	AutomaticExecutionFileName 			string
-	AutomaticExecutionsFunctionName 	string
+	AutomaticExecutionFileName          string
+	AutomaticExecutionsFunctionName     string
 	AutomaticExecutionsNextBlockToCheck Height
-	AutomaticExecutionCallPayment 		Amount
-	AutomaticDownloadCallPayment 		Amount
-	AutomatedExecutionsNumber 			uint32
-	AutomaticExecutionsPrepaidSince 	Height
+	AutomaticExecutionCallPayment       Amount
+	AutomaticDownloadCallPayment        Amount
+	AutomatedExecutionsNumber           uint32
+	AutomaticExecutionsPrepaidSince     Height
 }
 
 func (executionsInfo *AutomaticExecutionsInfo) String() string {
@@ -72,8 +71,8 @@ func (executionsInfo *AutomaticExecutionsInfo) String() string {
 }
 
 type ServicePayment struct {
-	MosaicId 	*MosaicId
-	Amount 		Amount
+	MosaicId *MosaicId
+	Amount   Amount
 }
 
 func (servicePayment *ServicePayment) String() string {
@@ -88,15 +87,15 @@ func (servicePayment *ServicePayment) String() string {
 }
 
 type ContractCall struct {
-	CallId 								*Hash
-	Caller 								*PublicAccount
-	FileName 							string
-	FunctionName 						string
-	ActualArguments 					string
-	ExecutionCallPayment 				Amount
-	DownloadCallPayment	 				Amount
-	ServicePayments 					[]*ServicePayment
-	BlockHeight 						Height
+	CallId               *Hash
+	Caller               *PublicAccount
+	FileName             string
+	FunctionName         string
+	ActualArguments      string
+	ExecutionCallPayment Amount
+	DownloadCallPayment  Amount
+	ServicePayments      []*ServicePayment
+	BlockHeight          Height
 }
 
 func (contractCall *ContractCall) String() string {
@@ -125,10 +124,10 @@ func (contractCall *ContractCall) String() string {
 }
 
 type ProofOfExecution struct {
-	StartBatchId 						uint64
-	T  									[]byte
-	R  									[]byte
-}	
+	StartBatchId uint64
+	T            []byte
+	R            []byte
+}
 
 func (proofOfExecution *ProofOfExecution) String() string {
 	return fmt.Sprintf(
@@ -144,30 +143,30 @@ func (proofOfExecution *ProofOfExecution) String() string {
 }
 
 type ExecutorInfo struct {
-	ExecutorKey							*PublicAccount
-	NextBatchToApproave 				uint64
-	PoEx 								ProofOfExecution
+	ExecutorKey        *PublicAccount
+	NextBatchToApprove uint64
+	PoEx               ProofOfExecution
 }
 
 func (executorInfo *ExecutorInfo) String() string {
 	return fmt.Sprintf(
 		`
 			"ExecutorKey": %s,
-			"NextBatchToApproave": %d,
+			"NextBatchToApprove": %d,
 			"PoEx": %+v,
 		`,
 		executorInfo.ExecutorKey,
-		executorInfo.NextBatchToApproave,
+		executorInfo.NextBatchToApprove,
 		executorInfo.PoEx,
 	)
 }
 
 type CompletedCall struct {
-	CallId			*Hash
-	Caller			*PublicAccount
-	Status			uint16
-	ExecutionWork	Amount
-	DownloadWork	Amount
+	CallId        *Hash
+	Caller        *PublicAccount
+	Status        uint16
+	ExecutionWork Amount
+	DownloadWork  Amount
 }
 
 func (completedCall *CompletedCall) String() string {
@@ -188,10 +187,10 @@ func (completedCall *CompletedCall) String() string {
 }
 
 type Batch struct {
-	BatchId								uint64
-	Success 							bool
-	PoExVerificationInformation			[]byte
-	CompletedCalls						[]*CompletedCall
+	BatchId                     uint64
+	Success                     bool
+	PoExVerificationInformation []byte
+	CompletedCalls              []*CompletedCall
 }
 
 func (batch *Batch) String() string {
@@ -210,21 +209,21 @@ func (batch *Batch) String() string {
 }
 
 type ReleasedTransaction struct {
-	ReleasedTransactionHash			*Hash
+	ReleasedTransactionHash *Hash
 }
 
 type SuperContractV2 struct {
-	SuperContractKey 					*PublicAccount
-	DriveKey 							*PublicAccount
-	ExecutionPaymentKey					*PublicAccount
-	Assignee 							*PublicAccount
-	Creator 							*PublicAccount
-	DeploymentBaseModificationsInfo 	*Hash
-	AutomaticExecutionsInfo 			*AutomaticExecutionsInfo
-	RequestedCalls 						[]*ContractCall
-	ExecutorsInfo 						[]*ExecutorInfo
-	Batches 							[]*Batch
-	ReleasedTransactions 				[]*ReleasedTransaction
+	SuperContractKey                *PublicAccount
+	DriveKey                        *PublicAccount
+	ExecutionPaymentKey             *PublicAccount
+	Assignee                        *PublicAccount
+	Creator                         *PublicAccount
+	DeploymentBaseModificationsInfo *Hash
+	AutomaticExecutionsInfo         *AutomaticExecutionsInfo
+	RequestedCalls                  []*ContractCall
+	ExecutorsInfo                   []*ExecutorInfo
+	Batches                         []*Batch
+	ReleasedTransactions            []*ReleasedTransaction
 }
 
 func (superContractV2 *SuperContractV2) String() string {
@@ -258,7 +257,7 @@ func (superContractV2 *SuperContractV2) String() string {
 
 type SuperContractsV2Page struct {
 	SuperContractsV2 []*SuperContractV2
-	Pagination Pagination
+	Pagination       Pagination
 }
 
 type SuperContractsV2PageOptions struct {
@@ -269,64 +268,65 @@ type SuperContractsV2PageOptions struct {
 type SuperContractsV2PageFilters struct {
 	DriveKey string `url:"owner,omitempty"`
 
-	Creator string `url:"owner,omitempty"`     
+	Creator string `url:"owner,omitempty"`
 }
+
 // end of supercontract entry
 
 // Automatic Executions Payment Transaction
 type AutomaticExecutionsPaymentTransaction struct {
 	AbstractTransaction
-	ContractKey							*PublicAccount
-	AutomaticExecutionsNumber 			uint32
+	ContractKey               *PublicAccount
+	AutomaticExecutionsNumber uint32
 }
 
 // Manual Call Transaction
 type ManualCallTransaction struct {
 	AbstractTransaction
-	ContractKey							*PublicAccount
-	FileNameSize						uint16
-	FunctionNameSize					uint16
-	ActualArgumentsSize					uint16
-	ExecutionCallPayment				Amount
-	DownloadCallPayment					Amount
-	ServicePaymentsCount 				uint8
-	FileName							string
-	FunctionName						string
-	ActualArguments						string
-	ServicePayments						[]*MosaicId
+	ContractKey          *PublicAccount
+	FileNameSize         uint16
+	FunctionNameSize     uint16
+	ActualArgumentsSize  uint16
+	ExecutionCallPayment Amount
+	DownloadCallPayment  Amount
+	ServicePaymentsCount uint8
+	FileName             string
+	FunctionName         string
+	ActualArguments      string
+	ServicePayments      []*MosaicId
 }
 
 // Deploy Contract Transaction
 type DeployContractTransaction struct {
 	AbstractTransaction
-	DriveKey							*PublicAccount
-	FileNameSize						uint16
-	FunctionNameSize					uint16
-	ActualArgumentsSize					uint16
-	ExecutionCallPayment				Amount
-	DownloadCallPayment					Amount
-	ServicePaymentsCount 				uint8
-	AutomaticExecutionFileNameSize		uint16
-	AutomaticExecutionFunctionNameSize 	uint16
-	AutomaticExecutionCallPayment 		Amount
-	AutomaticDownloadCallPayment 		Amount
-	AutomaticExecutionsNumber 			uint32
-	Assignee							*PublicAccount
-	FileName							string
-	FunctionName						string
-	ActualArguments						string
-	ServicePayments						[]*MosaicId
-	AutomaticExecutionFileName			string
-	AutomaticExecutionFunctionName		string
+	DriveKey                           *PublicAccount
+	FileNameSize                       uint16
+	FunctionNameSize                   uint16
+	ActualArgumentsSize                uint16
+	ExecutionCallPayment               Amount
+	DownloadCallPayment                Amount
+	ServicePaymentsCount               uint8
+	AutomaticExecutionFileNameSize     uint16
+	AutomaticExecutionFunctionNameSize uint16
+	AutomaticExecutionCallPayment      Amount
+	AutomaticDownloadCallPayment       Amount
+	AutomaticExecutionsNumber          uint32
+	Assignee                           *PublicAccount
+	FileName                           string
+	FunctionName                       string
+	ActualArguments                    string
+	ServicePayments                    []*MosaicId
+	AutomaticExecutionFileName         string
+	AutomaticExecutionFunctionName     string
 }
 
 // Successful End Batch Execution Transaction
 type RawProofsOfExecution struct {
-	StartBatchId	uint64
-	T				[]byte
-	R				[]byte
-	F				[]byte
-	K				[]byte
+	StartBatchId uint64
+	T            []byte
+	R            []byte
+	F            []byte
+	K            []byte
 }
 
 func (rawPoex *RawProofsOfExecution) String() string {
@@ -347,11 +347,11 @@ func (rawPoex *RawProofsOfExecution) String() string {
 }
 
 type ExtendedCallDigest struct {
-	CallId						*Hash
-	Manual						bool
-	Block						Height
-	Status						uint16
-	ReleasedTransactionHash		*Hash
+	CallId                  *Hash
+	Manual                  bool
+	Block                   Height
+	Status                  uint16
+	ReleasedTransactionHash *Hash
 }
 
 func (extendedCallDigest *ExtendedCallDigest) String() string {
@@ -372,8 +372,8 @@ func (extendedCallDigest *ExtendedCallDigest) String() string {
 }
 
 type CallPayment struct {
-	ExecutionPayment	Amount
-	DownloadPayment		Amount
+	ExecutionPayment Amount
+	DownloadPayment  Amount
 }
 
 func (callPayment *CallPayment) String() string {
@@ -387,29 +387,29 @@ func (callPayment *CallPayment) String() string {
 	)
 }
 
-type SuccessfulEndBatchExecutionTransaction struct{
+type SuccessfulEndBatchExecutionTransaction struct {
 	AbstractTransaction
-	ContractKey									*PublicAccount
-	BatchId										uint64
-	StorageHash									*Hash
-	UsedSizedBytes 								uint64
-	MetaFilesSizeBytes 							uint64
-	ProofOfExecutionVerificationInformation 	[]byte
-	AutomaticExecutionsNextBlockToCheck			Height
-	CosignersNumber								uint16
-	CallsNumber									uint16
-	PublicKeys             						[]*PublicAccount
-	Signatures             						[]*Signature
-	ProofsOfExecution							[]*RawProofsOfExecution
-	CallDigests									[]*ExtendedCallDigest
-	CallPayments								[]*CallPayment
+	ContractKey                             *PublicAccount
+	BatchId                                 uint64
+	StorageHash                             *Hash
+	UsedSizedBytes                          uint64
+	MetaFilesSizeBytes                      uint64
+	ProofOfExecutionVerificationInformation []byte
+	AutomaticExecutionsNextBlockToCheck     Height
+	CosignersNumber                         uint16
+	CallsNumber                             uint16
+	PublicKeys                              []*PublicAccount
+	Signatures                              []*Signature
+	ProofsOfExecution                       []*RawProofsOfExecution
+	CallDigests                             []*ExtendedCallDigest
+	CallPayments                            []*CallPayment
 }
 
 // Unsuccessful End Batch Execution Transaction
 type ShortCallDigest struct {
-	CallId			*Hash
-	Manual			bool
-	Block			Height
+	CallId *Hash
+	Manual bool
+	Block  Height
 }
 
 func (shortCallDigest *ShortCallDigest) String() string {
@@ -426,14 +426,14 @@ func (shortCallDigest *ShortCallDigest) String() string {
 }
 
 type UnsuccessfulEndBatchExecutionTransaction struct {
-	ContractKey								*PublicAccount
-	BatchId									uint64
-	AutomaticExecutionsNextBlockToCheck		Height
-	CosignersNumber							uint16
-	CallsNumber								uint16
-	PublicKeys             					[]*PublicAccount
-	Signatures             					[]*Signature
-	ProofsOfExecution						[]*RawProofsOfExecution
-	CallDigests								[]*ShortCallDigest
-	CallPayments							[]*CallPayment	
+	ContractKey                         *PublicAccount
+	BatchId                             uint64
+	AutomaticExecutionsNextBlockToCheck Height
+	CosignersNumber                     uint16
+	CallsNumber                         uint16
+	PublicKeys                          []*PublicAccount
+	Signatures                          []*Signature
+	ProofsOfExecution                   []*RawProofsOfExecution
+	CallDigests                         []*ShortCallDigest
+	CallPayments                        []*CallPayment
 }
