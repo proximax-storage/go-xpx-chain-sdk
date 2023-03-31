@@ -214,6 +214,7 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Storage = &StorageService{&c.common, c.Lock}
 	c.StorageV2 = (*StorageV2Service)(&c.common)
 	c.SuperContract = (*SuperContractService)(&c.common)
+	c.SuperContractV2 = (*SuperContractV2Service)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataV2 = (*MetadataV2Service)(&c.common)

@@ -68,19 +68,19 @@ func (ref *servicePaymentDtos) toStruct(networkType NetworkType) ([]*ServicePaym
 }
 
 type contractCallDTO struct {
-	CallId               hashDto   `json:"callId"`
-	Caller               string    `json:"caller"`
-	FileName             string    `json:"fileName"`
-	FunctionName         string    `json:"functionName"`
-	ActualArguments      string    `json:"actualArguments"`
-	ExecutionCallPayment uint64DTO `json:"executionCallPayment"`
-	DownloadCallPayment  uint64DTO `json:"downloadCallPayment"`
-	servicePaymentDtos
-	BlockHeight uint64DTO `json:"blockHeight"`
+	CallId               hashDto            `json:"callId"`
+	Caller               string             `json:"caller"`
+	FileName             string             `json:"fileName"`
+	FunctionName         string             `json:"functionName"`
+	ActualArguments      string             `json:"actualArguments"`
+	ExecutionCallPayment uint64DTO          `json:"executionCallPayment"`
+	DownloadCallPayment  uint64DTO          `json:"downloadCallPayment"`
+	ServicePayments      servicePaymentDtos `json:"servicePayments"`
+	BlockHeight          uint64DTO          `json:"blockHeight"`
 }
 
 func (ref *contractCallDTO) toStruct(networkType NetworkType) (*ContractCall, error) {
-	servicePayments, err := ref.servicePaymentDtos.toStruct(networkType)
+	servicePayments, err := ref.ServicePayments.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -143,13 +143,13 @@ func (ref *proofOfExecutionDTO) toStruct(networkType NetworkType) (*ProofOfExecu
 }
 
 type executorInfoDTO struct {
-	ExecutorKey        string `json:"executorKey"`
-	NextBatchToApprove uint64 `json:"nextBatchToApprove"`
-	proofOfExecutionDTO
+	ExecutorKey        string              `json:"executorKey"`
+	NextBatchToApprove uint64              `json:"nextBatchToApprove"`
+	ProofOfExecution   proofOfExecutionDTO `json:"proofOfExecution"`
 }
 
 func (ref *executorInfoDTO) toStruct(networkType NetworkType) (*ExecutorInfo, error) {
-	poex, err := ref.proofOfExecutionDTO.toStruct(networkType)
+	poex, err := ref.ProofOfExecution.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -235,14 +235,14 @@ func (ref *completedCallDTOs) toStruct(networkType NetworkType) ([]*CompletedCal
 }
 
 type batchDTO struct {
-	BatchId                     uint64 `json:"batchId"`
-	Success                     bool   `json:"success"`
-	PoExVerificationInformation string `json:"poExVerificationInformation"`
-	completedCallDTOs
+	BatchId                     uint64            `json:"batchId"`
+	Success                     bool              `json:"success"`
+	PoExVerificationInformation string            `json:"poExVerificationInformation"`
+	CompletedCalls              completedCallDTOs `json:"completedCalls"`
 }
 
 func (ref *batchDTO) toStruct(networkType NetworkType) (*Batch, error) {
-	completedCalls, err := ref.completedCallDTOs.toStruct(networkType)
+	completedCalls, err := ref.CompletedCalls.toStruct(networkType)
 	if err != nil {
 		return nil, err
 	}

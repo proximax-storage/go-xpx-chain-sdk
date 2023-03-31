@@ -17,16 +17,16 @@ const (
 	testSuperContractV2InfoJson = `{
   "supercontractv2": {
     "superContractKey": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-    "driveKey": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-    "executionPaymentKey": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-    "assignee": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-    "creator": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
-    "deploymentBaseModificationsInfo": "0100000000000000000000000000000000000000000000000000000000000000",
+    "driveKey": "CFC31B3080B36BC3D59DF4AB936AC72F4DC15CE3C3E1B1EC5EA41415A4C33FEE",
+    "executionPaymentKey": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
+    "assignee": "E01D208E8539FEF6FD2E23F9CCF1300FF61199C3FE24F9FBCE30941090BD4A64",
+    "creator": "5830A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
+    "deploymentBaseModificationsInfo": "AA2D2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093",
     "automaticExecutionsInfo": {
       "automaticExecutionFileName": "abc",
       "automaticExecutionsFunctionName": "def",
       "automaticExecutionsNextBlockToCheck": [
-        2098,
+        1,
         0
       ],
       "automaticExecutionCallPayment": [
@@ -80,10 +80,10 @@ const (
       {
         "executorKey": "2130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
         "nextBatchToApprove": 1,
-        "poEx": {
+        "proofOfExecution": {
           "startBatchId": 1,
-          "t": [1,2,3],
-          "r": [3,2,1]
+          "t": "test",
+          "r": "test"
         }
       }
     ],
@@ -91,8 +91,8 @@ const (
       {
         "batchId": 1,
         "success": true,
-        "poExVerificationInformation": [1,2,3],
-        "CompletedCalls": [
+        "poExVerificationInformation": "test",
+        "completedCalls": [
           {
             "callId": "0100000000000000000000000000000000000000000000000000000000000000",
             "caller": "7130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
@@ -170,8 +170,8 @@ var (
 				NextBatchToApprove: 1,
 				PoEx: ProofOfExecution{
 					StartBatchId: 1,
-					T:            []byte{1, 2, 3},
-					R:            []byte{3, 2, 1},
+					T:            []byte{116, 101, 115, 116},
+					R:            []byte{116, 101, 115, 116},
 				},
 			},
 		},
@@ -179,7 +179,7 @@ var (
 			{
 				BatchId:                     1,
 				Success:                     true,
-				PoExVerificationInformation: []byte{7, 8, 9},
+				PoExVerificationInformation: []byte{116, 101, 115, 116},
 				CompletedCalls: []*CompletedCall{
 					{
 						CallId:        &Hash{1},
@@ -201,7 +201,7 @@ var (
 
 var (
 	testSuperContractsPage = &SuperContractsV2Page{
-		SuperContractsV2: []*SuperContractV2{},
+		SuperContractsV2: []*SuperContractV2{testSuperContractInfo, testSuperContractInfo},
 	}
 )
 
@@ -213,7 +213,10 @@ func TestSuperContractV2Service_GetSuperContractV2(t *testing.T) {
 		RespBody:            testSuperContractV2InfoJson,
 	})
 	exchangeClient := mock.getPublicTestClientUnsafe().SuperContractV2
-
+	if(exchangeClient == nil) {
+		fmt.Println("nil")
+	}
+	
 	defer mock.Close()
 
 	superContract, err := exchangeClient.GetSuperContractV2(ctx, testSCKey)
@@ -231,6 +234,9 @@ func TestSuperContractV2Service_GetSuperContractsV2(t *testing.T) {
 	})
 	exchangeClient := mock.getPublicTestClientUnsafe().SuperContractV2
 
+	if(exchangeClient == nil) {
+		fmt.Println("nil")
+	}
 	defer mock.Close()
 
 	supercontracts, err := exchangeClient.GetSuperContractsV2(ctx, nil)
