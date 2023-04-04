@@ -231,7 +231,7 @@ func (c *Client) GenerationHash() *Hash {
 	return c.config.GenerationHash
 }
 
-//BlockGenerationTime gets value from config. If value not found returns default value - 15s
+// BlockGenerationTime gets value from config. If value not found returns default value - 15s
 func (c *Client) BlockGenerationTime(ctx context.Context) (time.Duration, error) {
 	cfg, err := c.Network.GetNetworkConfig(ctx)
 	if err != nil {
@@ -1024,6 +1024,95 @@ func (c *Client) NewManualRateChangeTransaction(
 		currencyBalanceChange,
 		mosaicBalanceIncrease,
 		mosaicBalanceChange,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewAutomaticExecutionsPaymentTransaction(
+	deadline *Deadline,
+	contractKey *PublicAccount,
+	automaticExecutionsNumber uint32,
+	networkType NetworkType,
+) (*AutomaticExecutionsPaymentTransaction, error) {
+	tx, err := NewAutomaticExecutionsPaymentTransaction(
+		deadline,
+		contractKey,
+		automaticExecutionsNumber,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewManualCallTransaction(
+	deadline *Deadline,
+	contractKey *PublicAccount,
+	executionCallPayment Amount,
+	downloadCallPayment Amount,
+	fileName string,
+	functionName string,
+	actualArguments string,
+	servicePayments []*MosaicId,
+	networkType NetworkType,
+) (*ManualCallTransaction, error) {
+	tx, err := NewManualCallTransaction(
+		deadline,
+		contractKey,
+		executionCallPayment,
+		downloadCallPayment,
+		fileName,
+		functionName,
+		actualArguments,
+		servicePayments,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDeployContractTransaction(
+	deadline *Deadline,
+	driveKey *PublicAccount,
+	executionCallPayment Amount,
+	downloadCallPayment Amount,
+	automaticExecutionCallPayment Amount,
+	automaticDownloadCallPayment Amount,
+	automaticExecutionsNumber uint32,
+	assignee *PublicAccount,
+	fileName string,
+	functionName string,
+	actualArguments string,
+	servicePayments []*MosaicId,
+	automaticExecutionFileName string,
+	automaticExecutionFunctionName string,
+	networkType NetworkType,
+) (*DeployContractTransaction, error) {
+	tx, err := NewDeployContractTransaction(
+		deadline,
+		driveKey,
+		executionCallPayment,
+		downloadCallPayment,
+		automaticExecutionCallPayment,
+		automaticDownloadCallPayment,
+		automaticExecutionsNumber,
+		assignee,
+		fileName,
+		functionName,
+		actualArguments,
+		servicePayments,
+		automaticExecutionFileName,
+		automaticExecutionFunctionName,
 		c.config.NetworkType,
 	)
 	if tx != nil {
