@@ -12,6 +12,38 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
 
+// parse function for deploy contract txn and manual call txn
+func parseData(
+	builder *flatbuffers.Builder, 
+	executionCallPayment *Amount,
+	downloadCallPayment *Amount,
+	fileName string,
+	functionName string,
+	actualArguments string,
+	servicePayments []*MosaicId,
+	 ) (flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT) {
+
+	executionCall := transactions.TransactionBufferCreateUint32Vector(builder, executionCallPayment.toArray())
+	downloadCall := transactions.TransactionBufferCreateUint32Vector(builder, downloadCallPayment.toArray())
+
+	fileBytes := []byte(fileName)
+	file := transactions.TransactionBufferCreateByteVector(builder, fileBytes)
+	functionBytes := []byte(functionName)
+	function := transactions.TransactionBufferCreateByteVector(builder, functionBytes)
+	argumentBytes := []byte(actualArguments)
+	actualArg := transactions.TransactionBufferCreateByteVector(builder, argumentBytes)
+
+	mb := make([]flatbuffers.UOffsetT, len(servicePayments))
+	for i, it := range servicePayments {
+		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
+		transactions.MosaicBufferStart(builder)
+		transactions.MosaicBufferAddId(builder, mos)
+		mb[i] = transactions.MosaicBufferEnd(builder)
+	}
+	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
+	return executionCall, downloadCall, file, function, actualArg, mV
+}
+
 // automatic executions payment transaction
 func NewAutomaticExecutionsPaymentTransaction(
 	deadline *Deadline,
@@ -161,42 +193,21 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	contractKeyV := transactions.TransactionBufferCreateByteVector(builder, contractKeyB)
-	executionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.ExecutionCallPayment.toArray())
-	downloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadCallPayment.toArray())
-
-	fileBytes := []byte(tx.FileName)
-	fileName := transactions.TransactionBufferCreateByteVector(builder, fileBytes)
-	functionBytes := []byte(tx.FunctionName)
-	functionName := transactions.TransactionBufferCreateByteVector(builder, functionBytes)
-	argumentBytes := []byte(tx.ActualArguments)
-	actualArguments := transactions.TransactionBufferCreateByteVector(builder, argumentBytes)
-
-
-	mb := make([]flatbuffers.UOffsetT, len(tx.ServicePayments))
-	for i, it := range tx.ServicePayments {
-		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
-		transactions.MosaicBufferStart(builder)
-		transactions.MosaicBufferAddId(builder, mos)
-		mb[i] = transactions.MosaicBufferEnd(builder)
-	}
-	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
+	executionCallPayment, downloadCallPayment, fileName, functionName, actualArguments, mV := parseData(builder, 
+		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ActualArguments, tx.ServicePayments)
 
 	transactions.ManualCallTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ManualCallTransactionBufferAddContractKey(builder, contractKeyV)
-	transactions.ManualCallTransactionBufferAddFileNameSize(builder, tx.FileNameSize)
-	transactions.ManualCallTransactionBufferAddFunctionNameSize(builder, tx.FunctionNameSize)
-	transactions.ManualCallTransactionBufferAddActualArgumentsSize(builder, tx.ActualArgumentsSize)
 	transactions.ManualCallTransactionBufferAddExecutionCallPayment(builder, executionCallPayment)
 	transactions.ManualCallTransactionBufferAddDownloadCallPayment(builder, downloadCallPayment)
-	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, tx.ServicePaymentsCount)
 	transactions.ManualCallTransactionBufferAddFileName(builder, fileName)
-	transactions.ManualCallTransactionBufferAddFunctionName(builder,functionName)
-	transactions.ManualCallTransactionBufferAddActualArguments(builder, actualArguments) 
+	transactions.ManualCallTransactionBufferAddFunctionName(builder, functionName)
+	transactions.ManualCallTransactionBufferAddActualArguments(builder, actualArguments)
 	transactions.ManualCallTransactionBufferAddServicePayments(builder, mV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -204,6 +215,7 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 
 	return manualCallTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
+
 
 func (tx *ManualCallTransaction) Size() int {
 	return ManualCallHeaderSize
@@ -257,12 +269,8 @@ func (dto *manualCallTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	return &ManualCallTransaction{
 		*atx,
 		contractKey,
-		dto.Tx.FileNameSize,
-		dto.Tx.FunctionNameSize,
-		dto.Tx.ActualArgumentsSize,
 		dto.Tx.ExecutionCallPayment.toStruct(),
 		dto.Tx.DownloadCallPayment.toStruct(),
-		dto.Tx.ServicePaymentsCount,
 		dto.Tx.FileName,
 		dto.Tx.FunctionName,
 		dto.Tx.ActualArguments,
@@ -335,19 +343,13 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 	assigneeV := transactions.TransactionBufferCreateByteVector(builder, assigneeB)
 
-	executionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.ExecutionCallPayment.toArray())
-	downloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.DownloadCallPayment.toArray())
+	executionCallPayment, downloadCallPayment, fileName, functionName, actualArguments, mV := parseData(builder, 
+		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ActualArguments, tx.ServicePayments)
 
-	fileBytes := []byte(tx.FileName)
-	fileName := transactions.TransactionBufferCreateByteVector(builder, fileBytes)
-	functionBytes := []byte(tx.FunctionName)
-	functionName := transactions.TransactionBufferCreateByteVector(builder, functionBytes)
-	argumentBytes := []byte(tx.ActualArguments)
-	actualArguments := transactions.TransactionBufferCreateByteVector(builder, argumentBytes)
 	automaticExecutionFileBytes := []byte(tx.FileName)
 	automaticExecutionFileName := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionFileBytes)
 	automaticExecutionFunction := []byte(tx.FileName)
@@ -355,35 +357,21 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 
 	automaticExecutionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticExecutionCallPayment.toArray())
 	automaticDownloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticDownloadCallPayment.toArray())
-	mb := make([]flatbuffers.UOffsetT, len(tx.ServicePayments))
-	for i, it := range tx.ServicePayments {
-		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
-		transactions.MosaicBufferStart(builder)
-		transactions.MosaicBufferAddId(builder, mos)
-		mb[i] = transactions.MosaicBufferEnd(builder)
-	}
-	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
-
+	
 	transactions.DeployContractTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.DeployContractTransactionBufferAddDriveKey(builder, driveKeyV)
-	transactions.DeployContractTransactionBufferAddFileNameSize(builder, tx.FileNameSize)
-	transactions.DeployContractTransactionBufferAddFunctionNameSize(builder, tx.FunctionNameSize)
-	transactions.DeployContractTransactionBufferAddActualArgumentsSize(builder, tx.ActualArgumentsSize)
 	transactions.DeployContractTransactionBufferAddExecutionCallPayment(builder, executionCallPayment)
 	transactions.DeployContractTransactionBufferAddDownloadCallPayment(builder, downloadCallPayment)
-	transactions.DeployContractTransactionBufferAddServicePaymentsCount(builder, tx.ServicePaymentsCount)
-	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileNameSize(builder, tx.AutomaticExecutionFileNameSize)
-	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionNameSize(builder, tx.AutomaticExecutionFunctionNameSize)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionCallPayment(builder, automaticExecutionCallPayment)
 	transactions.DeployContractTransactionBufferAddAutomaticDownloadCallPayment(builder, automaticDownloadCallPayment)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionsNumber(builder, tx.AutomaticExecutionsNumber)
 	transactions.DeployContractTransactionBufferAddAssignee(builder, assigneeV)
 	transactions.DeployContractTransactionBufferAddFileName(builder, fileName)
-	transactions.DeployContractTransactionBufferAddFunctionName(builder,functionName)
-	transactions.DeployContractTransactionBufferAddActualArguments(builder, actualArguments) 
+	transactions.DeployContractTransactionBufferAddFunctionName(builder, functionName)
+	transactions.DeployContractTransactionBufferAddActualArguments(builder, actualArguments)
 	transactions.DeployContractTransactionBufferAddServicePayments(builder, mV)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileName(builder, automaticExecutionFileName)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionName(builder, automaticExecutionFunctionName)
@@ -459,14 +447,8 @@ func (dto *deployContractTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	return &DeployContractTransaction{
 		*atx,
 		driveKey,
-		dto.Tx.FileNameSize,
-		dto.Tx.FunctionNameSize,
-		dto.Tx.ActualArgumentsSize,
 		dto.Tx.ExecutionCallPayment.toStruct(),
 		dto.Tx.DownloadCallPayment.toStruct(),
-		dto.Tx.ServicePaymentsCount,
-		dto.Tx.AutomaticExecutionFileNameSize,
-		dto.Tx.AutomaticExecutionFunctionNameSize,
 		dto.Tx.AutomaticExecutionCallPayment.toStruct(),
 		dto.Tx.AutomaticDownloadCallPayment.toStruct(),
 		dto.Tx.AutomaticExecutionsNumber,
