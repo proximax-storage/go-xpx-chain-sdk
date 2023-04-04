@@ -78,8 +78,8 @@ type ServicePayment struct {
 func (servicePayment *ServicePayment) String() string {
 	return fmt.Sprintf(
 		`
-			"MosaicId": %d,
-			"Amount": %d,
+			"MosaicId": %s,
+			"Amount": %s,
 		`,
 		servicePayment.MosaicId,
 		servicePayment.Amount,
@@ -284,12 +284,8 @@ type AutomaticExecutionsPaymentTransaction struct {
 type ManualCallTransaction struct {
 	AbstractTransaction
 	ContractKey          *PublicAccount
-	FileNameSize         uint16
-	FunctionNameSize     uint16
-	ActualArgumentsSize  uint16
 	ExecutionCallPayment Amount
 	DownloadCallPayment  Amount
-	ServicePaymentsCount uint8
 	FileName             string
 	FunctionName         string
 	ActualArguments      string
@@ -299,28 +295,32 @@ type ManualCallTransaction struct {
 // Deploy Contract Transaction
 type DeployContractTransaction struct {
 	AbstractTransaction
-	DriveKey                           *PublicAccount
-	FileNameSize                       uint16
-	FunctionNameSize                   uint16
-	ActualArgumentsSize                uint16
-	ExecutionCallPayment               Amount
-	DownloadCallPayment                Amount
-	ServicePaymentsCount               uint8
-	AutomaticExecutionFileNameSize     uint16
-	AutomaticExecutionFunctionNameSize uint16
-	AutomaticExecutionCallPayment      Amount
-	AutomaticDownloadCallPayment       Amount
-	AutomaticExecutionsNumber          uint32
-	Assignee                           *PublicAccount
-	FileName                           string
-	FunctionName                       string
-	ActualArguments                    string
-	ServicePayments                    []*MosaicId
-	AutomaticExecutionFileName         string
-	AutomaticExecutionFunctionName     string
+	DriveKey                       *PublicAccount
+	ExecutionCallPayment           Amount
+	DownloadCallPayment            Amount
+	AutomaticExecutionCallPayment  Amount
+	AutomaticDownloadCallPayment   Amount
+	AutomaticExecutionsNumber      uint32
+	Assignee                       *PublicAccount
+	FileName                       string
+	FunctionName                   string
+	ActualArguments                string
+	ServicePayments                []*MosaicId
+	AutomaticExecutionFileName     string
+	AutomaticExecutionFunctionName string
 }
 
 // Successful End Batch Execution Transaction
+type EndBatchExecution struct {
+	ContractKey                         *PublicAccount
+	BatchId                             uint64
+	AutomaticExecutionsNextBlockToCheck Height
+	PublicKeys                          []*PublicAccount
+	Signatures                          []*Signature
+	ProofsOfExecution                   []*RawProofsOfExecution
+	CallPayments                        []*CallPayment
+}
+
 type RawProofsOfExecution struct {
 	StartBatchId uint64
 	T            []byte
@@ -389,21 +389,15 @@ func (callPayment *CallPayment) String() string {
 
 type SuccessfulEndBatchExecutionTransaction struct {
 	AbstractTransaction
-	ContractKey                             *PublicAccount
-	BatchId                                 uint64
+	EndBatchExecution
 	StorageHash                             *Hash
 	UsedSizedBytes                          uint64
 	MetaFilesSizeBytes                      uint64
 	ProofOfExecutionVerificationInformation []byte
-	AutomaticExecutionsNextBlockToCheck     Height
-	CosignersNumber                         uint16
-	CallsNumber                             uint16
-	PublicKeys                              []*PublicAccount
-	Signatures                              []*Signature
-	ProofsOfExecution                       []*RawProofsOfExecution
 	CallDigests                             []*ExtendedCallDigest
-	CallPayments                            []*CallPayment
 }
+
+
 
 // Unsuccessful End Batch Execution Transaction
 type ShortCallDigest struct {
@@ -426,14 +420,7 @@ func (shortCallDigest *ShortCallDigest) String() string {
 }
 
 type UnsuccessfulEndBatchExecutionTransaction struct {
-	ContractKey                         *PublicAccount
-	BatchId                             uint64
-	AutomaticExecutionsNextBlockToCheck Height
-	CosignersNumber                     uint16
-	CallsNumber                         uint16
-	PublicKeys                          []*PublicAccount
-	Signatures                          []*Signature
-	ProofsOfExecution                   []*RawProofsOfExecution
+	AbstractTransaction
+	EndBatchExecution
 	CallDigests                         []*ShortCallDigest
-	CallPayments                        []*CallPayment
 }
