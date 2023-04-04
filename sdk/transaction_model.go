@@ -2918,6 +2918,8 @@ const (
 	DeployContract                 EntityType = 0x416E
 	ManualCall                     EntityType = 0x426E
 	AutomaticExecutionsPayment     EntityType = 0x436E
+	SuccessfulEndBatchExecution    EntityType = 0x446E
+	UnsuccessfulEndBatchExecution  EntityType = 0x456E
 )
 
 func (t EntityType) String() string {
@@ -2997,6 +2999,8 @@ const (
 	AutomaticExecutionsPaymentVersion    EntityVersion = 1
 	ManuanCallVersion                    EntityVersion = 1
 	DeployContractVersion                EntityVersion = 1
+	SuccessfulEndBatchExecutionVersion   EntityVersion = 1
+	UnsuccessfulEndBatchExecutionVersion EntityVersion = 1
 )
 
 type AccountLinkAction uint8
