@@ -213,10 +213,10 @@ func TestSuperContractV2Service_GetSuperContractV2(t *testing.T) {
 		RespBody:            testSuperContractV2InfoJson,
 	})
 	exchangeClient := mock.getPublicTestClientUnsafe().SuperContractV2
-	if(exchangeClient == nil) {
+	if exchangeClient == nil {
 		fmt.Println("nil")
 	}
-	
+
 	defer mock.Close()
 
 	superContract, err := exchangeClient.GetSuperContractV2(ctx, testSCKey)
@@ -234,7 +234,7 @@ func TestSuperContractV2Service_GetSuperContractsV2(t *testing.T) {
 	})
 	exchangeClient := mock.getPublicTestClientUnsafe().SuperContractV2
 
-	if(exchangeClient == nil) {
+	if exchangeClient == nil {
 		fmt.Println("nil")
 	}
 	defer mock.Close()

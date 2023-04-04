@@ -130,8 +130,8 @@ func (ref *contractCallDTOs) toStruct(networkType NetworkType) ([]*ContractCall,
 
 type proofOfExecutionDTO struct {
 	StartBatchId uint64 `json:"startBatchId"`
-	T            string `json:"t"`
-	R            string `json:"r"`
+	T            string `json:"T"`
+	R            string `json:"R"`
 }
 
 func (ref *proofOfExecutionDTO) toStruct(networkType NetworkType) (*ProofOfExecution, error) {
@@ -432,10 +432,10 @@ func (t *superContractV2PageDTO) toStruct(networkType NetworkType) (*SuperContra
 
 type rawProofsOfExecutionDTO struct {
 	StartBatchId uint64 `json:"startBatchId"`
-	T            string `json:"t"`
-	R            string `json:"r"`
-	F            string `json:"f"`
-	K            string `json:"k"`
+	T            string `json:"T"`
+	R            string `json:"R"`
+	F            string `json:"F"`
+	K            string `json:"K"`
 }
 
 func (ref *rawProofsOfExecutionDTO) toStruct(networkType NetworkType) (*RawProofsOfExecution, error) {
@@ -477,8 +477,8 @@ func (ref *extendedCallDigestDTO) toStruct(networkType NetworkType) (*ExtendedCa
 }
 
 type callPaymentDTO struct {
-	ExecutionPayment uint64DTO `json:"ExecutionPayment"`
-	DownloadPayment  uint64DTO `json:"DownloadPayment"`
+	ExecutionPayment uint64DTO `json:"executionPayment"`
+	DownloadPayment  uint64DTO `json:"downloadPayment"`
 }
 
 func (ref *callPaymentDTO) toStruct(networkType NetworkType) (*CallPayment, error) {
