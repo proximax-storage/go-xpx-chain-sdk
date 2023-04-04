@@ -275,39 +275,12 @@ func (ref *batchDTOs) toStruct(networkType NetworkType) ([]*Batch, error) {
 	return batches, nil
 }
 
-type releasedTransactionDTO struct {
-	ReleasedTransactionHash hashDto `json:"releasedTransactionHash"`
+type releasedTransactionDTOs struct {
+	ReleasedTransactions []string `json:"releasedTransactionHashs"`
 }
 
-func (ref *releasedTransactionDTO) toStruct(networkType NetworkType) (*ReleasedTransaction, error) {
-	releasedTransactionHash, err := ref.ReleasedTransactionHash.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ReleasedTransaction{
-		ReleasedTransactionHash: releasedTransactionHash,
-	}, nil
-}
-
-type releasedTransactionDTOs []*releasedTransactionDTO
-
-func (ref *releasedTransactionDTOs) toStruct(networkType NetworkType) ([]*ReleasedTransaction, error) {
-	var (
-		dtos                 = *ref
-		releasedTransactions = make([]*ReleasedTransaction, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		releasedTransactions = append(releasedTransactions, info)
-	}
-
-	return releasedTransactions, nil
+func (ref *releasedTransactionDTOs) toStruct(networkType NetworkType) ([]string, error) {
+	return ref.ReleasedTransactions, nil
 }
 
 type superContractV2DTO struct {
@@ -322,7 +295,7 @@ type superContractV2DTO struct {
 		ContractCalls                   contractCallDTOs            `json:"requestCalls"`
 		ExecutorInfos                   executorInfoDTOs            `json:"executorsInfo"`
 		Batches                         batchDTOs                   `json:"batches"`
-		ReleasedTransactions            releasedTransactionDTOs     `json:"releasedTransactions"`
+		ReleasedTransactions            []string                    `json:"releasedTransactions"`
 	}
 }
 
@@ -377,10 +350,6 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 	if err != nil {
 		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.Batches.toStruct: %v", err)
 	}
-	releasedTransaction, err := ref.SuperContractV2.ReleasedTransactions.toStruct(networkType)
-	if err != nil {
-		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.ReleasedTransactions.toStruct: %v", err)
-	}
 
 	return &SuperContractV2{
 		SuperContractKey:                superContractKey,
@@ -393,7 +362,7 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		RequestedCalls:                  requestedCalls,
 		ExecutorsInfo:                   executorsInfo,
 		Batches:                         batches,
-		ReleasedTransactions:            releasedTransaction,
+		ReleasedTransactions:            ref.SuperContractV2.ReleasedTransactions,
 	}, nil
 }
 

@@ -208,10 +208,6 @@ func (batch *Batch) String() string {
 	)
 }
 
-type ReleasedTransaction struct {
-	ReleasedTransactionHash *Hash
-}
-
 type SuperContractV2 struct {
 	SuperContractKey                *PublicAccount
 	DriveKey                        *PublicAccount
@@ -223,7 +219,7 @@ type SuperContractV2 struct {
 	RequestedCalls                  []*ContractCall
 	ExecutorsInfo                   []*ExecutorInfo
 	Batches                         []*Batch
-	ReleasedTransactions            []*ReleasedTransaction
+	ReleasedTransactions            []string
 }
 
 func (superContractV2 *SuperContractV2) String() string {
@@ -397,8 +393,6 @@ type SuccessfulEndBatchExecutionTransaction struct {
 	CallDigests                             []*ExtendedCallDigest
 }
 
-
-
 // Unsuccessful End Batch Execution Transaction
 type ShortCallDigest struct {
 	CallId *Hash
@@ -422,5 +416,5 @@ func (shortCallDigest *ShortCallDigest) String() string {
 type UnsuccessfulEndBatchExecutionTransaction struct {
 	AbstractTransaction
 	EndBatchExecution
-	CallDigests                         []*ShortCallDigest
+	CallDigests []*ShortCallDigest
 }
