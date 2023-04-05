@@ -351,6 +351,17 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.Batches.toStruct: %v", err)
 	}
 
+	var infos = make([]*Hash, 0, len(ref.SuperContractV2.ReleasedTransactions))
+
+	for _, iter := range ref.SuperContractV2.ReleasedTransactions {
+		info, err:= StringToHash(iter)
+		if err != nil {
+			return nil, err
+		}
+
+		infos = append(infos, info)
+	}
+
 	return &SuperContractV2{
 		SuperContractKey:                superContractKey,
 		DriveKey:                        driveKey,
@@ -362,7 +373,7 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		RequestedCalls:                  requestedCalls,
 		ExecutorsInfo:                   executorsInfo,
 		Batches:                         batches,
-		ReleasedTransactions:            ref.SuperContractV2.ReleasedTransactions,
+		ReleasedTransactions:            infos,
 	}, nil
 }
 

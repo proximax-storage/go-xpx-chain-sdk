@@ -219,7 +219,7 @@ type SuperContractV2 struct {
 	RequestedCalls                  []*ContractCall
 	ExecutorsInfo                   []*ExecutorInfo
 	Batches                         []*Batch
-	ReleasedTransactions            []string
+	ReleasedTransactions            []*Hash
 }
 
 func (superContractV2 *SuperContractV2) String() string {
