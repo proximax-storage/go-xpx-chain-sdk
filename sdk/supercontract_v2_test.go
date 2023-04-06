@@ -79,17 +79,26 @@ const (
     "executorsInfo": [
       {
         "executorKey": "2130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB",
-        "nextBatchToApprove": 1,
+        "nextBatchToApprove": [
+			1,
+			0
+		],
         "proofOfExecution": {
-          "startBatchId": 1,
-          "t": "test",
-          "r": "test"
+          "startBatchId": [
+			1,
+			0
+		  ],
+          "T": "test",
+          "R": "test"
         }
       }
     ],
     "batches": [
       {
-        "batchId": 1,
+        "batchId": [
+			1,
+			0
+		],
         "success": true,
         "poExVerificationInformation": "test",
         "completedCalls": [
@@ -110,9 +119,7 @@ const (
       }
     ],
     "releasedTransactions": [
-      {
-        "releasedTransactionHash": "0100000000000000000000000000000000000000000000000000000000000000"
-      }
+			"0100000000000000000000000000000000000000000000000000000000000000"
     ]
   }
 }`
@@ -152,7 +159,7 @@ var (
 				Caller:               testCaller,
 				FileName:             "xyz",
 				FunctionName:         "wst",
-				ActualArguments:      "uvw",
+				ActualArguments:      []byte{117, 118, 119},
 				ExecutionCallPayment: Amount(1),
 				DownloadCallPayment:  Amount(1),
 				ServicePayments: []*ServicePayment{
@@ -191,10 +198,8 @@ var (
 				},
 			},
 		},
-		ReleasedTransactions: []*ReleasedTransaction{
-			{
-				ReleasedTransactionHash: &Hash{1},
-			},
+		ReleasedTransactions: []*Hash{
+			&Hash{1},
 		},
 	}
 )

@@ -1059,7 +1059,7 @@ func (c *Client) NewManualCallTransaction(
 	downloadCallPayment Amount,
 	fileName string,
 	functionName string,
-	actualArguments string,
+	actualArguments []byte,
 	servicePayments []*MosaicId,
 	networkType NetworkType,
 ) (*ManualCallTransaction, error) {
@@ -1092,7 +1092,7 @@ func (c *Client) NewDeployContractTransaction(
 	assignee *PublicAccount,
 	fileName string,
 	functionName string,
-	actualArguments string,
+	actualArguments []byte,
 	servicePayments []*MosaicId,
 	automaticExecutionFileName string,
 	automaticExecutionFunctionName string,
