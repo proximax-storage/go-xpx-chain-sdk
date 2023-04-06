@@ -14,13 +14,13 @@ import (
 
 // parse function for deploy contract txn and manual call txn
 func parseData(
-	builder *flatbuffers.Builder, 
+	builder *flatbuffers.Builder,
 	executionCallPayment *Amount,
 	downloadCallPayment *Amount,
 	fileName string,
 	functionName string,
 	servicePayments []*MosaicId,
-	 ) (flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT) {
+) (flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT) {
 
 	executionCall := transactions.TransactionBufferCreateUint32Vector(builder, executionCallPayment.toArray())
 	downloadCall := transactions.TransactionBufferCreateUint32Vector(builder, downloadCallPayment.toArray())
@@ -194,7 +194,7 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	actualArgV := builder.CreateByteVector(tx.ActualArguments)
 
 	contractKeyV := transactions.TransactionBufferCreateByteVector(builder, contractKeyB)
-	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder, 
+	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder,
 		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ServicePayments)
 
 	transactions.ManualCallTransactionBufferStart(builder)
@@ -214,7 +214,6 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 
 	return manualCallTransactionSchema().serialize(builder.FinishedBytes()), nil
 }
-
 
 func (tx *ManualCallTransaction) Size() int {
 	return ManualCallHeaderSize
@@ -303,19 +302,19 @@ func NewDeployContractTransaction(
 			Type:        DeployContract,
 			NetworkType: networkType,
 		},
-		DriveKey:                           driveKey,
-		ExecutionCallPayment:               executionCallPayment,
-		DownloadCallPayment:                downloadCallPayment,
-		AutomaticExecutionCallPayment:      automaticExecutionCallPayment,
-		AutomaticDownloadCallPayment:       automaticDownloadCallPayment,
-		AutomaticExecutionsNumber:          automaticExecutionsNumber,
-		Assignee:                           assignee,
-		FileName:                           fileName,
-		FunctionName:                       functionName,
-		ActualArguments:                    actualArguments,
-		ServicePayments:                    servicePayments,
-		AutomaticExecutionFileName:         automaticExecutionFileName,
-		AutomaticExecutionFunctionName:     automaticExecutionFunctionName,
+		DriveKey:                       driveKey,
+		ExecutionCallPayment:           executionCallPayment,
+		DownloadCallPayment:            downloadCallPayment,
+		AutomaticExecutionCallPayment:  automaticExecutionCallPayment,
+		AutomaticDownloadCallPayment:   automaticDownloadCallPayment,
+		AutomaticExecutionsNumber:      automaticExecutionsNumber,
+		Assignee:                       assignee,
+		FileName:                       fileName,
+		FunctionName:                   functionName,
+		ActualArguments:                actualArguments,
+		ServicePayments:                servicePayments,
+		AutomaticExecutionFileName:     automaticExecutionFileName,
+		AutomaticExecutionFunctionName: automaticExecutionFunctionName,
 	}
 
 	return &tx, nil
@@ -346,7 +345,7 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
 	assigneeV := transactions.TransactionBufferCreateByteVector(builder, assigneeB)
 
-	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder, 
+	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder,
 		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ServicePayments)
 
 	automaticExecutionFileBytes := []byte(tx.FileName)
@@ -356,7 +355,7 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 
 	automaticExecutionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticExecutionCallPayment.toArray())
 	automaticDownloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticDownloadCallPayment.toArray())
-	
+
 	transactions.DeployContractTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
@@ -460,5 +459,118 @@ func (dto *deployContractTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		mosaics,
 		dto.Tx.AutomaticExecutionFileName,
 		dto.Tx.AutomaticExecutionFunctionName,
+	}, nil
+}
+
+// SuccessfulEndBatchExecutionTransaction bytes() is not sent by the client
+func (tx *SuccessfulEndBatchExecutionTransaction) Bytes() ([]byte, error) {
+	return nil, nil
+}
+
+func (tx *SuccessfulEndBatchExecutionTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *SuccessfulEndBatchExecutionTransaction) Size() int {
+	return SuccessfulEndBatchExecutionHeaderSize
+}
+
+type successfulEndBatchExecutionTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		EndBatchExecution                       *endBatchExecutionDTO  `json:"endBatchExecution"`
+		StorageHash                             hashDto                `json:"storageHash"`
+		UsedSizedBytes                          uint64DTO              `json:"usedSizedBytes"`
+		MetaFilesSizeBytes                      uint64DTO              `json:"metaFilesSizeBytes"`
+		ProofOfExecutionVerificationInformation string                 `json:"proofOfExecutionVerificationInformation"`
+		CallDigests                             extendedCallDigestDTOs `json:"callDigests"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *successfulEndBatchExecutionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	endBatch, err := dto.Tx.EndBatchExecution.toStruct(atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	storageHash, err := dto.Tx.StorageHash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	callDigests, err := dto.Tx.CallDigests.toStruct(atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SuccessfulEndBatchExecutionTransaction{
+		*atx,
+		*endBatch,
+		storageHash,
+		dto.Tx.UsedSizedBytes.toUint64(),
+		dto.Tx.MetaFilesSizeBytes.toUint64(),
+		[]byte(dto.Tx.ProofOfExecutionVerificationInformation),
+		callDigests,
+	}, nil
+}
+
+// UnsuccessfulEndBatchExecutionTransaction bytes() is not sent by the client
+func (tx *UnsuccessfulEndBatchExecutionTransaction) Bytes() ([]byte, error) {
+	return nil, nil
+}
+
+func (tx *UnsuccessfulEndBatchExecutionTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *UnsuccessfulEndBatchExecutionTransaction) Size() int {
+	return UnsuccessfulEndBatchExecutionHeaderSize
+}
+
+type unsuccessfulEndBatchExecutionTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		EndBatchExecution *endBatchExecutionDTO `json:"endBatchExecution"`
+		CallDigests       shortCallDigestDTOs   `json:"callDigests"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *unsuccessfulEndBatchExecutionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	endBatch, err := dto.Tx.EndBatchExecution.toStruct(atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	callDigests, err := dto.Tx.CallDigests.toStruct(atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UnsuccessfulEndBatchExecutionTransaction{
+		*atx,
+		*endBatch,
+		callDigests,
 	}, nil
 }

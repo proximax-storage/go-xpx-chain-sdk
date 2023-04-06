@@ -307,16 +307,6 @@ type DeployContractTransaction struct {
 }
 
 // Successful End Batch Execution Transaction
-type EndBatchExecution struct {
-	ContractKey                         *PublicAccount
-	BatchId                             uint64
-	AutomaticExecutionsNextBlockToCheck Height
-	PublicKeys                          []*PublicAccount
-	Signatures                          []*Signature
-	ProofsOfExecution                   []*RawProofsOfExecution
-	CallPayments                        []*CallPayment
-}
-
 type RawProofsOfExecution struct {
 	StartBatchId uint64
 	T            []byte
@@ -328,12 +318,12 @@ type RawProofsOfExecution struct {
 func (rawPoex *RawProofsOfExecution) String() string {
 	return fmt.Sprintf(
 		`
-			"StartBatchId": %d,
-			"T": %v,
-			"R": %v,
-			"F": %v,
+		"StartBatchId": %d,
+		"T": %v,
+		"R": %v,
+		"F": %v,
 			"K": %v,
-		`,
+			`,
 		rawPoex.StartBatchId,
 		rawPoex.T,
 		rawPoex.R,
@@ -383,9 +373,19 @@ func (callPayment *CallPayment) String() string {
 	)
 }
 
+type EndBatchExecution struct {
+	ContractKey                         *PublicAccount
+	BatchId                             uint64
+	AutomaticExecutionsNextBlockToCheck Height
+	PublicKeys                          []*PublicAccount
+	Signatures                          []*Signature
+	ProofsOfExecutions                  []*RawProofsOfExecution
+	CallPayments                        []*CallPayment
+}
+
 type SuccessfulEndBatchExecutionTransaction struct {
 	AbstractTransaction
-	EndBatchExecution
+	EndBatchExecutionInfo                   EndBatchExecution
 	StorageHash                             *Hash
 	UsedSizedBytes                          uint64
 	MetaFilesSizeBytes                      uint64
