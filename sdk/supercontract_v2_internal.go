@@ -100,7 +100,7 @@ func (ref *contractCallDTO) toStruct(networkType NetworkType) (*ContractCall, er
 		Caller:               caller,
 		FileName:             ref.FileName,
 		FunctionName:         ref.FunctionName,
-		ActualArguments:      ref.ActualArguments,
+		ActualArguments:      []byte(ref.ActualArguments),
 		ExecutionCallPayment: ref.ExecutionCallPayment.toStruct(),
 		DownloadCallPayment:  ref.DownloadCallPayment.toStruct(),
 		ServicePayments:      servicePayments,
@@ -354,7 +354,7 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 	var infos = make([]*Hash, 0, len(ref.SuperContractV2.ReleasedTransactions))
 
 	for _, iter := range ref.SuperContractV2.ReleasedTransactions {
-		info, err:= StringToHash(iter)
+		info, err := StringToHash(iter)
 		if err != nil {
 			return nil, err
 		}

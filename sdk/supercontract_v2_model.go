@@ -91,7 +91,7 @@ type ContractCall struct {
 	Caller               *PublicAccount
 	FileName             string
 	FunctionName         string
-	ActualArguments      string
+	ActualArguments      []byte
 	ExecutionCallPayment Amount
 	DownloadCallPayment  Amount
 	ServicePayments      []*ServicePayment
@@ -105,7 +105,7 @@ func (contractCall *ContractCall) String() string {
 			"Caller": %s,
 			"FileName": %s,
 			"FunctionName": %s,
-			"ActualArguments": %s,
+			"ActualArguments": %d,
 			"ExecutionCallPayment": %d,
 			"DownloadCallPayment": %d,
 			"ServicePayments": %+v,
@@ -284,7 +284,7 @@ type ManualCallTransaction struct {
 	DownloadCallPayment  Amount
 	FileName             string
 	FunctionName         string
-	ActualArguments      string
+	ActualArguments      []byte
 	ServicePayments      []*MosaicId
 }
 
@@ -300,7 +300,7 @@ type DeployContractTransaction struct {
 	Assignee                       *PublicAccount
 	FileName                       string
 	FunctionName                   string
-	ActualArguments                string
+	ActualArguments                []byte
 	ServicePayments                []*MosaicId
 	AutomaticExecutionFileName     string
 	AutomaticExecutionFunctionName string
