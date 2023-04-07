@@ -1632,7 +1632,7 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return MosaicSupplyChangeTransactionSize
 }
 
-/// region modify mosaic levy implementation
+// / region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -1713,7 +1713,7 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 
 /// end region modify mosaic levy
 
-/// region remove mosaic levy
+// / region remove mosaic levy
 type MosaicRemoveLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -2817,7 +2817,7 @@ const (
 	OpinionElementCountSize                      = 2
 	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
 	DataModificationApprovalHeaderSize           = TransactionHeaderSize + KeySize + Hash256 + Hash256 + 8 + 8 + 8
-	DataModificationSignleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
+	DataModificationSingleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
 	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize + OpinionElementCountSize
 	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
 	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
@@ -2828,7 +2828,23 @@ const (
 	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
-	RemoveSdaExchangeOfferHeaderSize
+	RemoveSdaExchangeOfferHeaderSize             
+	AutomaticExecutionsNumber                    = 4
+	FileNameSize                                 = 2
+	FunctionNameSize                             = 2
+	ActualArgumentsSize                          = 2
+	ServicePaymentsCount                         = 1
+	AutomaticExecutionsFileNameSize              = 2
+	AutomaticExecutionsFunctionNameSize          = 2
+	BatchIdSize                                  = 8
+	CosignersNumber                              = 4
+	CallsNumber                                  = 4
+	PoExVerificationInformationSize              = 32
+	AutomaticExecutionsPaymentHeaderSize         = TransactionHeaderSize + KeySize + AutomaticExecutionsNumber
+	ManualCallHeaderSize                         = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount
+	DeployContractHeaderSize                     = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount + AutomaticExecutionsFileNameSize + AutomaticExecutionsFunctionNameSize + AmountSize + AmountSize + AutomaticExecutionsNumber + KeySize
+	SuccessfulEndBatchExecutionHeaderSize        = TransactionHeaderSize + KeySize + BatchIdSize + Hash256 + BaseInt64Size + BaseInt64Size + PoExVerificationInformationSize + DurationSize + CosignersNumber + CallsNumber
+	UnsuccessfulEndBatchExecutionHeaderSize      = TransactionHeaderSize + KeySize + BatchIdSize + DurationSize + CosignersNumber + CallsNumber
 )
 
 type EntityType uint16
@@ -2903,8 +2919,13 @@ const (
 	ReplicatorOffboarding          EntityType = 0x4762
 	CreateLiquidityProvider        EntityType = 0x4169
 	ManualRateChange               EntityType = 0x4269
-	PlaceSdaExchangeOffer     EntityType = 0x416A
-	RemoveSdaExchangeOffer    EntityType = 0x426A
+	PlaceSdaExchangeOffer          EntityType = 0x416A
+	RemoveSdaExchangeOffer         EntityType = 0x426A
+	DeployContract                 EntityType = 0x416E
+	ManualCall                     EntityType = 0x426E
+	AutomaticExecutionsPayment     EntityType = 0x436E
+	SuccessfulEndBatchExecution    EntityType = 0x446E
+	UnsuccessfulEndBatchExecution  EntityType = 0x456E
 )
 
 func (t EntityType) String() string {
@@ -2914,73 +2935,78 @@ func (t EntityType) String() string {
 type EntityVersion uint32
 
 const (
-	AccountPropertyAddressVersion    EntityVersion = 1
-	AccountPropertyMosaicVersion     EntityVersion = 1
-	AccountPropertyEntityTypeVersion EntityVersion = 1
-	AddressAliasVersion              EntityVersion = 1
-	AggregateBondedVersion           EntityVersion = 3
-	AggregateCompletedVersion        EntityVersion = 3
-	AddExchangeOfferVersion          EntityVersion = 4
-	ExchangeOfferVersion             EntityVersion = 2
-	RemoveExchangeOfferVersion       EntityVersion = 2
-	NetworkConfigVersion             EntityVersion = 1
-	BlockchainUpgradeVersion         EntityVersion = 1
-	LinkAccountVersion               EntityVersion = 2
-	LockVersion                      EntityVersion = 1
-	AccountMetadataVersion           EntityVersion = 1
-	MosaicMetadataVersion            EntityVersion = 1
-	NamespaceMetadataVersion         EntityVersion = 1
-	MetadataAddressVersion           EntityVersion = 1
-	MetadataMosaicVersion            EntityVersion = 1
-	MetadataNamespaceVersion         EntityVersion = 1
-	ModifyContractVersion            EntityVersion = 3
-	ModifyMultisigVersion            EntityVersion = 3
-	MosaicAliasVersion               EntityVersion = 1
-	MosaicDefinitionVersion          EntityVersion = 3
-	MosaicSupplyChangeVersion        EntityVersion = 2
-	MosaicModifyLevyVersion          EntityVersion = 1
-	MosaicRemoveLevyVersion          EntityVersion = 1
-	RegisterNamespaceVersion         EntityVersion = 2
-	SecretLockVersion                EntityVersion = 1
-	SecretProofVersion               EntityVersion = 1
-	TransferVersion                  EntityVersion = 3
-	PrepareDriveVersion              EntityVersion = 3
-	JoinToDriveVersion               EntityVersion = 1
-	DriveFileSystemVersion           EntityVersion = 1
-	FilesDepositVersion              EntityVersion = 1
-	EndDriveVersion                  EntityVersion = 1
-	DriveFilesRewardVersion          EntityVersion = 1
-	StartDriveVerificationVersion    EntityVersion = 1
-	EndDriveVerificationVersion      EntityVersion = 1
-	StartFileDownloadVersion         EntityVersion = 1
-	EndFileDownloadVersion           EntityVersion = 1
-	DeployVersion                    EntityVersion = 1
-	StartExecuteVersion              EntityVersion = 1
-	EndExecuteVersion                EntityVersion = 1
-	StartOperationVersion            EntityVersion = 1
-	EndOperationVersion              EntityVersion = 1
-	HarvesterVersion                 EntityVersion = 1
-	OperationIdentifyVersion         EntityVersion = 1
-	SuperContractFileSystemVersion   EntityVersion = 1
-	DeactivateVersion                EntityVersion = 1
-	ReplicatorOnboardingVersion      EntityVersion = 1
-	PrepareBcDriveVersion            EntityVersion = 1
-	DataModificationVersion          EntityVersion = 1
-	DataModificationApprovalVersion  EntityVersion = 1 // TODO delete?
-	DataModificationCancelVersion    EntityVersion = 1
-	StoragePaymentVersion            EntityVersion = 1
-	DownloadPaymentVersion           EntityVersion = 1
-	DownloadVersion                  EntityVersion = 1
-	FinishDownloadVersion            EntityVersion = 1
-	VerificationPaymentVersion       EntityVersion = 1
-	EndDriveVerificationV2Version    EntityVersion = 1
-	DownloadApprovalVersion          EntityVersion = 1
-	DriveClosureVersion              EntityVersion = 1
-	ReplicatorOffboardingVersion     EntityVersion = 1
-	CreateLiquidityProviderVersion   EntityVersion = 1
-	ManualRateChangeVersion          EntityVersion = 1
-	PlaceSdaExchangeOfferVersion     EntityVersion = 1
-	RemoveSdaExchangeOfferVersion    EntityVersion = 1
+	AccountPropertyAddressVersion        EntityVersion = 1
+	AccountPropertyMosaicVersion         EntityVersion = 1
+	AccountPropertyEntityTypeVersion     EntityVersion = 1
+	AddressAliasVersion                  EntityVersion = 1
+	AggregateBondedVersion               EntityVersion = 3
+	AggregateCompletedVersion            EntityVersion = 3
+	AddExchangeOfferVersion              EntityVersion = 4
+	ExchangeOfferVersion                 EntityVersion = 2
+	RemoveExchangeOfferVersion           EntityVersion = 2
+	NetworkConfigVersion                 EntityVersion = 1
+	BlockchainUpgradeVersion             EntityVersion = 1
+	LinkAccountVersion                   EntityVersion = 2
+	LockVersion                          EntityVersion = 1
+	AccountMetadataVersion               EntityVersion = 1
+	MosaicMetadataVersion                EntityVersion = 1
+	NamespaceMetadataVersion             EntityVersion = 1
+	MetadataAddressVersion               EntityVersion = 1
+	MetadataMosaicVersion                EntityVersion = 1
+	MetadataNamespaceVersion             EntityVersion = 1
+	ModifyContractVersion                EntityVersion = 3
+	ModifyMultisigVersion                EntityVersion = 3
+	MosaicAliasVersion                   EntityVersion = 1
+	MosaicDefinitionVersion              EntityVersion = 3
+	MosaicSupplyChangeVersion            EntityVersion = 2
+	MosaicModifyLevyVersion              EntityVersion = 1
+	MosaicRemoveLevyVersion              EntityVersion = 1
+	RegisterNamespaceVersion             EntityVersion = 2
+	SecretLockVersion                    EntityVersion = 1
+	SecretProofVersion                   EntityVersion = 1
+	TransferVersion                      EntityVersion = 3
+	PrepareDriveVersion                  EntityVersion = 3
+	JoinToDriveVersion                   EntityVersion = 1
+	DriveFileSystemVersion               EntityVersion = 1
+	FilesDepositVersion                  EntityVersion = 1
+	EndDriveVersion                      EntityVersion = 1
+	DriveFilesRewardVersion              EntityVersion = 1
+	StartDriveVerificationVersion        EntityVersion = 1
+	EndDriveVerificationVersion          EntityVersion = 1
+	StartFileDownloadVersion             EntityVersion = 1
+	EndFileDownloadVersion               EntityVersion = 1
+	DeployVersion                        EntityVersion = 1
+	StartExecuteVersion                  EntityVersion = 1
+	EndExecuteVersion                    EntityVersion = 1
+	StartOperationVersion                EntityVersion = 1
+	EndOperationVersion                  EntityVersion = 1
+	HarvesterVersion                     EntityVersion = 1
+	OperationIdentifyVersion             EntityVersion = 1
+	SuperContractFileSystemVersion       EntityVersion = 1
+	DeactivateVersion                    EntityVersion = 1
+	ReplicatorOnboardingVersion          EntityVersion = 1
+	PrepareBcDriveVersion                EntityVersion = 1
+	DataModificationVersion              EntityVersion = 1
+	DataModificationApprovalVersion      EntityVersion = 1 // TODO delete?
+	DataModificationCancelVersion        EntityVersion = 1
+	StoragePaymentVersion                EntityVersion = 1
+	DownloadPaymentVersion               EntityVersion = 1
+	DownloadVersion                      EntityVersion = 1
+	FinishDownloadVersion                EntityVersion = 1
+	VerificationPaymentVersion           EntityVersion = 1
+	EndDriveVerificationV2Version        EntityVersion = 1
+	DownloadApprovalVersion              EntityVersion = 1
+	DriveClosureVersion                  EntityVersion = 1
+	ReplicatorOffboardingVersion         EntityVersion = 1
+	CreateLiquidityProviderVersion       EntityVersion = 1
+	ManualRateChangeVersion              EntityVersion = 1
+	PlaceSdaExchangeOfferVersion         EntityVersion = 1
+	RemoveSdaExchangeOfferVersion        EntityVersion = 1
+	AutomaticExecutionsPaymentVersion    EntityVersion = 1
+	ManuanCallVersion                    EntityVersion = 1
+	DeployContractVersion                EntityVersion = 1
+	SuccessfulEndBatchExecutionVersion   EntityVersion = 1
+	UnsuccessfulEndBatchExecutionVersion EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3282,6 +3308,16 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &placeSdaOfferTransactionDTO{}
 	case RemoveSdaExchangeOffer:
 		dto = &removeSdaExchangeOfferTransactionDTO{}
+	case AutomaticExecutionsPayment:
+		dto = &automaticExecutionsPaymentTransactionDTO{}
+	case ManualCall:
+		dto = &manualCallTransactionDTO{}
+	case DeployContract:
+		dto = &deployContractTransactionDTO{}
+	case SuccessfulEndBatchExecution:
+		dto = &successfulEndBatchExecutionTransactionDTO{}
+	case UnsuccessfulEndBatchExecution:
+		dto = &unsuccessfulEndBatchExecutionTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
