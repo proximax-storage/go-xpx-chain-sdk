@@ -115,12 +115,28 @@ const (
 	accountDownloadInfosRoute = "/account/%s/downloads"
 )
 
+// routes for StorageV2Service
+const (
+	drivesRouteV2           = "/bcdrives"
+	driveRouteV2            = "/bcdrives/%s"
+	replicatorsRouteV2      = "/replicators"
+	replicatorRouteV2       = "/replicators/%s"
+	downloadChannelsRouteV2 = "/download_channels"
+	downloadChannelRouteV2  = "/download_channels/%s"
+)
+
 // routes for SuperContractService
 const (
 	driveSuperContractsRoute = "/drive/%s/supercontracts"
 	superContractRoute       = "/supercontract/%s"
 	accountOperationsRoute   = "/account/%s/operations"
 	operationRoute           = "/operation/%s"
+)
+
+// routes for SdaExchangeService
+const (
+	exchangeSdaRoute       = "/account/%s/exchangesda"
+	sdaOffersByMosaicRoute = "/exchangesda/%s/%s"
 )
 
 // routes for ExchangeService
@@ -138,6 +154,12 @@ const (
 	transactionStatusByIdRoute        = "/transactionStatus/%s"
 	announceAggregateRoute            = "/transactions/partial"
 	announceAggregateCosignatureRoute = "/transactions/cosignature"
+)
+
+// routes for LiquidityProvider
+const (
+	liquidityProvidersRoute = "/liquidity_providers"
+	liquidityProviderRoute  = "/liquidity_providers/%s"
 )
 
 type TransactionGroup string

@@ -153,21 +153,24 @@ type Client struct {
 	config *Config
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 	// Services for communicating to the Catapult REST APIs
-	Blockchain    *BlockchainService
-	Exchange      *ExchangeService
-	Mosaic        *MosaicService
-	Namespace     *NamespaceService
-	Node          *NodeService
-	Network       *NetworkService
-	Transaction   *TransactionService
-	Resolve       *ResolverService
-	Account       *AccountService
-	Storage       *StorageService
-	SuperContract *SuperContractService
-	Lock          *LockService
-	Contract      *ContractService
-	Metadata      *MetadataService
-	MetadataV2    *MetadataV2Service
+	Blockchain        *BlockchainService
+	Exchange          *ExchangeService
+	SdaExchange       *SdaExchangeService
+	Mosaic            *MosaicService
+	Namespace         *NamespaceService
+	Node              *NodeService
+	Network           *NetworkService
+	Transaction       *TransactionService
+	Resolve           *ResolverService
+	Account           *AccountService
+	Storage           *StorageService
+	StorageV2         *StorageV2Service
+	SuperContract     *SuperContractService
+	Lock              *LockService
+	Contract          *ContractService
+	Metadata          *MetadataService
+	MetadataV2        *MetadataV2Service
+	LiquidityProvider *LiquidityProviderService
 }
 
 type service struct {
@@ -204,13 +207,16 @@ func NewClient(httpClient *http.Client, conf *Config) *Client {
 	c.Resolve = &ResolverService{&c.common, c.Namespace, c.Mosaic}
 	c.Transaction = &TransactionService{&c.common, c.Blockchain}
 	c.Exchange = &ExchangeService{&c.common, c.Resolve}
+	c.SdaExchange = &SdaExchangeService{&c.common, c.Resolve}
 	c.Account = (*AccountService)(&c.common)
 	c.Lock = (*LockService)(&c.common)
 	c.Storage = &StorageService{&c.common, c.Lock}
+	c.StorageV2 = (*StorageV2Service)(&c.common)
 	c.SuperContract = (*SuperContractService)(&c.common)
 	c.Contract = (*ContractService)(&c.common)
 	c.Metadata = (*MetadataService)(&c.common)
 	c.MetadataV2 = (*MetadataV2Service)(&c.common)
+	c.LiquidityProvider = (*LiquidityProviderService)(&c.common)
 
 	return c
 }
@@ -376,12 +382,7 @@ func min(a, b int) int {
 }
 
 func (c *Client) modifyTransaction(tx Transaction) {
-	// We don't change MaxFee for versioning transactions
-	switch tx.GetAbstractTransaction().Type {
-	case NetworkConfigEntityType, BlockchainUpgrade:
-	default:
-		tx.GetAbstractTransaction().MaxFee = Amount(min(tx.Size()*int(c.config.FeeCalculationStrategy), DefaultMaxFee))
-	}
+	tx.GetAbstractTransaction().MaxFee = Amount(int(c.config.FeeCalculationStrategy) * tx.Size())
 }
 
 func (c *Client) NewAddressAliasTransaction(deadline *Deadline, address *Address, namespaceId *NamespaceId, actionType AliasActionType) (*AddressAliasTransaction, error) {
@@ -458,6 +459,24 @@ func (c *Client) NewExchangeOfferTransaction(deadline *Deadline, confirmations [
 
 func (c *Client) NewRemoveExchangeOfferTransaction(deadline *Deadline, removeOffers []*RemoveOffer) (*RemoveExchangeOfferTransaction, error) {
 	tx, err := NewRemoveExchangeOfferTransaction(deadline, removeOffers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewPlaceSdaExchangeOfferTransaction(deadline *Deadline, placeSdaOffers []*PlaceSdaOffer) (*PlaceSdaExchangeOfferTransaction, error) {
+	tx, err := NewPlaceSdaExchangeOfferTransaction(deadline, placeSdaOffers, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewRemoveSdaExchangeOfferTransaction(deadline *Deadline, removeSdaOffers []*RemoveSdaOffer) (*RemoveSdaExchangeOfferTransaction, error) {
+	tx, err := NewRemoveSdaExchangeOfferTransaction(deadline, removeSdaOffers, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -621,8 +640,8 @@ func (c *Client) NewTransferTransactionWithNamespace(deadline *Deadline, recipie
 	return tx, err
 }
 
-func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType) (*HarvesterTransaction, error) {
-	tx, err := NewHarvesterTransaction(deadline, htt, c.config.NetworkType)
+func (c *Client) NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, harvesterKey *PublicAccount) (*HarvesterTransaction, error) {
+	tx, err := NewHarvesterTransaction(deadline, htt, harvesterKey, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -814,6 +833,114 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
+func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
+	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewPrepareBcDriveTransaction(deadline *Deadline, driveSize StorageSize, verificationFeeAmount Amount, replicatorCount uint16) (*PrepareBcDriveTransaction, error) {
+	tx, err := NewPrepareBcDriveTransaction(deadline, driveSize, verificationFeeAmount, replicatorCount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDataModificationTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash, uploadSize StorageSize, feedbackFeeAmount Amount) (*DataModificationTransaction, error) {
+	tx, err := NewDataModificationTransaction(deadline, driveKey, downloadDataCdi, uploadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDataModificationCancelTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash) (*DataModificationCancelTransaction, error) {
+	tx, err := NewDataModificationCancelTransaction(deadline, driveKey, downloadDataCdi, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewStoragePaymentTransaction(deadline *Deadline, driveKey *PublicAccount, storageUnits Amount) (*StoragePaymentTransaction, error) {
+	tx, err := NewStoragePaymentTransaction(deadline, driveKey, storageUnits, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadPaymentTransaction(deadline *Deadline, downloadChannelId *Hash, downloadSize StorageSize, feedbackFeeAmount Amount) (*DownloadPaymentTransaction, error) {
+	tx, err := NewDownloadPaymentTransaction(deadline, downloadChannelId, downloadSize, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDownloadTransaction(deadline *Deadline, driveKey *PublicAccount, downloadSize StorageSize, feedbackFeeAmount Amount, listOfPublicKeys []*PublicAccount) (*DownloadTransaction, error) {
+	tx, err := NewDownloadTransaction(deadline, driveKey, downloadSize, feedbackFeeAmount, listOfPublicKeys, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewFinishDownloadTransaction(deadline *Deadline, downloadChannelId *Hash, feedbackFeeAmount Amount) (*FinishDownloadTransaction, error) {
+	tx, err := NewFinishDownloadTransaction(deadline, downloadChannelId, feedbackFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewVerificationPaymentTransaction(deadline *Deadline, driveKey *PublicAccount, verificationFeeAmount Amount) (*VerificationPaymentTransaction, error) {
+	tx, err := NewVerificationPaymentTransaction(deadline, driveKey, verificationFeeAmount, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewEndDriveVerificationTransactionV2(deadline *Deadline, driveKey *PublicAccount, verificationTrigger *Hash, shardId uint16, keys []*PublicAccount, signatures []*Signature, opinions uint8) (*EndDriveVerificationTransactionV2, error) {
+	tx, err := NewEndDriveVerificationTransactionV2(deadline, driveKey, verificationTrigger, shardId, keys, signatures, opinions, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *PublicAccount) (*DriveClosureTransaction, error) {
+	tx, err := NewDriveClosureTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKey *PublicAccount) (*ReplicatorOffboardingTransaction, error) {
+	tx, err := NewReplicatorOffboardingTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {
@@ -825,6 +952,78 @@ func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, drive
 
 func (c *Client) NewDeactivateTransaction(deadline *Deadline, sc string, driveKey string) (*DeactivateTransaction, error) {
 	tx, err := NewDeactivateTransaction(deadline, sc, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
+	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
+	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewCreateLiquidityProviderTransaction(
+	deadline *Deadline,
+	providerMosaicId *MosaicId,
+	currencyDeposit Amount,
+	initialMosaicsMinting Amount,
+	slashingPeriod uint32,
+	windowSize uint16,
+	slashingAccount *PublicAccount,
+	alpha uint32,
+	beta uint32,
+) (*CreateLiquidityProviderTransaction, error) {
+	tx, err := NewCreateLiquidityProviderTransaction(
+		deadline,
+		providerMosaicId,
+		currencyDeposit,
+		initialMosaicsMinting,
+		slashingPeriod,
+		windowSize,
+		slashingAccount,
+		alpha,
+		beta,
+		c.config.NetworkType,
+	)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewManualRateChangeTransaction(
+	deadline *Deadline,
+	providerMosaicId *MosaicId,
+	currencyBalanceIncrease bool,
+	currencyBalanceChange Amount,
+	mosaicBalanceIncrease bool,
+	mosaicBalanceChange Amount,
+) (*ManualRateChangeTransaction, error) {
+	tx, err := NewManualRateChangeTransaction(
+		deadline,
+		providerMosaicId,
+		currencyBalanceIncrease,
+		currencyBalanceChange,
+		mosaicBalanceIncrease,
+		mosaicBalanceChange,
+		c.config.NetworkType,
+	)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -868,22 +1067,4 @@ func handleResponseStatusCode(resp *http.Response, codeToErrs map[int]error) err
 	}
 
 	return nil
-}
-
-func (c *Client) NewMosaicModifyLevyTransaction(deadline *Deadline, mosaicId *MosaicId, levy *MosaicLevy) (*MosaicModifyLevyTransaction, error) {
-	tx, err := NewMosaicModifyLevyTransaction(deadline, c.config.NetworkType, mosaicId, levy)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
-}
-
-func (c *Client) NewMosaicRemoveLevyTransaction(deadline *Deadline, mosaicId *MosaicId) (*MosaicRemoveLevyTransaction, error) {
-	tx, err := NewMosaicRemoveLevyTransaction(deadline, c.config.NetworkType, mosaicId)
-	if tx != nil {
-		c.modifyTransaction(tx)
-	}
-
-	return tx, err
 }

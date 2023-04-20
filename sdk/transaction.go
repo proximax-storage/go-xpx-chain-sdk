@@ -8,8 +8,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type TransactionService struct {
@@ -41,6 +42,24 @@ func (txs *TransactionService) GetAnyTransaction(ctx context.Context, id string)
 	}
 
 	return txs.GetTransaction(ctx, trS.Group, id)
+}
+
+// GetTransactions returns an array of Transaction's for passed array of transaction ids or hashes with any group
+func (txs *TransactionService) GetTransactions(ctx context.Context, ids []string) ([]Transaction, error) {
+	txsStatuses, err := txs.GetTransactionsStatuses(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := make([]Transaction, len(txsStatuses))
+	for i, status := range txsStatuses {
+		transactions[i], err = txs.GetTransaction(ctx, status.Group, status.Hash.String())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return transactions, nil
 }
 
 // GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
@@ -200,5 +219,10 @@ func (txs *TransactionService) GetTransactionEffectiveFee(ctx context.Context, t
 		return -1, err
 	}
 
-	return int(block.FeeMultiplier) * tx.Size(), nil
+	cosign := 0
+	if aggTx, ok := tx.(*AggregateTransaction); ok {
+		cosign = len(aggTx.Cosignatures) * AggregateCosignatureSize
+	}
+
+	return int(block.FeeMultiplier) * (tx.Size() + cosign), nil
 }

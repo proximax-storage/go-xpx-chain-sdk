@@ -131,6 +131,7 @@ type TransactionsPageOptions struct {
 	Type             []uint `url:"type[],omitempty"`
 	Embedded         bool   `url:"embedded,omitempty"`
 	PublicKey        bool   `url:"publicKey,omitempty"`
+	FirstLevel       bool   `url:"firstLevel"`
 	PaginationOrderingOptions
 }
 
@@ -1913,6 +1914,7 @@ func (tx *TransferTransaction) MessageSize() int {
 
 type HarvesterTransaction struct {
 	AbstractTransaction
+	HarvesterKey *PublicAccount
 }
 
 type HarvesterTransactionType EntityType
@@ -1923,7 +1925,10 @@ const (
 )
 
 // HarvesterTransaction creates new Harvester transaction
-func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, networkType NetworkType) (*HarvesterTransaction, error) {
+func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, harvesterKey *PublicAccount, networkType NetworkType) (*HarvesterTransaction, error) {
+	if harvesterKey == nil {
+		return nil, errors.New("harvesterKey must not be nil")
+	}
 	return &HarvesterTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Version:     HarvesterVersion,
@@ -1931,6 +1936,7 @@ func NewHarvesterTransaction(deadline *Deadline, htt HarvesterTransactionType, n
 			Type:        EntityType(htt),
 			NetworkType: networkType,
 		},
+		HarvesterKey: harvesterKey,
 	}, nil
 }
 
@@ -1942,13 +1948,21 @@ func (tx *HarvesterTransaction) String() string {
 	return fmt.Sprintf(
 		`
 			"AbstractTransaction": %s,
+			"HarvesterKey": %s
 		`,
 		tx.AbstractTransaction.String(),
+		tx.HarvesterKey.String(),
 	)
 }
 
 func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(0)
+
+	b, err := utils.HexDecodeStringOdd(tx.HarvesterKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	pV := transactions.TransactionBufferCreateByteVector(builder, b)
 
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
@@ -1958,6 +1972,7 @@ func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 	transactions.HarvesterTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+	transactions.HarvesterTransactionBufferAddHarvesterKey(builder, pV)
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
 
@@ -1965,7 +1980,7 @@ func (tx *HarvesterTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *HarvesterTransaction) Size() int {
-	return TransactionHeaderSize
+	return HarvesterTransactionSize
 }
 
 type ModifyMultisigAccountTransaction struct {
@@ -2704,12 +2719,14 @@ const (
 	MaxStringSize                            int = 2
 	SignerSize                                   = KeySize
 	SignatureSize                            int = 64
+	AggregateCosignatureSize                     = SignerSize + SignatureSize
 	HalfOfSignature                              = SignatureSize / 2
 	VersionSize                              int = 4
 	TypeSize                                 int = 2
 	MaxFeeSize                                   = BaseInt64Size
 	DeadLineSize                                 = BaseInt64Size
 	DurationSize                                 = BaseInt64Size
+	OpinionSizeSize                              = BaseInt64Size
 	StorageSizeSize                              = BaseInt64Size
 	TransactionHeaderSize                        = SizeSize + SignerSize + SignatureSize + VersionSize + TypeSize + MaxFeeSize + DeadLineSize
 	PropertyTypeSize                         int = 2
@@ -2783,63 +2800,114 @@ const (
 	DeployHeaderSize                             = TransactionHeaderSize + KeySize + KeySize + Hash256 + BaseInt64Size
 	StartExecuteHeaderSize                       = TransactionHeaderSize + KeySize + 1 + 1 + 2
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
+	BlsKeySize                               int = 48
+	BlsSignatureSize                         int = 96
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
+	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
+	DataModificationHeaderSize                   = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize + AmountSize
+	DataModificationCancelHeaderSize             = TransactionHeaderSize + KeySize + Hash256
+	StoragePaymentHeaderSize                     = TransactionHeaderSize + KeySize + AmountSize
+	DownloadPaymentHeaderSize                    = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize
+	ListOfPublicKeysSize                         = 2
+	DownloadHeaderSize                           = TransactionHeaderSize + KeySize + StorageSizeSize + AmountSize + ListOfPublicKeysSize
+	FinishDownloadHeaderSize                     = TransactionHeaderSize + Hash256 + AmountSize
+	VerificationPaymentHeaderSize                = TransactionHeaderSize + KeySize + AmountSize
+	ShardIdSize                                  = 2
+	KeyCountSize                                 = 1
+	JudgingKeyCountSize                          = 1
+	OverlappingKeyCountSize                      = 1
+	JudgedKeyCountSize                           = 1
+	OpinionElementCountSize                      = 2
+	EndDriveVerificationV2HeaderSize             = TransactionHeaderSize + KeySize + Hash256 + ShardIdSize + KeyCountSize + JudgingKeyCountSize
+	DataModificationApprovalHeaderSize           = TransactionHeaderSize + KeySize + Hash256 + Hash256 + 8 + 8 + 8
+	DataModificationSignleApprovalHeaderSize     = TransactionHeaderSize + KeySize + Hash256 + 1
+	DownloadApprovalHeaderSize                   = TransactionHeaderSize + Hash256 + Hash256 + JudgingKeyCountSize + OverlappingKeyCountSize + JudgedKeyCountSize + OpinionElementCountSize
+	DriveClosureHeaderSize                       = TransactionHeaderSize + KeySize
+	ReplicatorOffboardingHeaderSize              = TransactionHeaderSize + KeySize
+	CreateLiquidityProviderHeaderSize            = TransactionHeaderSize + MosaicIdSize + AmountSize + AmountSize + 4 + 2 + KeySize + 4 + 4
+	ManualRateChangeHeaderSize                   = TransactionHeaderSize + MosaicIdSize + 1 + AmountSize + 1 + AmountSize
+	HarvesterTransactionSize                     = TransactionHeaderSize + KeySize
+	SdaOffersCountSize                           = 1
+	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
+	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
+	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
+	RemoveSdaExchangeOfferHeaderSize             = TransactionHeaderSize + SdaOffersCountSize
 )
 
 type EntityType uint16
 
 const (
-	AccountPropertyAddress    EntityType = 0x4150
-	AccountPropertyMosaic     EntityType = 0x4250
-	AccountPropertyEntityType EntityType = 0x4350
-	AddressAlias              EntityType = 0x424e
-	AggregateBonded           EntityType = 0x4241
-	AggregateCompleted        EntityType = 0x4141
-	AddExchangeOffer          EntityType = 0x415D
-	AddHarvesterEntityType    EntityType = 0x4161
-	ExchangeOffer             EntityType = 0x425D
-	RemoveExchangeOffer       EntityType = 0x435D
-	RemoveHarvesterEntityType EntityType = 0x4261
-	Block                     EntityType = 0x8143
-	NemesisBlock              EntityType = 0x8043
-	NetworkConfigEntityType   EntityType = 0x4159
-	BlockchainUpgrade         EntityType = 0x4158
-	LinkAccount               EntityType = 0x414c
-	Lock                      EntityType = 0x4148
-	MetadataAddress           EntityType = 0x413d
-	MetadataMosaic            EntityType = 0x423d
-	MetadataNamespace         EntityType = 0x433d
-	AccountMetadata           EntityType = 0x413f
-	MosaicMetadata            EntityType = 0x423f
-	NamespaceMetadata         EntityType = 0x433f
-	ModifyContract            EntityType = 0x4157
-	ModifyMultisig            EntityType = 0x4155
-	MosaicAlias               EntityType = 0x434e
-	MosaicDefinition          EntityType = 0x414d
-	MosaicSupplyChange        EntityType = 0x424d
-	MosaicModifyLevy          EntityType = 0x434d
-	MosaicRemoveLevy          EntityType = 0x444d
-	RegisterNamespace         EntityType = 0x414e
-	SecretLock                EntityType = 0x4152
-	SecretProof               EntityType = 0x4252
-	Transfer                  EntityType = 0x4154
-	PrepareDrive              EntityType = 0x415A
-	JoinToDrive               EntityType = 0x425A
-	DriveFileSystem           EntityType = 0x435A
-	FilesDeposit              EntityType = 0x445A
-	EndDrive                  EntityType = 0x455A
-	DriveFilesReward          EntityType = 0x465A
-	StartDriveVerification    EntityType = 0x475A
-	EndDriveVerification      EntityType = 0x485A
-	StartFileDownload         EntityType = 0x495A
-	EndFileDownload           EntityType = 0x4A5A
-	OperationIdentify         EntityType = 0x415F
-	StartOperation            EntityType = 0x425F
-	EndOperation              EntityType = 0x435F
-	Deploy                    EntityType = 0x4160
-	StartExecute              EntityType = 0x4260
-	EndExecute                EntityType = 0x4360
-	SuperContractFileSystem   EntityType = 0x4460
-	Deactivate                EntityType = 0x4560
+	AccountPropertyAddress         EntityType = 0x4150
+	AccountPropertyMosaic          EntityType = 0x4250
+	AccountPropertyEntityType      EntityType = 0x4350
+	AddressAlias                   EntityType = 0x424e
+	AggregateBonded                EntityType = 0x4241
+	AggregateCompleted             EntityType = 0x4141
+	AddExchangeOffer               EntityType = 0x415D
+	AddHarvesterEntityType         EntityType = 0x4161
+	ExchangeOffer                  EntityType = 0x425D
+	RemoveExchangeOffer            EntityType = 0x435D
+	RemoveHarvesterEntityType      EntityType = 0x4261
+	Block                          EntityType = 0x8143
+	NemesisBlock                   EntityType = 0x8043
+	NetworkConfigEntityType        EntityType = 0x4159
+	BlockchainUpgrade              EntityType = 0x4158
+	LinkAccount                    EntityType = 0x414c
+	Lock                           EntityType = 0x4148
+	MetadataAddress                EntityType = 0x413d
+	MetadataMosaic                 EntityType = 0x423d
+	MetadataNamespace              EntityType = 0x433d
+	AccountMetadata                EntityType = 0x413f
+	MosaicMetadata                 EntityType = 0x423f
+	NamespaceMetadata              EntityType = 0x433f
+	ModifyContract                 EntityType = 0x4157
+	ModifyMultisig                 EntityType = 0x4155
+	MosaicAlias                    EntityType = 0x434e
+	MosaicDefinition               EntityType = 0x414d
+	MosaicSupplyChange             EntityType = 0x424d
+	MosaicModifyLevy               EntityType = 0x434d
+	MosaicRemoveLevy               EntityType = 0x444d
+	RegisterNamespace              EntityType = 0x414e
+	SecretLock                     EntityType = 0x4152
+	SecretProof                    EntityType = 0x4252
+	Transfer                       EntityType = 0x4154
+	PrepareDrive                   EntityType = 0x415A
+	JoinToDrive                    EntityType = 0x425A
+	DriveFileSystem                EntityType = 0x435A
+	FilesDeposit                   EntityType = 0x445A
+	EndDrive                       EntityType = 0x455A
+	DriveFilesReward               EntityType = 0x465A
+	StartDriveVerification         EntityType = 0x475A
+	EndDriveVerification           EntityType = 0x485A
+	StartFileDownload              EntityType = 0x495A
+	EndFileDownload                EntityType = 0x4A5A
+	OperationIdentify              EntityType = 0x415F
+	StartOperation                 EntityType = 0x425F
+	EndOperation                   EntityType = 0x435F
+	Deploy                         EntityType = 0x4160
+	StartExecute                   EntityType = 0x4260
+	EndExecute                     EntityType = 0x4360
+	SuperContractFileSystem        EntityType = 0x4460
+	Deactivate                     EntityType = 0x4560
+	ReplicatorOnboarding           EntityType = 0x4662
+	PrepareBcDrive                 EntityType = 0x4162
+	DataModification               EntityType = 0x4262
+	DataModificationApproval       EntityType = 0x4462
+	DataModificationSingleApproval EntityType = 0x4B62
+	DataModificationCancel         EntityType = 0x4562
+	StoragePayment                 EntityType = 0x4A62
+	DownloadPayment                EntityType = 0x4962
+	Download                       EntityType = 0x4362
+	FinishDownload                 EntityType = 0x4862
+	VerificationPayment            EntityType = 0x4C62
+	EndDriveVerificationV2         EntityType = 0x4F62
+	DownloadApproval               EntityType = 0x4D62
+	DriveClosure                   EntityType = 0x4E62
+	ReplicatorOffboarding          EntityType = 0x4762
+	CreateLiquidityProvider        EntityType = 0x4169
+	ManualRateChange               EntityType = 0x4269
+	PlaceSdaExchangeOffer          EntityType = 0x416A
+	RemoveSdaExchangeOffer         EntityType = 0x426A
 )
 
 func (t EntityType) String() string {
@@ -2898,6 +2966,24 @@ const (
 	OperationIdentifyVersion         EntityVersion = 1
 	SuperContractFileSystemVersion   EntityVersion = 1
 	DeactivateVersion                EntityVersion = 1
+	ReplicatorOnboardingVersion      EntityVersion = 1
+	PrepareBcDriveVersion            EntityVersion = 1
+	DataModificationVersion          EntityVersion = 1
+	DataModificationApprovalVersion  EntityVersion = 1 // TODO delete?
+	DataModificationCancelVersion    EntityVersion = 1
+	StoragePaymentVersion            EntityVersion = 1
+	DownloadPaymentVersion           EntityVersion = 1
+	DownloadVersion                  EntityVersion = 1
+	FinishDownloadVersion            EntityVersion = 1
+	VerificationPaymentVersion       EntityVersion = 1
+	EndDriveVerificationV2Version    EntityVersion = 1
+	DownloadApprovalVersion          EntityVersion = 1
+	DriveClosureVersion              EntityVersion = 1
+	ReplicatorOffboardingVersion     EntityVersion = 1
+	CreateLiquidityProviderVersion   EntityVersion = 1
+	ManualRateChangeVersion          EntityVersion = 1
+	PlaceSdaExchangeOfferVersion     EntityVersion = 1
+	RemoveSdaExchangeOfferVersion    EntityVersion = 1
 )
 
 type AccountLinkAction uint8
@@ -3161,6 +3247,44 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &driveFileSystemTransactionDTO{}
 	case Deactivate:
 		dto = &deactivateTransactionDTO{}
+	case ReplicatorOnboarding:
+		dto = &replicatorOnboardingTransactionDTO{}
+	case PrepareBcDrive:
+		dto = &prepareBcDriveTransactionDTO{}
+	case DataModification:
+		dto = &dataModificationTransactionDTO{}
+	case DataModificationApproval:
+		dto = &dataModificationApprovalTransactionDTO{}
+	case DataModificationSingleApproval:
+		dto = &dataModificationSingleApprovalTransactionDTO{}
+	case DataModificationCancel:
+		dto = &dataModificationCancelTransactionDTO{}
+	case StoragePayment:
+		dto = &storagePaymentTransactionDTO{}
+	case DownloadPayment:
+		dto = &downloadPaymentTransactionDTO{}
+	case Download:
+		dto = &downloadTransactionDTO{}
+	case FinishDownload:
+		dto = &finishDownloadTransactionDTO{}
+	case VerificationPayment:
+		dto = &verificationPaymentTransactionDTO{}
+	case EndDriveVerificationV2:
+		dto = &endDriveVerificationTransactionV2DTO{}
+	case DriveClosure:
+		dto = &driveClosureTransactionDTO{}
+	case ReplicatorOffboarding:
+		dto = &replicatorOffboardingTransactionDTO{}
+	case DownloadApproval:
+		dto = &downloadApprovalTransactionDTO{}
+	case CreateLiquidityProvider:
+		dto = &createLiquidityProviderTransactionDTO{}
+	case ManualRateChange:
+		dto = &manualRateChangeTransactionDTO{}
+	case PlaceSdaExchangeOffer:
+		dto = &placeSdaOfferTransactionDTO{}
+	case RemoveSdaExchangeOffer:
+		dto = &removeSdaExchangeOfferTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
