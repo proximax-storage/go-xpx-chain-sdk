@@ -1,4 +1,4 @@
-// Copyright 2021 ProximaX Limited. All rights reserved.
+// Copyright 2023 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
@@ -206,9 +206,13 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	transactions.ManualCallTransactionBufferAddContractKey(builder, contractKeyV)
 	transactions.ManualCallTransactionBufferAddExecutionCallPayment(builder, executionCallPayment)
 	transactions.ManualCallTransactionBufferAddDownloadCallPayment(builder, downloadCallPayment)
+	transactions.ManualCallTransactionBufferAddFileNameSize(builder, uint16(len(tx.FileName)))
 	transactions.ManualCallTransactionBufferAddFileName(builder, fileName)
+	transactions.ManualCallTransactionBufferAddFunctionNameSize(builder, uint16(len(tx.FunctionName)))
 	transactions.ManualCallTransactionBufferAddFunctionName(builder, functionName)
+	transactions.ManualCallTransactionBufferAddActualArgumentsSize(builder, uint16(len(tx.ActualArguments)))
 	transactions.ManualCallTransactionBufferAddActualArguments(builder, actualArgV)
+	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ActualArguments)))
 	transactions.ManualCallTransactionBufferAddServicePayments(builder, mV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -371,11 +375,17 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	transactions.DeployContractTransactionBufferAddAutomaticDownloadCallPayment(builder, automaticDownloadCallPayment)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionsNumber(builder, tx.AutomaticExecutionsNumber)
 	transactions.DeployContractTransactionBufferAddAssignee(builder, assigneeV)
+	transactions.DeployContractTransactionBufferAddFileNameSize(builder, uint16(len(tx.FileName)))
 	transactions.DeployContractTransactionBufferAddFileName(builder, fileName)
+	transactions.DeployContractTransactionBufferAddFunctionNameSize(builder, uint16(len(tx.FunctionName)))
 	transactions.DeployContractTransactionBufferAddFunctionName(builder, functionName)
+	transactions.DeployContractTransactionBufferAddActualArgumentsSize(builder, uint16(len(tx.ActualArguments)))
 	transactions.DeployContractTransactionBufferAddActualArguments(builder, actualArgV)
+	transactions.DeployContractTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ActualArguments)))
 	transactions.DeployContractTransactionBufferAddServicePayments(builder, mV)
+	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileNameSize(builder, uint16(len(tx.AutomaticExecutionFileName)))
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileName(builder, automaticExecutionFileName)
+	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionNameSize(builder, uint16(len(tx.AutomaticExecutionFunctionName)))
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionName(builder, automaticExecutionFunctionName)
 
 	t := transactions.TransactionBufferEnd(builder)

@@ -1,4 +1,4 @@
-// Copyright 2021 ProximaX Limited. All rights reserved.
+// Copyright 2023 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
@@ -481,7 +481,7 @@ type extendedCallDigestDTOs []extendedCallDigestDTO
 
 func (ref *extendedCallDigestDTOs) toStruct(networkType NetworkType) ([]*ExtendedCallDigest, error) {
 	var (
-		dtos  = *ref
+		dtos                = *ref
 		extendedCallDigests = make([]*ExtendedCallDigest, 0, len(dtos))
 	)
 
@@ -552,7 +552,7 @@ type shortCallDigestDTOs []shortCallDigestDTO
 
 func (ref *shortCallDigestDTOs) toStruct(networkType NetworkType) ([]*ShortCallDigest, error) {
 	var (
-		dtos  = *ref
+		dtos             = *ref
 		shortCallDigests = make([]*ShortCallDigest, 0, len(dtos))
 	)
 
@@ -567,7 +567,6 @@ func (ref *shortCallDigestDTOs) toStruct(networkType NetworkType) ([]*ShortCallD
 
 	return shortCallDigests, nil
 }
-
 
 type endBatchExecutionDTO struct {
 	ContractKey                         string                   `json:"contractKey"`

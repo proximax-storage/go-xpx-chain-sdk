@@ -1,4 +1,4 @@
-// Copyright 2021 ProximaX Limited. All rights reserved.
+// Copyright 2023 ProximaX Limited. All rights reserved.
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
@@ -22,7 +22,6 @@ func (s *SuperContractV2Service) GetSuperContractV2(ctx context.Context, superCo
 	url := net.NewUrl(fmt.Sprintf(superContractRouteV2, superContractKey.PublicKey))
 
 	dto := &superContractV2DTO{}
-
 
 	resp, err := s.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
 	if err != nil {

@@ -825,13 +825,16 @@ func (rcv *DeployContractTransactionBuffer) MutateActualArguments(j int, n byte)
 	return false
 }
 
-func (rcv *DeployContractTransactionBuffer) ServicePayments(j int) uint32 {
+func (rcv *DeployContractTransactionBuffer) ServicePayments(obj *MosaicBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(50))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
 func (rcv *DeployContractTransactionBuffer) ServicePaymentsLength() int {
@@ -840,15 +843,6 @@ func (rcv *DeployContractTransactionBuffer) ServicePaymentsLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
-}
-
-func (rcv *DeployContractTransactionBuffer) MutateServicePayments(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(50))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
 }
 
 func (rcv *DeployContractTransactionBuffer) AutomaticExecutionFileName(j int) byte {
@@ -1471,13 +1465,16 @@ func (rcv *ManualCallTransactionBuffer) MutateActualArguments(j int, n byte) boo
 	return false
 }
 
-func (rcv *ManualCallTransactionBuffer) ServicePayments(j int) uint32 {
+func (rcv *ManualCallTransactionBuffer) ServicePayments(obj *MosaicBuffer, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetUint32(a + flatbuffers.UOffsetT(j*4))
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
 	}
-	return 0
+	return false
 }
 
 func (rcv *ManualCallTransactionBuffer) ServicePaymentsLength() int {
@@ -1486,15 +1483,6 @@ func (rcv *ManualCallTransactionBuffer) ServicePaymentsLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
-}
-
-func (rcv *ManualCallTransactionBuffer) MutateServicePayments(j int, n uint32) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(38))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateUint32(a+flatbuffers.UOffsetT(j*4), n)
-	}
-	return false
 }
 
 func ManualCallTransactionBufferStart(builder *flatbuffers.Builder) {
