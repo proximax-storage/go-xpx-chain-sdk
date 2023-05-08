@@ -285,7 +285,7 @@ type ManualCallTransaction struct {
 	FileName             string
 	FunctionName         string
 	ActualArguments      []byte
-	ServicePayments      []*MosaicId
+	ServicePayments      []*Mosaic
 }
 
 // Deploy Contract Transaction
@@ -301,7 +301,7 @@ type DeployContractTransaction struct {
 	FileName                       string
 	FunctionName                   string
 	ActualArguments                []byte
-	ServicePayments                []*MosaicId
+	ServicePayments                []*Mosaic
 	AutomaticExecutionFileName     string
 	AutomaticExecutionFunctionName string
 }

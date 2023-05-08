@@ -40,7 +40,12 @@ func manualCallTransactionSchema() *schema {
 			newArrayAttribute("fileName", ByteSize),
 			newArrayAttribute("functionName", ByteSize),
 			newArrayAttribute("actualArguments", ByteSize),
-			newArrayAttribute("servicePayments", IntSize),
+			newTableArrayAttribute("servicePayments", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
 		},
 	}
 }
@@ -71,7 +76,12 @@ func deployContractTransactionSchema() *schema {
 			newArrayAttribute("fileName", ByteSize),
 			newArrayAttribute("functionName", ByteSize),
 			newArrayAttribute("actualArguments", ByteSize),
-			newArrayAttribute("servicePayments", IntSize),
+			newTableArrayAttribute("servicePayments", schema{
+				[]schemaAttribute{
+					newArrayAttribute("id", IntSize),
+					newArrayAttribute("amount", IntSize),
+				},
+			}.schemaDefinition),
 			newArrayAttribute("automaticExecutionFileName", ByteSize),
 			newArrayAttribute("automaticExecutionFunctionName", ByteSize),
 		},
