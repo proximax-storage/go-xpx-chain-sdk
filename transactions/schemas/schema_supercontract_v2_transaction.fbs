@@ -14,14 +14,19 @@ table DeployContractTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     driveKey: [ubyte];
-    fileNameSize: ushort;
-    functionNameSize: ushort;
-    actualArgumentsSize: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    fileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    functionNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    actualArgumentsSize: [ubyte];
     executionCallPayment: [uint];
     downloadCallPayment: [uint];
     servicePaymentsCount: ubyte;
-    automaticExecutionFileNameSize: ushort;
-    automaticExecutionFunctionNameSize: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    automaticExecutionFileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    automaticExecutionFunctionNameSize: [ubyte];
     automaticExecutionCallPayment: [uint];
     automaticDownloadCallPayment: [uint];
     automaticExecutionsNumber: uint;
@@ -55,9 +60,12 @@ table ManualCallTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     contractKey: [ubyte];
-    fileNameSize: ushort;
-    functionNameSize: ushort;
-    actualArgumentsSize: ushort;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    fileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    functionNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    actualArgumentsSize: [ubyte];
     executionCallPayment: [uint];
     downloadCallPayment: [uint];
     servicePaymentsCount: ubyte;

@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+
 	"github.com/google/flatbuffers/go"
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )

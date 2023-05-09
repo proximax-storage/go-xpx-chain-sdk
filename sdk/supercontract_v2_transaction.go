@@ -5,6 +5,7 @@
 package sdk
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 
@@ -193,11 +194,22 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	actualArgV := builder.CreateByteVector(tx.ActualArguments)
-
 	contractKeyV := transactions.TransactionBufferCreateByteVector(builder, contractKeyB)
 	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder,
 		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ServicePayments)
+	actualArgV := transactions.TransactionBufferCreateByteVector(builder, tx.ActualArguments)
+
+	fileNameSizeBuf := make([]byte, FileNameSize)
+	binary.LittleEndian.PutUint16(fileNameSizeBuf, uint16(len(tx.FileName)))
+	fileNameSizeV := transactions.TransactionBufferCreateByteVector(builder, fileNameSizeBuf)
+
+	functionNameSizeBuf := make([]byte, FunctionNameSize)
+	binary.LittleEndian.PutUint16(functionNameSizeBuf, uint16(len(tx.FunctionName)))
+	functionNameSizeV := transactions.TransactionBufferCreateByteVector(builder, functionNameSizeBuf)
+
+	actualArgumentsSizeBuf := make([]byte, ActualArgumentsSize)
+	binary.LittleEndian.PutUint16(actualArgumentsSizeBuf, uint16(len(tx.ActualArguments)))
+	actualArgumentsSizeV := transactions.TransactionBufferCreateByteVector(builder, actualArgumentsSizeBuf)
 
 	transactions.ManualCallTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
@@ -206,13 +218,13 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	transactions.ManualCallTransactionBufferAddContractKey(builder, contractKeyV)
 	transactions.ManualCallTransactionBufferAddExecutionCallPayment(builder, executionCallPayment)
 	transactions.ManualCallTransactionBufferAddDownloadCallPayment(builder, downloadCallPayment)
-	transactions.ManualCallTransactionBufferAddFileNameSize(builder, uint16(len(tx.FileName)))
+	transactions.ManualCallTransactionBufferAddFileNameSize(builder, fileNameSizeV)
 	transactions.ManualCallTransactionBufferAddFileName(builder, fileName)
-	transactions.ManualCallTransactionBufferAddFunctionNameSize(builder, uint16(len(tx.FunctionName)))
+	transactions.ManualCallTransactionBufferAddFunctionNameSize(builder, functionNameSizeV)
 	transactions.ManualCallTransactionBufferAddFunctionName(builder, functionName)
-	transactions.ManualCallTransactionBufferAddActualArgumentsSize(builder, uint16(len(tx.ActualArguments)))
+	transactions.ManualCallTransactionBufferAddActualArgumentsSize(builder, actualArgumentsSizeV)
 	transactions.ManualCallTransactionBufferAddActualArguments(builder, actualArgV)
-	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ActualArguments)))
+	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ServicePayments)))
 	transactions.ManualCallTransactionBufferAddServicePayments(builder, mV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -222,7 +234,11 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *ManualCallTransaction) Size() int {
-	return ManualCallHeaderSize
+	return ManualCallHeaderSize +
+		len([]byte(tx.FileName)) +
+		len([]byte(tx.FunctionName)) +
+		len(tx.ActualArguments) +
+		len(tx.ServicePayments)*(MosaicIdSize+AmountSize)
 }
 
 type manualCallTransactionDTO struct {
@@ -354,19 +370,37 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	executionCallPayment, downloadCallPayment, fileName, functionName, mV := parseData(builder,
 		&tx.ExecutionCallPayment, &tx.DownloadCallPayment, tx.FileName, tx.FunctionName, tx.ServicePayments)
 
-	automaticExecutionFileBytes := []byte(tx.FileName)
-	automaticExecutionFileName := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionFileBytes)
-	automaticExecutionFunction := []byte(tx.FileName)
-	automaticExecutionFunctionName := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionFunction)
+	actualArgV := transactions.TransactionBufferCreateByteVector(builder, tx.ActualArguments)
+
+	automaticExecutionFileName := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.AutomaticExecutionFileName))
+	automaticExecutionFunctionName := transactions.TransactionBufferCreateByteVector(builder, []byte(tx.AutomaticExecutionFunctionName))
 
 	automaticExecutionCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticExecutionCallPayment.toArray())
 	automaticDownloadCallPayment := transactions.TransactionBufferCreateUint32Vector(builder, tx.AutomaticDownloadCallPayment.toArray())
 
+	fileNameSizeBuf := make([]byte, FileNameSize)
+	binary.LittleEndian.PutUint16(fileNameSizeBuf, uint16(len(tx.FileName)))
+	fileNameSizeV := transactions.TransactionBufferCreateByteVector(builder, fileNameSizeBuf)
+
+	functionNameSizeBuf := make([]byte, FunctionNameSize)
+	binary.LittleEndian.PutUint16(functionNameSizeBuf, uint16(len(tx.FunctionName)))
+	functionNameSizeV := transactions.TransactionBufferCreateByteVector(builder, functionNameSizeBuf)
+
+	actualArgumentsSizeBuf := make([]byte, ActualArgumentsSize)
+	binary.LittleEndian.PutUint16(actualArgumentsSizeBuf, uint16(len(tx.ActualArguments)))
+	actualArgumentsSizeV := transactions.TransactionBufferCreateByteVector(builder, actualArgumentsSizeBuf)
+
+	automaticExecutionsFileSizeBuf := make([]byte, AutomaticExecutionsFileNameSize)
+	binary.LittleEndian.PutUint16(automaticExecutionsFileSizeBuf, uint16(len(tx.AutomaticExecutionFileName)))
+	automaticExecutionsFileSizeV := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionsFileSizeBuf)
+
+	automaticExecutionsFunctionNameSizeBuf := make([]byte, AutomaticExecutionsFunctionNameSize)
+	binary.LittleEndian.PutUint16(automaticExecutionsFunctionNameSizeBuf, uint16(len(tx.AutomaticExecutionFunctionName)))
+	automaticExecutionsFunctionNameSizeV := transactions.TransactionBufferCreateByteVector(builder, automaticExecutionsFunctionNameSizeBuf)
+
 	transactions.DeployContractTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
-
-	actualArgV := builder.CreateByteVector(tx.ActualArguments)
 
 	transactions.DeployContractTransactionBufferAddDriveKey(builder, driveKeyV)
 	transactions.DeployContractTransactionBufferAddExecutionCallPayment(builder, executionCallPayment)
@@ -375,17 +409,17 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 	transactions.DeployContractTransactionBufferAddAutomaticDownloadCallPayment(builder, automaticDownloadCallPayment)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionsNumber(builder, tx.AutomaticExecutionsNumber)
 	transactions.DeployContractTransactionBufferAddAssignee(builder, assigneeV)
-	transactions.DeployContractTransactionBufferAddFileNameSize(builder, uint16(len(tx.FileName)))
+	transactions.DeployContractTransactionBufferAddFileNameSize(builder, fileNameSizeV)
 	transactions.DeployContractTransactionBufferAddFileName(builder, fileName)
-	transactions.DeployContractTransactionBufferAddFunctionNameSize(builder, uint16(len(tx.FunctionName)))
+	transactions.DeployContractTransactionBufferAddFunctionNameSize(builder, functionNameSizeV)
 	transactions.DeployContractTransactionBufferAddFunctionName(builder, functionName)
-	transactions.DeployContractTransactionBufferAddActualArgumentsSize(builder, uint16(len(tx.ActualArguments)))
+	transactions.DeployContractTransactionBufferAddActualArgumentsSize(builder, actualArgumentsSizeV)
 	transactions.DeployContractTransactionBufferAddActualArguments(builder, actualArgV)
-	transactions.DeployContractTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ActualArguments)))
+	transactions.DeployContractTransactionBufferAddServicePaymentsCount(builder, uint8(len(tx.ServicePayments)))
 	transactions.DeployContractTransactionBufferAddServicePayments(builder, mV)
-	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileNameSize(builder, uint16(len(tx.AutomaticExecutionFileName)))
+	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileNameSize(builder, automaticExecutionsFileSizeV)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFileName(builder, automaticExecutionFileName)
-	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionNameSize(builder, uint16(len(tx.AutomaticExecutionFunctionName)))
+	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionNameSize(builder, automaticExecutionsFunctionNameSizeV)
 	transactions.DeployContractTransactionBufferAddAutomaticExecutionFunctionName(builder, automaticExecutionFunctionName)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -395,7 +429,13 @@ func (tx *DeployContractTransaction) Bytes() ([]byte, error) {
 }
 
 func (tx *DeployContractTransaction) Size() int {
-	return DeployContractHeaderSize
+	return DeployContractHeaderSize +
+		len(tx.FileName) +
+		len(tx.FunctionName) +
+		len(tx.AutomaticExecutionFileName) +
+		len(tx.AutomaticExecutionFunctionName) +
+		len(tx.ActualArguments) +
+		len(tx.ServicePayments)*(MosaicIdSize+AmountSize)
 }
 
 type deployContractTransactionDTO struct {
