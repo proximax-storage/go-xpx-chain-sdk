@@ -15,7 +15,7 @@ func automaticExecutionsPaymentTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("contractKey", ByteSize),
-			newArrayAttribute("automaticExecutionsNumber", IntSize),
+			newScalarAttribute("automaticExecutionsNumber", IntSize),
 		},
 	}
 }
