@@ -35,7 +35,7 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 ```shell
 ./lp create -url=http://127.0.0.1:3000 -feeStrategy=middle -sender=0000000000000000000000000000000000000000000000000000000000000000 \
-            -mosaic=0x6C5D687508AC9D75 -initial=100000 -deposit=100000 -slashingPeriod=500 -ws=5 -a=500 -b=500 -slashingAcc=0000000000000000000000000000000000000000000000000000000000000000
+            -mosaic=6C5D687508AC9D75 -initial=100000 -deposit=100000 -slashingPeriod=500 -ws=5 -a=500 -b=500 -slashingAcc=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 ### Change Command
@@ -54,5 +54,5 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 ```shell
 ./lp create -url=http://127.0.0.1:3000 -feeStrategy=middle -sender=0000000000000000000000000000000000000000000000000000000000000000 \
-            -mosaic=0x6C5D687508AC9D75 -currencyBalanceIncrease -currencyBalanceChange=100 -mosaicBalanceIncrease -mosaicBalanceChange=200
+            -mosaic=6C5D687508AC9D75 -currencyBalanceIncrease -currencyBalanceChange=100 -mosaicBalanceIncrease -mosaicBalanceChange=200
 ```
