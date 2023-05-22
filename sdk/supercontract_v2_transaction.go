@@ -162,8 +162,8 @@ func NewManualCallTransaction(
 	tx := ManualCallTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Deadline:    deadline,
-			Version:     AutomaticExecutionsPaymentVersion,
-			Type:        AutomaticExecutionsPayment,
+			Version:     ManuanCallVersion,
+			Type:        ManualCall,
 			NetworkType: networkType,
 		},
 		ContractKey:          contractKey,
@@ -224,7 +224,7 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 	transactions.ManualCallTransactionBufferAddFunctionName(builder, functionName)
 	transactions.ManualCallTransactionBufferAddActualArgumentsSize(builder, actualArgumentsSizeV)
 	transactions.ManualCallTransactionBufferAddActualArguments(builder, actualArgV)
-	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, byte(len(tx.ServicePayments)))
+	transactions.ManualCallTransactionBufferAddServicePaymentsCount(builder, uint8(len(tx.ServicePayments)))
 	transactions.ManualCallTransactionBufferAddServicePayments(builder, mV)
 
 	t := transactions.TransactionBufferEnd(builder)
@@ -235,8 +235,8 @@ func (tx *ManualCallTransaction) Bytes() ([]byte, error) {
 
 func (tx *ManualCallTransaction) Size() int {
 	return ManualCallHeaderSize +
-		len([]byte(tx.FileName)) +
-		len([]byte(tx.FunctionName)) +
+		len(tx.FileName) +
+		len(tx.FunctionName) +
 		len(tx.ActualArguments) +
 		len(tx.ServicePayments)*(MosaicIdSize+AmountSize)
 }
