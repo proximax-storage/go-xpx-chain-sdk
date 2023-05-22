@@ -361,7 +361,7 @@ type BlockchainConfigPage struct {
 
 type BlockchainConfigPageOptions struct {
 	Height    *Height `json:"height"`
-	MinHeight *Height `json:"mingHeight"`
+	MinHeight *Height `json:"minHeight"`
 	Operator  string  `json:"operator"`
 	PaginationOrderingOptions
 }
