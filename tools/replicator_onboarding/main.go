@@ -31,7 +31,7 @@ var (
 func main() {
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
 	capacity := flag.Uint64("capacity", 0, "capacity of replicator")
-	feeStrategy := flag.String("url", middle, "fee calculation strategy (low, middle, high)")
+	feeStrategy := flag.String("feeStrategy", middle, "fee calculation strategy (low, middle, high)")
 	replicatorPrivateKey := flag.String("privateKey", "", "Replicator private key")
 	flag.Parse()
 
