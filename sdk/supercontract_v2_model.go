@@ -8,8 +8,8 @@ import "fmt"
 
 // drive contract entry (will be implement in the future)
 // type DriveContract struct {
-// 	DriveContractKey 				*PublicAccount
-// 	ContractKey 					*PublicAccount
+// 	DriveContractKey 				*Account
+// 	ContractKey 					*Account
 // }
 
 // func (driveContract *DriveContract) String() string {
@@ -40,13 +40,14 @@ import "fmt"
 
 // supercontract entry
 type AutomaticExecutionsInfo struct {
-	AutomaticExecutionFileName          string
-	AutomaticExecutionsFunctionName     string
-	AutomaticExecutionsNextBlockToCheck Height
-	AutomaticExecutionCallPayment       Amount
-	AutomaticDownloadCallPayment        Amount
-	AutomatedExecutionsNumber           uint32
-	AutomaticExecutionsPrepaidSince     Height
+	AutomaticExecutionFileName              string
+	AutomaticExecutionsFunctionName         string
+	AutomaticExecutionsNextBlockToCheck     Height
+	AutomaticExecutionCallPayment           Amount
+	AutomaticDownloadCallPayment            Amount
+	AutomatedExecutionsNumber               uint32
+	AutomaticExecutionsPrepaidSinceHasValue bool
+	AutomaticExecutionsPrepaidSince         Height
 }
 
 func (executionsInfo *AutomaticExecutionsInfo) String() string {
@@ -58,6 +59,7 @@ func (executionsInfo *AutomaticExecutionsInfo) String() string {
 			"AutomaticExecutionCallPayment": %d,
 			"AutomaticDownloadCallPayment": %d,
 			"AutomatedExecutionsNumber": %d,
+			"AutomaticExecutionsPrepaidSinceHasValue": %t,
 			"AutomaticExecutionsPrepaidSince": %d,
 		`,
 		executionsInfo.AutomaticExecutionFileName,
@@ -66,23 +68,8 @@ func (executionsInfo *AutomaticExecutionsInfo) String() string {
 		executionsInfo.AutomaticExecutionCallPayment,
 		executionsInfo.AutomaticDownloadCallPayment,
 		executionsInfo.AutomatedExecutionsNumber,
+		executionsInfo.AutomaticExecutionsPrepaidSinceHasValue,
 		executionsInfo.AutomaticExecutionsPrepaidSince,
-	)
-}
-
-type ServicePayment struct {
-	MosaicId *MosaicId
-	Amount   Amount
-}
-
-func (servicePayment *ServicePayment) String() string {
-	return fmt.Sprintf(
-		`
-			"MosaicId": %s,
-			"Amount": %s,
-		`,
-		servicePayment.MosaicId,
-		servicePayment.Amount,
 	)
 }
 
@@ -94,7 +81,7 @@ type ContractCall struct {
 	ActualArguments      []byte
 	ExecutionCallPayment Amount
 	DownloadCallPayment  Amount
-	ServicePayments      []*ServicePayment
+	ServicePayments      []*Mosaic
 	BlockHeight          Height
 }
 
@@ -151,7 +138,7 @@ type ExecutorInfo struct {
 func (executorInfo *ExecutorInfo) String() string {
 	return fmt.Sprintf(
 		`
-			"ExecutorKey": %s,
+			"Key": %s,
 			"NextBatchToApprove": %d,
 			"PoEx": %+v,
 		`,
@@ -209,9 +196,9 @@ func (batch *Batch) String() string {
 }
 
 type SuperContractV2 struct {
-	SuperContractKey                *PublicAccount
-	DriveKey                        *PublicAccount
-	ExecutionPaymentKey             *PublicAccount
+	Account                         *PublicAccount
+	DriveAccount                    *PublicAccount
+	ExecutionPaymentAccount         *PublicAccount
 	Assignee                        *PublicAccount
 	Creator                         *PublicAccount
 	DeploymentBaseModificationsInfo *Hash
@@ -225,21 +212,21 @@ type SuperContractV2 struct {
 func (superContractV2 *SuperContractV2) String() string {
 	return fmt.Sprintf(
 		`
-			"SuperContractKey": %s,
-			"DriveKey": %s,
-			"ExecutionPaymentKey": %s,
+			"Account": %s,
+			"DriveAccount": %s,
+			"ExecutionPaymentAccount": %s,
 			"Assignee": %s,
 			"Creator": %s,
-			"DeploymentBaseModificationsInfo": %s,
+			"DeploymentBaseModificationId": %s,
 			"AutomaticExecutionsInfo": %+v,
 			"RequestedCalls": %+v,
 			"ExecutorsInfo": %+v,
 			"Batches": %+v,
 			"ReleasedTransactions": %v,
 		`,
-		superContractV2.SuperContractKey,
-		superContractV2.DriveKey,
-		superContractV2.ExecutionPaymentKey,
+		superContractV2.Account,
+		superContractV2.DriveAccount,
+		superContractV2.ExecutionPaymentAccount,
 		superContractV2.Assignee,
 		superContractV2.Creator,
 		superContractV2.DeploymentBaseModificationsInfo,
@@ -365,7 +352,7 @@ type CallPayment struct {
 func (callPayment *CallPayment) String() string {
 	return fmt.Sprintf(
 		`
-			"ExecutionPayment": %d,
+			"ExecutionPaymentAccount": %d,
 			"DownloadPayment": %d,
 		`,
 		callPayment.ExecutionPayment,

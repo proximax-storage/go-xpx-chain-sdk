@@ -7,82 +7,57 @@ package sdk
 import "fmt"
 
 type automaticExecutionsInfoDTO struct {
-	AutomaticExecutionFileName          string    `json:"automaticExecutionFileName"`
-	AutomaticExecutionsFunctionName     string    `json:"automaticExecutionsFunctionName"`
-	AutomaticExecutionsNextBlockToCheck uint64DTO `json:"automaticExecutionsNextBlockToCheck"`
-	AutomaticExecutionCallPayment       uint64DTO `json:"automaticExecutionCallPayment"`
-	AutomaticDownloadCallPayment        uint64DTO `json:"automaticDownloadCallPayment"`
-	AutomatedExecutionsNumber           uint32    `json:"automatedExecutionsNumber"`
-	AutomaticExecutionsPrepaidSince     uint64DTO `json:"automaticExecutionsPrepaidSince"`
+	AutomaticExecutionFileName              string    `json:"automaticExecutionsFileName"`
+	AutomaticExecutionsFunctionName         string    `json:"automaticExecutionsFunctionName"`
+	AutomaticExecutionsNextBlockToCheck     uint64DTO `json:"automaticExecutionsNextBlockToCheck"`
+	AutomaticExecutionCallPayment           uint64DTO `json:"automaticExecutionCallPayment"`
+	AutomaticDownloadCallPayment            uint64DTO `json:"automaticDownloadCallPayment"`
+	AutomatedExecutionsNumber               uint32    `json:"automatedExecutionsNumber"`
+	AutomaticExecutionsPrepaidSinceHasValue uint8     `json:"automaticExecutionsPrepaidSinceHasValue"`
+	AutomaticExecutionsPrepaidSince         uint64DTO `json:"automaticExecutionsPrepaidSince"`
 }
 
 func (ref *automaticExecutionsInfoDTO) toStruct(networkType NetworkType) (*AutomaticExecutionsInfo, error) {
+	has := false
+	if ref.AutomaticExecutionsPrepaidSinceHasValue != 0 {
+		has = true
+	}
 
 	return &AutomaticExecutionsInfo{
-		AutomaticExecutionFileName:          ref.AutomaticExecutionFileName,
-		AutomaticExecutionsFunctionName:     ref.AutomaticExecutionsFunctionName,
-		AutomaticExecutionsNextBlockToCheck: ref.AutomaticExecutionsNextBlockToCheck.toStruct(),
-		AutomaticExecutionCallPayment:       ref.AutomaticExecutionCallPayment.toStruct(),
-		AutomaticDownloadCallPayment:        ref.AutomaticDownloadCallPayment.toStruct(),
-		AutomatedExecutionsNumber:           ref.AutomatedExecutionsNumber,
-		AutomaticExecutionsPrepaidSince:     ref.AutomaticExecutionsPrepaidSince.toStruct(),
+		AutomaticExecutionFileName:              ref.AutomaticExecutionFileName,
+		AutomaticExecutionsFunctionName:         ref.AutomaticExecutionsFunctionName,
+		AutomaticExecutionsNextBlockToCheck:     ref.AutomaticExecutionsNextBlockToCheck.toStruct(),
+		AutomaticExecutionCallPayment:           ref.AutomaticExecutionCallPayment.toStruct(),
+		AutomaticDownloadCallPayment:            ref.AutomaticDownloadCallPayment.toStruct(),
+		AutomatedExecutionsNumber:               ref.AutomatedExecutionsNumber,
+		AutomaticExecutionsPrepaidSinceHasValue: has,
+		AutomaticExecutionsPrepaidSince:         ref.AutomaticExecutionsPrepaidSince.toStruct(),
 	}, nil
-}
-
-type servicePaymentDTO struct {
-	MosaicId uint64DTO `json:"mosaicId"`
-	Amount   uint64DTO `json:"amount"`
-}
-
-func (ref *servicePaymentDTO) toStruct(NetworkType NetworkType) (*ServicePayment, error) {
-
-	mosaicId, err := NewMosaicId(ref.MosaicId.toUint64())
-	if err != nil {
-		return nil, err
-	}
-
-	return &ServicePayment{
-		MosaicId: mosaicId,
-		Amount:   ref.Amount.toStruct(),
-	}, nil
-}
-
-type servicePaymentDtos []*servicePaymentDTO
-
-func (ref *servicePaymentDtos) toStruct(networkType NetworkType) ([]*ServicePayment, error) {
-	var (
-		dtos            = *ref
-		servicePayments = make([]*ServicePayment, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
-		if err != nil {
-			return nil, err
-		}
-
-		servicePayments = append(servicePayments, info)
-	}
-
-	return servicePayments, nil
 }
 
 type contractCallDTO struct {
-	CallId               hashDto            `json:"callId"`
-	Caller               string             `json:"caller"`
-	FileName             string             `json:"fileName"`
-	FunctionName         string             `json:"functionName"`
-	ActualArguments      string             `json:"actualArguments"`
-	ExecutionCallPayment uint64DTO          `json:"executionCallPayment"`
-	DownloadCallPayment  uint64DTO          `json:"downloadCallPayment"`
-	ServicePayments      servicePaymentDtos `json:"servicePayments"`
-	BlockHeight          uint64DTO          `json:"blockHeight"`
+	CallId               hashDto      `json:"callId"`
+	Caller               string       `json:"caller"`
+	FileName             string       `json:"fileName"`
+	FunctionName         string       `json:"functionName"`
+	ActualArguments      string       `json:"actualArguments"`
+	ExecutionCallPayment uint64DTO    `json:"executionCallPayment"`
+	DownloadCallPayment  uint64DTO    `json:"downloadCallPayment"`
+	ServicePayments      []*mosaicDTO `json:"servicePayments"`
+	BlockHeight          uint64DTO    `json:"blockHeight"`
 }
 
 func (ref *contractCallDTO) toStruct(networkType NetworkType) (*ContractCall, error) {
-	servicePayments, err := ref.ServicePayments.toStruct(networkType)
-	if err != nil {
-		return nil, err
+	var (
+		servicePayments = make([]*Mosaic, len(ref.ServicePayments))
+		err             error
+	)
+
+	for idx, m := range ref.ServicePayments {
+		servicePayments[idx], err = m.toStruct()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	callId, err := ref.CallId.Hash()
@@ -143,9 +118,9 @@ func (ref *proofOfExecutionDTO) toStruct(networkType NetworkType) (*ProofOfExecu
 }
 
 type executorInfoDTO struct {
-	ExecutorKey        string              `json:"executorKey"`
+	Key                string              `json:"replicatorKey"`
 	NextBatchToApprove uint64DTO           `json:"nextBatchToApprove"`
-	ProofOfExecution   proofOfExecutionDTO `json:"proofOfExecution"`
+	ProofOfExecution   proofOfExecutionDTO `json:"poEx"`
 }
 
 func (ref *executorInfoDTO) toStruct(networkType NetworkType) (*ExecutorInfo, error) {
@@ -154,7 +129,7 @@ func (ref *executorInfoDTO) toStruct(networkType NetworkType) (*ExecutorInfo, er
 		return nil, err
 	}
 
-	executorKey, err := NewAccountFromPublicKey(ref.ExecutorKey, networkType)
+	executorKey, err := NewAccountFromPublicKey(ref.Key, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -285,18 +260,19 @@ func (ref *releasedTransactionDTOs) toStruct(networkType NetworkType) ([]string,
 
 type superContractV2DTO struct {
 	SuperContractV2 struct {
-		SuperContractKey                string                      `json:"superContractKey"`
-		DriveKey                        string                      `json:"driveKey"`
-		ExecutionPaymentKey             string                      `json:"executionPaymentKey"`
-		Assignee                        string                      `json:"assignee"`
-		Creator                         string                      `json:"creator"`
-		DeploymentBaseModificationsInfo hashDto                     `json:"deploymentBaseModificationsInfo"`
-		AutomaticExecutionsInfos        *automaticExecutionsInfoDTO `json:"automaticExecutionsInfo"`
-		ContractCalls                   contractCallDTOs            `json:"requestCalls"`
-		ExecutorInfos                   executorInfoDTOs            `json:"executorsInfo"`
-		Batches                         batchDTOs                   `json:"batches"`
-		ReleasedTransactions            []string                    `json:"releasedTransactions"`
-	}
+		SuperContractKey             string                      `json:"contractKey"`
+		ContractAddress              string                      `json:"contractAddress"`
+		DriveKey                     string                      `json:"driveKey"`
+		ExecutionPaymentKey          string                      `json:"executionPaymentKey"`
+		Assignee                     string                      `json:"assignee"`
+		Creator                      string                      `json:"creator"`
+		DeploymentBaseModificationId hashDto                     `json:"deploymentBaseModificationId"`
+		AutomaticExecutionsInfos     *automaticExecutionsInfoDTO `json:"automaticExecutionsInfo"`
+		RequestedCalls               contractCallDTOs            `json:"requestedCalls"`
+		ExecutorInfos                executorInfoDTOs            `json:"executorsInfo"`
+		Batches                      batchDTOs                   `json:"batches"`
+		ReleasedTransactions         []string                    `json:"releasedTransactions"`
+	} `json:"supercontract"`
 }
 
 func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContractV2, error) {
@@ -325,7 +301,7 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		return nil, err
 	}
 
-	deploymentBaseModificationsInfo, err := ref.SuperContractV2.DeploymentBaseModificationsInfo.Hash()
+	deploymentBaseModificationsInfo, err := ref.SuperContractV2.DeploymentBaseModificationId.Hash()
 	if err != nil {
 		return nil, err
 	}
@@ -338,9 +314,9 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 		}
 	}
 
-	requestedCalls, err := ref.SuperContractV2.ContractCalls.toStruct(networkType)
+	requestedCalls, err := ref.SuperContractV2.RequestedCalls.toStruct(networkType)
 	if err != nil {
-		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.ContractCalls.toStruct: %v", err)
+		return nil, fmt.Errorf("sdk.SuperContractV2.toStruct SuperContractV2.RequestedCalls.toStruct: %v", err)
 	}
 	executorsInfo, err := ref.SuperContractV2.ExecutorInfos.toStruct(networkType)
 	if err != nil {
@@ -363,9 +339,9 @@ func (ref *superContractV2DTO) toStruct(networkType NetworkType) (*SuperContract
 	}
 
 	return &SuperContractV2{
-		SuperContractKey:                superContractKey,
-		DriveKey:                        driveKey,
-		ExecutionPaymentKey:             executionPaymentKey,
+		Account:                         superContractKey,
+		DriveAccount:                    driveKey,
+		ExecutionPaymentAccount:         executionPaymentKey,
 		Assignee:                        assignee,
 		Creator:                         creator,
 		DeploymentBaseModificationsInfo: deploymentBaseModificationsInfo,

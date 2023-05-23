@@ -138,9 +138,9 @@ var testExecutorKey, _ = NewAccountFromPublicKey("2130A8E6AC1AD2775F38EA43E86BE7
 
 var (
 	testSuperContractInfo = &SuperContractV2{
-		SuperContractKey:                testSCKey,
-		DriveKey:                        testDriveKey,
-		ExecutionPaymentKey:             testExecutionPaymentKey,
+		Account:                         testSCKey,
+		DriveAccount:                    testDriveKey,
+		ExecutionPaymentAccount:         testExecutionPaymentKey,
 		Assignee:                        testAssignee,
 		Creator:                         testCreator,
 		DeploymentBaseModificationsInfo: testDeploymentBaseModificationsInfo,
@@ -162,10 +162,10 @@ var (
 				ActualArguments:      []byte{117, 118, 119},
 				ExecutionCallPayment: Amount(1),
 				DownloadCallPayment:  Amount(1),
-				ServicePayments: []*ServicePayment{
+				ServicePayments: []*Mosaic{
 					{
-						MosaicId: &MosaicId{1},
-						Amount:   Amount(1),
+						AssetId: &MosaicId{1},
+						Amount:  Amount(1),
 					},
 				},
 				BlockHeight: Height(1),

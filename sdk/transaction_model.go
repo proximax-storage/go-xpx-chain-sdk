@@ -2650,7 +2650,7 @@ func (m *MultisigCosignatoryModification) String() string {
 	return fmt.Sprintf(
 		`
 			"Type": %s,
-			"PublicAccount": %s
+			"Account": %s
 		`,
 		m.Type,
 		m.PublicAccount,
@@ -2828,23 +2828,23 @@ const (
 	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
-	RemoveSdaExchangeOfferHeaderSize             
-	AutomaticExecutionsNumber                    = 4
-	FileNameSize                                 = 2
-	FunctionNameSize                             = 2
-	ActualArgumentsSize                          = 2
-	ServicePaymentsCount                         = 1
-	AutomaticExecutionsFileNameSize              = 2
-	AutomaticExecutionsFunctionNameSize          = 2
-	BatchIdSize                                  = 8
-	CosignersNumber                              = 4
-	CallsNumber                                  = 4
-	PoExVerificationInformationSize              = 32
-	AutomaticExecutionsPaymentHeaderSize         = TransactionHeaderSize + KeySize + AutomaticExecutionsNumber
-	ManualCallHeaderSize                         = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount
-	DeployContractHeaderSize                     = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount + AutomaticExecutionsFileNameSize + AutomaticExecutionsFunctionNameSize + AmountSize + AmountSize + AutomaticExecutionsNumber + KeySize
-	SuccessfulEndBatchExecutionHeaderSize        = TransactionHeaderSize + KeySize + BatchIdSize + Hash256 + BaseInt64Size + BaseInt64Size + PoExVerificationInformationSize + DurationSize + CosignersNumber + CallsNumber
-	UnsuccessfulEndBatchExecutionHeaderSize      = TransactionHeaderSize + KeySize + BatchIdSize + DurationSize + CosignersNumber + CallsNumber
+	RemoveSdaExchangeOfferHeaderSize
+	AutomaticExecutionsNumber               = 4
+	FileNameSize                            = 2
+	FunctionNameSize                        = 2
+	ActualArgumentsSize                     = 2
+	ServicePaymentsCount                    = 1
+	AutomaticExecutionsFileNameSize         = 2
+	AutomaticExecutionsFunctionNameSize     = 2
+	BatchIdSize                             = 8
+	CosignersNumber                         = 4
+	CallsNumber                             = 4
+	PoExVerificationInformationSize         = 32
+	AutomaticExecutionsPaymentHeaderSize    = TransactionHeaderSize + KeySize + AutomaticExecutionsNumber
+	ManualCallHeaderSize                    = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount
+	DeployContractHeaderSize                = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount + AutomaticExecutionsFileNameSize + AutomaticExecutionsFunctionNameSize + AmountSize + AmountSize + AutomaticExecutionsNumber + KeySize
+	SuccessfulEndBatchExecutionHeaderSize   = TransactionHeaderSize + KeySize + BatchIdSize + Hash256 + BaseInt64Size + BaseInt64Size + PoExVerificationInformationSize + DurationSize + CosignersNumber + CallsNumber
+	UnsuccessfulEndBatchExecutionHeaderSize = TransactionHeaderSize + KeySize + BatchIdSize + DurationSize + CosignersNumber + CallsNumber
 )
 
 type EntityType uint16
