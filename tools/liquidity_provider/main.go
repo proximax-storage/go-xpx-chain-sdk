@@ -26,7 +26,6 @@ const (
 
 var (
 	ErrNoUrl              = errors.New("url is not provided")
-	ErrToManyArgs         = errors.New("too many arguments")
 	ErrUnknownCommand     = errors.New("unknown command")
 	ErrUnknownFeeStrategy = errors.New("unknown fee calculation strategy")
 
@@ -45,7 +44,7 @@ var sender *sdk.Account
 func main() {
 	// common
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
-	feeStrategy := flag.String("url", middle, "fee calculation strategy (low, middle, high)")
+	feeStrategy := flag.String("feeStrategy", middle, "fee calculation strategy (low, middle, high)")
 	txSender := flag.String("sender", "", "transaction sender")
 
 	providerMosaicId := flag.String("mosaic", "", "HEX provider mosaic id, e.g. 0x6C5D687508AC9D75")
@@ -66,12 +65,6 @@ func main() {
 	mosaicBalanceChange := flag.Uint64("mosaicBalanceChange", 0, "mosaic balance change")
 
 	flag.Parse()
-
-	args := os.Args[1:]
-	if len(args) > 1 {
-		fmt.Println(ErrToManyArgs)
-		os.Exit(1)
-	}
 
 	if *url == "" {
 		fmt.Println(ErrNoUrl)
@@ -109,7 +102,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	switch args[0] {
+	sender, err = client.NewAccountFromPrivateKey(*txSender)
+	if err != nil {
+		fmt.Printf("Cannot create txSender from private key: %s\n", err)
+		os.Exit(1)
+	}
+
+	arg := os.Args[len(os.Args)-1]
+	switch arg {
 	case create:
 		err := newLiquidityProvider(
 			client,
@@ -148,7 +148,7 @@ func main() {
 
 		return
 	default:
-		fmt.Printf("%s: %s\n", ErrUnknownCommand, args[0])
+		fmt.Printf("%s: %s\n", ErrUnknownCommand, arg)
 		os.Exit(1)
 	}
 }

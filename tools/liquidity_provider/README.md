@@ -34,8 +34,18 @@ Allows to create and change liquidity provider in the ProximaX BC.
 #### Example
 
 ```shell
-./lp create -url=http://127.0.0.1:3000 -feeStrategy=middle -sender=0000000000000000000000000000000000000000000000000000000000000000 \
-            -mosaic=0x6C5D687508AC9D75 -initial=100000 -deposit=100000 -slashingPeriod=500 -ws=5 -a=500 -b=500 -slashingAcc=0000000000000000000000000000000000000000000000000000000000000000
+./lp -url=http://127.0.0.1:3000 \
+    -feeStrategy=middle \
+    -sender=0000000000000000000000000000000000000000000000000000000000000000 \
+    -mosaic=26514E2A1EF33824 \
+    -initial=100000 \
+    -deposit=1000000 \
+    -slashingPeriod=500 \
+    -ws=5 \
+    -a=500 \
+    -b=500 \
+    -slashingAcc=0000000000000000000000000000000000000000000000000000000000000000 \
+    create
 ```
 
 ### Change Command
@@ -53,6 +63,13 @@ Allows to create and change liquidity provider in the ProximaX BC.
 #### Example
 
 ```shell
-./lp create -url=http://127.0.0.1:3000 -feeStrategy=middle -sender=0000000000000000000000000000000000000000000000000000000000000000 \
-            -mosaic=0x6C5D687508AC9D75 -currencyBalanceIncrease -currencyBalanceChange=100 -mosaicBalanceIncrease -mosaicBalanceChange=200
+./lp -url=http://127.0.0.1:3000 \
+    -feeStrategy=middle \
+    -sender=7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230 \
+    -mosaic=26514E2A1EF33824 \
+    -currencyBalanceIncrease \
+    -currencyBalanceChange=100 \
+    -mosaicBalanceIncrease \
+    -mosaicBalanceChange=200 \
+    change
 ```
