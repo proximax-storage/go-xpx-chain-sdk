@@ -15,78 +15,89 @@ import (
 )
 
 func TestCreateLiquidityProviderTransaction(t *testing.T) {
-	mosaicId, err := sdk.NewMosaicId(0x6DE2C609655D3DBD)
-	assert.Nil(t, err)
+	soInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StorageNamespaceId)
+	require.NoError(t, err, err)
 
-	lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
-	assert.Nil(t, err, err)
+	smInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StreamingNamespaceId)
+	require.NoError(t, err, err)
 
-	currencyDeposit := uint64(1000000)
-	initialMosaicsMinting := uint64(1000000)
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewTransferTransaction(
-			sdk.NewDeadline(time.Hour),
-			managerAccount.Address,
-			[]*sdk.Mosaic{sdk.Xpx(currencyDeposit * 2)},
-			sdk.NewPlainMessage("Test"),
-		)
-	}, defaultAccount)
-	require.Nil(t, result.error, result.error)
+	scInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.SuperContractNamespaceId)
+	require.NoError(t, err, err)
 
-	slashingAccount, err := client.NewAccountFromPublicKey("0000000000000000000000000000000000000000000000000000000000000000")
-	require.Nil(t, err, err)
+	mosaics := []*sdk.MosaicId{soInfo.MosaicId, smInfo.MosaicId, scInfo.MosaicId}
+	for _, mosaic := range mosaics {
+		lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
+		assert.Nil(t, err, err)
 
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewCreateLiquidityProviderTransaction(
-			sdk.NewDeadline(time.Hour),
-			mosaicId,
-			sdk.Amount(currencyDeposit),
-			sdk.Amount(initialMosaicsMinting),
-			500,
-			5,
-			slashingAccount,
-			500,
-			500,
-		)
-	}, managerAccount)
-	assert.Nil(t, result.error, result.error)
+		currencyDeposit := sdk.XpxRelative(100000)
+		result := sendTransaction(t, func() (sdk.Transaction, error) {
+			return client.NewTransferTransaction(
+				sdk.NewDeadline(time.Hour),
+				managerAccount.Address,
+				[]*sdk.Mosaic{currencyDeposit},
+				sdk.NewPlainMessage("Test"),
+			)
+		}, defaultAccount)
+		require.Nil(t, result.error, result.error)
 
-	lpsAfter, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
-	assert.Nil(t, err, err)
-	assert.True(t, lps.Pagination.TotalEntries < lpsAfter.Pagination.TotalEntries)
+		slashingAccount, err := client.NewAccountFromPublicKey("0000000000000000000000000000000000000000000000000000000000000000")
+		require.Nil(t, err, err)
 
-	lp, err := client.LiquidityProvider.GetLiquidityProvider(ctx, defaultAccount.PublicAccount)
-	assert.Nil(t, err, err)
-	assert.NotNil(t, lp)
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return client.NewCreateLiquidityProviderTransaction(
+				sdk.NewDeadline(time.Hour),
+				mosaic,
+				sdk.XpxRelative(100000).Amount,
+				sdk.XpxRelative(100000).Amount,
+				500,
+				5,
+				slashingAccount,
+				500,
+				500,
+			)
+		}, managerAccount)
+		assert.Nil(t, result.error, result.error)
+
+		lpsAfter, err := client.LiquidityProvider.GetLiquidityProviders(ctx, &sdk.LiquidityProviderPageOptions{Owner: managerAccount.PublicAccount.PublicKey})
+		assert.Nil(t, err, err)
+		assert.Equal(t, lps.Pagination.TotalEntries+uint64(len(mosaics)), lpsAfter.Pagination.TotalEntries)
+	}
 }
 
 func TestManualRateChangeTransactionTransaction(t *testing.T) {
-	//TODO transaction passes successfully, but there is strange behavior with bool unmarshalling
-	t.SkipNow()
+	soInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StorageNamespaceId)
+	require.NoError(t, err, err)
 
-	mosaicId, err := sdk.NewMosaicId(XPXID)
-	assert.Nil(t, err)
+	smInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StreamingNamespaceId)
+	require.NoError(t, err, err)
 
-	requiredAmount := uint64(100)
-	result := sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewTransferTransaction(
-			sdk.NewDeadline(time.Hour),
-			managerAccount.Address,
-			[]*sdk.Mosaic{sdk.Xpx(requiredAmount)},
-			sdk.NewPlainMessage("Test"),
-		)
-	}, defaultAccount)
-	require.Nil(t, result.error)
+	scInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.SuperContractNamespaceId)
+	require.NoError(t, err, err)
 
-	result = sendTransaction(t, func() (sdk.Transaction, error) {
-		return client.NewManualRateChangeTransaction(
-			sdk.NewDeadline(time.Hour),
-			mosaicId,
-			true,
-			sdk.Amount(requiredAmount),
-			true,
-			sdk.Amount(300),
-		)
-	}, managerAccount)
-	assert.Nil(t, result.error)
+	mosaicAmount := uint64(1000000)
+	currencyAmount := uint64(2000000)
+	mosaics := []*sdk.MosaicId{soInfo.MosaicId, smInfo.MosaicId, scInfo.MosaicId}
+	for _, mosaic := range mosaics {
+		result := sendTransaction(t, func() (sdk.Transaction, error) {
+			return client.NewTransferTransaction(
+				sdk.NewDeadline(time.Hour),
+				managerAccount.Address,
+				[]*sdk.Mosaic{sdk.XpxRelative(currencyAmount)},
+				sdk.NewPlainMessage("Test"),
+			)
+		}, defaultAccount)
+		require.Nil(t, result.error)
+
+		result = sendTransaction(t, func() (sdk.Transaction, error) {
+			return client.NewManualRateChangeTransaction(
+				sdk.NewDeadline(time.Hour),
+				mosaic,
+				true,
+				sdk.Amount(mosaicAmount),
+				true,
+				sdk.Amount(currencyAmount),
+			)
+		}, managerAccount)
+		assert.Nil(t, result.error)
+	}
 }
