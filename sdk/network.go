@@ -68,7 +68,7 @@ func (ref *NetworkService) GetNetworkConfig(ctx context.Context) (*BlockchainCon
 func (ref *NetworkService) GetNetworkConfigs(ctx context.Context, tpOpts *BlockchainConfigPageOptions) (*BlockchainConfigPage, error) {
 	configPageDto := BlockChainConfigPageDTO{}
 
-	url, err := addOptions(fmt.Sprintf(configRoute, ""), tpOpts)
+	url, err := addOptions(configsRoute, tpOpts)
 	if err != nil {
 		return nil, err
 	}

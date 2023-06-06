@@ -122,6 +122,7 @@ const (
 const (
 	networkRoute = "/network"
 	configRoute  = "/config/%s"
+	configsRoute = "/config"
 	upgradeRoute = "/upgrade/%s"
 )
 
