@@ -143,7 +143,7 @@ func (a *AccountService) GetStakingRecords(ctx context.Context, requestOpts *Sta
 
 	dto := StakingRecordInfoPageDto{}
 	u, err := addOptions(stakingRecordsRoute, requestOpts)
-	resp, err := a.client.doNewRequest(ctx, http.MethodPost, u, nil, &dto)
+	resp, err := a.client.doNewRequest(ctx, http.MethodPost, u, &struct{}{}, &dto)
 	if err != nil {
 		return nil, err
 	}
