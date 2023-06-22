@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
@@ -27,6 +28,7 @@ var (
 	ErrZeroBeta                  = errors.New("zero beta")
 	ErrZeroAlpha                 = errors.New("zero alpha")
 	ErrZeroWindowSize            = errors.New("zero window size")
+	ErrUnknownMosaicName         = errors.New("unknown mosaic name")
 	ErrZeroSlashingPeriod        = errors.New("zero slashing period")
 	ErrZeroCurrencyDeposit       = errors.New("zero currency deposit")
 	ErrEmptySlashingAccount      = errors.New("empty slashing account")
@@ -41,7 +43,7 @@ func main() {
 	feeStrategy := flag.String("feeStrategy", tools.MiddleFeeStrategy, "fee calculation strategy (low, middle, high)")
 	txSender := flag.String("sender", "", "transaction sender")
 
-	providerMosaicId := flag.String("mosaic", "", "HEX provider mosaic id, e.g. 0x6C5D687508AC9D75")
+	providerMosaicName := flag.String("mosaic", "", "Name of a mosaic (storage, streaming or sc units)")
 
 	// create lp
 	slashingAccount := flag.String("slashingAcc", "", "slashing account public key")
@@ -91,6 +93,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	var mosacInfo *sdk.MosaicInfo
+	switch strings.ToLower(*providerMosaicName) {
+	case "storage":
+		mosacInfo, err = client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StorageNamespaceId)
+	case "streaming":
+		mosacInfo, err = client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StreamingNamespaceId)
+	case "supercontract":
+		fallthrough
+	case "sc":
+		mosacInfo, err = client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.SuperContractNamespaceId)
+	default:
+		err = ErrUnknownMosaicName
+	}
+	if err != nil {
+		fmt.Printf("%s: %s\n", err, *providerMosaicName)
+		os.Exit(1)
+	}
+
 	arg := os.Args[len(os.Args)-1]
 	switch arg {
 	case create:
@@ -98,7 +118,7 @@ func main() {
 			client,
 			ws,
 			cfg,
-			*providerMosaicId,
+			mosacInfo.MosaicId,
 			*currencyDeposit,
 			*initialMosaicsMinting,
 			uint32(*slashingPeriod),
@@ -118,7 +138,7 @@ func main() {
 			client,
 			ws,
 			cfg,
-			*providerMosaicId,
+			mosacInfo.MosaicId,
 			*currencyBalanceIncrease,
 			*currencyBalanceChange,
 			*mosaicBalanceIncrease,
@@ -140,7 +160,7 @@ func newLiquidityProvider(
 	client *sdk.Client,
 	ws websocket.CatapultClient,
 	cfg *sdk.Config,
-	mosaicId string,
+	mosaicId *sdk.MosaicId,
 	currencyDeposit uint64,
 	initialMosaicsMinting uint64,
 	slashingPeriod uint32,
@@ -148,11 +168,6 @@ func newLiquidityProvider(
 	slashingAccount string,
 	alpha uint32,
 	beta uint32) error {
-
-	mId, err := tools.MosaicIdFromString(mosaicId)
-	if err != nil {
-		return err
-	}
 
 	if currencyDeposit == 0 {
 		return ErrZeroCurrencyDeposit
@@ -189,7 +204,7 @@ func newLiquidityProvider(
 
 	tx, err := client.NewCreateLiquidityProviderTransaction(
 		sdk.NewDeadline(time.Hour),
-		mId,
+		mosaicId,
 		sdk.Amount(currencyDeposit),
 		sdk.Amount(initialMosaicsMinting),
 		slashingPeriod,
@@ -209,20 +224,15 @@ func manualRateChange(
 	client *sdk.Client,
 	ws websocket.CatapultClient,
 	cfg *sdk.Config,
-	mosaicId string,
+	mosaicId *sdk.MosaicId,
 	currencyBalanceIncrease bool,
 	currencyBalanceChange uint64,
 	mosaicBalanceIncrease bool,
 	mosaicBalanceChange uint64) error {
 
-	mId, err := tools.MosaicIdFromString(mosaicId)
-	if err != nil {
-		return err
-	}
-
 	tx, err := client.NewManualRateChangeTransaction(
 		sdk.NewDeadline(time.Hour),
-		mId,
+		mosaicId,
 		currencyBalanceIncrease,
 		sdk.Amount(currencyBalanceChange),
 		mosaicBalanceIncrease,

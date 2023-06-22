@@ -20,16 +20,16 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 #### Flags
 
-| Name             | Description                                       | Type   | Default |
-|:-----------------|:--------------------------------------------------|:-------|:--------|
-| `mosaic`         | provider mosaic id, e.g. 6C5D687508AC9D75         | string | -       |
-| `initial`        | amount of initial mosaics minting                 | uint64 | 100000  |
-| `deposit`        | amount of currency deposit                        | uint64 | 100000  |
-| `slashingPeriod` | slashing period                                   | uint32 | 500     |
-| `slashingAcc`    | slashing account public key                       | string | -       |
-| `ws`             | window size                                       | unit16 | 5       |
-| `a`              | alpha                                             | uint32 | 500     |
-| `b`              | beta                                              | uint32 | 500     |
+| Name             | Description                                   | Type   | Default |
+|:-----------------|:----------------------------------------------|:-------|:--------|
+| `mosaic`         | provider mosaic name (storage, streaming, sc) | string | -       |
+| `initial`        | amount of initial mosaics minting             | uint64 | 100000  |
+| `deposit`        | amount of currency deposit                    | uint64 | 100000  |
+| `slashingPeriod` | slashing period                               | uint32 | 500     |
+| `slashingAcc`    | slashing account public key                   | string | -       |
+| `ws`             | window size                                   | unit16 | 5       |
+| `a`              | alpha                                         | uint32 | 500     |
+| `b`              | beta                                          | uint32 | 500     |
 
 #### Example
 
@@ -37,7 +37,7 @@ Allows to create and change liquidity provider in the ProximaX BC.
 ./lp -url=http://127.0.0.1:3000 \
     -feeStrategy=middle \
     -sender=0000000000000000000000000000000000000000000000000000000000000000 \
-    -mosaic=26514E2A1EF33824 \
+    -mosaic=storage \
     -initial=100000 \
     -deposit=1000000 \
     -slashingPeriod=500 \
@@ -52,13 +52,13 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 #### Flags
 
-| Name                      | Description                               | Type   | Default |
-|:--------------------------|:------------------------------------------|:-------|:--------|
-| `mosaic`                  | provider mosaic id, e.g. 6C5D687508AC9D75 | string | -       |
-| `currencyBalanceIncrease` | currency balance increase                 | bool   | false   |
-| `currencyBalanceChange`   | currency balance change                   | uint64 | 0       |
-| `mosaicBalanceIncrease`   | mosaic balance increase                   | bool   | false   |
-| `mosaicBalanceChange`     | mosaic balance change                     | uint64 | 0       |
+| Name                      | Description                                   | Type   | Default |
+|:--------------------------|:----------------------------------------------|:-------|:--------|
+| `mosaic`                  | provider mosaic name (storage, streaming, sc) | string | -       |
+| `currencyBalanceIncrease` | currency balance increase                     | bool   | false   |
+| `currencyBalanceChange`   | currency balance change                       | uint64 | 0       |
+| `mosaicBalanceIncrease`   | mosaic balance increase                       | bool   | false   |
+| `mosaicBalanceChange`     | mosaic balance change                         | uint64 | 0       |
 
 #### Example
 
@@ -66,7 +66,7 @@ Allows to create and change liquidity provider in the ProximaX BC.
 ./lp -url=http://127.0.0.1:3000 \
     -feeStrategy=middle \
     -sender=7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230 \
-    -mosaic=26514E2A1EF33824 \
+    -mosaic=storage \
     -currencyBalanceIncrease \
     -currencyBalanceChange=100 \
     -mosaicBalanceIncrease \
