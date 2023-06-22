@@ -20,16 +20,16 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 #### Flags
 
-| Name             | Description                                         | Type   | Default |
-|:-----------------|:----------------------------------------------------|:-------|:--------|
-| `mosaic`         | provider mosaic id, e.g. 0x6C5D687508AC9D75         | string | -       |
-| `initial`        | amount of initial mosaics minting                   | uint64 | 100000  |
-| `deposit`        | amount of currency deposit                          | uint64 | 100000  |
-| `slashingPeriod` | slashing period                                     | uint32 | 500     |
-| `slashingAcc`    | slashing account public key                         | string | -       |
-| `ws`             | window size                                         | unit16 | 5       |
-| `a`              | alpha                                               | uint32 | 500     |
-| `b`              | beta                                                | uint32 | 500     |
+| Name             | Description                                       | Type   | Default |
+|:-----------------|:--------------------------------------------------|:-------|:--------|
+| `mosaic`         | provider mosaic id, e.g. 6C5D687508AC9D75         | string | -       |
+| `initial`        | amount of initial mosaics minting                 | uint64 | 100000  |
+| `deposit`        | amount of currency deposit                        | uint64 | 100000  |
+| `slashingPeriod` | slashing period                                   | uint32 | 500     |
+| `slashingAcc`    | slashing account public key                       | string | -       |
+| `ws`             | window size                                       | unit16 | 5       |
+| `a`              | alpha                                             | uint32 | 500     |
+| `b`              | beta                                              | uint32 | 500     |
 
 #### Example
 
@@ -52,13 +52,13 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 #### Flags
 
-| Name                      | Description                                 | Type   | Default |
-|:--------------------------|:--------------------------------------------|:-------|:--------|
-| `mosaic`                  | provider mosaic id, e.g. 0x6C5D687508AC9D75 | string | -       |
-| `currencyBalanceIncrease` | currency balance increase                   | bool   | false   |
-| `currencyBalanceChange`   | currency balance change                     | uint64 | 0       |
-| `mosaicBalanceIncrease`   | mosaic balance increase                     | bool   | false   |
-| `mosaicBalanceChange`     | mosaic balance change                       | uint64 | 0       |
+| Name                      | Description                               | Type   | Default |
+|:--------------------------|:------------------------------------------|:-------|:--------|
+| `mosaic`                  | provider mosaic id, e.g. 6C5D687508AC9D75 | string | -       |
+| `currencyBalanceIncrease` | currency balance increase                 | bool   | false   |
+| `currencyBalanceChange`   | currency balance change                   | uint64 | 0       |
+| `mosaicBalanceIncrease`   | mosaic balance increase                   | bool   | false   |
+| `mosaicBalanceChange`     | mosaic balance change                     | uint64 | 0       |
 
 #### Example
 

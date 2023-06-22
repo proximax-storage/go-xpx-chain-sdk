@@ -11,6 +11,7 @@ import (
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
+	"github.com/proximax-storage/go-xpx-chain-sdk/tools"
 
 	sync "github.com/proximax-storage/go-xpx-chain-sync"
 )
@@ -35,20 +36,7 @@ func main() {
 	replicatorPrivateKey := flag.String("privateKey", "", "Replicator private key")
 	flag.Parse()
 
-	fee := sdk.FeeCalculationStrategy(0)
-	switch *feeStrategy {
-	case low:
-		fee = sdk.LowCalculationStrategy
-	case middle:
-		fee = sdk.MiddleCalculationStrategy
-	case high:
-		fee = sdk.HighCalculationStrategy
-	default:
-		fmt.Printf("%s: %s\n", ErrUnknownFeeStrategy, *feeStrategy)
-		os.Exit(1)
-	}
-
-	if err := onboard(*url, *replicatorPrivateKey, fee, *capacity); err != nil {
+	if err := onboard(*url, *replicatorPrivateKey, tools.ParseFeeStrategy(feeStrategy), *capacity); err != nil {
 		fmt.Printf("Replicator onboarding failed: %s\n", err)
 		os.Exit(1)
 	}

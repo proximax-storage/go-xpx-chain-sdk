@@ -7,31 +7,25 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
+	"github.com/proximax-storage/go-xpx-chain-sdk/tools"
 	sync "github.com/proximax-storage/go-xpx-chain-sync"
 )
 
 const (
 	create = "create"
 	change = "change"
-
-	low    = "low"
-	middle = "middle"
-	high   = "high"
 )
 
 var (
-	ErrNoUrl              = errors.New("url is not provided")
-	ErrUnknownCommand     = errors.New("unknown command")
-	ErrUnknownFeeStrategy = errors.New("unknown fee calculation strategy")
+	ErrNoUrl          = errors.New("url is not provided")
+	ErrUnknownCommand = errors.New("unknown command")
 
 	ErrZeroBeta                  = errors.New("zero beta")
 	ErrZeroAlpha                 = errors.New("zero alpha")
-	ErrEmptyMosaic               = errors.New("empty mosaic id")
 	ErrZeroWindowSize            = errors.New("zero window size")
 	ErrZeroSlashingPeriod        = errors.New("zero slashing period")
 	ErrZeroCurrencyDeposit       = errors.New("zero currency deposit")
@@ -44,7 +38,7 @@ var sender *sdk.Account
 func main() {
 	// common
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
-	feeStrategy := flag.String("feeStrategy", middle, "fee calculation strategy (low, middle, high)")
+	feeStrategy := flag.String("feeStrategy", tools.MiddleFeeStrategy, "fee calculation strategy (low, middle, high)")
 	txSender := flag.String("sender", "", "transaction sender")
 
 	providerMosaicId := flag.String("mosaic", "", "HEX provider mosaic id, e.g. 0x6C5D687508AC9D75")
@@ -77,18 +71,7 @@ func main() {
 		fmt.Printf("Cannot create client: %s\n", err)
 		os.Exit(1)
 	}
-
-	switch *feeStrategy {
-	case low:
-		cfg.FeeCalculationStrategy = sdk.LowCalculationStrategy
-	case middle:
-		cfg.FeeCalculationStrategy = sdk.MiddleCalculationStrategy
-	case high:
-		cfg.FeeCalculationStrategy = sdk.HighCalculationStrategy
-	default:
-		fmt.Printf("%s: %s\n", ErrUnknownFeeStrategy, *feeStrategy)
-		os.Exit(1)
-	}
+	cfg.FeeCalculationStrategy = tools.ParseFeeStrategy(feeStrategy)
 
 	client := sdk.NewClient(http.DefaultClient, cfg)
 	ws, err := websocket.NewClient(ctx, cfg)
@@ -166,7 +149,7 @@ func newLiquidityProvider(
 	alpha uint32,
 	beta uint32) error {
 
-	mId, err := mosaicIdFromString(mosaicId)
+	mId, err := tools.MosaicIdFromString(mosaicId)
 	if err != nil {
 		return err
 	}
@@ -232,7 +215,7 @@ func manualRateChange(
 	mosaicBalanceIncrease bool,
 	mosaicBalanceChange uint64) error {
 
-	mId, err := mosaicIdFromString(mosaicId)
+	mId, err := tools.MosaicIdFromString(mosaicId)
 	if err != nil {
 		return err
 	}
@@ -259,17 +242,4 @@ func announce(ctx context.Context, cfg *sdk.Config, ws websocket.CatapultClient,
 	}
 
 	return res.Err()
-}
-
-func mosaicIdFromString(mosaicId string) (*sdk.MosaicId, error) {
-	if mosaicId == "" {
-		return nil, ErrEmptyMosaic
-	}
-
-	mId, err := strconv.ParseUint(mosaicId, 16, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	return sdk.NewMosaicId(mId)
 }
