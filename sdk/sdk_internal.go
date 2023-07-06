@@ -6,6 +6,7 @@ package sdk
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"strings"
 )
@@ -58,4 +59,22 @@ func (dto blockchainTimestampDTO) toStruct() *BlockchainTimestamp {
 
 func hasBits(number uint64, bits uint64) bool {
 	return (number & bits) == bits
+}
+
+type uint64HexDTO string
+
+func (dto uint64HexDTO) toUint64() (uint64, error) {
+	value, err := hex.DecodeString(string(dto))
+	if err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint64(value), nil
+}
+
+func (dto uint64HexDTO) toStruct() (baseInt64, error) {
+	val, err := dto.toUint64()
+	if err != nil {
+		return 0, err
+	}
+	return baseInt64(val), nil
 }

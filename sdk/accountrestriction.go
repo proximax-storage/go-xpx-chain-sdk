@@ -20,7 +20,7 @@ func (s *AccountRestrictionService) SearchAccountRestrictions(ctx context.Contex
 		return nil, err
 	}
 
-	resp, err := s.client.doNewRequest(ctx, http.MethodPost, u, nil, &accResDTO)
+	resp, err := s.client.doNewRequest(ctx, http.MethodPost, u, struct{}{}, &accResDTO)
 	if err != nil {
 		return nil, err
 	}

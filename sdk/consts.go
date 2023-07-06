@@ -177,6 +177,7 @@ const (
 // routes for MosaicRestrictionsService
 const (
 	mosaicRestrictionsRoute       = "/restrictions/mosaic/%s"
+	mosaicRestrictionsSimpleRoute = "/restrictions/mosaic"
 	mosaicRestrictionsMerkleRoute = "/restrictions/mosaic/%s/merkle"
 )
 

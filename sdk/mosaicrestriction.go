@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/proximax-storage/go-xpx-utils/net"
+	"golang.org/x/crypto/sha3"
 	"net/http"
 )
 
@@ -15,12 +16,12 @@ type MosaicRestrictionService service
 
 func (s *MosaicRestrictionService) SearchMosaicRestrictions(ctx context.Context, tpOpts *MosaicRestrictionsPageOptions) (*MosaicRestrictionsPage, error) {
 	accResDTO := MosaicRestrictionsPageDto{}
-	u, err := addOptions(fmt.Sprintf(mosaicRestrictionsRoute, ""), tpOpts)
+	u, err := addOptions(mosaicRestrictionsSimpleRoute, tpOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.doNewRequest(ctx, http.MethodPost, u, nil, &accResDTO)
+	resp, err := s.client.doNewRequest(ctx, http.MethodPost, u, struct{}{}, &accResDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -45,4 +46,44 @@ func (s *MosaicRestrictionService) GetMosaicRestrictions(ctx context.Context, co
 		return nil, err
 	}
 	return mosaicResDTO.toStruct()
+}
+
+func CalculateMosaicAddressRestrictionUniqueId(mosaic *Mosaic, targetAddress *Address) (*Hash, error) {
+	result := sha3.New256()
+	addressBytes, err := targetAddress.Decode()
+	if err != nil {
+		return nil, err
+	}
+	if _, err := result.Write(mosaic.AssetId.toLittleEndian()); err != nil {
+		return nil, err
+	}
+	if _, err := result.Write(addressBytes[:]); err != nil {
+		return nil, err
+	}
+
+	hash, err := bytesToHash(result.Sum(nil))
+	if err != nil {
+		return nil, err
+	}
+
+	return hash, nil
+}
+
+func CalculateMosaicGlobalRestrictionUniqueId(mosaic *Mosaic) (*Hash, error) {
+	result := sha3.New256()
+	addressBytes := make([]byte, AddressSize)
+
+	if _, err := result.Write(mosaic.AssetId.toLittleEndian()); err != nil {
+		return nil, err
+	}
+	if _, err := result.Write(addressBytes[:]); err != nil {
+		return nil, err
+	}
+
+	hash, err := bytesToHash(result.Sum(nil))
+	if err != nil {
+		return nil, err
+	}
+
+	return hash, nil
 }

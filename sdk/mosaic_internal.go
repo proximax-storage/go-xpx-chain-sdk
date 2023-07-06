@@ -34,6 +34,16 @@ func (dto *mosaicIdDTOs) toStruct() ([]*MosaicId, error) {
 	return ids, nil
 }
 
+type mosaicIdHexDTO uint64HexDTO
+
+func (dto *mosaicIdHexDTO) toStruct() (*MosaicId, error) {
+	mosaicId, err := uint64HexDTO(*dto).toUint64()
+	if err != nil {
+		return nil, err
+	}
+	return NewMosaicId(mosaicId)
+}
+
 func generateMosaicId(nonce uint32, ownerPublicKey string) (*MosaicId, error) {
 	result := sha3.New256()
 	nonceB := make([]byte, 4)

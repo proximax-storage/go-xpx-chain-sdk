@@ -64,7 +64,7 @@ type MosaicRestrictionEntryDto struct {
 	CompositeHash string                     `json:"compositeHash"`
 	EntryType     MosaicRestrictionEntryType `json:"entryType"`
 	MosaicId      mosaicIdDTO                `json:"mosaicId"`
-	Address       *Address                   `json:"address"`
+	Address       *Address                   `json:"targetAddress"`
 	Restrictions  []map[string]interface{}   `json:"restrictions"`
 }
 type MosaicRestrictionEntryDtoContainer struct {
