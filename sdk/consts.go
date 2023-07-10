@@ -170,7 +170,7 @@ const (
 // routes for AccountRestrictionsService
 const (
 	accountRestrictionsRoute       = "/restrictions/account/%s"
-	accountRestrictionsSearchRoute = "/restrictions/account"
+	accountRestrictionsSimpleRoute = "/restrictions/account"
 	accountRestrictionsMerkleRoute = "/restrictions/account/%s/merkle"
 )
 

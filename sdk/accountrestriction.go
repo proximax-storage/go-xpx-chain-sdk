@@ -15,7 +15,7 @@ type AccountRestrictionService service
 
 func (s *AccountRestrictionService) SearchAccountRestrictions(ctx context.Context, tpOpts *AccountRestrictionsPageOptions) (*AccountRestrictionsPage, error) {
 	accResDTO := AccountRestrictionsPageDTO{}
-	u, err := addOptions(fmt.Sprintf(accountRestrictionsRoute, ""), tpOpts)
+	u, err := addOptions(accountRestrictionsSimpleRoute, tpOpts)
 	if err != nil {
 		return nil, err
 	}
