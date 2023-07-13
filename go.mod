@@ -13,5 +13,6 @@ require (
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
 	github.com/stretchr/testify v1.3.0
 	github.com/supranational/blst v0.3.2
+	go.uber.org/multierr v1.1.0
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 )
