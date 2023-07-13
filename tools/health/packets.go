@@ -13,11 +13,9 @@ const (
 	SignedConnectionSecurity = ConnectionSecurityMode(2)
 
 	// Packet types
-	ServerChallengePacketType        = PacketType(1)
-	ClientChallengePacketType        = PacketType(2)
-	ChainInfoPacketType              = PacketType(5)
-	NetworkConfigInfosPacketType     = PacketType(1200 + 0x59) // base code + Network config facility code
-	NetworkConfigStatePathPacketType = PacketType(800 + 0x59)  // base code + Network config facility code
+	ServerChallengePacketType = PacketType(1)
+	ClientChallengePacketType = PacketType(2)
+	ChainInfoPacketType       = PacketType(5)
 
 	// Sizes
 	PacketHeaderSize = 4 + 4 // Size + PacketTypeSize
@@ -56,11 +54,6 @@ type (
 		Size uint32
 		// Type of the packet.
 		Type PacketType
-	}
-
-	PacketPayload struct {
-		*PacketHeader
-		Buffer []byte
 	}
 
 	// ServerChallengeRequest Packet representing a challenge request from a server to a client.
@@ -104,13 +97,6 @@ type (
 		ScoreLow uint64
 	}
 )
-
-func NewPacketPayload(packet *Packet) *PacketPayload {
-	return &PacketPayload{
-		PacketHeader: NewPacketHeader(ChainInfoPacketType),
-		Buffer:       []byte{},
-	}
-}
 
 func (ph *PacketHeader) Bytes() []byte {
 	buff := make([]byte, PacketHeaderSize)

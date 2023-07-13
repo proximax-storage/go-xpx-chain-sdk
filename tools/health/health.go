@@ -72,9 +72,9 @@ func NewNodeConnector(client *crypto.KeyPair, info *NodeInfo, mode ConnectionSec
 	}, nil
 }
 
-func NewServerConnectorPool(client *crypto.KeyPair, infos []*NodeInfo, mode ConnectionSecurityMode) (*NodeConnectorPool, error) {
-	ncp := &NodeConnectorPool{nodeConnectors: make([]*NodeConnector, 0, len(infos))}
-	for _, info := range infos {
+func NewServerConnectorPool(client *crypto.KeyPair, nodeInfos []*NodeInfo, mode ConnectionSecurityMode) (*NodeConnectorPool, error) {
+	ncp := &NodeConnectorPool{nodeConnectors: make([]*NodeConnector, 0, len(nodeInfos))}
+	for _, info := range nodeInfos {
 		nc, err := NewNodeConnector(client, info, mode)
 		if err != nil {
 			return nil, err
