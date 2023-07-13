@@ -128,7 +128,7 @@ func (sc *NodeConnector) WaitHeight(height uint64) error {
 
 	// global avg time + extra time
 	delta := height - ci.Height
-	globalTimer := time.After(time.Duration(delta)*AvgSecondsPerBlock + time.Second*10)
+	globalTimer := time.After(time.Duration(delta)*AvgSecondsPerBlock + time.Minute)
 	for {
 		println(delta)
 		select {
