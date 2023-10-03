@@ -1037,7 +1037,6 @@ func (c *Client) NewAutomaticExecutionsPaymentTransaction(
 	deadline *Deadline,
 	contractKey *PublicAccount,
 	automaticExecutionsNumber uint32,
-	networkType NetworkType,
 ) (*AutomaticExecutionsPaymentTransaction, error) {
 	tx, err := NewAutomaticExecutionsPaymentTransaction(
 		deadline,
@@ -1061,7 +1060,6 @@ func (c *Client) NewManualCallTransaction(
 	functionName string,
 	actualArguments []byte,
 	servicePayments []*MosaicId,
-	networkType NetworkType,
 ) (*ManualCallTransaction, error) {
 	tx, err := NewManualCallTransaction(
 		deadline,
@@ -1096,7 +1094,6 @@ func (c *Client) NewDeployContractTransaction(
 	servicePayments []*MosaicId,
 	automaticExecutionFileName string,
 	automaticExecutionFunctionName string,
-	networkType NetworkType,
 ) (*DeployContractTransaction, error) {
 	tx, err := NewDeployContractTransaction(
 		deadline,
