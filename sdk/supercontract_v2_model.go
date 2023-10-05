@@ -70,22 +70,6 @@ func (executionsInfo *AutomaticExecutionsInfo) String() string {
 	)
 }
 
-type ServicePayment struct {
-	MosaicId *MosaicId
-	Amount   Amount
-}
-
-func (servicePayment *ServicePayment) String() string {
-	return fmt.Sprintf(
-		`
-			"MosaicId": %s,
-			"Amount": %s,
-		`,
-		servicePayment.MosaicId,
-		servicePayment.Amount,
-	)
-}
-
 type ContractCall struct {
 	CallId               *Hash
 	Caller               *PublicAccount
@@ -94,7 +78,7 @@ type ContractCall struct {
 	ActualArguments      []byte
 	ExecutionCallPayment Amount
 	DownloadCallPayment  Amount
-	ServicePayments      []*ServicePayment
+	ServicePayments      []*Mosaic
 	BlockHeight          Height
 }
 
@@ -285,7 +269,7 @@ type ManualCallTransaction struct {
 	FileName             string
 	FunctionName         string
 	ActualArguments      []byte
-	ServicePayments      []*MosaicId
+	ServicePayments      []*Mosaic
 }
 
 // Deploy Contract Transaction
@@ -301,7 +285,7 @@ type DeployContractTransaction struct {
 	FileName                       string
 	FunctionName                   string
 	ActualArguments                []byte
-	ServicePayments                []*MosaicId
+	ServicePayments                []*Mosaic
 	AutomaticExecutionFileName     string
 	AutomaticExecutionFunctionName string
 }

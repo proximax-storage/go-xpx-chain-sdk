@@ -60,7 +60,7 @@ const (
         ],
         "servicePayments": [
           {
-            "mosaicId": [
+            "id": [
               1,
               0
             ],
@@ -135,7 +135,7 @@ var testCreator, _ = NewAccountFromPublicKey("5830A8E6AC1AD2775F38EA43E86BE7B686
 var testDeploymentBaseModificationsInfo = stringToHashPanic("AA2D2427E105A9B60DF634553849135DF629F1408A018D02B07A70CAFFB43093")
 var testCaller, _ = NewAccountFromPublicKey("7130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB", PublicTest)
 var testExecutorKey, _ = NewAccountFromPublicKey("2130A8E6AC1AD2775F38EA43E86BE7B686E833F27B5D22B9AD3542B3BBDF33AB", PublicTest)
-
+var assetId, _ = NewAssetIdFromId(1)
 var (
 	testSuperContractInfo = &SuperContractV2{
 		SuperContractKey:                testSCKey,
@@ -162,10 +162,10 @@ var (
 				ActualArguments:      []byte{117, 118, 119},
 				ExecutionCallPayment: Amount(1),
 				DownloadCallPayment:  Amount(1),
-				ServicePayments: []*ServicePayment{
+				ServicePayments: []*Mosaic{
 					{
-						MosaicId: &MosaicId{1},
-						Amount:   Amount(1),
+						AssetId: assetId,
+						Amount:  Amount(1),
 					},
 				},
 				BlockHeight: Height(1),

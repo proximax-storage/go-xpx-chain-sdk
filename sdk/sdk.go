@@ -1059,7 +1059,7 @@ func (c *Client) NewManualCallTransaction(
 	fileName string,
 	functionName string,
 	actualArguments []byte,
-	servicePayments []*MosaicId,
+	servicePayments []*Mosaic,
 ) (*ManualCallTransaction, error) {
 	tx, err := NewManualCallTransaction(
 		deadline,
@@ -1091,7 +1091,7 @@ func (c *Client) NewDeployContractTransaction(
 	fileName string,
 	functionName string,
 	actualArguments []byte,
-	servicePayments []*MosaicId,
+	servicePayments []*Mosaic,
 	automaticExecutionFileName string,
 	automaticExecutionFunctionName string,
 ) (*DeployContractTransaction, error) {

@@ -29,60 +29,29 @@ func (ref *automaticExecutionsInfoDTO) toStruct(networkType NetworkType) (*Autom
 	}, nil
 }
 
-type servicePaymentDTO struct {
-	MosaicId uint64DTO `json:"mosaicId"`
-	Amount   uint64DTO `json:"amount"`
+type contractCallDTO struct {
+	CallId               hashDto      `json:"callId"`
+	Caller               string       `json:"caller"`
+	FileName             string       `json:"fileName"`
+	FunctionName         string       `json:"functionName"`
+	ActualArguments      string       `json:"actualArguments"`
+	ExecutionCallPayment uint64DTO    `json:"executionCallPayment"`
+	DownloadCallPayment  uint64DTO    `json:"downloadCallPayment"`
+	ServicePayments      []*mosaicDTO `json:"servicePayments"`
+	BlockHeight          uint64DTO    `json:"blockHeight"`
 }
 
-func (ref *servicePaymentDTO) toStruct(NetworkType NetworkType) (*ServicePayment, error) {
+func (ref *contractCallDTO) toStruct(networkType NetworkType) (*ContractCall, error) {
 
-	mosaicId, err := NewMosaicId(ref.MosaicId.toUint64())
-	if err != nil {
-		return nil, err
-	}
+	servicePayments := make([]*Mosaic, len(ref.ServicePayments))
 
-	return &ServicePayment{
-		MosaicId: mosaicId,
-		Amount:   ref.Amount.toStruct(),
-	}, nil
-}
-
-type servicePaymentDtos []*servicePaymentDTO
-
-func (ref *servicePaymentDtos) toStruct(networkType NetworkType) ([]*ServicePayment, error) {
-	var (
-		dtos            = *ref
-		servicePayments = make([]*ServicePayment, 0, len(dtos))
-	)
-
-	for _, dto := range dtos {
-		info, err := dto.toStruct(networkType)
+	for i, mosaic := range ref.ServicePayments {
+		msc, err := mosaic.toStruct()
 		if err != nil {
 			return nil, err
 		}
 
-		servicePayments = append(servicePayments, info)
-	}
-
-	return servicePayments, nil
-}
-
-type contractCallDTO struct {
-	CallId               hashDto            `json:"callId"`
-	Caller               string             `json:"caller"`
-	FileName             string             `json:"fileName"`
-	FunctionName         string             `json:"functionName"`
-	ActualArguments      string             `json:"actualArguments"`
-	ExecutionCallPayment uint64DTO          `json:"executionCallPayment"`
-	DownloadCallPayment  uint64DTO          `json:"downloadCallPayment"`
-	ServicePayments      servicePaymentDtos `json:"servicePayments"`
-	BlockHeight          uint64DTO          `json:"blockHeight"`
-}
-
-func (ref *contractCallDTO) toStruct(networkType NetworkType) (*ContractCall, error) {
-	servicePayments, err := ref.ServicePayments.toStruct(networkType)
-	if err != nil {
-		return nil, err
+		servicePayments[i] = msc
 	}
 
 	callId, err := ref.CallId.Hash()
@@ -481,7 +450,7 @@ type extendedCallDigestDTOs []extendedCallDigestDTO
 
 func (ref *extendedCallDigestDTOs) toStruct(networkType NetworkType) ([]*ExtendedCallDigest, error) {
 	var (
-		dtos  = *ref
+		dtos                = *ref
 		extendedCallDigests = make([]*ExtendedCallDigest, 0, len(dtos))
 	)
 
@@ -552,7 +521,7 @@ type shortCallDigestDTOs []shortCallDigestDTO
 
 func (ref *shortCallDigestDTOs) toStruct(networkType NetworkType) ([]*ShortCallDigest, error) {
 	var (
-		dtos  = *ref
+		dtos             = *ref
 		shortCallDigests = make([]*ShortCallDigest, 0, len(dtos))
 	)
 
@@ -567,7 +536,6 @@ func (ref *shortCallDigestDTOs) toStruct(networkType NetworkType) ([]*ShortCallD
 
 	return shortCallDigests, nil
 }
-
 
 type endBatchExecutionDTO struct {
 	ContractKey                         string                   `json:"contractKey"`

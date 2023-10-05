@@ -19,7 +19,7 @@ func parseData(
 	downloadCallPayment *Amount,
 	fileName string,
 	functionName string,
-	servicePayments []*MosaicId,
+	servicePayments []*Mosaic,
 ) (flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT, flatbuffers.UOffsetT) {
 
 	executionCall := transactions.TransactionBufferCreateUint32Vector(builder, executionCallPayment.toArray())
@@ -32,9 +32,11 @@ func parseData(
 
 	mb := make([]flatbuffers.UOffsetT, len(servicePayments))
 	for i, it := range servicePayments {
-		mos := transactions.TransactionBufferCreateUint32Vector(builder, it.toArray())
+		id := transactions.TransactionBufferCreateUint32Vector(builder, it.AssetId.toArray())
+		am := transactions.TransactionBufferCreateUint32Vector(builder, it.Amount.toArray())
 		transactions.MosaicBufferStart(builder)
-		transactions.MosaicBufferAddId(builder, mos)
+		transactions.MosaicBufferAddId(builder, id)
+		transactions.MosaicBufferAddAmount(builder, am)
 		mb[i] = transactions.MosaicBufferEnd(builder)
 	}
 	mV := transactions.TransactionBufferCreateUOffsetVector(builder, mb)
@@ -153,7 +155,7 @@ func NewManualCallTransaction(
 	fileName string,
 	functionName string,
 	actualArguments []byte,
-	servicePayments []*MosaicId,
+	servicePayments []*Mosaic,
 	networkType NetworkType,
 ) (*ManualCallTransaction, error) {
 	tx := ManualCallTransaction{
@@ -222,17 +224,17 @@ func (tx *ManualCallTransaction) Size() int {
 type manualCallTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		ContractKey          string         `json:"contractKey"`
-		FileNameSize         uint16         `json:"fileNameSize"`
-		FunctionNameSize     uint16         `json:"functionNameSize"`
-		ActualArgumentsSize  uint16         `json:"actualArgumentsSize"`
-		ExecutionCallPayment uint64DTO      `json:"executionCallPayment"`
-		DownloadCallPayment  uint64DTO      `json:"downloadCallPayment"`
-		ServicePaymentsCount uint8          `json:"servicePaymentsCount"`
-		FileName             string         `json:"fileName"`
-		FunctionName         string         `json:"functionName"`
-		ActualArguments      string         `json:"actualArguments"`
-		ServicePayments      []*mosaicIdDTO `json:"servicePayments"`
+		ContractKey          string       `json:"contractKey"`
+		FileNameSize         uint16       `json:"fileNameSize"`
+		FunctionNameSize     uint16       `json:"functionNameSize"`
+		ActualArgumentsSize  uint16       `json:"actualArgumentsSize"`
+		ExecutionCallPayment uint64DTO    `json:"executionCallPayment"`
+		DownloadCallPayment  uint64DTO    `json:"downloadCallPayment"`
+		ServicePaymentsCount uint8        `json:"servicePaymentsCount"`
+		FileName             string       `json:"fileName"`
+		FunctionName         string       `json:"functionName"`
+		ActualArguments      string       `json:"actualArguments"`
+		ServicePayments      []*mosaicDTO `json:"servicePayments"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -253,7 +255,7 @@ func (dto *manualCallTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	mosaics := make([]*MosaicId, len(dto.Tx.ServicePayments))
+	mosaics := make([]*Mosaic, len(dto.Tx.ServicePayments))
 
 	for i, mosaic := range dto.Tx.ServicePayments {
 		msc, err := mosaic.toStruct()
@@ -289,7 +291,7 @@ func NewDeployContractTransaction(
 	fileName string,
 	functionName string,
 	actualArguments []byte,
-	servicePayments []*MosaicId,
+	servicePayments []*Mosaic,
 	automaticExecutionFileName string,
 	automaticExecutionFunctionName string,
 	networkType NetworkType,
@@ -389,25 +391,25 @@ func (tx *DeployContractTransaction) Size() int {
 type deployContractTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey                           string         `json:"driveKey"`
-		FileNameSize                       uint16         `json:"fileNameSize"`
-		FunctionNameSize                   uint16         `json:"functionNameSize"`
-		ActualArgumentsSize                uint16         `json:"actualArgumentsSize"`
-		ExecutionCallPayment               uint64DTO      `json:"executionCallPayment"`
-		DownloadCallPayment                uint64DTO      `json:"downloadCallPayment"`
-		ServicePaymentsCount               uint8          `json:"servicePaymentsCount"`
-		AutomaticExecutionFileNameSize     uint16         `json:"automaticExecutionFileNameSize"`
-		AutomaticExecutionFunctionNameSize uint16         `json:"automaticExecutionFunctionNameSize"`
-		AutomaticExecutionCallPayment      uint64DTO      `json:"automaticExecutionCallPayment"`
-		AutomaticDownloadCallPayment       uint64DTO      `json:"automaticDownloadCallPayment"`
-		AutomaticExecutionsNumber          uint32         `json:"automaticExecutionsNumber"`
-		Assignee                           string         `json:"assignee"`
-		FileName                           string         `json:"fileName"`
-		FunctionName                       string         `json:"functionName"`
-		ActualArguments                    string         `json:"actualArguments"`
-		ServicePayments                    []*mosaicIdDTO `json:"servicePayments"`
-		AutomaticExecutionFileName         string         `json:"automaticExecutionFileName"`
-		AutomaticExecutionFunctionName     string         `json:"automaticExecutionFunctionName"`
+		DriveKey                           string       `json:"driveKey"`
+		FileNameSize                       uint16       `json:"fileNameSize"`
+		FunctionNameSize                   uint16       `json:"functionNameSize"`
+		ActualArgumentsSize                uint16       `json:"actualArgumentsSize"`
+		ExecutionCallPayment               uint64DTO    `json:"executionCallPayment"`
+		DownloadCallPayment                uint64DTO    `json:"downloadCallPayment"`
+		ServicePaymentsCount               uint8        `json:"servicePaymentsCount"`
+		AutomaticExecutionFileNameSize     uint16       `json:"automaticExecutionFileNameSize"`
+		AutomaticExecutionFunctionNameSize uint16       `json:"automaticExecutionFunctionNameSize"`
+		AutomaticExecutionCallPayment      uint64DTO    `json:"automaticExecutionCallPayment"`
+		AutomaticDownloadCallPayment       uint64DTO    `json:"automaticDownloadCallPayment"`
+		AutomaticExecutionsNumber          uint32       `json:"automaticExecutionsNumber"`
+		Assignee                           string       `json:"assignee"`
+		FileName                           string       `json:"fileName"`
+		FunctionName                       string       `json:"functionName"`
+		ActualArguments                    string       `json:"actualArguments"`
+		ServicePayments                    []*mosaicDTO `json:"servicePayments"`
+		AutomaticExecutionFileName         string       `json:"automaticExecutionFileName"`
+		AutomaticExecutionFunctionName     string       `json:"automaticExecutionFunctionName"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -433,7 +435,7 @@ func (dto *deployContractTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	mosaics := make([]*MosaicId, len(dto.Tx.ServicePayments))
+	mosaics := make([]*Mosaic, len(dto.Tx.ServicePayments))
 
 	for i, mosaic := range dto.Tx.ServicePayments {
 		msc, err := mosaic.toStruct()
