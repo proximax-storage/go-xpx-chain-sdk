@@ -28,7 +28,7 @@ type AuthPacketHandler struct {
 	clientKeyPair *crypto.KeyPair
 
 	serverPublicKey *crypto.PublicKey
-	securityMode    ConnectionSecurityMode // none (this is only mode currenty supported by upstream code)
+	securityMode    ConnectionSecurityMode // none (this is only mode current supported by upstream code)
 	serverChallenge Challenge
 
 	conn net.Conn
