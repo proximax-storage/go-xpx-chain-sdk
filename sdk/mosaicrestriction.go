@@ -21,7 +21,7 @@ func (s *MosaicRestrictionService) SearchMosaicRestrictions(ctx context.Context,
 		return nil, err
 	}
 
-	resp, err := s.client.doNewRequest(ctx, http.MethodPost, u, struct{}{}, &accResDTO)
+	resp, err := s.client.doNewRequest(ctx, http.MethodGet, u, nil, &accResDTO)
 	if err != nil {
 		return nil, err
 	}

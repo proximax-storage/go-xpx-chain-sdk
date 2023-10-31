@@ -183,6 +183,12 @@ type AccountInfo struct {
 	Mosaics                []*Mosaic
 	LockedMosaics          []*Mosaic
 	Reputation             float64
+	UpgradedFrom           *Address
+	UpgradedFromKey        string
+}
+
+func (a *AccountInfo) IsCurrentActiveAccount() bool {
+	return a.AccountType != LockedAccount
 }
 
 func (a *AccountInfo) String() string {
@@ -198,6 +204,7 @@ func (a *AccountInfo) String() string {
 		str.NewField("Mosaics", str.StringPattern, a.Mosaics),
 		str.NewField("LockedMosaics", str.StringPattern, a.LockedMosaics),
 		str.NewField("Reputation", str.FloatPattern, a.Reputation),
+		str.NewField("UpgradedFrom", str.StringPattern, a.UpgradedFrom),
 	)
 }
 

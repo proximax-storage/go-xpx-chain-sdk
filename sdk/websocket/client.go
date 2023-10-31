@@ -21,17 +21,18 @@ import (
 )
 
 const (
-	pathBlock              Path = "block"
-	pathConfirmedAdded     Path = "confirmedAdded"
-	pathUnconfirmedAdded   Path = "unconfirmedAdded"
-	pathUnconfirmedRemoved Path = "unconfirmedRemoved"
-	pathStatus             Path = "status"
-	pathPartialAdded       Path = "partialAdded"
-	pathPartialRemoved     Path = "partialRemoved"
-	pathCosignature        Path = "cosignature"
-	driveState             Path = "driveState"
-	pathStateStatement     Path = "stateStatement"
-	pathPublicKeyStatement Path = "publicKeyStatement"
+	pathBlock                Path = "block"
+	pathConfirmedAdded       Path = "confirmedAdded"
+	pathUnconfirmedAdded     Path = "unconfirmedAdded"
+	pathUnconfirmedRemoved   Path = "unconfirmedRemoved"
+	pathStatus               Path = "status"
+	pathPartialAdded         Path = "partialAdded"
+	pathPartialRemoved       Path = "partialRemoved"
+	pathCosignature          Path = "cosignature"
+	driveState               Path = "driveState"
+	pathStateStatement       Path = "stateStatement"
+	pathPublicKeyStatement   Path = "publicKeyStatement"
+	pathTransactionStatement Path = "transactionStatement"
 )
 
 var (
@@ -51,17 +52,18 @@ type (
 
 		conn *websocket.Conn
 
-		blockSubscriber               subscribers.Block
-		statusSubscribers             subscribers.Status
-		cosignatureSubscribers        subscribers.Cosignature
-		driveStateSubscribers         subscribers.DriveState
-		partialAddedSubscribers       subscribers.PartialAdded
-		partialRemovedSubscribers     subscribers.PartialRemoved
-		confirmedAddedSubscribers     subscribers.ConfirmedAdded
-		unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
-		unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
-		stateStatementSubscribers     subscribers.Receipt
-		publicKeyStatementSubscribers subscribers.Receipt
+		blockSubscriber                 subscribers.Block
+		statusSubscribers               subscribers.Status
+		cosignatureSubscribers          subscribers.Cosignature
+		driveStateSubscribers           subscribers.DriveState
+		partialAddedSubscribers         subscribers.PartialAdded
+		partialRemovedSubscribers       subscribers.PartialRemoved
+		confirmedAddedSubscribers       subscribers.ConfirmedAdded
+		unconfirmedAddedSubscribers     subscribers.UnconfirmedAdded
+		unconfirmedRemovedSubscribers   subscribers.UnconfirmedRemoved
+		stateStatementSubscribers       subscribers.Receipt
+		publicKeyStatementSubscribers   subscribers.Receipt
+		transactionStatementSubscribers subscribers.Receipt
 
 		messageRouter    Router
 		topicHandlers    TopicHandlersStorage
@@ -99,8 +101,9 @@ type (
 		AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
 		AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
 		AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error
-		AddPublicKeyStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error
+		AddPublicKeyStatementHandlers(handle *sdk.CompoundChannelHandle, handlers ...subscribers.ReceiptHandler) error
 		AddStateStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error
+		AddTransactionStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error
 	}
 )
 
@@ -113,15 +116,18 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 
 		config: cfg,
 
-		blockSubscriber:               subscribers.NewBlock(),
-		statusSubscribers:             subscribers.NewStatus(),
-		cosignatureSubscribers:        subscribers.NewCosignature(),
-		driveStateSubscribers:         subscribers.NewDriveState(),
-		partialAddedSubscribers:       subscribers.NewPartialAdded(),
-		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
-		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
-		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
-		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
+		blockSubscriber:                 subscribers.NewBlock(),
+		statusSubscribers:               subscribers.NewStatus(),
+		cosignatureSubscribers:          subscribers.NewCosignature(),
+		driveStateSubscribers:           subscribers.NewDriveState(),
+		partialAddedSubscribers:         subscribers.NewPartialAdded(),
+		partialRemovedSubscribers:       subscribers.NewPartialRemoved(),
+		confirmedAddedSubscribers:       subscribers.NewConfirmedAdded(),
+		unconfirmedAddedSubscribers:     subscribers.NewUnconfirmedAdded(),
+		unconfirmedRemovedSubscribers:   subscribers.NewUnconfirmedRemoved(),
+		publicKeyStatementSubscribers:   subscribers.NewReceipt(),
+		stateStatementSubscribers:       subscribers.NewReceipt(),
+		transactionStatementSubscribers: subscribers.NewReceipt(),
 
 		topicHandlers: &topicHandlers{h: make(topicHandlersMap)},
 
@@ -199,7 +205,7 @@ func (c *CatapultWebsocketClientImpl) AddStateStatementHandlers(entityType *sdk.
 	}
 
 	if !c.stateStatementSubscribers.HasHandlers(handle) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathStateStatement); err != nil {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStateStatement, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
@@ -211,12 +217,11 @@ func (c *CatapultWebsocketClientImpl) AddStateStatementHandlers(entityType *sdk.
 	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) AddPublicKeyStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error {
+func (c *CatapultWebsocketClientImpl) AddPublicKeyStatementHandlers(handle *sdk.CompoundChannelHandle, handlers ...subscribers.ReceiptHandler) error {
 	if len(handlers) == 0 {
 		return nil
 	}
 
-	handle := sdk.NewCompoundChannelHandleFromEntityType(*entityType)
 	if !c.topicHandlers.HasHandler(pathPublicKeyStatement) {
 		c.topicHandlers.SetTopicHandler(pathPublicKeyStatement, &TopicHandler{
 			Handler: hdlrs.NewReceiptHandler(sdk.ReceiptMapperFn(sdk.MapReceipt), c.publicKeyStatementSubscribers),
@@ -225,12 +230,38 @@ func (c *CatapultWebsocketClientImpl) AddPublicKeyStatementHandlers(entityType *
 	}
 
 	if !c.publicKeyStatementSubscribers.HasHandlers(handle) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathPublicKeyStatement); err != nil {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPublicKeyStatement, handle.String()))); err != nil {
 			return errors.Wrap(err, "publishing subscribe message into websocket")
 		}
 	}
 
 	if err := c.publicKeyStatementSubscribers.AddHandlers(handle, handlers...); err != nil {
+		return errors.Wrap(err, "adding handlers functions into handlers storage")
+	}
+
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) AddTransactionStatementHandlers(entityType *sdk.EntityType, handlers ...subscribers.ReceiptHandler) error {
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	handle := sdk.NewCompoundChannelHandleFromEntityType(*entityType)
+	if !c.topicHandlers.HasHandler(pathTransactionStatement) {
+		c.topicHandlers.SetTopicHandler(pathTransactionStatement, &TopicHandler{
+			Handler: hdlrs.NewReceiptHandler(sdk.ReceiptMapperFn(sdk.MapReceipt), c.transactionStatementSubscribers),
+			Topic:   topicFormatFn(formatPlainTopic),
+		})
+	}
+
+	if !c.transactionStatementSubscribers.HasHandlers(handle) {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathTransactionStatement, handle.String()))); err != nil {
+			return errors.Wrap(err, "publishing subscribe message into websocket")
+		}
+	}
+
+	if err := c.transactionStatementSubscribers.AddHandlers(handle, handlers...); err != nil {
 		return errors.Wrap(err, "adding handlers functions into handlers storage")
 	}
 
@@ -620,6 +651,18 @@ func (c *CatapultWebsocketClientImpl) updateHandlers() error {
 
 	for _, value := range c.unconfirmedRemovedSubscribers.GetHandles() {
 		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.stateStatementSubscribers.GetHandles() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStateStatement, value))); err != nil {
+			return err
+		}
+	}
+
+	for _, value := range c.publicKeyStatementSubscribers.GetHandles() {
+		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPublicKeyStatement, value))); err != nil {
 			return err
 		}
 	}

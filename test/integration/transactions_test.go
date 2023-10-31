@@ -29,8 +29,8 @@ import (
 const testUrl = "http://127.0.0.1:3000"
 const privateKey = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
 
-//const testUrl = "http://35.167.38.200:3000"
-//const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
+// const testUrl = "http://35.167.38.200:3000"
+// const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
 const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
 
 const timeout = 2 * time.Minute
@@ -1546,4 +1546,18 @@ func TestRemoveMosaicLevyTransaction(t *testing.T) {
 		)
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
+}
+
+func TestSearchAccountRestrictions(t *testing.T) {
+	//acc, _ := client.NewAccountFromPrivateKeyAndVersion("f5aeb6b6b87170b1d96abcc9f68a99d942755bbd9e4cbc96aed316a24ae3b128", 2)
+	acx, err := client.AccountRestriction.SearchAccountRestrictions(ctx, &sdk.AccountRestrictionsPageOptions{Address: sdk.NewAddress("SD7DDDNFHA6CR6XKEUYRWGZZDOBFD5NO3AXDFVBB", client.NetworkType())})
+	assert.NoError(t, err, err)
+	assert.NotNil(t, acx)
+}
+
+func TestSearchAccountRestrictions2(t *testing.T) {
+	//acc, _ := client.NewAccountFromPrivateKeyAndVersion("790f669ba860c3153ab51ea604c02ccbab9ab36364d3ce79706f1ee137cb7b98", 2)
+	acx, err := client.AccountRestriction.GetAccountRestrictions(ctx, sdk.NewAddress("SD7DDDNFHA6CR6XKEUYRWGZZDOBFD5NO3AXDFVBB", client.NetworkType()))
+	assert.NoError(t, err, err)
+	assert.NotNil(t, acx)
 }

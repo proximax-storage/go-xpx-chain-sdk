@@ -302,6 +302,8 @@ type accountInfoDTO struct {
 		Mosaics                []*mosaicDTO               `json:"mosaics"`
 		LockedMosaics          []*mosaicDTO               `json:"lockedMosaics"`
 		Reputation             *reputationDTO             `json:"reputation"`
+		UpgradedFrom           string                     `json:"upgradedFrom"`
+		UpgradedFromKey        string                     `json:"upgradedFromKey"`
 		Version                uint32                     `json:"version"`
 	} `json:"account"`
 }
@@ -347,6 +349,11 @@ func (dto *accountInfoDTO) toStruct(repConfig *reputationConfig) (*AccountInfo, 
 		LockedMosaics:          lms,
 		Version:                dto.Account.Version,
 		Reputation:             repConfig.defaultReputation,
+		UpgradedFromKey:        dto.Account.UpgradedFromKey,
+	}
+
+	if len(dto.Account.UpgradedFrom) != 0 {
+		acc.UpgradedFrom, err = NewAddressFromHexString(dto.Account.UpgradedFrom)
 	}
 
 	if dto.Account.Reputation != nil {

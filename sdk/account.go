@@ -93,6 +93,77 @@ func (a *AccountService) GetAccountInfo(ctx context.Context, address *Address) (
 	return dto.toStruct(a.client.config.reputationConfig)
 }
 
+func (a *AccountService) GetNextAccountUpgrade(ctx context.Context, address *Address) (*AccountInfo, error) {
+	if address == nil {
+		return nil, ErrNilAddress
+	}
+
+	if len(address.Address) == 0 {
+		return nil, ErrBlankAddress
+	}
+
+	dto := &accountInfoDTO{}
+
+	url := net.NewUrl(fmt.Sprintf(accountUpgradeRoute, address.Address))
+
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct(a.client.config.reputationConfig)
+}
+
+func (a *AccountService) GetActiveAccountInfo(ctx context.Context, address *Address) (*AccountInfo, error) {
+	if address == nil {
+		return nil, ErrNilAddress
+	}
+
+	account, err := a.GetAccountInfo(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	for account.AccountType == LockedAccount {
+		account, err = a.GetNextAccountUpgrade(ctx, account.Address)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return account, nil
+}
+
+func (a *AccountService) GetEquivalentAccounts(ctx context.Context, address *Address) ([]*AccountInfo, error) {
+	if address == nil {
+		return nil, ErrNilAddress
+	}
+
+	var accounts []*AccountInfo
+	account, err := a.GetAccountInfo(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	//Get previous
+	for account.Version != 1 && account.UpgradedFrom != nil {
+		account, err = a.GetAccountInfo(ctx, account.UpgradedFrom)
+		if err != nil {
+			return nil, err
+		}
+		accounts = append(accounts, account)
+	}
+	for account.AccountType == LockedAccount {
+		account, err = a.GetNextAccountUpgrade(ctx, account.Address)
+		if err != nil {
+			return nil, err
+		}
+		accounts = append(accounts, account)
+	}
+	return accounts, nil
+}
+
 func (a *AccountService) GetAccountsInfo(ctx context.Context, addresses ...*Address) ([]*AccountInfo, error) {
 	if len(addresses) == 0 {
 		return nil, ErrEmptyAddressesIds

@@ -113,7 +113,7 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 		return msg, nil
 	}
 
-	if len(dto.Meta.Handle) == 2 {
+	if len(dto.Meta.Handle) == 4 {
 		handle, err := hex.DecodeString(dto.Meta.Handle)
 		if err != nil {
 			return nil, err
@@ -133,5 +133,5 @@ func (dto *WsMessageInfoDTO) ToStruct() (*WsMessageInfo, error) {
 
 type wsMessageInfoMetaDTO struct {
 	ChannelName string `json:"channelName"`
-	Handle      string `json:"address"`
+	Handle      string `json:"handle"`
 }

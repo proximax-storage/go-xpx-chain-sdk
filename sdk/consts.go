@@ -41,6 +41,7 @@ const (
 	stakingRecordsRoute           = "/stakingRecord"
 	stakingRecordsSpecificRoute   = "/stakingRecord/%s/%s"
 	accountRoute                  = "/account/%s"
+	accountUpgradeRoute           = "/account/%s/next"
 	accountNamesRoute             = "/account/names"
 	accountPropertiesRoute        = "/account/%s/properties"
 	accountsPropertiesRoute       = "/account/properties"

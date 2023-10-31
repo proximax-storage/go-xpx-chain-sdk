@@ -60,7 +60,11 @@ func (ref *AccountRestrictionDto) toStruct(networkType NetworkType) (*AccountRes
 func (ref *AccountRestrictionsDtoContainer) toStruct(networkType NetworkType) (*AccountRestrictions, error) {
 	accountRestrictions := AccountRestrictions{}
 	accountRestrictions.Version = ref.AccountRestrictions.Version
-	accountRestrictions.Address = NewAddress(ref.AccountRestrictions.Address, networkType)
+	bytes, err := hex.DecodeString(ref.AccountRestrictions.Address)
+	if err != nil {
+		return nil, err
+	}
+	accountRestrictions.Address = NewAddress(base32.StdEncoding.EncodeToString(bytes), networkType)
 	restrictions := make([]AccountRestriction, len(ref.AccountRestrictions.Restrictions))
 	accountRestrictions.Restrictions = restrictions
 	for i, restriction := range ref.AccountRestrictions.Restrictions {

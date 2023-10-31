@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/binary"
 	"fmt"
 )
 
@@ -11,7 +12,9 @@ type CompoundChannelHandle struct {
 
 func (ref *CompoundChannelHandle) String() string {
 	if ref.TransactionType != nil {
-		return fmt.Sprintf("%x", ref.TransactionType)
+		bytes := make([]byte, 2)
+		binary.BigEndian.PutUint16(bytes, uint16(*(ref.TransactionType)))
+		return fmt.Sprintf("%02x%02x", bytes[0], bytes[1])
 	}
 	return ref.Address.Address
 }
