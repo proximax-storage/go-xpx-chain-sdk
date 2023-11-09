@@ -29,6 +29,7 @@ func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 // sign AggregateTransaction with current Account and with every passed cosignatory Account's
 // returns announced Aggregate SignedTransaction
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
+	tx.MaxFee += Amount(len(cosignatories)*AggregateCosignatureSize) * (tx.MaxFee / Amount(tx.Size()))
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
 

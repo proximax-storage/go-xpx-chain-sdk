@@ -130,6 +130,8 @@ type TransactionsPageOptions struct {
 	RecipientAddress string `url:"recipientAddress,omitempty"`
 	Type             []uint `url:"type[],omitempty"`
 	Embedded         bool   `url:"embedded,omitempty"`
+	PublicKey        bool   `url:"publicKey,omitempty"`
+	FirstLevel       bool   `url:"firstLevel"`
 	PaginationOrderingOptions
 }
 
@@ -1632,7 +1634,7 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return MosaicSupplyChangeTransactionSize
 }
 
-// / region modify mosaic levy implementation
+/// region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -1713,7 +1715,7 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 
 /// end region modify mosaic levy
 
-// / region remove mosaic levy
+/// region remove mosaic levy
 type MosaicRemoveLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -2650,7 +2652,7 @@ func (m *MultisigCosignatoryModification) String() string {
 	return fmt.Sprintf(
 		`
 			"Type": %s,
-			"Account": %s
+			"PublicAccount": %s
 		`,
 		m.Type,
 		m.PublicAccount,
@@ -2717,6 +2719,7 @@ const (
 	MaxStringSize                            int = 2
 	SignerSize                                   = KeySize
 	SignatureSize                            int = 64
+	AggregateCosignatureSize                     = SignerSize + SignatureSize
 	HalfOfSignature                              = SignatureSize / 2
 	VersionSize                              int = 4
 	TypeSize                                 int = 2
@@ -2828,7 +2831,7 @@ const (
 	PlaceSdaExchangeOfferSize                    = 2*MosaicIdSize + 2*AmountSize + DurationSize
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
-	RemoveSdaExchangeOfferHeaderSize
+	RemoveSdaExchangeOfferHeaderSize             = TransactionHeaderSize + SdaOffersCountSize
 	AutomaticExecutionsNumber               = 4
 	FileNameSize                            = 2
 	FunctionNameSize                        = 2
