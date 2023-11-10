@@ -8,6 +8,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"strings"
 
 	crypto "github.com/proximax-storage/go-xpx-crypto"
@@ -219,6 +220,11 @@ func (ad *Address) String() string {
 		str.NewField("Type", str.IntPattern, ad.Type),
 		str.NewField("Address", str.StringPattern, ad.Address),
 	)
+}
+func (ad *Address) EncodeValues(key string, v *url.Values) error {
+	// Custom encoding logic here
+	v.Add(key, ad.Address)
+	return nil
 }
 
 func (ad *Address) Pretty() string {

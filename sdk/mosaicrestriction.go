@@ -33,7 +33,7 @@ func (s *MosaicRestrictionService) SearchMosaicRestrictions(ctx context.Context,
 }
 
 func (s *MosaicRestrictionService) GetMosaicRestrictions(ctx context.Context, compositeHash string) (*MosaicRestrictionEntry, error) {
-	mosaicResDTO := MosaicRestrictionEntryDtoContainer{}
+	mosaicResDTO := MosaicRestrictionEntryContainerDto{}
 
 	url := net.NewUrl(fmt.Sprintf(mosaicRestrictionsRoute, compositeHash))
 
@@ -45,7 +45,7 @@ func (s *MosaicRestrictionService) GetMosaicRestrictions(ctx context.Context, co
 	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
 		return nil, err
 	}
-	return mosaicResDTO.toStruct()
+	return mosaicResDTO.toStruct(s.client.NetworkType())
 }
 
 func CalculateMosaicAddressRestrictionUniqueId(mosaic *Mosaic, targetAddress *Address) (*Hash, error) {

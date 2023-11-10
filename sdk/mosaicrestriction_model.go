@@ -26,9 +26,9 @@ const (
 )
 
 type MosaicRestrictionsPageOptions struct {
-	MosaicId  *MosaicId                   `json:"mosaicId"`
-	EntryType *MosaicRestrictionEntryType `json:"entryType"`
-	Address   *Address                    `json:"targetAddress"`
+	MosaicId  *MosaicId                   `json:"mosaicId" url:"mosaicId,omitempty"`
+	EntryType *MosaicRestrictionEntryType `json:"entryType" url:"entryType,omitempty"`
+	Address   *Address                    `json:"targetAddress" url:"targetAddress,omitempty"`
 	PaginationOrderingOptions
 }
 

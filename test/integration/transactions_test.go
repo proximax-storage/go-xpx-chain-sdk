@@ -1547,17 +1547,3 @@ func TestRemoveMosaicLevyTransaction(t *testing.T) {
 	}, nemesisAccount)
 	assert.Nil(t, result.error)
 }
-
-func TestSearchAccountRestrictions(t *testing.T) {
-	//acc, _ := client.NewAccountFromPrivateKeyAndVersion("f5aeb6b6b87170b1d96abcc9f68a99d942755bbd9e4cbc96aed316a24ae3b128", 2)
-	acx, err := client.AccountRestriction.SearchAccountRestrictions(ctx, &sdk.AccountRestrictionsPageOptions{Address: sdk.NewAddress("SD7DDDNFHA6CR6XKEUYRWGZZDOBFD5NO3AXDFVBB", client.NetworkType())})
-	assert.NoError(t, err, err)
-	assert.NotNil(t, acx)
-}
-
-func TestSearchAccountRestrictions2(t *testing.T) {
-	//acc, _ := client.NewAccountFromPrivateKeyAndVersion("790f669ba860c3153ab51ea604c02ccbab9ab36364d3ce79706f1ee137cb7b98", 2)
-	acx, err := client.AccountRestriction.GetAccountRestrictions(ctx, sdk.NewAddress("SD7DDDNFHA6CR6XKEUYRWGZZDOBFD5NO3AXDFVBB", client.NetworkType()))
-	assert.NoError(t, err, err)
-	assert.NotNil(t, acx)
-}

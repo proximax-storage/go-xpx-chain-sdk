@@ -11,7 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
+	net "net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -928,6 +928,7 @@ func addOptions(s string, opt interface{}) (string, error) {
 	}
 
 	u.RawQuery = qs.Encode()
+
 	return u.String(), nil
 }
 

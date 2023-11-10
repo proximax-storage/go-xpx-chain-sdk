@@ -34,7 +34,18 @@ func (s *LockFundHeightRecord) String() string {
 	return fmt.Sprintf(
 		`
 			"Identifier": %s,
-			"Records": %T
+			"Records": %v
+		`,
+		s.Identifier,
+		s.Records,
+	)
+}
+
+func (s *LockFundKeyRecord) String() string {
+	return fmt.Sprintf(
+		`
+			"Identifier": %s,
+			"Records": %v
 		`,
 		s.Identifier,
 		s.Records,

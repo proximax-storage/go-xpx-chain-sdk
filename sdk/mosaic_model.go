@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"net/url"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 
@@ -45,6 +46,11 @@ func (m *MosaicId) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (ad *MosaicId) EncodeValues(key string, v *url.Values) error {
+	// Custom encoding logic here
+	v.Add(key, ad.ToHexString())
+	return nil
+}
 func (m *MosaicId) MarshalJSON() ([]byte, error) {
 	data := make([]byte, 8)
 	binary.LittleEndian.PutUint64(data, m.Id())
@@ -289,7 +295,7 @@ func SuperContractMosaic(amount uint64) *Mosaic {
 	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
 }
 
-/// region MosaicLevy information
+// / region MosaicLevy information
 type LevyType uint8
 
 func (lt LevyType) String() string {

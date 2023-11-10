@@ -73,7 +73,7 @@ type AccountRestrictionsPage struct {
 }
 
 type AccountRestrictionsPageOptions struct {
-	Address *Address `json:"address"`
+	Address *Address `json:"address" url:"address,omitempty"`
 	PaginationOrderingOptions
 }
 
@@ -99,7 +99,7 @@ func (s *AccountRestrictions) String() string {
 		`
 			"Version": %d,
 			"Address": %s
-			"Restrictions": %T
+			"Restrictions": %v
 		`,
 		s.Version,
 		s.Address.String(),
