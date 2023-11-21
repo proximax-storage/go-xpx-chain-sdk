@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
@@ -16,18 +17,22 @@ const (
 	ServerChallengePacketType = PacketType(1)
 	ClientChallengePacketType = PacketType(2)
 	ChainInfoPacketType       = PacketType(5)
+	BlockHashesPacketType     = PacketType(7)
 
 	// Sizes
 	PacketHeaderSize = 4 + 4 // Size + PacketTypeSize
 	ChallengeSize    = 64
 	SignatureSize    = 64
+	HashSize         = 32
 	PublicKeySize    = 32
 	SecurityModeSize = 1
 
 	ServerChallengeRequestSize  = PacketHeaderSize + ChallengeSize
 	ServerChallengeResponseSize = PacketHeaderSize + ChallengeSize + SignatureSize + PublicKeySize + SecurityModeSize
 	ClientChallengeResponseSize = PacketHeaderSize + SignatureSize
-	ChainInfoSize               = PacketHeaderSize + 8 + 8 + 8
+	ChainInfoResponseSize       = PacketHeaderSize + 8 + 8 + 8
+	BlockHashesRequestSize      = PacketHeaderSize + 8 + 4
+	BlockHashesResponseSize     = PacketHeaderSize
 )
 
 var (
@@ -96,6 +101,22 @@ type (
 		// Low part of the score.
 		ScoreLow uint64
 	}
+
+	BlockHashesRequest struct {
+		*PacketHeader
+
+		/// Requested number of hashes.
+		NumHashes uint32
+		/// Requested block height.
+		Height uint64
+	}
+
+	BlockHashesResponse struct {
+		*PacketHeader
+
+		/// Requested block height.
+		Hashes []*sdk.Hash
+	}
 )
 
 func (ph *PacketHeader) Bytes() []byte {
@@ -134,10 +155,6 @@ func NewServerChallengeRequest() *ServerChallengeRequest {
 		PacketHeader: ph,
 		Challenge:    Challenge{},
 	}
-}
-
-func (s *ServerChallengeRequest) Bytes() []byte {
-	return append(s.PacketHeader.Bytes(), s.Challenge[:]...)
 }
 
 func (s *ServerChallengeRequest) Parse(buff []byte) error {
@@ -209,10 +226,6 @@ func NewClientChallengeResponse() *ClientChallengeResponse {
 	}
 }
 
-func (c *ClientChallengeResponse) Bytes() []byte {
-	return append(c.PacketHeader.Bytes(), c.Signature.Bytes()...)
-}
-
 func (c *ClientChallengeResponse) Parse(buff []byte) error {
 	ph := &PacketHeader{}
 	err := ph.Parse(buff)
@@ -230,20 +243,6 @@ func (c *ClientChallengeResponse) Parse(buff []byte) error {
 	return nil
 }
 
-func (cir *ChainInfoResponse) Bytes() []byte {
-	buff := make([]byte, ChainInfoSize)
-	copy(buff, cir.PacketHeader.Bytes())
-
-	offset := PacketHeaderSize
-	binary.LittleEndian.PutUint64(buff[offset:], cir.Height)
-	offset += 8
-	binary.LittleEndian.PutUint64(buff[offset:], cir.ScoreLow)
-	offset += 8
-	binary.LittleEndian.PutUint64(buff[offset:], cir.ScoreHigh)
-
-	return buff
-}
-
 func (cir *ChainInfoResponse) Parse(buff []byte) error {
 	ph := &PacketHeader{}
 	err := ph.Parse(buff)
@@ -257,6 +256,50 @@ func (cir *ChainInfoResponse) Parse(buff []byte) error {
 	cir.ScoreHigh = binary.LittleEndian.Uint64(buff[offset : offset+8])
 	offset += 8
 	cir.ScoreLow = binary.LittleEndian.Uint64(buff[offset : offset+8])
+
+	return nil
+}
+
+func NewBlockHashesRequest(height uint64, numHashes uint32) *BlockHashesRequest {
+	ph := NewPacketHeader(BlockHashesPacketType)
+	ph.Size = BlockHashesRequestSize
+	return &BlockHashesRequest{
+		PacketHeader: ph,
+		NumHashes:    numHashes,
+		Height:       height,
+	}
+}
+
+func (bh *BlockHashesRequest) Bytes() []byte {
+	buff := make([]byte, BlockHashesRequestSize)
+
+	// copy header
+	copy(buff[:PacketHeaderSize], bh.PacketHeader.Bytes())
+
+	binary.LittleEndian.PutUint32(buff[PacketHeaderSize:], bh.NumHashes)
+	binary.LittleEndian.PutUint64(buff[PacketHeaderSize+4:], bh.Height)
+
+	return buff
+}
+
+func (bh *BlockHashesResponse) Parse(buff []byte) error {
+	ph := &PacketHeader{}
+	err := ph.Parse(buff)
+	if err != nil {
+		return err
+	}
+
+	buff = buff[PacketHeaderSize:]
+	if len(buff)%HashSize != 0 {
+		return errors.New("bad hashes length")
+	}
+
+	bh.Hashes = make([]*sdk.Hash, 0, len(buff)/HashSize)
+	for i := 0; i < len(buff); i += HashSize {
+		h := &sdk.Hash{}
+		copy(h[:], buff[i:i+HashSize])
+		bh.Hashes = append(bh.Hashes, h)
+	}
 
 	return nil
 }

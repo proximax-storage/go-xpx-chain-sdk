@@ -2,13 +2,13 @@ package main
 
 import (
 	"errors"
+	"log"
+	"math"
 	"net"
-	"sync"
 	"time"
 
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	crypto "github.com/proximax-storage/go-xpx-crypto"
-
-	"go.uber.org/multierr"
 )
 
 const AvgSecondsPerBlock = 15 * time.Second
@@ -96,7 +96,7 @@ func (sc *NodeConnector) ChainInfo() (*ChainInfo, error) {
 		return nil, err
 	}
 
-	buf, err := readFromConn(sc.conn, ChainInfoSize)
+	buf, err := readFromConn(sc.conn, ChainInfoResponseSize)
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +148,27 @@ func (sc *NodeConnector) WaitHeight(height uint64) error {
 	}
 }
 
+func (sc *NodeConnector) GetLastHash(height uint64) (*sdk.Hash, error) {
+	chainInfo := NewBlockHashesRequest(height, 1)
+	_, err := sc.conn.Write(chainInfo.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := readFromConn(sc.conn, BlockHashesResponseSize+HashSize)
+	if err != nil {
+		return nil, err
+	}
+
+	blockHashesResponse := &BlockHashesResponse{}
+	err = blockHashesResponse.Parse(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return blockHashesResponse.Hashes[0], nil
+}
+
 func (ncp *NodeConnectorPool) WaitHeightAll(height uint64) error {
 	countOfRich := 0
 	ticker := time.NewTicker(AvgSecondsPerBlock)
@@ -177,6 +198,35 @@ func (ncp *NodeConnectorPool) WaitHeightAll(height uint64) error {
 			}
 
 			ticker = time.NewTicker(time.Duration(height-minHeight) * AvgSecondsPerBlock)
+		}
+	}
+}
+
+func (ncp *NodeConnectorPool) WaitAllHashesEqual(height uint64) error {
+	for {
+		select {
+		case <-time.After(AvgSecondsPerBlock):
+			hashes := make(map[sdk.Hash]int)
+			for _, connector := range ncp.nodeConnectors {
+				h, err := connector.GetLastHash(height)
+				if err != nil {
+					log.Printf("cannot get the last hash from %s:%s\n", connector.NodeInfo.Endpoint, err)
+					continue
+				}
+
+				hashes[*h] += 1
+				if len(hashes) > 1 {
+					break
+				}
+			}
+
+			if len(hashes) == 1 {
+				for _, u := range hashes {
+					if u == len(ncp.nodeConnectors) {
+						return nil
+					}
+				}
+			}
 		}
 	}
 }
