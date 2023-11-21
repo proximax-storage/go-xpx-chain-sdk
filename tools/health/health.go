@@ -149,19 +149,34 @@ func (sc *NodeConnector) WaitHeight(height uint64) error {
 }
 
 func (ncp *NodeConnectorPool) WaitHeightAll(height uint64) error {
-	var multiErr error
-	wg := &sync.WaitGroup{}
-	for _, connector := range ncp.nodeConnectors {
-		wg.Add(1)
-		go func(nodeConnector *NodeConnector) {
-			defer wg.Done()
-			err := nodeConnector.WaitHeight(height)
-			if err != nil {
-				multiErr = multierr.Append(multiErr, err)
-			}
-		}(connector)
-	}
-	wg.Wait()
+	countOfRich := 0
+	ticker := time.NewTicker(AvgSecondsPerBlock)
+	for {
+		select {
+		case <-ticker.C:
+			minHeight := uint64(math.MaxUint64)
+			countOfRich = 0
+			for _, connector := range ncp.nodeConnectors {
+				ci, err := connector.ChainInfo()
+				if err != nil {
+					log.Printf("cannot get the height from %s:%s\n", connector.NodeInfo.Endpoint, err)
+					continue
+				}
 
-	return multiErr
+				if ci.Height < minHeight {
+					minHeight = ci.Height
+				}
+
+				if ci.Height == height {
+					countOfRich++
+				}
+			}
+
+			if countOfRich == len(ncp.nodeConnectors) {
+				return nil
+			}
+
+			ticker = time.NewTicker(time.Duration(height-minHeight) * AvgSecondsPerBlock)
+		}
+	}
 }
