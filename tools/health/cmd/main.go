@@ -6,6 +6,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/proximax-storage/go-xpx-chain-sdk/tools/health"
+	"github.com/proximax-storage/go-xpx-chain-sdk/tools/health/packets"
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
@@ -26,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pool, err := NewServerConnectorPool(client, nodeInfos, NoneConnectionSecurity)
+	pool, err := health.NewServerConnectorPool(client, nodeInfos, packets.NoneConnectionSecurity)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,9 +39,9 @@ func main() {
 	}
 }
 
-func parseNodes(nodesStr string) ([]*NodeInfo, error) {
+func parseNodes(nodesStr string) ([]*health.NodeInfo, error) {
 	endpointKeyPairs := strings.Split(nodesStr, " ")
-	nodeInfos := make([]*NodeInfo, 0, len(endpointKeyPairs))
+	nodeInfos := make([]*health.NodeInfo, 0, len(endpointKeyPairs))
 
 	var pair []string
 	for _, endpointKeyPair := range endpointKeyPairs {
@@ -48,7 +50,12 @@ func parseNodes(nodesStr string) ([]*NodeInfo, error) {
 			return nil, errors.New(ErrBadPair.Error() + ": " + endpointKeyPair)
 		}
 
-		nodeInfos = append(nodeInfos, NewNodeInfo(pair[1], pair[0]))
+		ni, err := health.NewNodeInfo(pair[1], pair[0])
+		if err != nil {
+			return nil, err
+		}
+
+		nodeInfos = append(nodeInfos, ni)
 	}
 
 	return nodeInfos, nil
