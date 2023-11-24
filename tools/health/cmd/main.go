@@ -16,6 +16,7 @@ var ErrBadPair = errors.New("bad endpoint-key pair")
 func main() {
 	height := flag.Uint64("height", 0, "Expected height")
 	nodesArg := flag.String("nodes", "", "List of values <ip:port>=<nodePubKey>")
+	discover := flag.Bool("discover", true, "Discover connected nodes (Default is true)")
 	flag.Parse()
 
 	nodeInfos, err := parseNodes(*nodesArg)
@@ -28,12 +29,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pool, err := health.NewServerConnectorPool(client, nodeInfos, packets.NoneConnectionSecurity)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pool, err := health.NewNodeHealthCheckerPool(client, nodeInfos, packets.NoneConnectionSecurity, *discover)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	err = pool.WaitHeightAll(*height)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = pool.WaitAllHashesEqual(*height)
 	if err != nil {
 		log.Fatal(err)
 	}
