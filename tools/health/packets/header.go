@@ -26,15 +26,41 @@ const (
 	ClientChallengeResponseSize           = PacketHeaderSize + SignatureSize
 	ChainInfoResponseSize                 = PacketHeaderSize + 8 + 8 + 8
 	BlockHashesRequestSize                = PacketHeaderSize + 8 + 4
-	MinNodeDiscoveryPullPeersResponseSize = PacketHeaderSize + 4 + PublicKeySize + 2 + PublicKeySize + 4 + 4 + 1 + 1
+	MinNodeDiscoveryPullPeersResponseSize = PacketHeaderSize + 4 + PublicKeySize + 2 + 1 + 4 + 4 + 1 + 1
 )
 
 var (
 	ErrPackerSizeTooSmall = errors.New("packer size too small")
-	ErrMismatchSizes      = errors.New("read buffer size and parsed packer size are mismatched")
 )
 
 type (
+	Byter interface {
+		Bytes() []byte
+	}
+
+	Parser interface {
+		Parse([]byte) error
+	}
+
+	Header interface {
+		Byter
+		Parser
+
+		PacketSize() uint32
+	}
+
+	ResponsePacket interface {
+		Parser
+
+		Header() Header
+	}
+
+	RequestPacket interface {
+		Byter
+
+		Header() Header
+	}
+
 	// PacketType is an enumeration of known packet types.
 	PacketType uint32
 
@@ -46,6 +72,10 @@ type (
 		Type PacketType
 	}
 )
+
+func (ph *PacketHeader) PacketSize() uint32 {
+	return ph.Size
+}
 
 func (ph *PacketHeader) Bytes() []byte {
 	buff := make([]byte, PacketHeaderSize)
@@ -60,11 +90,7 @@ func (ph *PacketHeader) Parse(buff []byte) error {
 	}
 
 	ph.Size = binary.LittleEndian.Uint32(buff[:4])
-	ph.Type = PacketType(binary.LittleEndian.Uint32(buff[4:]))
-
-	if ph.Size != uint32(len(buff)) {
-		return ErrMismatchSizes
-	}
+	ph.Type = PacketType(binary.LittleEndian.Uint32(buff[4:8]))
 
 	return nil
 }

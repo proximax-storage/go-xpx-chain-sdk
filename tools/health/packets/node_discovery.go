@@ -47,6 +47,10 @@ type (
 	}
 )
 
+func (n *NodeDiscoveryPullPeersResponse) Header() Header {
+	return &n.PacketHeader
+}
+
 func (n *NodeDiscoveryPullPeersResponse) Parse(buff []byte) error {
 	n.NetworkNodes = make([]*NetworkNode, 0, 10)
 	for len(buff) >= MinNodeDiscoveryPullPeersResponseSize-PacketHeaderSize {

@@ -15,8 +15,12 @@ type ChainInfoResponse struct {
 	ScoreLow uint64
 }
 
+func (cir *ChainInfoResponse) Header() Header {
+	return &cir.PacketHeader
+}
+
 func (cir *ChainInfoResponse) Parse(buff []byte) error {
-	offset := PacketHeaderSize
+	offset := 0
 	cir.Height = binary.LittleEndian.Uint64(buff[offset : offset+8])
 	offset += 8
 	cir.ScoreHigh = binary.LittleEndian.Uint64(buff[offset : offset+8])

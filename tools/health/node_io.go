@@ -2,6 +2,8 @@ package health
 
 import (
 	"net"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/tools/health/packets"
 )
 
 type NodeTcpIo struct {
@@ -21,11 +23,11 @@ func NewNodeTcpIo(info *NodeInfo) (*NodeTcpIo, error) {
 	}, nil
 }
 
-func (nc *NodeTcpIo) Write(p Byter) (int, error) {
+func (nc *NodeTcpIo) Write(p packets.Byter) (int, error) {
 	return nc.conn.Write(p.Bytes())
 }
 
-func (nc *NodeTcpIo) Read(parser Parser, expectedSize int) error {
+func (nc *NodeTcpIo) Read(parser packets.Parser, expectedSize int) error {
 	offset, n := 0, 0
 	var err error
 	buf := make([]byte, expectedSize)

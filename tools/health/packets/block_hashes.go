@@ -11,17 +11,17 @@ type (
 	BlockHashesRequest struct {
 		PacketHeader
 
-		/// Requested number of hashes.
-		NumHashes uint32
 		/// Requested block height.
 		Height uint64
+		/// Requested number of hashes.
+		NumHashes uint32
 	}
 
 	BlockHashesResponse struct {
 		PacketHeader
 
 		/// Requested block height.
-		Hashes []*sdk.Hash
+		Hashes []sdk.Hash
 	}
 )
 
@@ -32,8 +32,8 @@ func NewBlockHashesRequest(height uint64, numHashes uint32) *BlockHashesRequest 
 	ph.Size = BlockHashesRequestSize
 	return &BlockHashesRequest{
 		PacketHeader: ph,
-		NumHashes:    numHashes,
 		Height:       height,
+		NumHashes:    numHashes,
 	}
 }
 
@@ -43,10 +43,17 @@ func (bh *BlockHashesRequest) Bytes() []byte {
 	// copy header
 	copy(buff[:PacketHeaderSize], bh.PacketHeader.Bytes())
 
-	binary.LittleEndian.PutUint32(buff[PacketHeaderSize:], bh.NumHashes)
-	binary.LittleEndian.PutUint64(buff[PacketHeaderSize+4:], bh.Height)
+	offset := PacketHeaderSize
+	binary.LittleEndian.PutUint64(buff[offset:offset+8], bh.Height)
+
+	offset += 8
+	binary.LittleEndian.PutUint32(buff[offset:], bh.NumHashes)
 
 	return buff
+}
+
+func (bh *BlockHashesResponse) Header() Header {
+	return &bh.PacketHeader
 }
 
 func (bh *BlockHashesResponse) Parse(buff []byte) error {
@@ -54,9 +61,9 @@ func (bh *BlockHashesResponse) Parse(buff []byte) error {
 		return ErrBadHashesLength
 	}
 
-	bh.Hashes = make([]*sdk.Hash, 0, len(buff)/HashSize)
+	bh.Hashes = make([]sdk.Hash, 0, len(buff)/HashSize)
 	for i := 0; i < len(buff); i += HashSize {
-		h := &sdk.Hash{}
+		h := sdk.Hash{}
 		copy(h[:], buff[i:i+HashSize])
 		bh.Hashes = append(bh.Hashes, h)
 	}

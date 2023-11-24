@@ -9,6 +9,12 @@ import (
 
 var ErrClientChallengeResponseFailed = errors.New("client challenge response validation failed")
 
+type NodeIo interface {
+	Write(packets.Byter) (int, error)
+	Read(packets.Parser, int) error
+	Close() error
+}
+
 type Handler struct {
 	nodeIo NodeIo
 }
@@ -54,17 +60,21 @@ func (h *Handler) AuthHandle(clientKeyPair *crypto.KeyPair, serverPublicKey *cry
 	return nil
 }
 
-func (h *Handler) CommonHandle(req, resp PacketHeader) error {
+func (h *Handler) CommonHandle(req packets.Byter, resp packets.ResponsePacket) error {
 	_, err := h.nodeIo.Write(req)
 	if err != nil {
 		return err
 	}
 
-	responseHeader := &packets.PacketHeader{}
-	err = h.nodeIo.Read(responseHeader, packets.PacketHeaderSize)
+	err = h.nodeIo.Read(resp.Header(), packets.PacketHeaderSize)
 	if err != nil {
-		return err
+		return errors.New("cannot read packet header: " + err.Error())
 	}
 
-	return h.nodeIo.Read(resp, int(responseHeader.Size-packets.PacketHeaderSize))
+	err = h.nodeIo.Read(resp, int(resp.Header().PacketSize()-packets.PacketHeaderSize))
+	if err != nil {
+		return errors.New("cannot read packet payload: " + err.Error())
+	}
+
+	return nil
 }

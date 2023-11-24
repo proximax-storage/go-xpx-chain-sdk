@@ -77,6 +77,10 @@ func NewServerChallengeResponse() *ServerChallengeResponse {
 	}
 }
 
+func (s *ServerChallengeResponse) Header() Header {
+	return &s.PacketHeader
+}
+
 func (s *ServerChallengeResponse) Bytes() []byte {
 	buf := make([]byte, 0, s.Size)
 	buf = append(buf, s.PacketHeader.Bytes()...)
