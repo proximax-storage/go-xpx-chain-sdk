@@ -33,6 +33,8 @@ const (
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
+	accountHarvestingRoute        = "/account/%s/harvesting"
+	harvestersRoute               = "/harvesters"
 )
 
 // routes for NamespaceService

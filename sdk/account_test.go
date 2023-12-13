@@ -39,6 +39,43 @@ var (
 	}
 
 	accountClient = mockServer.getPublicTestClientUnsafe().Account
+
+	harvester1 = &Harvester{
+		Key:                    "119EAB9545B31613D88557F8E783DBD1D01790783C112742B597F14E28A8A50E",
+		Owner:                  "1DBCFA374315B059FDA6B08A981737CECB73912D4689069CD71850DCC3AA3031",
+		Address:                &Address{Public, "XDWAZJDTYD65Y456F6BR2WG2MMEVIT2ZYC6W4UT4"},
+		DisabledHeight:         uint64DTO{0, 0}.toStruct(),
+		LastSigningBlockHeight: uint64DTO{6001108, 0}.toStruct(),
+		EffectiveBalance:       uint64DTO{1354348165, 205}.toStruct(),
+		CanHarvest:             true,
+		Activity:               0.000006784999772748008,
+		Greed:                  0.1,
+	}
+
+	harvester2 = &Harvester{
+		Key:                    "1837E8A42E75E974C52BF470DF39A2A07FB164867CC1B126FD79A60D37EE7544",
+		Owner:                  "2F88213BFE21E22B3A082E5D89091066F892D5A92E1A0949B32209D77506E289",
+		Address:                &Address{Public, "XCJ2A2GT7JBTHLVNAX4PRQUDBUSADFRI6QPJK2ME"},
+		DisabledHeight:         uint64DTO{0, 0}.toStruct(),
+		LastSigningBlockHeight: uint64DTO{6124616, 0}.toStruct(),
+		EffectiveBalance:       uint64DTO{1686419070, 2979}.toStruct(),
+		CanHarvest:             true,
+		Activity:               -0.000003215000227251993,
+		Greed:                  0.1,
+	}
+
+	harvesters = &HarvestersPage{
+		Harvesters: []*Harvester{
+			harvester1,
+			harvester2,
+		},
+		Pagination: &Pagination{
+			TotalEntries: 75,
+			PageNumber:   1,
+			PageSize:     2,
+			TotalPages:   38,
+		},
+	}
 )
 
 const (
@@ -139,12 +176,84 @@ const (
     ]
 }
 `
+	accountHarvestingJson = `[{
+    "harvester": {
+        "key": "119EAB9545B31613D88557F8E783DBD1D01790783C112742B597F14E28A8A50E",
+        "owner": "1DBCFA374315B059FDA6B08A981737CECB73912D4689069CD71850DCC3AA3031",
+        "address": "B8EC0CA473C0FDDC73BE2F831D58DA6309544F59C0BD6E527C",
+        "disabledHeight": [0, 0],
+        "lastSigningBlockHeight": [
+            6001108, 0
+        ],
+        "effectiveBalance": [
+            1354348165, 205
+        ],
+        "canHarvest": true,
+        "activity": 0.000006784999772748008,
+        "greed": 0.1
+    }
+}]
+`
+	harvestersPageJson = `{
+    "data": [{
+        "harvester": {
+            "key": "119EAB9545B31613D88557F8E783DBD1D01790783C112742B597F14E28A8A50E",
+            "owner": "1DBCFA374315B059FDA6B08A981737CECB73912D4689069CD71850DCC3AA3031",
+            "address": "B8EC0CA473C0FDDC73BE2F831D58DA6309544F59C0BD6E527C",
+            "disabledHeight": [
+                0, 0
+            ],
+            "lastSigningBlockHeight": [
+                6001108, 0
+            ],
+            "effectiveBalance": [
+                1354348165,
+                205
+            ],
+            "canHarvest": true,
+            "activity": 0.000006784999772748008,
+            "greed": 0.1
+        },
+        "meta": {
+            "id": "631362904443c6c8d7366bba"
+        }
+    }, {
+        "harvester": {
+            "key": "1837E8A42E75E974C52BF470DF39A2A07FB164867CC1B126FD79A60D37EE7544",
+            "owner": "2F88213BFE21E22B3A082E5D89091066F892D5A92E1A0949B32209D77506E289",
+            "address": "B893A068D3FA4333AEAD05F8F8C2830D24019628F41E956984",
+            "disabledHeight": [
+                0, 0
+            ],
+            "lastSigningBlockHeight": [
+                6124616, 0
+            ],
+            "effectiveBalance": [
+                1686419070,
+                2979
+            ],
+            "canHarvest": true,
+            "activity": -0.000003215000227251993,
+            "greed": 0.1
+        },
+        "meta": {
+            "id": "632d81d69bc8787925d992a1"
+        }
+    }],
+    "pagination": {
+        "totalEntries": 75,
+        "pageNumber": 1,
+        "pageSize": 2,
+        "totalPages": 38
+    }
+}
+`
 )
 
 var (
-	nemTestAddress1 = "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"
-	nemTestAddress2 = "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"
-	publicKey1      = "27F6BEF9A7F75E33AE2EB2EBA10EF1D6BEA4D30EBD5E39AF8EE06E96E11AE2A9"
+	nemTestAddress1  = "SAONSOGFZZHNEIBRYXHDTDTBR2YSAXKTITRFHG2Y"
+	nemTestAddress2  = "SBJ5D7TFIJWPY56JBEX32MUWI5RU6KVKZYITQ2HA"
+	harvesterAddress = "XDWAZJDTYD65Y456F6BR2WG2MMEVIT2ZYC6W4UT4"
 )
 
 var (
@@ -259,4 +368,36 @@ func newAddressFromRaw(addressString string) (address *Address) {
 		return nil
 	}
 	return address
+}
+
+func TestAccountService_GetAccountHarvestingByAddress(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     fmt.Sprintf("/account/%s/harvesting", harvesterAddress),
+		RespBody: accountHarvestingJson,
+	})
+
+	h, err := accountClient.GetAccountHarvesting(context.Background(), NewAddress(harvesterAddress, Public))
+
+	assert.Nilf(t, err, "AccountService.GetAccountHarvesting returned error: %s", err)
+
+	tests.ValidateStringers(t, harvester1, h)
+}
+
+func TestAccountService_GetHarvesters(t *testing.T) {
+	mockServer.AddRouter(&mock.Router{
+		Path:     "/harvesters",
+		RespBody: harvestersPageJson,
+	})
+
+	h, err := accountClient.GetHarvesters(
+		context.Background(),
+		&PaginationOrderingOptions{
+			PageSize:   2,
+			PageNumber: 1,
+		},
+	)
+
+	assert.Nilf(t, err, "AccountService.GetHarvesters returned error: %s", err)
+
+	tests.ValidateStringers(t, harvesters, h)
 }

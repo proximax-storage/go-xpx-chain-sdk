@@ -190,6 +190,46 @@ func (a *AccountName) String() string {
 	)
 }
 
+type Harvester struct {
+	Key                    string
+	Owner                  string
+	Address                *Address
+	DisabledHeight         Height
+	LastSigningBlockHeight Height
+	EffectiveBalance       Amount
+	CanHarvest             bool
+	Activity               float64
+	Greed                  float64
+}
+
+func (h *Harvester) String() string {
+	return str.StructToString(
+		"Harvester",
+		str.NewField("Key", str.StringPattern, h.Key),
+		str.NewField("Owner", str.StringPattern, h.Owner),
+		str.NewField("Address", str.StringPattern, h.Address),
+		str.NewField("DisabledHeight", str.StringPattern, h.DisabledHeight),
+		str.NewField("LastSigningBlockHeight", str.StringPattern, h.LastSigningBlockHeight),
+		str.NewField("EffectiveBalance", str.StringPattern, h.EffectiveBalance),
+		str.NewField("CanHarvest", str.BooleanPattern, h.CanHarvest),
+		str.NewField("Activity", str.FloatPattern, h.Activity),
+		str.NewField("Greed", str.FloatPattern, h.Greed),
+	)
+}
+
+type HarvestersPage struct {
+	Harvesters []*Harvester
+	Pagination *Pagination
+}
+
+func (h *HarvestersPage) String() string {
+	return str.StructToString(
+		"HarvestersPage",
+		str.NewField("Harvesters", str.StringPattern, h.Harvesters),
+		str.NewField("Pagination", str.StringPattern, h.Pagination),
+	)
+}
+
 // returns new Account generated for passed NetworkType
 func NewAccount(networkType NetworkType, generationHash *Hash) (*Account, error) {
 	kp, err := crypto.NewKeyPairByEngine(crypto.CryptoEngines.DefaultEngine)
