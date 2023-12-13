@@ -1,6 +1,7 @@
 package health
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -16,33 +17,43 @@ type NodeHealthCheckerPool struct {
 	// Endpoints to which a dial attempt has been performed, whether successful or not
 	dialed map[string]bool
 
-	client *crypto.KeyPair
-	mode   packets.ConnectionSecurityMode
+	client        *crypto.KeyPair
+	mode          packets.ConnectionSecurityMode
+	maxConnection int
 }
 
-func NewNodeHealthCheckerPool(client *crypto.KeyPair, nodeInfos []*NodeInfo, mode packets.ConnectionSecurityMode, findConnected bool) (*NodeHealthCheckerPool, error) {
+func NewNodeHealthCheckerPool(client *crypto.KeyPair, nodeInfos []*NodeInfo, mode packets.ConnectionSecurityMode, findConnected bool, maxConnection int) (*NodeHealthCheckerPool, error) {
 	ncp := &NodeHealthCheckerPool{
 		nodeHealthCheckers: make(map[string]*NodeHealthChecker),
 		dialed:             make(map[string]bool),
 		client:             client,
 		mode:               mode,
+		maxConnection:      maxConnection,
 	}
 
 	for _, info := range nodeInfos {
 		ncp.MaybeConnectToNode(info)
+		if len(ncp.nodeHealthCheckers) >= ncp.maxConnection {
+			break
+		}
 	}
 
 	if findConnected {
-		err := ncp.CollectConnectedNodes()
-		if err != nil {
-			return nil, err
-		}
+		ncp.CollectConnectedNodes()
+	}
+
+	if len(ncp.nodeHealthCheckers) == 0 {
+		return nil, errors.New("could not connect to any peer")
 	}
 
 	return ncp, nil
 }
 
-func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() error {
+func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() {
+	if len(ncp.nodeHealthCheckers) >= ncp.maxConnection {
+		return
+	}
+
 	toCheck := make([]*NodeHealthChecker, 0, len(ncp.nodeHealthCheckers)*5)
 	for _, checker := range ncp.nodeHealthCheckers {
 		toCheck = append(toCheck, checker)
@@ -51,22 +62,24 @@ func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() error {
 	for len(toCheck) > 0 {
 		checker := toCheck[0]
 		nodeList, err := checker.NodeList()
-		if err != nil {
-			return err
-		}
+		if err == nil {
+			log.Printf("Node %s=%v returned %d nodes\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, len(nodeList))
+			for _, info := range nodeList {
+				if len(ncp.nodeHealthCheckers) >= ncp.maxConnection {
+					return
+				}
 
-		log.Printf("Node %s=%v returned %d nodes\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, len(nodeList))
-		for _, info := range nodeList {
-			nc := ncp.MaybeConnectToNode(info)
-			if nc != nil {
-				toCheck = append(toCheck, nc)
+				nc := ncp.MaybeConnectToNode(info)
+				if nc != nil {
+					toCheck = append(toCheck, nc)
+				}
 			}
+		} else {
+			log.Printf("Error getting list of nodes from %s=%v: %s\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
 		}
 
 		toCheck = toCheck[1:]
 	}
-
-	return nil
 }
 
 func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) *NodeHealthChecker {
@@ -152,13 +165,12 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 		return nil
 	}
 
-	ticker := time.NewTicker(time.Duration(expectedHeight-minHeight) * AvgSecondsPerBlock)
+	ticker := time.NewTicker(AvgSecondsPerBlock)
 	for {
 		select {
 		case <-ticker.C:
-			if minHeight, notReached = ncp.CheckHeight(expectedHeight, notReached); minHeight < expectedHeight {
-				ticker = time.NewTicker(time.Duration(expectedHeight-minHeight) * AvgSecondsPerBlock)
-			} else {
+			if minHeight, notReached = ncp.CheckHeight(expectedHeight, notReached); minHeight >= expectedHeight {
+				ticker.Stop()
 				return nil
 			}
 		}
@@ -226,8 +238,8 @@ func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 	for {
 		select {
 		case <-ticker.C:
-			success = ncp.CheckHashes(height)
-			if success {
+			if success = ncp.CheckHashes(height); success {
+				ticker.Stop()
 				return nil
 			}
 		}

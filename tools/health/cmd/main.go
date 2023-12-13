@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/tools/health"
@@ -29,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pool, err := health.NewNodeHealthCheckerPool(client, nodeInfos, packets.NoneConnectionSecurity, *discover)
+	pool, err := health.NewNodeHealthCheckerPool(client, nodeInfos, packets.NoneConnectionSecurity, *discover, math.MaxInt)
 	if err != nil {
 		log.Fatal(err)
 	}
