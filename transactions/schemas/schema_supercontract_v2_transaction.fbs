@@ -1,0 +1,82 @@
+namespace Catapult.Buffers;
+
+table MosaicBuffer {
+    id: [uint];
+    amount: [uint];
+}
+
+table DeployContractTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    driveKey: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    fileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    functionNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    actualArgumentsSize: [ubyte];
+    executionCallPayment: [uint];
+    downloadCallPayment: [uint];
+    servicePaymentsCount: ubyte;
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    automaticExecutionFileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    automaticExecutionFunctionNameSize: [ubyte];
+    automaticExecutionCallPayment: [uint];
+    automaticDownloadCallPayment: [uint];
+    automaticExecutionsNumber: uint;
+    assignee: [ubyte];
+    fileName: [ubyte];
+    functionName: [ubyte];
+    actualArguments: [ubyte];
+    servicePayments: [MosaicBuffer];
+    automaticExecutionFileName: [ubyte];
+    automaticExecutionFunctionName: [ubyte];
+}
+
+table AutomaticExecutionsPaymentTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    contractKey: [ubyte];
+    automaticExecutionsNumber: uint;
+}
+
+table ManualCallTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    contractKey: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    fileNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    functionNameSize: [ubyte];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    actualArgumentsSize: [ubyte];
+    executionCallPayment: [uint];
+    downloadCallPayment: [uint];
+    servicePaymentsCount: ubyte;
+    fileName: [ubyte];
+    functionName: [ubyte];
+    actualArguments: [ubyte];
+    servicePayments: [MosaicBuffer];
+}
+
+root_type DeployContractTransactionBuffer;
+
+root_type AutomaticExecutionsPaymentTransactionBuffer;
+
+root_type ManualCallTransactionBuffer;

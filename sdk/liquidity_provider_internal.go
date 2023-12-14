@@ -41,12 +41,13 @@ func (ref *turnoverHistoryDTOs) toStruct(networkType NetworkType) ([]*Turnover, 
 		histories = make([]*Turnover, 0, len(dtos))
 	)
 
-	var err error
-	for i, dto := range dtos {
-		histories[i], err = dto.toStruct(networkType)
+	for _, dto := range dtos {
+		h, err := dto.toStruct(networkType)
 		if err != nil {
 			return nil, err
 		}
+
+		histories = append(histories, h)
 	}
 
 	return histories, nil

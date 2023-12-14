@@ -185,3 +185,48 @@ func (a *AccountService) GetAccountNames(ctx context.Context, addr ...*Address) 
 
 	return dtos.toStruct()
 }
+
+func (a *AccountService) GetAccountHarvesting(ctx context.Context, address *Address) (*Harvester, error) {
+	if address == nil {
+		return nil, ErrNilAddress
+	}
+
+	url := net.NewUrl(fmt.Sprintf(accountHarvestingRoute, address.Address))
+
+	dtos := harvesterDTOs(make([]*harvesterDTO, 0))
+
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, url.Encode(), nil, &dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	if len(dtos) == 0 {
+		return nil, nil
+	}
+
+	return dtos[0].toStruct()
+}
+
+func (a *AccountService) GetHarvesters(ctx context.Context, options *PaginationOrderingOptions) (*HarvestersPage, error) {
+	dto := &harvestersPageDTO{}
+
+	u, err := addOptions(harvestersRoute, options)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := a.client.doNewRequest(ctx, http.MethodGet, u, nil, &dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
+}

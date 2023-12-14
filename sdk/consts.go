@@ -33,6 +33,8 @@ const (
 	multisigAccountRoute          = "/account/%s/multisig"
 	multisigAccountGraphInfoRoute = "/account/%s/multisig/graph"
 	transactionsByAccountRoute    = "/account/%s/%s"
+	accountHarvestingRoute        = "/account/%s/harvesting"
+	harvestersRoute               = "/harvesters"
 )
 
 // routes for NamespaceService
@@ -160,6 +162,12 @@ const (
 const (
 	liquidityProvidersRoute = "/liquidity_providers"
 	liquidityProviderRoute  = "/liquidity_providers/%s"
+)
+
+// routes for SuperContractV2Service
+const (
+	superContractsRouteV2 = "/supercontracts"
+	superContractRouteV2 = "/supercontracts/%s"
 )
 
 type TransactionGroup string

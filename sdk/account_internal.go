@@ -315,7 +315,7 @@ func (ref *addresses) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-func (ref *addresses) UnmarshalJSON(buf []byte) error {
+func (ref *addresses) UnmarshalJSON([]byte) error {
 	return nil
 }
 
@@ -385,4 +385,72 @@ func (m *accountNamesDTOs) toStruct() ([]*AccountName, error) {
 	}
 
 	return accNames, nil
+}
+
+type harvesterDTO struct {
+	Harvester struct {
+		Key                    string    `json:"key"`
+		Owner                  string    `json:"owner"`
+		Address                string    `json:"address"`
+		DisabledHeight         uint64DTO `json:"disabledHeight"`
+		LastSigningBlockHeight uint64DTO `json:"lastSigningBlockHeight"`
+		EffectiveBalance       uint64DTO `json:"effectiveBalance"`
+		CanHarvest             bool      `json:"canHarvest"`
+		Activity               float64   `json:"activity"`
+		Greed                  float64   `json:"greed"`
+	} `json:"harvester"`
+}
+
+func (ref *harvesterDTO) toStruct() (*Harvester, error) {
+	address, err := NewAddressFromBase32(ref.Harvester.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Harvester{
+		Key:                    ref.Harvester.Key,
+		Owner:                  ref.Harvester.Owner,
+		Address:                address,
+		DisabledHeight:         ref.Harvester.DisabledHeight.toStruct(),
+		LastSigningBlockHeight: ref.Harvester.LastSigningBlockHeight.toStruct(),
+		EffectiveBalance:       ref.Harvester.EffectiveBalance.toStruct(),
+		CanHarvest:             ref.Harvester.CanHarvest,
+		Activity:               ref.Harvester.Activity,
+		Greed:                  ref.Harvester.Greed,
+	}, nil
+}
+
+type harvesterDTOs []*harvesterDTO
+
+type harvestersPageDTO struct {
+	Harvesters []harvesterDTO `json:"data"`
+
+	Pagination struct {
+		TotalEntries uint64 `json:"totalEntries"`
+		PageNumber   uint64 `json:"pageNumber"`
+		PageSize     uint64 `json:"pageSize"`
+		TotalPages   uint64 `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+func (ref *harvestersPageDTO) toStruct() (*HarvestersPage, error) {
+	page := &HarvestersPage{
+		Harvesters: make([]*Harvester, len(ref.Harvesters)),
+		Pagination: &Pagination{
+			TotalEntries: ref.Pagination.TotalEntries,
+			PageNumber:   ref.Pagination.PageNumber,
+			PageSize:     ref.Pagination.PageSize,
+			TotalPages:   ref.Pagination.TotalPages,
+		},
+	}
+
+	var err error
+	for i, h := range ref.Harvesters {
+		page.Harvesters[i], err = h.toStruct()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return page, nil
 }

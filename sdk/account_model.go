@@ -29,6 +29,7 @@ func (a *Account) Sign(tx Transaction) (*SignedTransaction, error) {
 // sign AggregateTransaction with current Account and with every passed cosignatory Account's
 // returns announced Aggregate SignedTransaction
 func (a *Account) SignWithCosignatures(tx *AggregateTransaction, cosignatories []*Account) (*SignedTransaction, error) {
+	tx.MaxFee += Amount(len(cosignatories)*AggregateCosignatureSize) * (tx.MaxFee / Amount(tx.Size()))
 	return signTransactionWithCosignatures(tx, a, cosignatories)
 }
 
@@ -186,6 +187,46 @@ func (a *AccountName) String() string {
 		"AccountName",
 		str.NewField("Address", str.StringPattern, a.Address),
 		str.NewField("Names", str.StringPattern, a.Names),
+	)
+}
+
+type Harvester struct {
+	Key                    string
+	Owner                  string
+	Address                *Address
+	DisabledHeight         Height
+	LastSigningBlockHeight Height
+	EffectiveBalance       Amount
+	CanHarvest             bool
+	Activity               float64
+	Greed                  float64
+}
+
+func (h *Harvester) String() string {
+	return str.StructToString(
+		"Harvester",
+		str.NewField("Key", str.StringPattern, h.Key),
+		str.NewField("Owner", str.StringPattern, h.Owner),
+		str.NewField("Address", str.StringPattern, h.Address),
+		str.NewField("DisabledHeight", str.StringPattern, h.DisabledHeight),
+		str.NewField("LastSigningBlockHeight", str.StringPattern, h.LastSigningBlockHeight),
+		str.NewField("EffectiveBalance", str.StringPattern, h.EffectiveBalance),
+		str.NewField("CanHarvest", str.BooleanPattern, h.CanHarvest),
+		str.NewField("Activity", str.FloatPattern, h.Activity),
+		str.NewField("Greed", str.FloatPattern, h.Greed),
+	)
+}
+
+type HarvestersPage struct {
+	Harvesters []*Harvester
+	Pagination *Pagination
+}
+
+func (h *HarvestersPage) String() string {
+	return str.StructToString(
+		"HarvestersPage",
+		str.NewField("Harvesters", str.StringPattern, h.Harvesters),
+		str.NewField("Pagination", str.StringPattern, h.Pagination),
 	)
 }
 
