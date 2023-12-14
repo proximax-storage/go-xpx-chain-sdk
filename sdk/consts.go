@@ -164,6 +164,12 @@ const (
 	liquidityProviderRoute  = "/liquidity_providers/%s"
 )
 
+// routes for SuperContractV2Service
+const (
+	superContractsRouteV2 = "/supercontracts"
+	superContractRouteV2 = "/supercontracts/%s"
+)
+
 type TransactionGroup string
 
 const (
