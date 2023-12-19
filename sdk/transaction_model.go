@@ -1634,7 +1634,7 @@ func (tx *MosaicSupplyChangeTransaction) Size() int {
 	return MosaicSupplyChangeTransactionSize
 }
 
-/// region modify mosaic levy implementation
+// / region modify mosaic levy implementation
 type MosaicModifyLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -1715,7 +1715,7 @@ func (tx *MosaicModifyLevyTransaction) Size() int {
 
 /// end region modify mosaic levy
 
-/// region remove mosaic levy
+// / region remove mosaic levy
 type MosaicRemoveLevyTransaction struct {
 	AbstractTransaction
 	*MosaicId
@@ -2832,22 +2832,22 @@ const (
 	PlaceSdaExchangeOfferHeaderSize              = TransactionHeaderSize + SdaOffersCountSize
 	RemoveSdaExchangeOfferSize                   = 2 * MosaicIdSize
 	RemoveSdaExchangeOfferHeaderSize             = TransactionHeaderSize + SdaOffersCountSize
-	AutomaticExecutionsNumber               = 4
-	FileNameSize                            = 2
-	FunctionNameSize                        = 2
-	ActualArgumentsSize                     = 2
-	ServicePaymentsCount                    = 1
-	AutomaticExecutionsFileNameSize         = 2
-	AutomaticExecutionsFunctionNameSize     = 2
-	BatchIdSize                             = 8
-	CosignersNumber                         = 4
-	CallsNumber                             = 4
-	PoExVerificationInformationSize         = 32
-	AutomaticExecutionsPaymentHeaderSize    = TransactionHeaderSize + KeySize + AutomaticExecutionsNumber
-	ManualCallHeaderSize                    = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount
-	DeployContractHeaderSize                = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount + AutomaticExecutionsFileNameSize + AutomaticExecutionsFunctionNameSize + AmountSize + AmountSize + AutomaticExecutionsNumber + KeySize
-	SuccessfulEndBatchExecutionHeaderSize   = TransactionHeaderSize + KeySize + BatchIdSize + Hash256 + BaseInt64Size + BaseInt64Size + PoExVerificationInformationSize + DurationSize + CosignersNumber + CallsNumber
-	UnsuccessfulEndBatchExecutionHeaderSize = TransactionHeaderSize + KeySize + BatchIdSize + DurationSize + CosignersNumber + CallsNumber
+	AutomaticExecutionsNumber                    = 4
+	FileNameSize                                 = 2
+	FunctionNameSize                             = 2
+	ActualArgumentsSize                          = 2
+	ServicePaymentsCount                         = 1
+	AutomaticExecutionsFileNameSize              = 2
+	AutomaticExecutionsFunctionNameSize          = 2
+	BatchIdSize                                  = 8
+	CosignersNumber                              = 4
+	CallsNumber                                  = 4
+	PoExVerificationInformationSize              = 32
+	AutomaticExecutionsPaymentHeaderSize         = TransactionHeaderSize + KeySize + AutomaticExecutionsNumber
+	ManualCallHeaderSize                         = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount
+	DeployContractHeaderSize                     = TransactionHeaderSize + KeySize + FileNameSize + FunctionNameSize + ActualArgumentsSize + AmountSize + AmountSize + ServicePaymentsCount + AutomaticExecutionsFileNameSize + AutomaticExecutionsFunctionNameSize + AmountSize + AmountSize + AutomaticExecutionsNumber + KeySize
+	SuccessfulEndBatchExecutionHeaderSize        = TransactionHeaderSize + KeySize + BatchIdSize + Hash256 + BaseInt64Size + BaseInt64Size + PoExVerificationInformationSize + DurationSize + CosignersNumber + CallsNumber
+	UnsuccessfulEndBatchExecutionHeaderSize      = TransactionHeaderSize + KeySize + BatchIdSize + DurationSize + CosignersNumber + CallsNumber
 )
 
 type EntityType uint16
@@ -2929,6 +2929,7 @@ const (
 	AutomaticExecutionsPayment     EntityType = 0x436E
 	SuccessfulEndBatchExecution    EntityType = 0x446E
 	UnsuccessfulEndBatchExecution  EntityType = 0x456E
+	AddDbrbProcess                 EntityType = 0x416C
 )
 
 func (t EntityType) String() string {
@@ -3321,6 +3322,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &successfulEndBatchExecutionTransactionDTO{}
 	case UnsuccessfulEndBatchExecution:
 		dto = &unsuccessfulEndBatchExecutionTransactionDTO{}
+	case AddDbrbProcess:
+		dto = &addDbrbProcessTransactionTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)

@@ -1423,3 +1423,26 @@ type TransactionIdsDTO struct {
 type TransactionHashesDTO struct {
 	Hashes []string `json:"hashes"`
 }
+
+type addDbrbProcessTransactionTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *addDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AddDbrbProcessTransaction{
+		*atx,
+	}, nil
+}
