@@ -357,14 +357,14 @@ func (dto *dataModificationTransactionDTO) toStruct(*Hash) (Transaction, error) 
 func NewDataModificationCancelTransaction(
 	deadline *Deadline,
 	driveKey *PublicAccount,
-	downloadDataCdi *Hash,
+	dataModificationId *Hash,
 	networkType NetworkType,
 ) (*DataModificationCancelTransaction, error) {
 	if driveKey == nil {
 		return nil, ErrNilAccount
 	}
 
-	if downloadDataCdi == nil {
+	if dataModificationId == nil {
 		return nil, ErrNilHash
 	}
 
@@ -375,8 +375,8 @@ func NewDataModificationCancelTransaction(
 			Type:        DataModificationCancel,
 			NetworkType: networkType,
 		},
-		DriveKey:        driveKey,
-		DownloadDataCdi: downloadDataCdi,
+		DriveKey:           driveKey,
+		DataModificationId: dataModificationId,
 	}
 
 	return &tx, nil
@@ -391,11 +391,11 @@ func (tx *DataModificationCancelTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"DriveKey": %s
-			"Id": %s
+			"DataModificationId": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.DriveKey.String(),
-		tx.DownloadDataCdi.String(),
+		tx.DataModificationId.String(),
 	)
 }
 
@@ -413,14 +413,14 @@ func (tx *DataModificationCancelTransaction) Bytes() ([]byte, error) {
 	}
 
 	driveKeyV := transactions.TransactionBufferCreateByteVector(builder, driveKeyB)
-	downloadDataCdiV := hashToBuffer(builder, tx.DownloadDataCdi)
+	dataModificationIdV := hashToBuffer(builder, tx.DataModificationId)
 
 	transactions.DataModificationCancelTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.DataModificationCancelTransactionBufferAddDriveKey(builder, driveKeyV)
-	transactions.DataModificationCancelTransactionBufferAddDownloadDataCdi(builder, downloadDataCdiV)
+	transactions.DataModificationCancelTransactionBufferAddDownloadDataCdi(builder, dataModificationIdV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -435,8 +435,8 @@ func (tx *DataModificationCancelTransaction) Size() int {
 type dataModificationCancelTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		DriveKey        string  `json:"driveKey"`
-		DownloadDataCdi hashDto `json:"downloadDataCdi"`
+		DriveKey           string  `json:"driveKey"`
+		DataModificationId hashDto `json:"dataModificationId"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -457,7 +457,7 @@ func (dto *dataModificationCancelTransactionDTO) toStruct(*Hash) (Transaction, e
 		return nil, err
 	}
 
-	downloadDataCdi, err := dto.Tx.DownloadDataCdi.Hash()
+	dataModificationId, err := dto.Tx.DataModificationId.Hash()
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +465,7 @@ func (dto *dataModificationCancelTransactionDTO) toStruct(*Hash) (Transaction, e
 	return &DataModificationCancelTransaction{
 		*atx,
 		driveKey,
-		downloadDataCdi,
+		dataModificationId,
 	}, nil
 }
 

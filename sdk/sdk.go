@@ -862,8 +862,8 @@ func (c *Client) NewDataModificationTransaction(deadline *Deadline, driveKey *Pu
 	return tx, err
 }
 
-func (c *Client) NewDataModificationCancelTransaction(deadline *Deadline, driveKey *PublicAccount, downloadDataCdi *Hash) (*DataModificationCancelTransaction, error) {
-	tx, err := NewDataModificationCancelTransaction(deadline, driveKey, downloadDataCdi, c.config.NetworkType)
+func (c *Client) NewDataModificationCancelTransaction(deadline *Deadline, driveKey *PublicAccount, dataModificationId *Hash) (*DataModificationCancelTransaction, error) {
+	tx, err := NewDataModificationCancelTransaction(deadline, driveKey, dataModificationId, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
