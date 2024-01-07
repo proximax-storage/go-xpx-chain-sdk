@@ -103,6 +103,7 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) *NodeHealth
 }
 
 func (ncp *NodeHealthCheckerPool) CheckHeight(expectedHeight uint64, nodeHealthCheckers map[string]*NodeHealthChecker) (uint64, map[string]*NodeHealthChecker) {
+	log.Println("Start checking height")
 	type CheckHeightResult struct {
 		Endpoint    string
 		IdentityKey *crypto.PublicKey
@@ -182,6 +183,7 @@ func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) bool {
 	for _, checker := range ncp.nodeHealthCheckers {
 		go func(checker *NodeHealthChecker) {
 			hash, err := checker.BlockHash(height)
+			log.Printf("Node %s=%v has %s", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, hash)
 			if err != nil {
 				log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
 				hashesCh <- sdk.Hash{}
