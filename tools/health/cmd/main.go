@@ -47,6 +47,7 @@ func main() {
 }
 
 func parseNodes(nodesStr string) ([]*health.NodeInfo, error) {
+	nodesStr = strings.TrimSpace(nodesStr)
 	endpointKeyPairs := strings.Split(nodesStr, " ")
 	nodeInfos := make([]*health.NodeInfo, 0, len(endpointKeyPairs))
 

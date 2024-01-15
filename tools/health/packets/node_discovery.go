@@ -18,6 +18,9 @@ type (
 		/// Port.
 		Port uint16
 
+		/// DBRB Port.
+		DbrbPort uint16
+
 		/// Network identifier.
 		NetworkIdentifier uint8
 
@@ -63,6 +66,9 @@ func (n *NodeDiscoveryPullPeersResponse) Parse(buff []byte) error {
 		buff = buff[PublicKeySize:]
 
 		node.Port = binary.LittleEndian.Uint16(buff[:2])
+		buff = buff[2:]
+
+		node.DbrbPort = binary.LittleEndian.Uint16(buff[:2])
 		buff = buff[2:]
 
 		node.NetworkIdentifier = buff[0]
