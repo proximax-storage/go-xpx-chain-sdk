@@ -408,8 +408,8 @@ type DataModificationTransaction struct {
 // Data Modification Cancel Transaction
 type DataModificationCancelTransaction struct {
 	AbstractTransaction
-	DriveKey        *PublicAccount
-	DownloadDataCdi *Hash
+	DriveKey           *PublicAccount
+	DataModificationId *Hash
 }
 
 // Storage Payment Transaction
