@@ -247,3 +247,103 @@ func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 		}
 	}
 }
+
+func (ncp *NodeHealthCheckerPool) FindInconsistentHashesAtHeight(height uint64) map[string]sdk.Hash {
+	type CheckNodeResult struct {
+		Endpoint string
+		Hash     sdk.Hash
+	}
+
+	nodeCheckCh := make(chan CheckNodeResult)
+	nodeCount := len(ncp.nodeHealthCheckers)
+	for _, checker := range ncp.nodeHealthCheckers {
+		go func(checker *NodeHealthChecker) {
+			endpoint := checker.nodeInfo.Endpoint
+			identityKey := checker.nodeInfo.IdentityKey
+			hash, err := checker.BlockHash(height)
+			log.Printf("Node %s=%v has %s", endpoint, identityKey, hash)
+			if err != nil {
+				log.Printf("Error getting block hash from %s:%s\n", endpoint, err)
+				nodeCount--
+				return
+			}
+
+			nodeCheckCh <- CheckNodeResult{endpoint, hash}
+		}(checker)
+	}
+
+	hashes := make(map[sdk.Hash]int)
+	nodeHashResults := make(map[string]sdk.Hash)
+	for {
+		select {
+		case res := <-nodeCheckCh:
+			nodeHashResults[res.Endpoint] = res.Hash
+			hashes[res.Hash]++
+
+			hashCount := 0
+			for _, count := range hashes {
+				hashCount += count
+			}
+
+			if hashCount < nodeCount {
+				continue
+			}
+
+			if len(hashes) > 1 {
+				log.Printf("Block hashes differ (hash:count of returned): %v\n", hashes)
+				return nodeHashResults
+			}
+
+			log.Printf("All nodes got the same block hash at %d height\n", height)
+			return nil
+		}
+	}
+}
+
+func (ncp *NodeHealthCheckerPool) MaxHeight() uint64 {
+	heightCh := make(chan uint64)
+	for _, checker := range ncp.nodeHealthCheckers {
+		go func(checker *NodeHealthChecker) {
+			endpoint := checker.nodeInfo.Endpoint
+			identityKey := checker.nodeInfo.IdentityKey
+			ci, err := checker.ChainInfo()
+			if err != nil {
+				log.Printf("error getting chain info from %s=%v: %s\n", endpoint, identityKey, err)
+				heightCh <- 0
+				return
+			}
+
+			heightCh <- ci.Height
+		}(checker)
+	}
+
+	heightCount := 0
+	maxHeight := uint64(0)
+	for {
+		select {
+		case res := <-heightCh:
+			heightCount++
+
+			if res > maxHeight {
+				maxHeight = res
+			}
+
+			if heightCount != len(ncp.nodeHealthCheckers) {
+				continue
+			}
+
+			return maxHeight
+		}
+	}
+}
+
+func (ncp *NodeHealthCheckerPool) Close() error {
+	for _, checker := range ncp.nodeHealthCheckers {
+		err := checker.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
