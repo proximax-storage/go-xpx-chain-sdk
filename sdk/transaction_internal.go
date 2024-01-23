@@ -1446,3 +1446,26 @@ func (dto *addDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction
 		*atx,
 	}, nil
 }
+
+type removeDbrbProcessTransactionTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *removeDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RemoveDbrbProcessTransaction{
+		*atx,
+	}, nil
+}

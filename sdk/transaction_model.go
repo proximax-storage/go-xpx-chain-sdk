@@ -2930,6 +2930,7 @@ const (
 	SuccessfulEndBatchExecution    EntityType = 0x446E
 	UnsuccessfulEndBatchExecution  EntityType = 0x456E
 	AddDbrbProcess                 EntityType = 0x416C
+	RemoveDbrbProcess              EntityType = 0x426C
 )
 
 func (t EntityType) String() string {
@@ -3324,6 +3325,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &unsuccessfulEndBatchExecutionTransactionDTO{}
 	case AddDbrbProcess:
 		dto = &addDbrbProcessTransactionTransactionDTO{}
+	case RemoveDbrbProcess:
+		dto = &removeDbrbProcessTransactionTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
