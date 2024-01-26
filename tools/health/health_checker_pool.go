@@ -3,6 +3,7 @@ package health
 import (
 	"errors"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
@@ -94,6 +95,7 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) *NodeHealth
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
 	ncp.dialed[info.Endpoint] = true
 	if err != nil {
+		log.Printf("Error connecting to %s: %s", info.Endpoint, err)
 		return nil
 	}
 
@@ -158,7 +160,7 @@ func (ncp *NodeHealthCheckerPool) CheckHeight(expectedHeight uint64, nodeHealthC
 	}
 }
 
-func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
+func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64, timeout time.Duration) error {
 	log.Printf("Waiting for the network (%d nodes) to reach the height %d\n", len(ncp.nodeHealthCheckers), expectedHeight)
 
 	minHeight, notReached := ncp.CheckHeight(expectedHeight, ncp.nodeHealthCheckers)
@@ -167,6 +169,11 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 	}
 
 	ticker := time.NewTicker(AvgSecondsPerBlock)
+	var timeoutCh <-chan time.Time
+	if timeout > 0 {
+		timeoutCh = time.After(timeout)
+	}
+
 	for {
 		select {
 		case <-ticker.C:
@@ -174,6 +181,13 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 				ticker.Stop()
 				return nil
 			}
+		case <-timeoutCh:
+			log.Printf("Timeout reached while waiting for network to reach the height %d", expectedHeight)
+			for _, node := range notReached {
+				log.Printf("Removing node from checklist: %v=%v", node.nodeInfo.Endpoint, node.nodeInfo.IdentityKey)
+				delete(ncp.nodeHealthCheckers, node.nodeInfo.Endpoint)
+			}
+			return nil
 		}
 	}
 }
@@ -254,21 +268,45 @@ func (ncp *NodeHealthCheckerPool) FindInconsistentHashesAtHeight(height uint64) 
 		Hash     sdk.Hash
 	}
 
-	nodeCheckCh := make(chan CheckNodeResult)
 	nodeCount := len(ncp.nodeHealthCheckers)
+	nodeCheckCh := make(chan CheckNodeResult, nodeCount/2)
+	var mu sync.Mutex
 	for _, checker := range ncp.nodeHealthCheckers {
 		go func(checker *NodeHealthChecker) {
-			endpoint := checker.nodeInfo.Endpoint
-			identityKey := checker.nodeInfo.IdentityKey
-			hash, err := checker.BlockHash(height)
-			log.Printf("Node %s=%v has %s", endpoint, identityKey, hash)
-			if err != nil {
-				log.Printf("Error getting block hash from %s:%s\n", endpoint, err)
-				nodeCount--
-				return
+			var hash sdk.Hash
+			var err error
+
+			for {
+				hash, err = checker.BlockHash(height)
+				if err == nil {
+					break
+				}
+
+				if err == ErrReturnedZeroHashes {
+					mu.Lock()
+					nodeCount--
+					mu.Unlock()
+					return
+				}
+
+				// Handle connection error
+				log.Printf("Error getting block hash from %s: %s. Retrying connection...\n", checker.nodeInfo.Endpoint, err)
+				nc, err := NewNodeHealthChecker(ncp.client, checker.nodeInfo, ncp.mode)
+				if err != nil {
+					log.Printf("Error connecting to %s: %s\n", checker.nodeInfo.Endpoint, err)
+					mu.Lock()
+					nodeCount--
+					mu.Unlock()
+					return
+				}
+
+				mu.Lock()
+				ncp.nodeHealthCheckers[checker.nodeInfo.Endpoint] = nc
+				mu.Unlock()
 			}
 
-			nodeCheckCh <- CheckNodeResult{endpoint, hash}
+			log.Printf("Node %s=%v has %s", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, hash)
+			nodeCheckCh <- CheckNodeResult{checker.nodeInfo.Endpoint, hash}
 		}(checker)
 	}
 
@@ -298,52 +336,4 @@ func (ncp *NodeHealthCheckerPool) FindInconsistentHashesAtHeight(height uint64) 
 			return nil
 		}
 	}
-}
-
-func (ncp *NodeHealthCheckerPool) MaxHeight() uint64 {
-	heightCh := make(chan uint64)
-	for _, checker := range ncp.nodeHealthCheckers {
-		go func(checker *NodeHealthChecker) {
-			endpoint := checker.nodeInfo.Endpoint
-			identityKey := checker.nodeInfo.IdentityKey
-			ci, err := checker.ChainInfo()
-			if err != nil {
-				log.Printf("error getting chain info from %s=%v: %s\n", endpoint, identityKey, err)
-				heightCh <- 0
-				return
-			}
-
-			heightCh <- ci.Height
-		}(checker)
-	}
-
-	heightCount := 0
-	maxHeight := uint64(0)
-	for {
-		select {
-		case res := <-heightCh:
-			heightCount++
-
-			if res > maxHeight {
-				maxHeight = res
-			}
-
-			if heightCount != len(ncp.nodeHealthCheckers) {
-				continue
-			}
-
-			return maxHeight
-		}
-	}
-}
-
-func (ncp *NodeHealthCheckerPool) Close() error {
-	for _, checker := range ncp.nodeHealthCheckers {
-		err := checker.Close()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
