@@ -2,6 +2,7 @@ package health
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -183,11 +184,19 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64, timeout t
 			}
 		case <-timeoutCh:
 			log.Printf("Timeout reached while waiting for network to reach the height %d", expectedHeight)
-			for _, node := range notReached {
-				log.Printf("Removing node from checklist: %v=%v", node.nodeInfo.Endpoint, node.nodeInfo.IdentityKey)
-				delete(ncp.nodeHealthCheckers, node.nodeInfo.Endpoint)
+			var nodesInfo string
+			for _, checker := range notReached {
+				ci, err := checker.ChainInfo()
+				if err != nil {
+					ci.Height = 0
+				}
+				nodesInfo += fmt.Sprintf("%v - %d\n", checker.nodeInfo.Endpoint, ci.Height)
+
+				log.Printf("Removing node from checklist: %v=%v", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey)
+				delete(ncp.nodeHealthCheckers, checker.nodeInfo.Endpoint)
 			}
-			return nil
+
+			return fmt.Errorf("Current network height:  %d\n%s", expectedHeight, nodesInfo)
 		}
 	}
 }
@@ -271,10 +280,13 @@ func (ncp *NodeHealthCheckerPool) FindInconsistentHashesAtHeight(height uint64) 
 	nodeCount := len(ncp.nodeHealthCheckers)
 	nodeCheckCh := make(chan CheckNodeResult, nodeCount/2)
 	var mu sync.Mutex
+	const maxRetries = 3
+
 	for _, checker := range ncp.nodeHealthCheckers {
 		go func(checker *NodeHealthChecker) {
 			var hash sdk.Hash
 			var err error
+			var retries int
 
 			for {
 				hash, err = checker.BlockHash(height)
@@ -289,20 +301,35 @@ func (ncp *NodeHealthCheckerPool) FindInconsistentHashesAtHeight(height uint64) 
 					return
 				}
 
-				// Handle connection error
-				log.Printf("Error getting block hash from %s: %s. Retrying connection...\n", checker.nodeInfo.Endpoint, err)
-				nc, err := NewNodeHealthChecker(ncp.client, checker.nodeInfo, ncp.mode)
-				if err != nil {
-					log.Printf("Error connecting to %s: %s\n", checker.nodeInfo.Endpoint, err)
+				if retries > maxRetries {
+					log.Printf("Failed to connect to %s after %d retries\n", checker.nodeInfo.Endpoint, maxRetries)
+					
 					mu.Lock()
 					nodeCount--
+
+					log.Printf("Removing node from checklist: %v=%v", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey)
+					delete(ncp.nodeHealthCheckers, checker.nodeInfo.Endpoint)
+
 					mu.Unlock()
 					return
 				}
 
-				mu.Lock()
-				ncp.nodeHealthCheckers[checker.nodeInfo.Endpoint] = nc
-				mu.Unlock()
+				// Handle connection error
+				log.Printf("Error getting block hash from %s: %s. Retrying connection...\n", checker.nodeInfo.Endpoint, err)
+				retries++
+
+				nc, err := NewNodeHealthChecker(ncp.client, checker.nodeInfo, ncp.mode)
+				if err != nil {
+					log.Printf("Error connecting to %s: %s\n", checker.nodeInfo.Endpoint, err)
+					continue
+				}
+
+				if nc != nil {
+					mu.Lock()
+					ncp.nodeHealthCheckers[checker.nodeInfo.Endpoint] = nc
+					mu.Unlock()
+				}
+
 			}
 
 			log.Printf("Node %s=%v has %s", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, hash)
