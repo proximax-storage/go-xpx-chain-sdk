@@ -300,8 +300,7 @@ func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) (bool, map[string]s
 						return false, nodeHashResults
 					} else {
 						log.Printf("All nodes got the same block hash at %d height\n", height)
-						// return true, nodeHashResults
-						return false, nodeHashResults
+						return true, nodeHashResults
 					}
 				}
 			}
