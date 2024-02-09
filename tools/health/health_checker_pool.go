@@ -2,7 +2,6 @@ package health
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -182,6 +181,8 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 }
 
 func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) map[string]uint64 {
+	log.Printf("Waiting for the network (%d nodes) to reach the height %d\n", len(ncp.nodeHealthCheckers), expectedHeight)
+
 	ch := make(chan map[string]uint64, len(ncp.nodeHealthCheckers))
 	notReached := make(map[string]uint64, len(ncp.nodeHealthCheckers))
 	var wg sync.WaitGroup
@@ -222,7 +223,6 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) map[string]u
 	}()
 
 	for node := range ch {
-		fmt.Println("node:", node)
 		for k, v := range node {
 			notReached[k] = v
 		}
