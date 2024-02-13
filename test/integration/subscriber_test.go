@@ -6,6 +6,7 @@ package integration
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -278,6 +279,36 @@ func TestAddCosignatureHandlersV2(t *testing.T) {
 			[]sdk.Transaction{multTxs, fackeTxs},
 		)
 	}, defaultAccount, multisigAccount, acc1, acc2)
+	assert.Nil(t, result.error)
+	wg.Wait()
+}
+
+func TestAddTransactionStatementHandlers(t *testing.T) {
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	entityType := sdk.LockHashCreatedReceiptEntityType
+	err := wsc.AddTransactionStatementHandlers(&entityType, func(receipt *sdk.AnonymousReceipt) bool {
+		parsed := &sdk.BalanceChangeReceipt{}
+		parsed.ParseInto(receipt.Receipt, client.NetworkType())
+		if strings.EqualFold(parsed.Account.PublicKey, defaultAccount.PublicAccount.PublicKey) {
+			wg.Done()
+			return false
+		}
+		return true
+	})
+	assert.Nil(t, err)
+	assert.Nil(t, err)
+	stx := &sdk.SignedTransaction{sdk.AggregateBondedV2, "", &sdk.Hash{101}}
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewLockFundsTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.XpxRelative(10),
+			sdk.Duration(2),
+			stx,
+		)
+	}, defaultAccount)
+
 	assert.Nil(t, result.error)
 	wg.Wait()
 }

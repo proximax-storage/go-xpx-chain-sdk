@@ -308,7 +308,7 @@ type anonymousReceiptDto struct {
 		Version uint32    `json:"version"`
 		Type    uint16    `json:"type"`
 	} `json:"meta"`
-	Receipt string `json:"receipt"`
+	Receipt string `json:"data"`
 }
 
 func (dto *anonymousReceiptDto) toStruct() (*AnonymousReceipt, error) {

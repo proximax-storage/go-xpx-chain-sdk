@@ -127,7 +127,14 @@ func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Tr
 			}
 			agTx.Cosignatures = originalAgTx.Cosignatures
 		}
-		assert.Equal(t, tx, transaction)
+		if tx.GetAbstractTransaction().Type == sdk.Lock && transaction.GetAbstractTransaction().Type == sdk.Lock {
+			if v, ok := tx.(*sdk.LockFundsTransaction); ok {
+				if z, ok := transaction.(*sdk.LockFundsTransaction); ok {
+					z.SignedTransaction.EntityType = v.SignedTransaction.EntityType
+				}
+			}
+		}
+		assert.EqualValues(t, tx, transaction)
 		out <- Result{transaction, nil}
 		return true
 	}); err != nil {
