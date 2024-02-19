@@ -3286,6 +3286,10 @@ func (t EntityType) String() string {
 
 type EntityVersion uint32
 
+func (v EntityVersion) GetStandaloneVersion() EntityVersion {
+	return v & 0x00FF
+}
+
 const (
 	AccountPropertyAddressVersion      EntityVersion = 1
 	AccountPropertyMosaicVersion       EntityVersion = 1
