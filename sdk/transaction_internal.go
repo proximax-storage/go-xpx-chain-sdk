@@ -1424,14 +1424,14 @@ type TransactionHashesDTO struct {
 	Hashes []string `json:"hashes"`
 }
 
-type addDbrbProcessTransactionTransactionDTO struct {
+type addDbrbProcessTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *addDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+func (dto *addDbrbProcessTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1447,14 +1447,14 @@ func (dto *addDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction
 	}, nil
 }
 
-type removeDbrbProcessTransactionTransactionDTO struct {
+type removeDbrbProcessTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
 
-func (dto *removeDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transaction, error) {
+func (dto *removeDbrbProcessTransactionDTO) toStruct(*Hash) (Transaction, error) {
 	info, err := dto.TDto.toStruct()
 	if err != nil {
 		return nil, err
@@ -1466,6 +1466,29 @@ func (dto *removeDbrbProcessTransactionTransactionDTO) toStruct(*Hash) (Transact
 	}
 
 	return &RemoveDbrbProcessTransaction{
+		*atx,
+	}, nil
+}
+
+type removeDbrbProcessByNetworkTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *removeDbrbProcessByNetworkTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RemoveDbrbProcessByNetworkTransaction{
 		*atx,
 	}, nil
 }
