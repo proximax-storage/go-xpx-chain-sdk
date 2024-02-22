@@ -151,7 +151,19 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 		case <-ticker.C:
 			ci, err := nhc.ChainInfo()
 			if err != nil {
-				return 0, err
+				retryCount := 0
+				for retryCount < 3 && err != nil {
+					retryCount++
+
+					log.Printf("Retrying to get chain height from %s (attempt %d)\n", nhc.nodeInfo.Endpoint, retryCount)
+					time.Sleep(AvgSecondsPerBlock)
+
+					ci, err = nhc.ChainInfo()
+				}
+
+				if err != nil {
+					return 0, err
+				}
 			}
 
 			height = ci.Height

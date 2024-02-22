@@ -211,9 +211,14 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) map[string]u
 				}
 
 				log.Printf("Error getting height from node %s=%s: %v", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
+
+				mu.Lock()
+				delete(ncp.nodeHealthCheckers, checker.nodeInfo.Endpoint)
+				delete(ncp.dialed, checker.nodeInfo.Endpoint)
+				mu.Unlock()
+
 				return
 			}
-			return
 		}(checker)
 	}
 
