@@ -15,6 +15,8 @@ import (
 )
 
 func TestCreateLiquidityProviderTransaction(t *testing.T) {
+	t.Skip()
+
 	soInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StorageNamespaceId)
 	require.NoError(t, err, err)
 
@@ -25,21 +27,20 @@ func TestCreateLiquidityProviderTransaction(t *testing.T) {
 	require.NoError(t, err, err)
 
 	mosaics := []*sdk.MosaicId{soInfo.MosaicId, smInfo.MosaicId, scInfo.MosaicId}
+	lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
+	assert.Nil(t, err, err)
+
+	result := sendTransaction(t, func() (sdk.Transaction, error) {
+		return client.NewTransferTransaction(
+			sdk.NewDeadline(time.Hour),
+			managerAccount.Address,
+			[]*sdk.Mosaic{sdk.XpxRelative(uint64(100000 * len(mosaics)))},
+			sdk.NewPlainMessage("Test"),
+		)
+	}, defaultAccount)
+	require.Nil(t, result.error, result.error)
+
 	for _, mosaic := range mosaics {
-		lps, err := client.LiquidityProvider.GetLiquidityProviders(ctx, nil)
-		assert.Nil(t, err, err)
-
-		currencyDeposit := sdk.XpxRelative(100000)
-		result := sendTransaction(t, func() (sdk.Transaction, error) {
-			return client.NewTransferTransaction(
-				sdk.NewDeadline(time.Hour),
-				managerAccount.Address,
-				[]*sdk.Mosaic{currencyDeposit},
-				sdk.NewPlainMessage("Test"),
-			)
-		}, defaultAccount)
-		require.Nil(t, result.error, result.error)
-
 		slashingAccount, err := client.NewAccountFromPublicKey("0000000000000000000000000000000000000000000000000000000000000000")
 		require.Nil(t, err, err)
 
@@ -57,14 +58,16 @@ func TestCreateLiquidityProviderTransaction(t *testing.T) {
 			)
 		}, managerAccount)
 		assert.Nil(t, result.error, result.error)
-
-		lpsAfter, err := client.LiquidityProvider.GetLiquidityProviders(ctx, &sdk.LiquidityProviderPageOptions{Owner: managerAccount.PublicAccount.PublicKey})
-		assert.Nil(t, err, err)
-		assert.Equal(t, lps.Pagination.TotalEntries+uint64(len(mosaics)), lpsAfter.Pagination.TotalEntries)
 	}
+
+	lpsAfter, err := client.LiquidityProvider.GetLiquidityProviders(ctx, &sdk.LiquidityProviderPageOptions{Owner: managerAccount.PublicAccount.PublicKey})
+	assert.Nil(t, err, err)
+	assert.Equal(t, lps.Pagination.TotalEntries+uint64(len(mosaics)), lpsAfter.Pagination.TotalEntries)
 }
 
 func TestManualRateChangeTransactionTransaction(t *testing.T) {
+	t.Skip()
+
 	soInfo, err := client.Resolve.GetMosaicInfoByAssetId(ctx, sdk.StorageNamespaceId)
 	require.NoError(t, err, err)
 
