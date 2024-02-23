@@ -236,7 +236,7 @@ type stakingRecordInfoDto struct {
 		Address        string    `json:"address"`
 		PublicKey      string    `json:"publicKey"`
 		RegistryHeight uint64DTO `json:"registryHeight"`
-		StakedAmount   uint64DTO `json:"stakedAmount"`
+		StakedAmount   uint64DTO `json:"totalStaked"`
 		RefHeight      uint64DTO `json:"refHeight"`
 	} `json:"stakingAccount"`
 }
