@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/json-iterator/go v1.1.6
 	github.com/pkg/errors v0.8.1
-	github.com/proximax-storage/go-xpx-chain-sync v1.1.2
+	github.com/proximax-storage/go-xpx-chain-sync v1.1.4-0.20240304152714-531033efe0a3
 	github.com/proximax-storage/go-xpx-crypto v0.0.0-20191023142918-e02e2652d78e
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
 	github.com/stretchr/testify v1.3.0
