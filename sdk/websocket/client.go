@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"net/url"
 	"time"
 
@@ -64,9 +63,8 @@ type (
 		messagePublisher MessagePublisher
 
 		// connectionStatusCh chan bool
-		listenCh     chan bool            // channel for manage current listen status for connection
-		reconnectCh  chan *websocket.Conn // channel for connection with we will close, and open new connection
-		connectionCh chan *websocket.Conn // channel for new opened connection
+		listenCh    chan bool  // channel for manage current listen status for connection
+		reconnectCh chan error // channel for connection with we will close, and open new connection
 
 		connectFn func(cfg *sdk.Config) (*websocket.Conn, string, error)
 	}
@@ -114,31 +112,23 @@ func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
 
 		topicHandlers: &topicHandlers{h: make(topicHandlersMap)},
 
-		listenCh:     make(chan bool),
-		reconnectCh:  make(chan *websocket.Conn),
-		connectionCh: make(chan *websocket.Conn),
+		listenCh:    make(chan bool),
+		reconnectCh: make(chan error),
 
 		connectFn: connect,
 	}
 
-	go socketClient.handleSignal()
-
 	if err := socketClient.initNewConnection(); err != nil {
-		return socketClient, err
+		return nil, err
 	}
+
+	go socketClient.startMessageReading()
+	go socketClient.handleSignal()
 
 	return socketClient, nil
 }
 
-func (c *CatapultWebsocketClientImpl) Listen() {
-
-	c.listenCh <- true
-
-	select {
-	case <-c.ctx.Done():
-		c.closeConnection(c.conn)
-	}
-}
+func (c *CatapultWebsocketClientImpl) Listen() {}
 
 func (c *CatapultWebsocketClientImpl) Close() error {
 	c.cancelFunc()
@@ -383,41 +373,28 @@ func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address
 func (c *CatapultWebsocketClientImpl) handleSignal() {
 	for {
 		select {
-		case conn := <-c.connectionCh:
-			c.conn = conn
-		case conn := <-c.reconnectCh:
-			c.closeConnection(conn)
-			go func() {
-				c.listenCh <- false
-			}()
+		case err := <-c.reconnectCh:
+			fmt.Printf("reconnect because of %s", err)
+			fmt.Println("Try again after timeout period")
+			<-time.NewTicker(c.config.WsReconnectionTimeout).C
 
-		case <-c.listenCh:
-
-			if c.conn == nil {
-				err := c.initNewConnection()
-				if err != nil {
-					fmt.Println("websocket: connection is failed. Try again after wait period")
-					select {
-					case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-						go func() {
-							c.listenCh <- true
-						}()
-						continue
-					}
-				}
-			}
-
-			err := c.updateHandlers()
+			err = c.initNewConnection()
 			if err != nil {
-				fmt.Println("websocket: update handles is failed. Try again after timeout period")
-				select {
-				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-					continue
-				}
-
+				c.reconnectCh <- errors.Wrap(err, "websocket: connection for %s is failed")
+				continue
 			}
-			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
-			c.startListener()
+
+			err = c.updateHandlers()
+			if err != nil {
+				c.reconnectCh <- errors.Wrap(err, "websocket: update handles is failed")
+				continue
+			}
+
+			fmt.Println(fmt.Sprintf("websocket: re-connected successfuly: %s", c.config.UsedBaseUrl.String()))
+			go c.startMessageReading()
+		case <-c.ctx.Done():
+			c.closeConnection(c.conn)
+			c.messageRouter.Close()
 		}
 	}
 }
@@ -437,6 +414,7 @@ func (c *CatapultWebsocketClientImpl) removeHandlers() {
 }
 
 func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
+	println("close con for: ", c.UID)
 	if conn != nil {
 		if err := conn.Close(); err != nil {
 			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
@@ -445,21 +423,12 @@ func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
 	c.conn = nil
 }
 
-func (c *CatapultWebsocketClientImpl) startListener() {
+func (c *CatapultWebsocketClientImpl) startMessageReading() {
 	for {
 		_, resp, e := c.conn.ReadMessage()
 		if e != nil {
-			if _, ok := e.(*net.OpError); ok {
-				// Stop ReadMessage if user called Close function for websocket client
-				return
-			}
-
-			if _, ok := e.(*websocket.CloseError); ok {
-				go func() {
-					c.reconnectCh <- c.conn
-				}()
-				return
-			}
+			c.reconnectCh <- e
+			return
 		}
 
 		c.messageRouter.RouteMessage(resp)

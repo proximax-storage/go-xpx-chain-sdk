@@ -3,8 +3,9 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
@@ -28,6 +29,7 @@ func NewRouter(uid string, publisher MessagePublisher, topicHandlers TopicHandle
 type Router interface {
 	RouteMessage([]byte)
 	SetUid(string)
+	Close()
 }
 
 type messageRouter struct {
@@ -39,22 +41,29 @@ type messageRouter struct {
 }
 
 func (r *messageRouter) run() {
-	for m := range r.dataCh {
-		messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
-		if err != nil {
-			panic(errors.Wrap(err, "getting message info"))
-		}
+	for {
+		select {
+		case m, ok := <-r.dataCh:
+			if !ok {
+				return
+			}
 
-		handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
-		if handler == nil {
-			fmt.Println("getting topic handler from topic handlers storage")
-			continue
-		}
+			messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
+			if err != nil {
+				panic(errors.Wrap(err, "getting message info"))
+			}
 
-		if ok := handler.Handle(messageInfo.Address, m); !ok {
-			if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
-				fmt.Println(err, "unsubscribing from topic")
+			handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
+			if handler == nil {
+				fmt.Println("getting topic handler from topic handlers storage")
 				continue
+			}
+
+			if ok := handler.Handle(messageInfo.Address, m); !ok {
+				if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
+					fmt.Println(err, "unsubscribing from topic")
+					continue
+				}
 			}
 		}
 	}
@@ -66,6 +75,10 @@ func (r *messageRouter) RouteMessage(m []byte) {
 
 func (r *messageRouter) SetUid(uid string) {
 	r.uid = uid
+}
+
+func (r *messageRouter) Close() {
+	close(r.dataCh)
 }
 
 func MapMessageInfo(m []byte) (*sdk.WsMessageInfo, error) {
