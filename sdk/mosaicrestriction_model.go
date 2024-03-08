@@ -91,8 +91,8 @@ func (ref *MosaicRestrictionEntry) ToAddressMosaicRestrictionEntry() (*AddressMo
 	mosaicRestriction.Version = ref.Version
 	mosaicRestriction.Restrictions = make([]AddressMosaicRestriction, len(ref.Restrictions))
 	for i, value := range ref.Restrictions {
-		restriction := value.(AddressMosaicRestriction)
-		mosaicRestriction.Restrictions[i] = restriction
+		restriction := value.(*AddressMosaicRestriction)
+		mosaicRestriction.Restrictions[i] = *restriction
 	}
 	return &mosaicRestriction, nil
 }
@@ -108,8 +108,8 @@ func (ref *MosaicRestrictionEntry) ToGlobalMosaicRestrictionEntry() (*GlobalMosa
 	mosaicRestriction.Version = ref.Version
 	mosaicRestriction.Restrictions = make([]GlobalMosaicRestriction, len(ref.Restrictions))
 	for i, value := range ref.Restrictions {
-		restriction := value.(GlobalMosaicRestriction)
-		mosaicRestriction.Restrictions[i] = restriction
+		restriction := value.(*GlobalMosaicRestriction)
+		mosaicRestriction.Restrictions[i] = *restriction
 	}
 	return &mosaicRestriction, nil
 }

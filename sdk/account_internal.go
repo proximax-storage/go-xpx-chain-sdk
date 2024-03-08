@@ -218,10 +218,10 @@ func (dto *supplementalPublicKeysDTO) toStruct(networkType NetworkType) (*Supple
 		linkedAccount, err = dto.LinkedPublicKey.toStruct(networkType)
 	}
 	if dto.NodePublicKey != nil {
-		nodeAccount, err = dto.LinkedPublicKey.toStruct(networkType)
+		nodeAccount, err = dto.NodePublicKey.toStruct(networkType)
 	}
 	if dto.VrfPublicKey != nil {
-		vrfAccount, err = dto.LinkedPublicKey.toStruct(networkType)
+		vrfAccount, err = dto.VrfPublicKey.toStruct(networkType)
 	}
 	if err != nil {
 		return nil, err
