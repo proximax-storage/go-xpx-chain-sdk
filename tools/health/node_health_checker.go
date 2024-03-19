@@ -2,6 +2,7 @@ package health
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -52,6 +53,10 @@ func NewNodeInfo(pKey, addr string) (*NodeInfo, error) {
 		IdentityKey: k,
 		Endpoint:    addr,
 	}, nil
+}
+
+func (ni *NodeInfo) String() string {
+	return fmt.Sprintf("%s=%s", ni.Endpoint, ni.IdentityKey)
 }
 
 func NewNodeHealthChecker(client *crypto.KeyPair, info *NodeInfo, mode packets.ConnectionSecurityMode) (*NodeHealthChecker, error) {
@@ -168,6 +173,7 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 
 			height = ci.Height
 			if height >= expectedHeight {
+				log.Printf("Node %s=%v has reached the required height\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey)
 				return height, nil
 			}
 
@@ -177,7 +183,7 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 			}
 
 			ticker = time.NewTicker(duration)
-			if globalTicker == nil {
+			if globalTicker.C == nil {
 				globalTicker = time.NewTicker(duration + duration/2)
 			}
 
