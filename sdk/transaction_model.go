@@ -3306,7 +3306,7 @@ const (
 	NetworkConfigAbsoluteHeightVersion EntityVersion = 1
 	BlockchainUpgradeVersion           EntityVersion = 1
 	AccountV2UpgradeVersion            EntityVersion = 1
-	LinkAccountVersion                 EntityVersion = 2
+	LinkAccountVersion                 EntityVersion = 3
 	NodeKeyLinkVersion                 EntityVersion = 1
 	VrfKeyLinkVersion                  EntityVersion = 1
 	LockVersion                        EntityVersion = 1
