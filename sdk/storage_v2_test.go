@@ -137,6 +137,7 @@ const (
         "replicator": {
             "key": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
             "version": 1,
+            "nodeBootKey": "36E7F50C8B8BC9A4FC6325B2359E0E5DB50C75A914B5292AD726FD5AE3992691",
             "drives": [
                 {
                     "drive": "415C7C61822B063F62A4876A6F6BA2DAAE114AB298D7AC7FC56FDBA95872C309",
@@ -279,8 +280,9 @@ var (
 	}
 
 	testReplicatorInfo = &Replicator{
-		Account: testReplicatorV2Account1,
-		Version: 1,
+		Account:     testReplicatorV2Account1,
+		Version:     1,
+		NodeBootKey: testReplicatorV2Account1,
 		Drives: []*DriveInfo{
 			{
 				DriveKey:                       testBcDriveAccount,
