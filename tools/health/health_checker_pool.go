@@ -3,6 +3,7 @@ package health
 import (
 	"errors"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
@@ -22,17 +23,23 @@ type NodeHealthCheckerPool struct {
 	maxConnection int
 }
 
-func NewNodeHealthCheckerPool(client *crypto.KeyPair, nodeInfos []*NodeInfo, mode packets.ConnectionSecurityMode, findConnected bool, maxConnection int) (*NodeHealthCheckerPool, error) {
-	ncp := &NodeHealthCheckerPool{
+func NewNodeHealthCheckerPool(client *crypto.KeyPair, mode packets.ConnectionSecurityMode, maxConnection int) *NodeHealthCheckerPool {
+	return &NodeHealthCheckerPool{
 		nodeHealthCheckers: make(map[string]*NodeHealthChecker),
 		dialed:             make(map[string]bool),
 		client:             client,
 		mode:               mode,
 		maxConnection:      maxConnection,
 	}
+}
 
+func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, findConnected bool) (failedConnectionsNodes []*NodeInfo, err error) {
 	for _, info := range nodeInfos {
-		ncp.MaybeConnectToNode(info)
+		delete(ncp.dialed, info.Endpoint)
+		if _, err := ncp.MaybeConnectToNode(info); err != nil {
+			failedConnectionsNodes = append(failedConnectionsNodes, info)
+		}
+
 		if len(ncp.nodeHealthCheckers) >= ncp.maxConnection {
 			break
 		}
@@ -46,7 +53,7 @@ func NewNodeHealthCheckerPool(client *crypto.KeyPair, nodeInfos []*NodeInfo, mod
 		return nil, errors.New("could not connect to any peer")
 	}
 
-	return ncp, nil
+	return failedConnectionsNodes, nil
 }
 
 func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() {
@@ -69,7 +76,7 @@ func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() {
 					return
 				}
 
-				nc := ncp.MaybeConnectToNode(info)
+				nc, _ := ncp.MaybeConnectToNode(info)
 				if nc != nil {
 					toCheck = append(toCheck, nc)
 				}
@@ -80,26 +87,32 @@ func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() {
 
 		toCheck = toCheck[1:]
 	}
+
+	for endpoint := range ncp.dialed {
+		delete(ncp.dialed, endpoint)
+	}
+	
 }
 
-func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) *NodeHealthChecker {
+func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealthChecker, error) {
 	if _, ok := ncp.nodeHealthCheckers[info.Endpoint]; ok {
-		return nil
+		return nil, nil
 	}
 
 	if _, ok := ncp.dialed[info.Endpoint]; ok {
-		return nil
+		return nil, nil
 	}
 
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
 	ncp.dialed[info.Endpoint] = true
 	if err != nil {
-		return nil
+		log.Printf("Error connecting to %s: %s", info.Endpoint, err)
+		return nil, err
 	}
 
 	ncp.nodeHealthCheckers[info.Endpoint] = nc
 
-	return nc
+	return nc, nil
 }
 
 func (ncp *NodeHealthCheckerPool) CheckHeight(expectedHeight uint64, nodeHealthCheckers map[string]*NodeHealthChecker) (uint64, map[string]*NodeHealthChecker) {
@@ -178,28 +191,126 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 	}
 }
 
-func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) bool {
-	hashesCh := make(chan sdk.Hash)
+func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached map[string]uint64, reached map[string]uint64, err error) {
+	if len(ncp.nodeHealthCheckers) == 0 {
+		return nil, nil, errors.New("could not connect to any peer")
+	}
+
+	log.Printf("Waiting for the network (%d nodes) to reach the height %d\n", len(ncp.nodeHealthCheckers), expectedHeight)
+
+	ch := make(chan map[string]uint64, len(ncp.nodeHealthCheckers))
+	notReached = make(map[string]uint64, len(ncp.nodeHealthCheckers))
+	reached = make(map[string]uint64, len(ncp.nodeHealthCheckers))
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	for _, checker := range ncp.nodeHealthCheckers {
+		wg.Add(1)
 		go func(checker *NodeHealthChecker) {
-			hash, err := checker.BlockHash(height)
-			log.Printf("Node %s=%v has %s", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, hash)
+			defer wg.Done()
+			height, err := checker.WaitHeight(expectedHeight)
 			if err != nil {
-				log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
-				hashesCh <- sdk.Hash{}
+				if err == ErrTimedOut || err == ErrTooLargeWaitTime {
+					if errors.Is(err, ErrTimedOut) {
+						log.Printf("Timed out waiting for node %s=%s to reach height: %d, current: %d", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, expectedHeight, height)
+					} else if errors.Is(err, ErrTooLargeWaitTime) {
+						log.Printf("Too large wait time for node %s=%s to reach height: %d, current: %d", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, expectedHeight, height)
+					}
+					ch <- map[string]uint64{checker.nodeInfo.Endpoint: height}
+
+					mu.Lock()
+					delete(ncp.nodeHealthCheckers, checker.nodeInfo.Endpoint)
+					delete(ncp.dialed, checker.nodeInfo.Endpoint)
+					mu.Unlock()
+
+					return
+				}
+
+				log.Printf("Error getting height from node %s=%s: %v", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
+				ch <- map[string]uint64{checker.nodeInfo.Endpoint: 0}
+
+				mu.Lock()
+				delete(ncp.nodeHealthCheckers, checker.nodeInfo.Endpoint)
+				delete(ncp.dialed, checker.nodeInfo.Endpoint)
+				mu.Unlock()
 				return
 			}
 
-			hashesCh <- hash
+			ch <- map[string]uint64{checker.nodeInfo.Endpoint: height}
 		}(checker)
 	}
 
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+
+	for node := range ch {
+		for k, v := range node {
+			if v >= expectedHeight {
+				reached[k] = v
+			} else {
+				notReached[k] = v
+			}
+		}
+	}
+
+	return notReached, reached, nil
+}
+
+func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) (bool, map[string]sdk.Hash, error) {
+	if len(ncp.nodeHealthCheckers) == 0 {
+		return true, nil, errors.New("could not connect to any peer")
+	}
+
+	type nodeHashResult struct {
+		Endpoint string
+		Hash     sdk.Hash
+	}
+
 	nodeCount := len(ncp.nodeHealthCheckers)
+	nodeHashesCh := make(chan nodeHashResult, nodeCount/2)
+
+	for _, checker := range ncp.nodeHealthCheckers {
+		go func(checker *NodeHealthChecker) {
+			hash, err := checker.BlockHash(height)
+			if err != nil {
+				if err == ErrReturnedZeroHashes {
+					log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
+					nodeHashesCh <- nodeHashResult{checker.nodeInfo.Endpoint, sdk.Hash{}}
+					return
+				}
+
+				retryCount := 0
+				for retryCount < 3 && err != nil {
+					retryCount++
+
+					log.Printf("Retrying to get block hash from %s (attempt %d)\n", checker.nodeInfo.Endpoint, retryCount)
+					time.Sleep(time.Minute)
+
+					hash, err = checker.BlockHash(height)
+				}
+
+				// check the error after the retry loop
+				if err != nil {
+					log.Printf("Error getting block hash from %s: %s\n", checker.nodeInfo.Endpoint, err)
+					nodeHashesCh <- nodeHashResult{checker.nodeInfo.Endpoint, sdk.Hash{}}
+					return
+				}
+			}
+
+			log.Printf("Node %s=%v has %s", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, hash)
+			nodeHashesCh <- nodeHashResult{checker.nodeInfo.Endpoint, hash}
+		}(checker)
+	}
+
 	hashes := make(map[sdk.Hash]int)
+	nodeHashResults := make(map[string]sdk.Hash)
 	for {
 		select {
-		case hash := <-hashesCh:
-			hashes[hash]++
+		case res := <-nodeHashesCh:
+			nodeHashResults[res.Endpoint] = res.Hash
+			hashes[res.Hash]++
 
 			hashCount := 0
 			for _, count := range hashes {
@@ -212,15 +323,15 @@ func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) bool {
 			if len(hashes) > 1 {
 				log.Printf("Block hashes differ (hash:count of returned): %v\n", hashes)
 				log.Println("Continue waiting")
-				return false
+				return false, nodeHashResults, nil
 			} else {
 				for hash := range hashes {
 					if hash.Empty() {
 						log.Printf("Could not collect block hashes at %d height\n", height)
-						return false
+						return false, nodeHashResults, nil
 					} else {
 						log.Printf("All nodes got the same block hash at %d height\n", height)
-						return true
+						return true, nodeHashResults, nil
 					}
 				}
 			}
@@ -231,7 +342,7 @@ func (ncp *NodeHealthCheckerPool) CheckHashes(height uint64) bool {
 func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 	log.Printf("Waiting for the same block hash at %d height\n", height)
 
-	success := ncp.CheckHashes(height)
+	success, _, _ := ncp.CheckHashes(height)
 	if success {
 		return nil
 	}
@@ -240,7 +351,7 @@ func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 	for {
 		select {
 		case <-ticker.C:
-			if success = ncp.CheckHashes(height); success {
+			if success, _, _ = ncp.CheckHashes(height); success {
 				ticker.Stop()
 				return nil
 			}

@@ -30,7 +30,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pool, err := health.NewNodeHealthCheckerPool(client, nodeInfos, packets.NoneConnectionSecurity, *discover, math.MaxInt)
+	pool := health.NewNodeHealthCheckerPool(client, packets.NoneConnectionSecurity, math.MaxInt)
+
+	_, err = pool.ConnectToNodes(nodeInfos, *discover)
 	if err != nil {
 		log.Fatal(err)
 	}

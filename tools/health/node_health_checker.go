@@ -2,6 +2,8 @@ package health
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -12,7 +14,11 @@ import (
 
 const AvgSecondsPerBlock = 15 * time.Second
 
-var ErrReturnedZeroHashes = errors.New("returned zero hashes")
+var (
+	ErrReturnedZeroHashes = errors.New("returned zero hashes")
+	ErrTimedOut           = errors.New("timed out")
+	ErrTooLargeWaitTime   = errors.New("too large wait time")
+)
 
 type (
 	NodeInfo struct {
@@ -47,6 +53,10 @@ func NewNodeInfo(pKey, addr string) (*NodeInfo, error) {
 		IdentityKey: k,
 		Endpoint:    addr,
 	}, nil
+}
+
+func (ni *NodeInfo) String() string {
+	return fmt.Sprintf("%s=%s", ni.Endpoint, ni.IdentityKey)
 }
 
 func NewNodeHealthChecker(client *crypto.KeyPair, info *NodeInfo, mode packets.ConnectionSecurityMode) (*NodeHealthChecker, error) {
@@ -137,28 +147,49 @@ func (nhc *NodeHealthChecker) NodeList() ([]*NodeInfo, error) {
 	return ni, nil
 }
 
-func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) error {
+func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) {
 	globalTicker := &time.Ticker{}
 	ticker := time.NewTicker(time.Second)
+	var height uint64
 	for {
 		select {
 		case <-ticker.C:
 			ci, err := nhc.ChainInfo()
 			if err != nil {
-				return err
+				retryCount := 0
+				for retryCount < 3 && err != nil {
+					retryCount++
+
+					log.Printf("Retrying to get chain height from %s (attempt %d)\n", nhc.nodeInfo.Endpoint, retryCount)
+					time.Sleep(AvgSecondsPerBlock)
+
+					ci, err = nhc.ChainInfo()
+				}
+
+				if err != nil {
+					return 0, err
+				}
 			}
 
-			if ci.Height >= expectedHeight {
-				return nil
+			height = ci.Height
+			if height >= expectedHeight {
+				log.Printf("Node %s=%v has reached the required height\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey)
+				return height, nil
 			}
 
 			duration := time.Duration(expectedHeight-ci.Height) * AvgSecondsPerBlock
+			if duration > time.Hour {
+				return height, ErrTooLargeWaitTime
+			}
+
 			ticker = time.NewTicker(duration)
-			if globalTicker == nil {
+			if globalTicker.C == nil {
 				globalTicker = time.NewTicker(duration + duration/2)
 			}
+
+			log.Printf("Waiting for node %s=%s to reach height: %d, current: %d", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, height)
 		case <-globalTicker.C:
-			return errors.New("timed out")
+			return height, ErrTimedOut
 		}
 	}
 }
