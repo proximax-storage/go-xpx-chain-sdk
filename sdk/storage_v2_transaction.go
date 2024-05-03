@@ -17,6 +17,9 @@ import (
 func NewReplicatorOnboardingTransaction(
 	deadline *Deadline,
 	capacity Amount,
+	nodeBootKey *PublicAccount,
+	message *Hash,
+	messageSignature *Signature,
 	networkType NetworkType,
 ) (*ReplicatorOnboardingTransaction, error) {
 
@@ -31,7 +34,10 @@ func NewReplicatorOnboardingTransaction(
 			Type:        ReplicatorOnboarding,
 			NetworkType: networkType,
 		},
-		Capacity: capacity,
+		Capacity:         capacity,
+		NodeBootKey:      nodeBootKey,
+		Message:          message,
+		MessageSignature: messageSignature,
 	}
 
 	return &tx, nil
@@ -46,9 +52,15 @@ func (tx *ReplicatorOnboardingTransaction) String() string {
 		`
 			"AbstractTransaction": %s,
 			"Capacity": %s,
+			"NodeBootKey": %s,
+			"Message": %s,
+			"MessageSignature": %s,
 		`,
 		tx.AbstractTransaction.String(),
 		tx.Capacity.String(),
+		tx.NodeBootKey.String(),
+		tx.Message.String(),
+		tx.MessageSignature.String(),
 	)
 }
 
@@ -62,11 +74,23 @@ func (tx *ReplicatorOnboardingTransaction) Bytes() ([]byte, error) {
 
 	capacityV := transactions.TransactionBufferCreateUint32Vector(builder, tx.Capacity.toArray())
 
+	nodeBootKeyB, err := hex.DecodeString(tx.NodeBootKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeBootKeyV := transactions.TransactionBufferCreateByteVector(builder, nodeBootKeyB)
+	messageV := transactions.TransactionBufferCreateByteVector(builder, tx.Message[:])
+	messageSignatureV := transactions.TransactionBufferCreateByteVector(builder, tx.MessageSignature[:])
+
 	transactions.ReplicatorOnboardingTransactionBufferStart(builder)
 	transactions.TransactionBufferAddSize(builder, tx.Size())
 	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
 
 	transactions.ReplicatorOnboardingTransactionBufferAddCapacity(builder, capacityV)
+	transactions.ReplicatorOnboardingTransactionBufferAddNodeBootKey(builder, nodeBootKeyV)
+	transactions.ReplicatorOnboardingTransactionBufferAddMessage(builder, messageV)
+	transactions.ReplicatorOnboardingTransactionBufferAddMessageSignature(builder, messageSignatureV)
 
 	t := transactions.TransactionBufferEnd(builder)
 	builder.Finish(t)
@@ -81,7 +105,10 @@ func (tx *ReplicatorOnboardingTransaction) Size() int {
 type replicatorOnboardingTransactionDTO struct {
 	Tx struct {
 		abstractTransactionDTO
-		Capacity uint64DTO `json:"capacity"`
+		Capacity         uint64DTO    `json:"capacity"`
+		NodeBootKey      string       `json:"nodeBootKey"`
+		Message          hashDto      `json:"message"`
+		MessageSignature signatureDto `json:"messageSignature"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
 }
@@ -97,9 +124,132 @@ func (dto *replicatorOnboardingTransactionDTO) toStruct(*Hash) (Transaction, err
 		return nil, err
 	}
 
+	nodeBootKey, err := NewAccountFromPublicKey(dto.Tx.NodeBootKey, atx.NetworkType)
+	if err != nil {
+		return nil, err
+	}
+
+	message, err := dto.Tx.Message.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	messageSignature, err := dto.Tx.MessageSignature.Signature()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ReplicatorOnboardingTransaction{
 		*atx,
 		dto.Tx.Capacity.toStruct(),
+		nodeBootKey,
+		message,
+		messageSignature,
+	}, nil
+}
+
+func NewReplicatorsCleanupTransaction(
+	deadline *Deadline,
+	replicatorKeys []*PublicAccount,
+	networkType NetworkType,
+) (*ReplicatorsCleanupTransaction, error) {
+
+	tx := ReplicatorsCleanupTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Deadline:    deadline,
+			Version:     ReplicatorsCleanupVersion,
+			Type:        ReplicatorsCleanup,
+			NetworkType: networkType,
+		},
+		ReplicatorKeys: replicatorKeys,
+	}
+
+	return &tx, nil
+}
+
+func (tx *ReplicatorsCleanupTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *ReplicatorsCleanupTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"ReplicatorKeys": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.ReplicatorKeys,
+	)
+}
+
+func (tx *ReplicatorsCleanupTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	keysV, err := keysToArrayToBuffer(builder, tx.ReplicatorKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	replicatorKeysCountB := make([]byte, ReplicatorCountSize)
+	binary.LittleEndian.PutUint16(replicatorKeysCountB, uint16(len(tx.ReplicatorKeys)))
+	replicatorKeysCountV := transactions.TransactionBufferCreateByteVector(builder, replicatorKeysCountB)
+
+	transactions.ReplicatorsCleanupTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DownloadTransactionBufferAddReplicatorCount(builder, replicatorKeysCountV)
+	transactions.DownloadTransactionBufferAddReplicatorKeys(builder, keysV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return replicatorsCleanupTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *ReplicatorsCleanupTransaction) Size() int {
+	return ReplicatorsCleanupHeaderSize + KeySize*len(tx.ReplicatorKeys)
+}
+
+type replicatorsCleanupTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Capacity        uint64DTO `json:"capacity"`
+		ReplicatorCount uint16    `json:"ReplicatorCount"`
+		ReplicatorKeys  []string  `json:"ReplicatorKeys"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *replicatorsCleanupTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]*PublicAccount, len(dto.Tx.ReplicatorKeys))
+	for i, k := range dto.Tx.ReplicatorKeys {
+		key, err := NewAccountFromPublicKey(k, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+
+		keys[i] = key
+	}
+
+	return &ReplicatorsCleanupTransaction{
+		*atx,
+		keys,
 	}, nil
 }
 

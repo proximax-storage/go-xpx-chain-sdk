@@ -835,8 +835,8 @@ func (c *Client) NewEndFileDownloadTransaction(deadline *Deadline, recipient *Pu
 	return tx, err
 }
 
-func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount) (*ReplicatorOnboardingTransaction, error) {
-	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, c.config.NetworkType)
+func (c *Client) NewReplicatorOnboardingTransaction(deadline *Deadline, capacity Amount, nodeBootKey *PublicAccount, message *Hash, messageSignature *Signature) (*ReplicatorOnboardingTransaction, error) {
+	tx, err := NewReplicatorOnboardingTransaction(deadline, capacity, nodeBootKey, message, messageSignature, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -936,6 +936,15 @@ func (c *Client) NewDriveClosureTransaction(deadline *Deadline, driveKey *Public
 
 func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKey *PublicAccount) (*ReplicatorOffboardingTransaction, error) {
 	tx, err := NewReplicatorOffboardingTransaction(deadline, driveKey, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
+func (c *Client) NewReplicatorsCleanupTransaction(deadline *Deadline, replicatorKeys []*PublicAccount) (*ReplicatorsCleanupTransaction, error) {
+	tx, err := NewReplicatorsCleanupTransaction(deadline, replicatorKeys, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
