@@ -50,7 +50,8 @@ func (r *messageRouter) run() {
 
 			messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
 			if err != nil {
-				panic(errors.Wrap(err, "getting message info"))
+				fmt.Println(errors.Wrap(err, "getting message info"))
+				continue
 			}
 
 			handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
