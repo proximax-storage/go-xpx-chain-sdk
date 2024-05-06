@@ -287,6 +287,10 @@ func NewAddress(address string, networkType NetworkType) *Address {
 
 // returns Address from passed address string
 func NewAddressFromRaw(address string) (*Address, error) {
+	if len(address) == 0 {
+		return nil, ErrInvalidAddress
+	}
+
 	pH, err := base32.StdEncoding.DecodeString(address)
 	if err != nil {
 		return nil, err

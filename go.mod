@@ -11,7 +11,7 @@ require (
 	github.com/proximax-storage/go-xpx-chain-sync v1.1.4-0.20240304152714-531033efe0a3
 	github.com/proximax-storage/go-xpx-crypto v0.0.0-20191023142918-e02e2652d78e
 	github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.8.1
 	github.com/supranational/blst v0.3.2
 	golang.org/x/crypto v0.14.0
 )

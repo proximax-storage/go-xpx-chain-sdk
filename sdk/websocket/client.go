@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/url"
 	"time"
 
@@ -374,7 +375,7 @@ func (c *CatapultWebsocketClientImpl) handleSignal() {
 	for {
 		select {
 		case err := <-c.reconnectCh:
-			fmt.Printf("reconnect because of %s", err)
+			fmt.Printf("reconnect because of %s\n", err)
 			fmt.Println("Try again after timeout period")
 			<-time.NewTicker(c.config.WsReconnectionTimeout).C
 
@@ -427,6 +428,11 @@ func (c *CatapultWebsocketClientImpl) startMessageReading() {
 	for {
 		_, resp, e := c.conn.ReadMessage()
 		if e != nil {
+			if _, ok := e.(*net.OpError); ok {
+				// Stop ReadMessage if user called Close function for websocket client
+				return
+			}
+
 			c.reconnectCh <- e
 			return
 		}
