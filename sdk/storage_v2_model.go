@@ -487,6 +487,12 @@ type ReplicatorsCleanupTransaction struct {
 	ReplicatorKeys []*PublicAccount
 }
 
+// Replicator Tree Rebuild Transaction
+type ReplicatorTreeRebuildTransaction struct {
+	AbstractTransaction
+	ReplicatorKeys []*PublicAccount
+}
+
 type Opinion struct {
 	Opinion []OpinionSize
 }

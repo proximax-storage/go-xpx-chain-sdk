@@ -204,6 +204,19 @@ table ReplicatorsCleanupTransactionBuffer {
     replicatorKeys: [KeysBuffer];
 }
 
+table ReplicatorTreeRebuildTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    replicatorCount: [ubyte];
+    replicatorKeys: [KeysBuffer];
+}
+
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
@@ -237,3 +250,5 @@ root_type OpinionsBuffer;
 root_type DownloadApprovalTransactionBuffer;
 
 root_type ReplicatorsCleanupTransactionBuffer;
+
+root_type ReplicatorTreeRebuildTransactionBuffer;

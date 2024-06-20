@@ -253,6 +253,111 @@ func (dto *replicatorsCleanupTransactionDTO) toStruct(*Hash) (Transaction, error
 	}, nil
 }
 
+func NewReplicatorTreeRebuildTransaction(
+	deadline *Deadline,
+	replicatorKeys []*PublicAccount,
+	networkType NetworkType,
+) (*ReplicatorTreeRebuildTransaction, error) {
+
+	tx := ReplicatorTreeRebuildTransaction{
+		AbstractTransaction: AbstractTransaction{
+			Deadline:    deadline,
+			Version:     ReplicatorTreeRebuildVersion,
+			Type:        ReplicatorTreeRebuild,
+			NetworkType: networkType,
+		},
+		ReplicatorKeys: replicatorKeys,
+	}
+
+	return &tx, nil
+}
+
+func (tx *ReplicatorTreeRebuildTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+
+func (tx *ReplicatorTreeRebuildTransaction) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"ReplicatorKeys": %s,
+		`,
+		tx.AbstractTransaction.String(),
+		tx.ReplicatorKeys,
+	)
+}
+
+func (tx *ReplicatorTreeRebuildTransaction) Bytes() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
+	if err != nil {
+		return nil, err
+	}
+
+	keysV, err := keysToArrayToBuffer(builder, tx.ReplicatorKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	replicatorKeysCountB := make([]byte, ReplicatorCountSize)
+	binary.LittleEndian.PutUint16(replicatorKeysCountB, uint16(len(tx.ReplicatorKeys)))
+	replicatorKeysCountV := transactions.TransactionBufferCreateByteVector(builder, replicatorKeysCountB)
+
+	transactions.ReplicatorTreeRebuildTransactionBufferStart(builder)
+	transactions.TransactionBufferAddSize(builder, tx.Size())
+	tx.AbstractTransaction.buildVectors(builder, v, signatureV, signerV, deadlineV, fV)
+
+	transactions.DownloadTransactionBufferAddReplicatorCount(builder, replicatorKeysCountV)
+	transactions.DownloadTransactionBufferAddReplicatorKeys(builder, keysV)
+
+	t := transactions.TransactionBufferEnd(builder)
+	builder.Finish(t)
+
+	return replicatorTreeRebuildTransactionSchema().serialize(builder.FinishedBytes()), nil
+}
+
+func (tx *ReplicatorTreeRebuildTransaction) Size() int {
+	return ReplicatorTreeRebuildHeaderSize + KeySize*len(tx.ReplicatorKeys)
+}
+
+type replicatorTreeRebuildTransactionDTO struct {
+	Tx struct {
+		abstractTransactionDTO
+		Capacity        uint64DTO `json:"capacity"`
+		ReplicatorCount uint16    `json:"ReplicatorCount"`
+		ReplicatorKeys  []string  `json:"ReplicatorKeys"`
+	} `json:"transaction"`
+	TDto transactionInfoDTO `json:"meta"`
+}
+
+func (dto *replicatorTreeRebuildTransactionDTO) toStruct(*Hash) (Transaction, error) {
+	info, err := dto.TDto.toStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	atx, err := dto.Tx.abstractTransactionDTO.toStruct(info)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]*PublicAccount, len(dto.Tx.ReplicatorKeys))
+	for i, k := range dto.Tx.ReplicatorKeys {
+		key, err := NewAccountFromPublicKey(k, atx.NetworkType)
+		if err != nil {
+			return nil, err
+		}
+
+		keys[i] = key
+	}
+
+	return &ReplicatorTreeRebuildTransaction{
+		*atx,
+		keys,
+	}, nil
+}
+
 func NewPrepareBcDriveTransaction(
 	deadline *Deadline,
 	driveSize StorageSize,
