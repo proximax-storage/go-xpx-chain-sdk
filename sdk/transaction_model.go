@@ -2935,6 +2935,7 @@ const (
 	AddDbrbProcess                 EntityType = 0x416C
 	RemoveDbrbProcess              EntityType = 0x426C
 	RemoveDbrbProcessByNetwork     EntityType = 0x436C
+	AddOrUpdateDbrbProcess         EntityType = 0x446C
 )
 
 func (t EntityType) String() string {
@@ -3336,6 +3337,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &removeDbrbProcessTransactionDTO{}
 	case RemoveDbrbProcessByNetwork:
 		dto = &removeDbrbProcessByNetworkTransactionDTO{}
+	case AddOrUpdateDbrbProcess:
+		dto = &addOrUpdateDbrbProcessTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
