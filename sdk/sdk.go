@@ -952,6 +952,15 @@ func (c *Client) NewReplicatorsCleanupTransaction(deadline *Deadline, replicator
 	return tx, err
 }
 
+func (c *Client) NewReplicatorTreeRebuildTransaction(deadline *Deadline, replicatorKeys []*PublicAccount) (*ReplicatorTreeRebuildTransaction, error) {
+	tx, err := NewReplicatorTreeRebuildTransaction(deadline, replicatorKeys, c.config.NetworkType)
+	if tx != nil {
+		c.modifyTransaction(tx)
+	}
+
+	return tx, err
+}
+
 func (c *Client) NewSuperContractFileSystemTransaction(deadline *Deadline, driveKey string, newRootHash *Hash, oldRootHash *Hash, addActions []*Action, removeActions []*Action) (*SuperContractFileSystemTransaction, error) {
 	tx, err := NewSuperContractFileSystemTransaction(deadline, driveKey, newRootHash, oldRootHash, addActions, removeActions, c.config.NetworkType)
 	if tx != nil {

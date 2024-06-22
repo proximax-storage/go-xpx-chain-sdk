@@ -2805,6 +2805,7 @@ const (
 	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + KeySize + Hash256 + SignatureSize
 	ReplicatorCountSize                          = 2
 	ReplicatorsCleanupHeaderSize                 = TransactionHeaderSize + ReplicatorCountSize
+	ReplicatorTreeRebuildHeaderSize              = TransactionHeaderSize + ReplicatorCountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DataModificationHeaderSize                   = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize + AmountSize
 	DataModificationCancelHeaderSize             = TransactionHeaderSize + KeySize + Hash256
@@ -2909,6 +2910,7 @@ const (
 	Deactivate                     EntityType = 0x4560
 	ReplicatorOnboarding           EntityType = 0x4662
 	ReplicatorsCleanup             EntityType = 0x4062
+	ReplicatorTreeRebuild          EntityType = 0x4167
 	PrepareBcDrive                 EntityType = 0x4162
 	DataModification               EntityType = 0x4262
 	DataModificationApproval       EntityType = 0x4462
@@ -2996,6 +2998,7 @@ const (
 	DeactivateVersion                    EntityVersion = 1
 	ReplicatorOnboardingVersion          EntityVersion = 2
 	ReplicatorsCleanupVersion            EntityVersion = 1
+	ReplicatorTreeRebuildVersion         EntityVersion = 1
 	PrepareBcDriveVersion                EntityVersion = 1
 	DataModificationVersion              EntityVersion = 1
 	DataModificationApprovalVersion      EntityVersion = 1 // TODO delete?
@@ -3285,6 +3288,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOnboardingTransactionDTO{}
 	case ReplicatorsCleanup:
 		dto = &replicatorsCleanupTransactionDTO{}
+    case ReplicatorTreeRebuild:
+        dto = &replicatorTreeRebuildTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:

@@ -278,3 +278,23 @@ func replicatorsCleanupTransactionSchema() *schema {
 		},
 	}
 }
+
+func replicatorTreeRebuildTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("replicatorCount", ByteSize),
+			newTableArrayAttribute("replicatorKeys", schema{
+				[]schemaAttribute{
+					newArrayAttribute("key", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
