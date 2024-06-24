@@ -366,7 +366,7 @@ type EndBatchExecution struct {
 	AutomaticExecutionsNextBlockToCheck Height
 	PublicKeys                          []*PublicAccount
 	Signatures                          []*Signature
-	ProofsOfExecutions                  []*RawProofsOfExecution
+	ProofsOfExecutions                  *RawProofsOfExecution
 	CallPayments                        []*CallPayment
 }
 
