@@ -292,10 +292,6 @@ func NewAddressFromRaw(address string) (*Address, error) {
 		return nil, err
 	}
 
-	if len(pH) == 0 {
-		return nil, ErrZeroAddressLen
-	}
-
 	if nType, ok := addressNet[pH[0]]; ok {
 		return NewAddress(address, nType), nil
 	}
