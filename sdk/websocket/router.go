@@ -3,8 +3,9 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
@@ -42,7 +43,8 @@ func (r *messageRouter) run() {
 	for m := range r.dataCh {
 		messageInfo, err := r.messageInfoMapper.MapMessageInfo(m)
 		if err != nil {
-			panic(errors.Wrap(err, "getting message info"))
+			fmt.Println("getting message info", err)
+			continue
 		}
 
 		handler := r.topicHandlers.GetHandler(Path(messageInfo.ChannelName))
@@ -52,7 +54,7 @@ func (r *messageRouter) run() {
 		}
 
 		if ok := handler.Handle(messageInfo.Address, m); !ok {
-			if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
+			if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, handler.Format(messageInfo)); err != nil {
 				fmt.Println(err, "unsubscribing from topic")
 				continue
 			}

@@ -85,6 +85,7 @@ var (
 	ErrBlankAddress      = errors.New("address is blank")
 	ErrNilAccount        = errors.New("account should not be nil")
 	ErrInvalidAddress    = errors.New("wrong address")
+	ErrZeroAddressLen    = errors.New("zero address len")
 	ErrNoChanges         = errors.New("transaction should contain changes")
 )
 
