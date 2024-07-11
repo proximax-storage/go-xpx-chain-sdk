@@ -61,7 +61,7 @@ func (r *messageRouter) run() {
 			}
 
 			if ok := handler.Handle(messageInfo.Address, m); !ok {
-				if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, Path(handler.Format(messageInfo))); err != nil {
+				if err := r.messagePublisher.PublishUnsubscribeMessage(r.uid, handler.Format(messageInfo)); err != nil {
 					fmt.Println(err, "unsubscribing from topic")
 					continue
 				}
@@ -84,6 +84,7 @@ func (r *messageRouter) Close() {
 
 func MapMessageInfo(m []byte) (*sdk.WsMessageInfo, error) {
 	var messageInfoDTO sdk.WsMessageInfoDTO
+	println(string(m))
 	if err := json.Unmarshal(m, &messageInfoDTO); err != nil {
 		return nil, errors.Wrap(err, "unmarshaling message info data")
 	}
