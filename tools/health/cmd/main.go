@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = pool.WaitAllHashesEqual(*height)
+	_, err = pool.CompareHashes(*height)
 	if err != nil {
 		log.Fatal(err)
 	}
