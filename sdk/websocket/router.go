@@ -84,12 +84,16 @@ func (r *messageRouter) Close() {
 
 func MapMessageInfo(m []byte) (*sdk.WsMessageInfo, error) {
 	var messageInfoDTO sdk.WsMessageInfoDTO
-	println(string(m))
 	if err := json.Unmarshal(m, &messageInfoDTO); err != nil {
 		return nil, errors.Wrap(err, "unmarshaling message info data")
 	}
 
-	return messageInfoDTO.ToStruct()
+	i, err := messageInfoDTO.ToStruct()
+	if err != nil {
+		println(string(m))
+	}
+
+	return i, err
 }
 
 type MessageInfoMapper interface {
