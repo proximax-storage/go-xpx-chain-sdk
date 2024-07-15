@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
@@ -36,59 +37,82 @@ func NewNodeHealthCheckerPool(client *crypto.KeyPair, mode packets.ConnectionSec
 	}
 }
 
-func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, findConnected bool) (failedConnectionsNodes []*NodeInfo, err error) {
-	for _, info := range nodeInfos {
-		if _, err := ncp.MaybeConnectToNode(info); err != nil {
-			failedConnectionsNodes = append(failedConnectionsNodes, info)
-		}
-
-		if len(ncp.validCheckers) >= ncp.maxConnection {
-			break
-		}
-	}
-
-	if findConnected {
-		ncp.CollectConnectedNodes()
-	}
-
-	if len(ncp.validCheckers) == 0 {
-		return nil, ErrCannotConnect
-	}
-
-	return failedConnectionsNodes, nil
-}
-
-func (ncp *NodeHealthCheckerPool) CollectConnectedNodes() {
+func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover bool) (failedConnectionsNodes map[string]*NodeInfo, err error) {
 	if len(ncp.validCheckers) >= ncp.maxConnection {
 		return
 	}
 
-	toCheck := make([]*NodeHealthChecker, 0, len(ncp.validCheckers)*5)
-	for _, checker := range ncp.validCheckers {
-		toCheck = append(toCheck, checker)
+	chInfo := make(chan *NodeInfo, len(nodeInfos)*5)
+	for _, info := range nodeInfos {
+		chInfo <- info
 	}
 
-	for len(toCheck) > 0 {
-		checker := toCheck[0]
-		nodeList, err := checker.NodeList()
-		if err != nil {
-			log.Printf("Error getting list of validCheckers from %s=%v: %s\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
-			continue
-		}
+	failedConnectionsNodesMutex := sync.Mutex{}
+	failedConnectionsNodes = make(map[string]*NodeInfo)
 
-		log.Printf("Node %s=%v returned %d validCheckers\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, len(nodeList))
-		for _, info := range nodeList {
-			if len(ncp.validCheckers) >= ncp.maxConnection {
-				return
+	connectedNodesMutex := sync.Mutex{}
+	connectedNodes := make(map[string]*NodeHealthChecker)
+
+	waiting := int32(0)
+	handled := make(map[string]struct{})
+	for {
+		select {
+		case info, ok := <-chInfo:
+			if !ok || info == nil {
+				if len(connectedNodes) == 0 {
+					return nil, ErrCannotConnect
+				}
+
+				ncp.validCheckers = connectedNodes
+				return failedConnectionsNodes, nil
 			}
 
-			nc, _ := ncp.MaybeConnectToNode(info)
-			if nc != nil {
-				toCheck = append(toCheck, nc)
-			}
-		}
+			if _, ok := handled[info.Endpoint]; ok {
+				v := atomic.LoadInt32(&waiting)
+				if v == 0 && len(chInfo) == 0 {
+					close(chInfo)
+				}
 
-		toCheck = toCheck[1:]
+				continue
+			}
+
+			handled[info.Endpoint] = struct{}{}
+			atomic.AddInt32(&waiting, 1)
+			go func(info *NodeInfo) {
+				defer atomic.AddInt32(&waiting, -1)
+
+				checker, err := ncp.MaybeConnectToNode(info)
+				if err != nil {
+					failedConnectionsNodesMutex.Lock()
+					failedConnectionsNodes[info.Endpoint] = info
+					failedConnectionsNodesMutex.Unlock()
+
+					chInfo <- info
+					return
+				}
+
+				connectedNodesMutex.Lock()
+				connectedNodes[info.Endpoint] = checker
+				connectedNodesMutex.Unlock()
+
+				nodeList, err := checker.NodeList()
+				if err != nil {
+					log.Printf("Error getting list of nodes from %s=%v: %s\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
+					return
+				}
+
+				log.Printf("Node %s=%v returned %d nodes\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, len(nodeList))
+				if discover {
+					if len(nodeList) == 0 {
+						chInfo <- info
+					}
+
+					for _, nodeInfo := range nodeList {
+						chInfo <- nodeInfo
+					}
+				}
+			}(info)
+		}
 	}
 }
 
@@ -150,7 +174,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 	}
 }
 
-func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached map[string]uint64, reached map[string]uint64, err error) {
+func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached map[NodeInfo]uint64, reached map[NodeInfo]uint64, err error) {
 	if len(ncp.validCheckers) == 0 {
 		return nil, nil, ErrNoConnectedPeers
 	}
@@ -158,9 +182,9 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 	log.Printf("Waiting for the network (%d validCheckers) to reach the height %d\n", len(ncp.validCheckers), expectedHeight)
 
 	var notReachedMu sync.Mutex
-	notReached = make(map[string]uint64)
+	notReached = make(map[NodeInfo]uint64)
 	var reachedMu sync.Mutex
-	reached = make(map[string]uint64)
+	reached = make(map[NodeInfo]uint64)
 
 	var wg sync.WaitGroup
 	for _, checker := range ncp.validCheckers {
@@ -170,7 +194,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 			height, err := checker.WaitHeight(expectedHeight)
 			if err != nil {
 				notReachedMu.Lock()
-				notReached[checker.nodeInfo.Endpoint] = height
+				notReached[*checker.nodeInfo] = height
 				delete(ncp.validCheckers, checker.nodeInfo.Endpoint)
 				notReachedMu.Unlock()
 
@@ -178,7 +202,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 			}
 
 			reachedMu.Lock()
-			reached[checker.nodeInfo.Endpoint] = height
+			reached[*checker.nodeInfo] = height
 			reachedMu.Unlock()
 		}(checker)
 	}
@@ -201,17 +225,19 @@ func (ncp *NodeHealthCheckerPool) GetHashes(height uint64) (map[string]sdk.Hash,
 		go func(checker *NodeHealthChecker) {
 			defer wg.Done()
 
-			for attemptsCount := 0; attemptsCount < 3; attemptsCount++ {
+			maxAttempts := 3
+			for attemptsCount := 0; attemptsCount < maxAttempts; attemptsCount++ {
 				hash, err := checker.BlockHash(height)
-				if err != nil && attemptsCount < 3 {
+				if err != nil && attemptsCount < maxAttempts-1 {
 					log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
 					log.Printf("Retrying to get block hash from %s (attempt %d)\n", checker.nodeInfo.Endpoint, attemptsCount)
 
-					time.Sleep(AvgSecondsPerBlock)
+					time.Sleep(time.Second * 3)
 					continue
 				}
 
 				if err != nil {
+					log.Printf("Cannot get block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
 					delete(ncp.validCheckers, checker.nodeInfo.Endpoint)
 				}
 

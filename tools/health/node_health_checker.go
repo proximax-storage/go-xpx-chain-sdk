@@ -23,8 +23,9 @@ var (
 
 type (
 	NodeInfo struct {
-		IdentityKey *crypto.PublicKey
-		Endpoint    string
+		IdentityKey  *crypto.PublicKey
+		Endpoint     string
+		FriendlyName string
 	}
 
 	NodeHealthChecker struct {
@@ -44,15 +45,16 @@ type (
 	}
 )
 
-func NewNodeInfo(pKey, addr string) (*NodeInfo, error) {
+func NewNodeInfo(pKey, addr, friendlyName string) (*NodeInfo, error) {
 	k, err := crypto.NewPublicKeyfromHex(pKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &NodeInfo{
-		IdentityKey: k,
-		Endpoint:    addr,
+		IdentityKey:  k,
+		Endpoint:     addr,
+		FriendlyName: friendlyName,
 	}, nil
 }
 
@@ -140,8 +142,9 @@ func (nhc *NodeHealthChecker) NodeList() ([]*NodeInfo, error) {
 		}
 
 		ni = append(ni, &NodeInfo{
-			IdentityKey: node.IdentityKey,
-			Endpoint:    node.Host + ":" + strconv.Itoa(int(node.Port)),
+			IdentityKey:  node.IdentityKey,
+			Endpoint:     node.Host + ":" + strconv.Itoa(int(node.Port)),
+			FriendlyName: node.FriendlyName,
 		})
 	}
 
@@ -174,7 +177,7 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 	maxRetryCount := uint8(3)
 	for {
 		select {
-		case <-time.After(tickerDuration):
+		case <-periodicTicker.C:
 			ci, err := nhc.ChainInfo()
 			if err != nil {
 				if retryCount < maxRetryCount {
