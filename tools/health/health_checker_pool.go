@@ -117,8 +117,8 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 }
 
 func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealthChecker, error) {
-	if _, ok := ncp.validCheckers[info.Endpoint]; ok {
-		return nil, nil
+	if vd, ok := ncp.validCheckers[info.Endpoint]; ok {
+		return vd, nil
 	}
 
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
@@ -226,9 +226,9 @@ func (ncp *NodeHealthCheckerPool) GetHashes(height uint64) (map[string]sdk.Hash,
 			defer wg.Done()
 
 			maxAttempts := 3
-			for attemptsCount := 0; attemptsCount < maxAttempts; attemptsCount++ {
+			for attemptsCount := 1; attemptsCount <= maxAttempts; attemptsCount++ {
 				hash, err := checker.BlockHash(height)
-				if err != nil && attemptsCount < maxAttempts-1 {
+				if err != nil && attemptsCount <= maxAttempts {
 					log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
 					log.Printf("Retrying to get block hash from %s (attempt %d)\n", checker.nodeInfo.Endpoint, attemptsCount)
 
