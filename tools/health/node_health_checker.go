@@ -12,13 +12,14 @@ import (
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
-const AvgSecondsPerBlock = 15 * time.Second
+const DefaultAvgSecondsPerBlock = 15 * time.Second
 
 var (
-	ErrReturnedZeroHashes = errors.New("returned zero hashes")
-	ErrTimedOut           = errors.New("timed out")
-	ErrTooLargeWaitTime   = errors.New("too large wait time")
-	ErrNodeGotStuck       = errors.New("node got stuck")
+	ErrReturnedZeroHashes   = errors.New("returned zero hashes")
+	ErrTimedOut             = errors.New("timed out")
+	ErrTooLargeWaitTime     = errors.New("too large wait time")
+	ErrNodeGotStuck         = errors.New("node got stuck")
+	ErrNodeNotReachedHeight = errors.New("node does not reached the height")
 )
 
 type (
@@ -113,9 +114,18 @@ func (nhc *NodeHealthChecker) LastBlockHash() (sdk.Hash, error) {
 }
 
 func (nhc *NodeHealthChecker) BlockHash(height uint64) (sdk.Hash, error) {
+	ci, err := nhc.ChainInfo()
+	if err != nil {
+		return sdk.Hash{}, err
+	}
+
+	if ci.Height < height {
+		return sdk.Hash{}, ErrNodeNotReachedHeight
+	}
+
 	blockHashesReq := packets.NewBlockHashesRequest(height, 1)
 	blockHashesResp := &packets.BlockHashesResponse{}
-	err := nhc.handler.CommonHandle(blockHashesReq, blockHashesResp)
+	err = nhc.handler.CommonHandle(blockHashesReq, blockHashesResp)
 	if err != nil {
 		return sdk.Hash{}, err
 	}
@@ -162,36 +172,41 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 	if ci.Height >= expectedHeight {
 		return ci.Height, err
 	}
-	lastHeight := ci.Height
+	prevHeight := ci.Height
 
 	multiplier := expectedHeight - ci.Height
-	if multiplier > 4 {
-		multiplier = 4
+	if multiplier > 5 {
+		multiplier = 5
 	}
 
-	tickerDuration := AvgSecondsPerBlock * time.Duration(multiplier)
+	avgSecondsPerBlock := DefaultAvgSecondsPerBlock
+	tickerDuration := DefaultAvgSecondsPerBlock * time.Duration(multiplier)
 	periodicTicker := time.NewTicker(tickerDuration)
 	defer periodicTicker.Stop()
 
-	var retryCount uint8
+	log.Printf("Start waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
 	maxRetryCount := uint8(3)
 	for {
 		select {
 		case <-periodicTicker.C:
-			ci, err := nhc.ChainInfo()
-			if err != nil {
-				if retryCount < maxRetryCount {
-					retryCount++
+			for retryCount := uint8(1); retryCount <= maxRetryCount; retryCount++ {
+				ci, err = nhc.ChainInfo()
+				if err == nil {
+					break
+				}
+
+				log.Printf("Cannot get height of %s=%s: %s\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, err)
+				if retryCount <= maxRetryCount {
 					log.Printf("Retrying to get chain height from %s (attempt %d/%d)\n", nhc.nodeInfo.Endpoint, retryCount, maxRetryCount)
+					time.Sleep(time.Second)
 					continue
 				}
 
-				return lastHeight, err
+				return prevHeight, err
 			}
-			retryCount = 0
 
-			if ci.Height == lastHeight {
-				return lastHeight, ErrNodeGotStuck
+			if ci.Height == prevHeight {
+				return ci.Height, ErrNodeGotStuck
 			}
 
 			if ci.Height >= expectedHeight {
@@ -199,14 +214,18 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 				return ci.Height, nil
 			}
 
-			lastHeight = ci.Height
-			log.Printf("Waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
+			log.Printf("Still waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
 
-			duration := time.Duration(expectedHeight-ci.Height) * AvgSecondsPerBlock
-			if duration < tickerDuration {
-				// add AvgSecondsPerBlock just as an extra time
-				periodicTicker.Reset(duration + AvgSecondsPerBlock)
+			avgSecondsPerBlock = tickerDuration / time.Duration(ci.Height-prevHeight)
+			if expectedHeight-ci.Height < multiplier {
+				tickerDuration = time.Duration(expectedHeight-ci.Height) * avgSecondsPerBlock
+				periodicTicker.Reset(tickerDuration)
+			} else if avgSecondsPerBlock != DefaultAvgSecondsPerBlock {
+				tickerDuration = time.Duration(multiplier) * avgSecondsPerBlock
+				periodicTicker.Reset(tickerDuration)
 			}
+
+			prevHeight = ci.Height
 		}
 	}
 }

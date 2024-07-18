@@ -23,6 +23,10 @@ type NodeHealthCheckerPool struct {
 	// Health checkers by endpoint
 	validCheckers map[string]*NodeHealthChecker
 
+	// endpoint and last known height
+	knownStuckNodesMu sync.Mutex
+	knownStuckNodes   map[string]uint64
+
 	client        *crypto.KeyPair
 	mode          packets.ConnectionSecurityMode
 	maxConnection int
@@ -30,11 +34,17 @@ type NodeHealthCheckerPool struct {
 
 func NewNodeHealthCheckerPool(client *crypto.KeyPair, mode packets.ConnectionSecurityMode, maxConnection int) *NodeHealthCheckerPool {
 	return &NodeHealthCheckerPool{
-		validCheckers: make(map[string]*NodeHealthChecker),
-		client:        client,
-		mode:          mode,
-		maxConnection: maxConnection,
+		validCheckers:     make(map[string]*NodeHealthChecker),
+		knownStuckNodesMu: sync.Mutex{},
+		knownStuckNodes:   make(map[string]uint64),
+		client:            client,
+		mode:              mode,
+		maxConnection:     maxConnection,
 	}
+}
+
+func (ncp *NodeHealthCheckerPool) ResetPeers() {
+	ncp.validCheckers = map[string]*NodeHealthChecker{}
 }
 
 func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover bool) (failedConnectionsNodes map[string]*NodeInfo, err error) {
@@ -148,9 +158,9 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 	}
 
 	prevMinHeight := minHeight
-	nextStuckCheck := time.Now().Add(AvgSecondsPerBlock * 20)
+	nextStuckCheck := time.Now().Add(DefaultAvgSecondsPerBlock * 20)
 
-	ticker := time.NewTicker(AvgSecondsPerBlock)
+	ticker := time.NewTicker(DefaultAvgSecondsPerBlock)
 	defer ticker.Stop()
 
 	for {
@@ -162,9 +172,9 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 			}
 
 			if time.Now().After(nextStuckCheck) && prevMinHeight == minHeight {
-				for s, _ := range notReached {
-					delete(ncp.validCheckers, s)
-				}
+				//for s, _ := range notReached {
+				//	delete(ncp.validCheckers, s)
+				//}
 
 				return ErrorSomeNodeGotStuck
 			}
@@ -191,12 +201,33 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 		wg.Add(1)
 		go func(checker *NodeHealthChecker) {
 			defer wg.Done()
+
+			if h, ok := ncp.knownStuckNodes[checker.nodeInfo.Endpoint]; ok {
+				ci, err := checker.ChainInfo()
+				if err != nil || h == ci.Height {
+					notReachedMu.Lock()
+					notReached[*checker.nodeInfo] = h
+					notReachedMu.Unlock()
+
+					return
+				}
+
+				ncp.knownStuckNodesMu.Lock()
+				delete(ncp.knownStuckNodes, checker.nodeInfo.Endpoint)
+				ncp.knownStuckNodesMu.Unlock()
+			}
+
 			height, err := checker.WaitHeight(expectedHeight)
 			if err != nil {
 				notReachedMu.Lock()
 				notReached[*checker.nodeInfo] = height
-				delete(ncp.validCheckers, checker.nodeInfo.Endpoint)
 				notReachedMu.Unlock()
+
+				if errors.Is(err, ErrNodeGotStuck) {
+					ncp.knownStuckNodesMu.Lock()
+					ncp.knownStuckNodes[checker.nodeInfo.Endpoint] = height
+					ncp.knownStuckNodesMu.Unlock()
+				}
 
 				return
 			}
@@ -229,6 +260,11 @@ func (ncp *NodeHealthCheckerPool) GetHashes(height uint64) (map[string]sdk.Hash,
 			for attemptsCount := 1; attemptsCount <= maxAttempts; attemptsCount++ {
 				hash, err := checker.BlockHash(height)
 				if err != nil && attemptsCount <= maxAttempts {
+					if errors.Is(err, ErrNodeNotReachedHeight) {
+						log.Printf("Skip getting block hash from %s: %s\n", checker.nodeInfo.Endpoint, err)
+						return
+					}
+
 					log.Printf("Error getting block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
 					log.Printf("Retrying to get block hash from %s (attempt %d)\n", checker.nodeInfo.Endpoint, attemptsCount)
 
@@ -238,16 +274,16 @@ func (ncp *NodeHealthCheckerPool) GetHashes(height uint64) (map[string]sdk.Hash,
 
 				if err != nil {
 					log.Printf("Cannot get block hash from %s:%s\n", checker.nodeInfo.Endpoint, err)
-					delete(ncp.validCheckers, checker.nodeInfo.Endpoint)
-				}
-
-				if err == nil {
-					log.Printf("Node %s=%v at height %d has %s hash", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, height, hash)
 				}
 
 				hashesMu.Lock()
 				hashes[checker.nodeInfo.Endpoint] = hash
 				hashesMu.Unlock()
+
+				if err == nil {
+					log.Printf("Node %s=%v at height %d has %s hash", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, height, hash)
+					return
+				}
 			}
 		}(checker)
 	}
@@ -285,7 +321,7 @@ func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 		return err
 	}
 
-	ticker := time.NewTicker(AvgSecondsPerBlock)
+	ticker := time.NewTicker(DefaultAvgSecondsPerBlock)
 	for {
 		select {
 		case <-ticker.C:
