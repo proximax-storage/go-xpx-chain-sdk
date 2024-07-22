@@ -1,7 +1,6 @@
 package health
 
 import (
-	"log"
 	"net"
 	"time"
 
@@ -14,14 +13,10 @@ type NodeTcpIo struct {
 }
 
 func NewNodeTcpIo(info *NodeInfo) (*NodeTcpIo, error) {
-	log.Printf("Dialing %s=%v", info.Endpoint, info.IdentityKey)
 	connection, err := net.DialTimeout("tcp", info.Endpoint, 5*time.Second)
 	if err != nil {
-		log.Print(err)
 		return nil, err
 	}
-
-	log.Printf("Connected to %s=%v", info.Endpoint, info.IdentityKey)
 
 	return &NodeTcpIo{
 		nodeInfo: info,

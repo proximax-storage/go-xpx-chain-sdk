@@ -139,11 +139,13 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealt
 	}
 	ncp.validCheckersMu.Unlock()
 
+	log.Printf("Dialing %s=%v", info.Endpoint, info.IdentityKey)
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
 	if err != nil {
 		log.Printf("Error connecting to %s: %s", info.Endpoint, err)
 		return nil, err
 	}
+	log.Printf("Connected to %s=%v", info.Endpoint, info.IdentityKey)
 
 	ncp.validCheckersMu.Lock()
 	ncp.validCheckers[info.IdentityKey.String()] = nc
