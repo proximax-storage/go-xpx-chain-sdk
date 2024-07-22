@@ -20,11 +20,11 @@ var (
 )
 
 type NodeHealthCheckerPool struct {
-	// Health checkers by endpoint
+	// Health checkers by pubKeys
 	validCheckersMu sync.Mutex
 	validCheckers   map[string]*NodeHealthChecker
 
-	// endpoint and last known height
+	// pubKey and last known height
 	knownStuckNodesMu sync.Mutex
 	knownStuckNodes   map[string]uint64
 
@@ -48,6 +48,7 @@ func (ncp *NodeHealthCheckerPool) ResetPeers() {
 	ncp.validCheckers = map[string]*NodeHealthChecker{}
 }
 
+// ConnectToNodes connects to nodes. Returns map with pubKey as key and nodes info as value and error
 func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover bool) (failedConnectionsNodes map[string]*NodeInfo, err error) {
 	if len(ncp.validCheckers) >= ncp.maxConnection {
 		return
@@ -346,6 +347,7 @@ func (ncp *NodeHealthCheckerPool) WaitAllHashesEqual(height uint64) error {
 	}
 }
 
+// Returns a min height and map with pubKey as key and nodes info as value for not reached nodes
 func checkHeight(expectedHeight uint64, nodeHealthCheckers map[string]*NodeHealthChecker) (uint64, map[string]*NodeHealthChecker) {
 	notReachedLock := sync.Mutex{}
 	notReached := make(map[string]*NodeHealthChecker)
