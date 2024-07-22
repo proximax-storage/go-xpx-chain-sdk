@@ -21,7 +21,8 @@ var (
 
 type NodeHealthCheckerPool struct {
 	// Health checkers by endpoint
-	validCheckers map[string]*NodeHealthChecker
+	validCheckersMu sync.Mutex
+	validCheckers   map[string]*NodeHealthChecker
 
 	// endpoint and last known height
 	knownStuckNodesMu sync.Mutex
@@ -77,7 +78,7 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 				return failedConnectionsNodes, nil
 			}
 
-			if _, ok := handled[info.Endpoint]; ok {
+			if _, ok := handled[info.IdentityKey.String()]; ok {
 				v := atomic.LoadInt32(&waiting)
 				if v == 0 && len(chInfo) == 0 {
 					close(chInfo)
@@ -86,7 +87,7 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 				continue
 			}
 
-			handled[info.Endpoint] = struct{}{}
+			handled[info.IdentityKey.String()] = struct{}{}
 			atomic.AddInt32(&waiting, 1)
 			go func(info *NodeInfo) {
 				defer atomic.AddInt32(&waiting, -1)
@@ -94,7 +95,7 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 				checker, err := ncp.MaybeConnectToNode(info)
 				if err != nil {
 					failedConnectionsNodesMutex.Lock()
-					failedConnectionsNodes[info.Endpoint] = info
+					failedConnectionsNodes[info.IdentityKey.String()] = info
 					failedConnectionsNodesMutex.Unlock()
 
 					chInfo <- info
@@ -102,8 +103,13 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 				}
 
 				connectedNodesMutex.Lock()
-				connectedNodes[info.Endpoint] = checker
+				connectedNodes[info.IdentityKey.String()] = checker
 				connectedNodesMutex.Unlock()
+
+				if !discover {
+					chInfo <- info
+					return
+				}
 
 				nodeList, err := checker.NodeList()
 				if err != nil {
@@ -112,14 +118,12 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 				}
 
 				log.Printf("Node %s=%v returned %d nodes\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, len(nodeList))
-				if discover {
-					if len(nodeList) == 0 {
-						chInfo <- info
-					}
+				if len(nodeList) == 0 {
+					chInfo <- info
+				}
 
-					for _, nodeInfo := range nodeList {
-						chInfo <- nodeInfo
-					}
+				for _, nodeInfo := range nodeList {
+					chInfo <- nodeInfo
 				}
 			}(info)
 		}
@@ -127,9 +131,13 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 }
 
 func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealthChecker, error) {
-	if vd, ok := ncp.validCheckers[info.Endpoint]; ok {
+
+	ncp.validCheckersMu.Lock()
+	if vd, ok := ncp.validCheckers[info.IdentityKey.String()]; ok {
+		ncp.validCheckersMu.Unlock()
 		return vd, nil
 	}
+	ncp.validCheckersMu.Unlock()
 
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
 	if err != nil {
@@ -137,7 +145,10 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealt
 		return nil, err
 	}
 
-	ncp.validCheckers[info.Endpoint] = nc
+	ncp.validCheckersMu.Lock()
+	ncp.validCheckers[info.IdentityKey.String()] = nc
+	ncp.validCheckersMu.Unlock()
+
 	return nc, nil
 }
 
@@ -202,7 +213,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 		go func(checker *NodeHealthChecker) {
 			defer wg.Done()
 
-			if h, ok := ncp.knownStuckNodes[checker.nodeInfo.Endpoint]; ok {
+			if h, ok := ncp.knownStuckNodes[checker.nodeInfo.IdentityKey.String()]; ok {
 				ci, err := checker.ChainInfo()
 				if err != nil || h == ci.Height {
 					notReachedMu.Lock()
@@ -213,7 +224,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 				}
 
 				ncp.knownStuckNodesMu.Lock()
-				delete(ncp.knownStuckNodes, checker.nodeInfo.Endpoint)
+				delete(ncp.knownStuckNodes, checker.nodeInfo.IdentityKey.String())
 				ncp.knownStuckNodesMu.Unlock()
 			}
 
@@ -225,7 +236,7 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 
 				if errors.Is(err, ErrNodeGotStuck) {
 					ncp.knownStuckNodesMu.Lock()
-					ncp.knownStuckNodes[checker.nodeInfo.Endpoint] = height
+					ncp.knownStuckNodes[checker.nodeInfo.IdentityKey.String()] = height
 					ncp.knownStuckNodesMu.Unlock()
 				}
 
@@ -363,7 +374,7 @@ func checkHeight(expectedHeight uint64, nodeHealthCheckers map[string]*NodeHealt
 			}
 
 			notReachedLock.Lock()
-			notReached[checker.nodeInfo.Endpoint] = checker
+			notReached[checker.nodeInfo.IdentityKey.String()] = checker
 			notReachedLock.Unlock()
 		}(checker)
 	}
