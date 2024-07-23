@@ -175,18 +175,15 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 	prevHeight := ci.Height
 
 	multiplier := expectedHeight - ci.Height
-	if multiplier > 5 {
-		multiplier = 5
+	if multiplier > 4 {
+		multiplier = 4
 	}
 
-	avgSecondsPerBlock := DefaultAvgSecondsPerBlock
-	tickerDuration := DefaultAvgSecondsPerBlock * time.Duration(multiplier)
-	periodicTicker := time.NewTicker(tickerDuration)
+	periodicTicker := time.NewTicker(DefaultAvgSecondsPerBlock * time.Duration(multiplier))
 	defer periodicTicker.Stop()
 
 	log.Printf("Start waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
 	maxRetryCount := uint8(3)
-	updateTicker := false
 	for {
 		select {
 		case <-periodicTicker.C:
@@ -217,21 +214,8 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 
 			log.Printf("Still waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
 
-			avgSecondsPerBlock = tickerDuration / time.Duration(ci.Height-prevHeight)
 			if expectedHeight-ci.Height < multiplier {
-				updateTicker = true
-				tickerDuration = time.Duration(expectedHeight-ci.Height) * avgSecondsPerBlock
-			} else if avgSecondsPerBlock != DefaultAvgSecondsPerBlock {
-				updateTicker = true
-				tickerDuration = time.Duration(multiplier) * avgSecondsPerBlock
-			}
-
-			if updateTicker {
-				if tickerDuration < DefaultAvgSecondsPerBlock {
-					tickerDuration = DefaultAvgSecondsPerBlock
-				}
-				updateTicker = false
-				periodicTicker.Reset(tickerDuration)
+				periodicTicker.Reset(time.Duration(expectedHeight-ci.Height) * DefaultAvgSecondsPerBlock)
 			}
 
 			prevHeight = ci.Height
