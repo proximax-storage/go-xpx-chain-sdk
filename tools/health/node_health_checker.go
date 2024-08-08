@@ -188,19 +188,19 @@ func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) 
 		select {
 		case <-periodicTicker.C:
 			for retryCount := uint8(1); retryCount <= maxRetryCount; retryCount++ {
+				log.Printf("Trying to get current chain height from %s (attempt %d/%d)\n", nhc.nodeInfo.Endpoint, retryCount, maxRetryCount)
 				ci, err = nhc.ChainInfo()
 				if err == nil {
 					break
+				} else {
+					log.Printf("Cannot get height of %s=%s: %s\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, err)
 				}
 
-				log.Printf("Cannot get height of %s=%s: %s\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, err)
-				if retryCount <= maxRetryCount {
-					log.Printf("Retrying to get chain height from %s (attempt %d/%d)\n", nhc.nodeInfo.Endpoint, retryCount, maxRetryCount)
+				if retryCount < maxRetryCount {
 					time.Sleep(time.Second)
-					continue
+				} else {
+					return prevHeight, err
 				}
-
-				return prevHeight, err
 			}
 
 			if ci.Height == prevHeight {
