@@ -6,7 +6,7 @@ require (
 	github.com/google/flatbuffers v1.11.0
 	github.com/google/go-querystring v1.0.0
 	github.com/gorilla/websocket v1.4.0
-	github.com/json-iterator/go v1.1.6
+	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.8.1
 	github.com/proximax-storage/go-xpx-chain-sync v1.1.2
 	github.com/proximax-storage/go-xpx-crypto v0.0.0-20191023142918-e02e2652d78e
