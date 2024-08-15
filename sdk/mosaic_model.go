@@ -54,7 +54,7 @@ func (m *MosaicId) MarshalJSON() ([]byte, error) {
 
 func (m MosaicId) MarshalBSON() ([]byte, error) {
     return bson.Marshal(bson.M{
-        "id": m.Id,
+        "assetid": newMosaicId(m.Id()),
     })
 }
 
