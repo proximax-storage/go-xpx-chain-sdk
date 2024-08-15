@@ -53,7 +53,9 @@ func (m *MosaicId) MarshalJSON() ([]byte, error) {
 }
 
 func (m MosaicId) MarshalBSON() ([]byte, error) {
-    return bson.Marshal(m.String())
+    return bson.Marshal(bson.M{
+        "assetid": m.String(),
+    })
 }
 
 func newMosaicIdPanic(id uint64) *MosaicId {
