@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	flatbuffers "github.com/google/flatbuffers/go"
-	// "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-utils/str"
@@ -52,11 +52,13 @@ func (m *MosaicId) MarshalJSON() ([]byte, error) {
 	return data, nil
 }
 
-// func (m MosaicId) MarshalBSON() ([]byte, error) {
-//     return bson.Marshal(bson.M{
-//         "assetid": m.Id(),
-//     })
-// }
+func (m MosaicId) MarshalBSON() ([]byte, error) {
+	fmt.Println(m.Id())
+	fmt.Println(m.String())
+    return bson.Marshal(bson.M{
+        "assetid": m.Id(),
+    })
+}
 
 func newMosaicIdPanic(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
