@@ -27,6 +27,8 @@ github.com/proximax-storage/go-xpx-chain-sync v1.1.2 h1:HR1h9GwrMYPPfiPmB+p2JgYf
 github.com/proximax-storage/go-xpx-chain-sync v1.1.2/go.mod h1:I4k4aJ+XQe+4ev0cZEbwGi6zetWhpRn3QB2SUSl2wIY=
 github.com/proximax-storage/go-xpx-crypto v0.0.0-20191023142918-e02e2652d78e h1:ncxM4ZtmYP+QsHKFcL/YDQX3X3IwntYzEH/29TzMiTQ=
 github.com/proximax-storage/go-xpx-crypto v0.0.0-20191023142918-e02e2652d78e/go.mod h1:gYfWQWh8qBihxxPhZeYrvLWC21RG+Dmv4FgHpFfpAzs=
+github.com/proximax-storage/go-xpx-crypto v0.1.0 h1:ifeGdrYJrpu/kZzdpSrnZVFhWZFFrnMi9mdTeuWRXgc=
+github.com/proximax-storage/go-xpx-crypto v0.1.0/go.mod h1:KqmiFpHxkIGk4VFOXDfJsAK1FQbbJWnwo5rZQOExWsA=
 github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f h1:/ll8hQJ1jfDreLorR4U1Vn6Z6UL8r+pd8mv4mYq7RUY=
 github.com/proximax-storage/go-xpx-utils v0.0.0-20190604083640-90d06ff8a19f/go.mod h1:++1dcQ6EiUK6Yqi5al5OO3QXZPR1y9mX03e5O2qawEw=
 github.com/proximax-storage/nem2-sdk-go v0.0.0-20190128134401-f3b97d8c1f63/go.mod h1:bTUWZWtoRHhTTqatPWwFCKNeAFDzA2jbA1kLidM0/Is=
@@ -52,6 +54,7 @@ golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f h1:R423Cnkcp5JABoeemiGEPl
 golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.19.0/go.mod h1:Iy9bg/ha4yyC70EfRS8jz+B6ybOBKMaSxLj6P6oBDfU=
+golang.org/x/crypto v0.22.0 h1:g1v0xeRhjcugydODzvb3mEM9SQ0HGp9s/nh3COQ/C30=
 golang.org/x/crypto v0.22.0/go.mod h1:vr6Su+7cTlO45qkww3VDJlzDn0ctJvRgYbC2NvXHt+M=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.8.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
@@ -76,6 +79,7 @@ golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.8.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.17.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.19.0 h1:q5f1RH2jigJ1MoAWp2KTp3gm5zAGFUTarQZ5U386+4o=
 golang.org/x/sys v0.19.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=

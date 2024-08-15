@@ -35,13 +35,13 @@ type transactionDto interface {
 
 type AbstractTransaction struct {
 	TransactionInfo
-	NetworkType NetworkType    `json:"network_type"`
-	Deadline    *Deadline      `json:"deadline"`
-	Type        EntityType     `json:"entity_type"`
-	Version     EntityVersion  `json:"version"`
-	MaxFee      Amount         `json:"max_fee"`
-	Signature   string         `json:"signature"`
-	Signer      *PublicAccount `json:"signer"`
+	NetworkType NetworkType    `json:"network_type" bson:"networktype"`
+	Deadline    *Deadline      `json:"deadline" bson:"deadline"`
+	Type        EntityType     `json:"entity_type" bson:"type"`
+	Version     EntityVersion  `json:"version" bson:"version"`
+	MaxFee      Amount         `json:"max_fee" bson:"maxfee"`
+	Signature   string         `json:"signature" bson:"signature"`
+	Signer      *PublicAccount `json:"signer" bson:"signer"`
 }
 
 func (tx *AbstractTransaction) IsUnconfirmed() bool {
@@ -136,14 +136,14 @@ type TransactionsPageOptions struct {
 }
 
 type TransactionInfo struct {
-	Height              Height
-	Index               uint32
-	Id                  string
-	TransactionHash     *Hash
-	MerkleComponentHash *Hash
-	AggregateHash       *Hash
-	UniqueAggregateHash *Hash
-	AggregateId         string
+	Height              Height `bson:"height"`
+	Index               uint32 `bson:"index"`
+	Id                  string `bson:"id"`
+	TransactionHash     *Hash  `bson:"transactionHash"`
+	MerkleComponentHash *Hash  `bson:"merkleComponentHash"`
+	AggregateHash       *Hash  `bson:"aggregateHash"`
+	UniqueAggregateHash *Hash  `bson:"uniqueAggregateHash"`
+	AggregateId         string `bson:"aggregateId"`
 }
 
 func (ti *TransactionInfo) String() string {
@@ -3288,8 +3288,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOnboardingTransactionDTO{}
 	case ReplicatorsCleanup:
 		dto = &replicatorsCleanupTransactionDTO{}
-    case ReplicatorTreeRebuild:
-        dto = &replicatorTreeRebuildTransactionDTO{}
+	case ReplicatorTreeRebuild:
+		dto = &replicatorTreeRebuildTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:
