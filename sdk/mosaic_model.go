@@ -56,7 +56,7 @@ func (m MosaicId) MarshalBSON() ([]byte, error) {
 	fmt.Println(m.Id())
 	fmt.Println(m.String())
     return bson.Marshal(bson.M{
-        "assetid": m.Id(),
+        "id": m.Id(),
     })
 }
 
