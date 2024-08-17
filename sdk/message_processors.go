@@ -6,183 +6,45 @@ import (
 	"github.com/pkg/errors"
 )
 
-type mapTransactionFunc func(b *bytes.Buffer, generationHash *Hash) (Transaction, error)
+type MapperFunc[T any] func(generationHash *Hash, payload []byte) (T, error)
 
-//======================================================================================================================
+type Mapper[T any] interface {
+	Map([]byte) (T, error)
+}
 
-func MapBlock(m []byte) (*BlockInfo, error) {
+type mapper[T any] struct {
+	fn             MapperFunc[T]
+	generationHash *Hash
+}
+
+func (m *mapper[T]) Map(payload []byte) (T, error) {
+	return m.fn(m.generationHash, payload)
+}
+
+func NewMapper[T any](generationHash *Hash, fn MapperFunc[T]) Mapper[T] {
+	return &mapper[T]{
+		fn:             fn,
+		generationHash: generationHash,
+	}
+}
+
+var TransactionMapperFunc MapperFunc[Transaction] = func(generationHash *Hash, payload []byte) (Transaction, error) {
+	buf := bytes.NewBuffer(payload)
+	return MapTransaction(buf, generationHash)
+}
+
+var BlockMapperFunc MapperFunc[*BlockInfo] = func(generationHash *Hash, payload []byte) (*BlockInfo, error) {
 	dto := &blockInfoDTO{}
-	if err := json.Unmarshal(m, dto); err != nil {
+	if err := json.Unmarshal(payload, dto); err != nil {
 		return nil, err
 	}
 
 	return dto.toStruct()
 }
 
-type BlockMapper interface {
-	MapBlock(m []byte) (*BlockInfo, error)
-}
-
-type BlockMapperFn func(m []byte) (*BlockInfo, error)
-
-func (p BlockMapperFn) MapBlock(m []byte) (*BlockInfo, error) {
-	return p(m)
-}
-
-//======================================================================================================================
-
-func NewConfirmedAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) ConfirmedAddedMapper {
-	return &confirmedAddedMapperImpl{
-		mapTransactionFunc: mapTransactionFunc,
-		generationHash:     generationHash,
-	}
-}
-
-type ConfirmedAddedMapper interface {
-	MapConfirmedAdded(m []byte) (Transaction, error)
-}
-
-type confirmedAddedMapperImpl struct {
-	mapTransactionFunc mapTransactionFunc
-	generationHash     *Hash
-}
-
-func (ref *confirmedAddedMapperImpl) MapConfirmedAdded(m []byte) (Transaction, error) {
-	buf := bytes.NewBuffer(m)
-	return ref.mapTransactionFunc(buf, ref.generationHash)
-}
-
-//======================================================================================================================
-
-func NewUnconfirmedAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) UnconfirmedAddedMapper {
-	return &unconfirmedAddedMapperImpl{
-		mapTransactionFunc: mapTransactionFunc,
-		generationHash:     generationHash,
-	}
-}
-
-type UnconfirmedAddedMapper interface {
-	MapUnconfirmedAdded(m []byte) (Transaction, error)
-}
-
-type unconfirmedAddedMapperImpl struct {
-	mapTransactionFunc mapTransactionFunc
-	generationHash     *Hash
-}
-
-func (p unconfirmedAddedMapperImpl) MapUnconfirmedAdded(m []byte) (Transaction, error) {
-	buf := bytes.NewBuffer(m)
-	return p.mapTransactionFunc(buf, p.generationHash)
-}
-
-//======================================================================================================================
-
-func MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error) {
-	dto := &unconfirmedRemovedDto{}
-	if err := json.Unmarshal(m, dto); err != nil {
-		return nil, err
-	}
-
-	return dto.toStruct()
-}
-
-type UnconfirmedRemovedMapper interface {
-	MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error)
-}
-type UnconfirmedRemovedMapperFn func(m []byte) (*UnconfirmedRemoved, error)
-
-func (p UnconfirmedRemovedMapperFn) MapUnconfirmedRemoved(m []byte) (*UnconfirmedRemoved, error) {
-	return p(m)
-}
-
-//======================================================================================================================
-
-func MapStatus(m []byte) (*StatusInfo, error) {
-	statusInfoDto := &statusInfoDto{}
-	if err := json.Unmarshal(m, statusInfoDto); err != nil {
-		return nil, err
-	}
-
-	hash, err := statusInfoDto.Hash.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	return &StatusInfo{
-		statusInfoDto.Status,
-		hash,
-	}, nil
-}
-
-type StatusMapper interface {
-	MapStatus(m []byte) (*StatusInfo, error)
-}
-
-type StatusMapperFn func(m []byte) (*StatusInfo, error)
-
-func (p StatusMapperFn) MapStatus(m []byte) (*StatusInfo, error) {
-	return p(m)
-}
-
-//======================================================================================================================
-
-func NewPartialAddedMapper(mapTransactionFunc mapTransactionFunc, generationHash *Hash) PartialAddedMapper {
-	return &partialAddedMapperImpl{
-		mapTransactionFunc: mapTransactionFunc,
-		generationHash:     generationHash,
-	}
-}
-
-type PartialAddedMapper interface {
-	MapPartialAdded(m []byte) (*AggregateTransaction, error)
-}
-
-type partialAddedMapperImpl struct {
-	mapTransactionFunc mapTransactionFunc
-	generationHash     *Hash
-}
-
-func (p partialAddedMapperImpl) MapPartialAdded(m []byte) (*AggregateTransaction, error) {
-	buf := bytes.NewBuffer(m)
-	tr, err := p.mapTransactionFunc(buf, p.generationHash)
-	if err != nil {
-		return nil, err
-	}
-
-	v, ok := tr.(*AggregateTransaction)
-	if !ok {
-		return nil, errors.New("error cast types")
-	}
-
-	return v, nil
-}
-
-//======================================================================================================================
-
-func MapPartialRemoved(m []byte) (*PartialRemovedInfo, error) {
-	dto := &partialRemovedInfoDTO{}
-	if err := json.Unmarshal(m, dto); err != nil {
-		return nil, err
-	}
-
-	return dto.toStruct()
-}
-
-type PartialRemovedMapper interface {
-	MapPartialRemoved(m []byte) (*PartialRemovedInfo, error)
-}
-
-type PartialRemovedMapperFn func(m []byte) (*PartialRemovedInfo, error)
-
-func (p PartialRemovedMapperFn) MapPartialRemoved(m []byte) (*PartialRemovedInfo, error) {
-	return p(m)
-}
-
-//======================================================================================================================
-
-func MapCosignature(m []byte) (*SignerInfo, error) {
+var CosignatureMapperFunc MapperFunc[*SignerInfo] = func(generationHash *Hash, payload []byte) (*SignerInfo, error) {
 	signerInfoDto := &signerInfoDto{}
-	if err := json.Unmarshal(m, signerInfoDto); err != nil {
+	if err := json.Unmarshal(payload, signerInfoDto); err != nil {
 		return nil, err
 	}
 
@@ -203,33 +65,61 @@ func MapCosignature(m []byte) (*SignerInfo, error) {
 	}, nil
 }
 
-type CosignatureMapper interface {
-	MapCosignature(m []byte) (*SignerInfo, error)
+var UnconfirmedRemovedMapperFunc MapperFunc[*UnconfirmedRemoved] = func(generationHash *Hash, payload []byte) (*UnconfirmedRemoved, error) {
+	dto := &unconfirmedRemovedDto{}
+	if err := json.Unmarshal(payload, dto); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
 }
 
-type CosignatureMapperFn func(m []byte) (*SignerInfo, error)
-
-func (p CosignatureMapperFn) MapCosignature(m []byte) (*SignerInfo, error) {
-	return p(m)
-}
-
-//======================================================================================================================
-
-func MapDriveState(m []byte) (*DriveStateInfo, error) {
+var DriveStateMapperFunc MapperFunc[*DriveStateInfo] = func(generationHash *Hash, payload []byte) (*DriveStateInfo, error) {
 	driveStateDto := &driveStateDto{}
-	if err := json.Unmarshal(m, driveStateDto); err != nil {
+	if err := json.Unmarshal(payload, driveStateDto); err != nil {
 		return nil, err
 	}
 
 	return driveStateDto.toStruct()
 }
 
-type DriveStateMapper interface {
-	MapDriveState(m []byte) (*DriveStateInfo, error)
+var PartialRemovedMapperFunc MapperFunc[*PartialRemovedInfo] = func(generationHash *Hash, payload []byte) (*PartialRemovedInfo, error) {
+	dto := &partialRemovedInfoDTO{}
+	if err := json.Unmarshal(payload, dto); err != nil {
+		return nil, err
+	}
+
+	return dto.toStruct()
 }
 
-type DriveStateMapperFn func(m []byte) (*DriveStateInfo, error)
+var AggregateTransactionMapperFunc MapperFunc[*AggregateTransaction] = func(generationHash *Hash, payload []byte) (*AggregateTransaction, error) {
+	buf := bytes.NewBuffer(payload)
+	tr, err := MapTransaction(buf, generationHash)
+	if err != nil {
+		return nil, err
+	}
 
-func (p DriveStateMapperFn) MapDriveState(m []byte) (*DriveStateInfo, error) {
-	return p(m)
+	v, ok := tr.(*AggregateTransaction)
+	if !ok {
+		return nil, errors.New("error cast types")
+	}
+
+	return v, nil
+}
+
+var StatusMapperFunc MapperFunc[*StatusInfo] = func(generationHash *Hash, payload []byte) (*StatusInfo, error) {
+	statusInfoDto := &statusInfoDto{}
+	if err := json.Unmarshal(payload, statusInfoDto); err != nil {
+		return nil, err
+	}
+
+	hash, err := statusInfoDto.Hash.Hash()
+	if err != nil {
+		return nil, err
+	}
+
+	return &StatusInfo{
+		statusInfoDto.Status,
+		hash,
+	}, nil
 }
