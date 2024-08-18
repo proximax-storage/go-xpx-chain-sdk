@@ -21,7 +21,7 @@ const (
 )
 
 type Notifier interface {
-	Notify(address *sdk.Address, payload []byte) error
+	Notify(path *Path, payload []byte) error
 }
 
 type Publisher struct {
@@ -59,7 +59,8 @@ func (p *Publisher) Publish(data []byte) error {
 	if !ok {
 		return errors.New("topic not found")
 	}
-	err = sub.Notify(path.address, data)
+
+	err = sub.Notify(path, data)
 	if err != nil {
 		return err
 	}

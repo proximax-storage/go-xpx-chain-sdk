@@ -1,11 +1,11 @@
 package subs
 
 import (
-	"log"
+	"errors"
+	"fmt"
+	"math/rand"
 	"sync"
 	"time"
-
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 )
 
 type Mapper[T any] interface {
@@ -16,81 +16,88 @@ type MapperFunc[T any] func(payload []byte) (T, error)
 
 type SubscribersPool[T any] interface {
 	Notifier
-	NewSubscription(address string) (_ <-chan T, id int)
-	CloseSubscription(address string, id int)
-	GetAddresses() []string
-	HasSubscriptions(address string) bool
+	NewSubscription(path *Path) (_ <-chan T, id int)
+	CloseSubscription(path *Path, id int)
+	GetPaths() []string
+	HasSubscriptions(path *Path) bool
 }
 
 type subscribersPool[T any] struct {
 	dataCh chan []byte
 
-	subsPerAddressMutex sync.Mutex
-	subsPerAddress      map[string]*subscriptions[T]
+	subsPerPathsMutex sync.Mutex
+	subsPerPaths      map[string]*subscriptions[T]
 
 	mapper Mapper[T]
 }
 
 func NewSubscribersPool[T any](mapper Mapper[T]) SubscribersPool[T] {
 	c := &subscribersPool[T]{
-		dataCh:              make(chan []byte, 10),
-		subsPerAddressMutex: sync.Mutex{},
-		subsPerAddress:      make(map[string]*subscriptions[T]),
-		mapper:              mapper,
+		dataCh:            make(chan []byte, 10),
+		subsPerPathsMutex: sync.Mutex{},
+		subsPerPaths:      make(map[string]*subscriptions[T]),
+		mapper:            mapper,
 	}
 
 	return c
 }
 
-func (c *subscribersPool[T]) Notify(address *sdk.Address, payload []byte) error {
+func (c *subscribersPool[T]) Notify(path *Path, payload []byte) error {
 	v, err := c.mapper.Map(payload)
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		c.subsPerAddressMutex.Lock()
-		subs, ok := c.subsPerAddress[address.Address]
-		c.subsPerAddressMutex.Unlock()
+		c.subsPerPathsMutex.Lock()
+		defer c.subsPerPathsMutex.Unlock()
+
+		subs, ok := c.subsPerPaths[path.String()]
 		if !ok {
 			return
 		}
-		subs.notify(v)
+
+		err := subs.notify(v)
+		if err != nil {
+			fmt.Printf("Cannot notify %s: %s\n", path.String(), err)
+		}
 	}()
 
 	return nil
 }
 
-func (c *subscribersPool[T]) NewSubscription(address string) (_ <-chan T, id int) {
-	c.subsPerAddressMutex.Lock()
-	subs, ok := c.subsPerAddress[address]
+func (c *subscribersPool[T]) NewSubscription(path *Path) (_ <-chan T, id int) {
+	c.subsPerPathsMutex.Lock()
+	subs, ok := c.subsPerPaths[path.String()]
 	if !ok {
 		subs = newSubscriptions[T]()
-		c.subsPerAddress[address] = subs
+		c.subsPerPaths[path.String()] = subs
 	}
-	c.subsPerAddressMutex.Unlock()
+	c.subsPerPathsMutex.Unlock()
 
 	return subs.new()
 }
 
-func (c *subscribersPool[T]) CloseSubscription(address string, id int) {
-	c.subsPerAddressMutex.Lock()
-	sub, ok := c.subsPerAddress[address]
-	c.subsPerAddressMutex.Unlock()
+func (c *subscribersPool[T]) CloseSubscription(path *Path, id int) {
+	c.subsPerPathsMutex.Lock()
+	defer c.subsPerPathsMutex.Unlock()
+
+	sub, ok := c.subsPerPaths[path.String()]
 	if !ok {
 		return
 	}
 	sub.delete(id)
 
 	if sub.length() == 0 {
-		delete(c.subsPerAddress, address)
+		delete(c.subsPerPaths, path.String())
 	}
 }
 
-func (c *subscribersPool[T]) HasSubscriptions(address string) bool {
-	c.subsPerAddressMutex.Lock()
-	defer c.subsPerAddressMutex.Unlock()
-	subs, ok := c.subsPerAddress[address]
+func (c *subscribersPool[T]) HasSubscriptions(path *Path) bool {
+	c.subsPerPathsMutex.Lock()
+	defer c.subsPerPathsMutex.Unlock()
+
+	subs, ok := c.subsPerPaths[path.String()]
 	if !ok {
 		return false
 	}
@@ -98,27 +105,30 @@ func (c *subscribersPool[T]) HasSubscriptions(address string) bool {
 	return subs.length() > 0
 }
 
-func (c *subscribersPool[T]) GetAddresses() []string {
-	c.subsPerAddressMutex.Lock()
-	defer c.subsPerAddressMutex.Unlock()
+func (c *subscribersPool[T]) GetPaths() []string {
+	c.subsPerPathsMutex.Lock()
+	defer c.subsPerPathsMutex.Unlock()
 
-	addresses := make([]string, 0, len(c.subsPerAddress))
-	for addr := range c.subsPerAddress {
-		addresses = append(addresses, addr)
+	paths := make([]string, 0, len(c.subsPerPaths))
+	for p := range c.subsPerPaths {
+		paths = append(paths, p)
 	}
 
-	return addresses
+	return paths
 }
 
 type subscriptions[T any] struct {
 	subsMutex sync.Mutex
 	subs      map[int]chan T
+
+	randomizer *rand.Rand
 }
 
 func newSubscriptions[T any]() *subscriptions[T] {
 	return &subscriptions[T]{
-		subsMutex: sync.Mutex{},
-		subs:      make(map[int]chan T),
+		subsMutex:  sync.Mutex{},
+		subs:       make(map[int]chan T),
+		randomizer: rand.New(rand.NewSource(time.Now().Unix())),
 	}
 }
 
@@ -126,8 +136,16 @@ func (s *subscriptions[T]) new() (_ <-chan T, id int) {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
+	for {
+		id = s.randomizer.Intn(10000)
+		_, ok := s.subs[id]
+		if !ok {
+			break
+		}
+	}
+
 	ch := make(chan T)
-	s.subs[0] = ch
+	s.subs[id] = ch
 
 	return ch, id
 }
@@ -139,7 +157,7 @@ func (s *subscriptions[T]) delete(id int) {
 	delete(s.subs, id)
 }
 
-func (s *subscriptions[T]) notify(v T) {
+func (s *subscriptions[T]) notify(v T) error {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
@@ -147,12 +165,14 @@ func (s *subscriptions[T]) notify(v T) {
 		select {
 		case sub <- v:
 		case <-time.After(time.Second * 30):
-			log.Println("deadline")
-
 			close(sub)
 			delete(s.subs, id)
+
+			return errors.New(fmt.Sprintf("Close %d subscription because deadline has expired\n", id))
 		}
 	}
+
+	return nil
 }
 
 func (s *subscriptions[T]) getAll() map[int]chan T {
