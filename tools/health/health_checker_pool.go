@@ -48,11 +48,50 @@ func (ncp *NodeHealthCheckerPool) ResetPeers() {
 	ncp.validCheckers = map[string]*NodeHealthChecker{}
 }
 
+func (ncp *NodeHealthCheckerPool) ReviewConnections() {
+	log.Printf("Reviewing exist valid checkers...")
+
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
+
+	toDeleteMu := sync.Mutex{}
+	toDelete := map[string]*NodeHealthChecker{}
+
+	wg := sync.WaitGroup{}
+	for s, checker := range ncp.validCheckers {
+		wg.Add(1)
+		go func(s string, c *NodeHealthChecker) {
+			defer wg.Done()
+
+			_, err := c.ChainInfo()
+			if err != nil {
+				toDeleteMu.Lock()
+				toDelete[s] = c
+				toDeleteMu.Unlock()
+			}
+		}(s, checker)
+	}
+
+	wg.Wait()
+
+	for s, checker := range toDelete {
+		log.Printf("Delete %s from valid checkers", s)
+
+		checker.Close()
+		delete(ncp.validCheckers, s)
+	}
+}
+
 // ConnectToNodes connects to nodes. Returns map with pubKey as key and nodes info as value and error
 func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover bool) (failedConnectionsNodes map[string]*NodeInfo, err error) {
+	ncp.ReviewConnections()
+
+	ncp.validCheckersMu.Lock()
 	if len(ncp.validCheckers) >= ncp.maxConnection {
+		ncp.validCheckersMu.Unlock()
 		return
 	}
+	ncp.validCheckersMu.Unlock()
 
 	chInfo := make(chan *NodeInfo, len(nodeInfos)*5)
 	for _, info := range nodeInfos {
