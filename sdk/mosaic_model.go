@@ -101,6 +101,28 @@ type Mosaic struct {
 	Amount  Amount `bson:"amount"`
 }
 
+func (m Mosaic) MarshalBSON(data []byte) error {
+	var tempMap bson.M
+    if err := bson.Unmarshal(data, &tempMap); err != nil {
+        return err
+    }
+
+	id, ok := tempMap["id"].(string)
+    if !ok {
+        return fmt.Errorf("field 'id' not found or not a string")
+    }
+    m.AssetId, err := NewAssetIdFromId(id)
+	if err != nil {
+		fmt.Println("m.assetid failed")
+	}
+
+	amount, ok := tempMap["amount"].(int64)
+    if !ok {
+        return fmt.Errorf("field 'id' not found or not a string")
+    }
+
+	m.Amount = Amount(amount)
+}
 // returns a Mosaic for passed AssetId and amount
 func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 	if assetId == nil {
