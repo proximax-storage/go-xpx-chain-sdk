@@ -102,27 +102,32 @@ type Mosaic struct {
 }
 
 func (m *Mosaic) MarshalBSON(data []byte) error {
+
+	fmt.Println("inside marshal")
 	var tempMap bson.M
     if err := bson.Unmarshal(data, &tempMap); err != nil {
-        return err
+		return err
     }
-
+	
 	id, ok := tempMap["id"].(uint64)
     if !ok {
-        return fmt.Errorf("field 'id' not found or not a string")
+		return fmt.Errorf("field 'id' not found or not a string")
     }
     m.AssetId, _ = NewAssetIdFromId(id)
-
+	
 	fmt.Println(m.AssetId)
-
+	fmt.Println(id)
+	
 	amount, ok := tempMap["amount"].(int64)
     if !ok {
-        return fmt.Errorf("field 'id' not found or not a string")
+		return fmt.Errorf("field 'id' not found or not a string")
     }
-
+	
 	m.Amount = Amount(amount)
-
+	
+	fmt.Println(m.Amount)
 	fmt.Println(amount)
+	fmt.Println("end marshal")
 	return nil
 }
 // returns a Mosaic for passed AssetId and amount
