@@ -101,7 +101,7 @@ type Mosaic struct {
 	Amount  Amount `bson:"amount"`
 }
 
-func (m *Mosaic) MarshalBSON(data []byte) error {
+func (m *Mosaic) UnmarshalBSON(data []byte) error {
 
 	fmt.Println("inside marshal")
 	var tempMap bson.M
