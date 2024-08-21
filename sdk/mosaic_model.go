@@ -19,7 +19,7 @@ import (
 )
 
 type MosaicId struct {
-	baseInt64
+	baseInt64 `bson:"id"`
 }
 
 // returns MosaicId for passed mosaic identifier
@@ -52,11 +52,11 @@ func (m *MosaicId) MarshalJSON() ([]byte, error) {
 	return data, nil
 }
 
-func (m MosaicId) MarshalBSON() ([]byte, error) {
-    return bson.Marshal(bson.M{
-        "id": m.String(),
-    })
-}
+// func (m MosaicId) MarshalBSON() ([]byte, error) {
+//     return bson.Marshal(bson.M{
+//         "id": m.String(),
+//     })
+// }
 
 func newMosaicIdPanic(id uint64) *MosaicId {
 	mosaicId := MosaicId{baseInt64(id)}
@@ -96,8 +96,8 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId AssetId
-	Amount  Amount
+	AssetId MosaicId `bson:"assetid"`
+	Amount  Amount `bson:"amount"`
 }
 
 // returns a Mosaic for passed AssetId and amount
