@@ -119,6 +119,7 @@ func (m Mosaic) MarshalBSON(data []byte) error {
     }
 
 	m.Amount = Amount(amount)
+	return nil
 }
 // returns a Mosaic for passed AssetId and amount
 func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
