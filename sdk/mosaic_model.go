@@ -107,7 +107,7 @@ func (m Mosaic) MarshalBSON(data []byte) error {
         return err
     }
 
-	id, ok := tempMap["id"].(string)
+	id, ok := tempMap["id"].(uint64)
     if !ok {
         return fmt.Errorf("field 'id' not found or not a string")
     }
