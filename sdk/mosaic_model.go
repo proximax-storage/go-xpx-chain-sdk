@@ -19,7 +19,7 @@ import (
 )
 
 type MosaicId struct {
-	baseInt64 `bson:"id"`
+	baseInt64
 }
 
 // returns MosaicId for passed mosaic identifier
@@ -96,7 +96,7 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId MosaicId `bson:"assetid"`
+	AssetId AssetId `bson:"assetid"`
 	Amount  Amount `bson:"amount"`
 }
 
