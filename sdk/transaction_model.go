@@ -22,6 +22,7 @@ import (
 )
 
 type Transaction interface {
+	Transaction TransactionBase `bson:"transaction"`
 	GetAbstractTransaction() *AbstractTransaction
 	String() string
 	// number of bytes of serialized transaction
@@ -33,9 +34,9 @@ type transactionDto interface {
 	toStruct(*Hash) (Transaction, error)
 }
 
-type TransactionLayer struct {
-	Transaction TransactionBase `bson:"transaction"`
-}
+// type TransactionLayer struct {
+// 	Transaction TransactionBase `bson:"transaction"`
+// }
 
 type TransactionBase struct {
 	AbstractTransaction AbstractTransaction `bson:"abstracttransaction"`
