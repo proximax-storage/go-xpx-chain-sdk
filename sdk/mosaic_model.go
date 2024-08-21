@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	flatbuffers "github.com/google/flatbuffers/go"
-	"go.mongodb.org/mongo-driver/bson"
+	// "go.mongodb.org/mongo-driver/bson"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-utils/str"
