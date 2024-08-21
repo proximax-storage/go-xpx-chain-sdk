@@ -111,7 +111,7 @@ func (m Mosaic) MarshalBSON(data []byte) error {
     if !ok {
         return fmt.Errorf("field 'id' not found or not a string")
     }
-    m.AssetId, _ == NewAssetIdFromId(id)
+    m.AssetId, _ = NewAssetIdFromId(id)
 
 	amount, ok := tempMap["amount"].(int64)
     if !ok {
