@@ -108,6 +108,7 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
     if err := bson.Unmarshal(data, &tempMap); err != nil {
 		return err
     }
+	fmt.Println(tempMap)
 	
 	id, ok := tempMap["id"].(uint64)
     if !ok {
