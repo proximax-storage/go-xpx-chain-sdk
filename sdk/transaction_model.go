@@ -29,6 +29,10 @@ type Transaction interface {
 	Bytes() ([]byte, error)
 }
 
+type transactionDto interface {
+	toStruct(*Hash) (Transaction, error)
+}
+
 type TransactionLayer struct {
 	Transaction TransactionBase `bson:"transaction"`
 }
