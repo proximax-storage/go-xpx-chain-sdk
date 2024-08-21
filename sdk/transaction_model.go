@@ -33,6 +33,10 @@ type transactionDto interface {
 	toStruct(*Hash) (Transaction, error)
 }
 
+type Document struct {
+	Transaction TransactionBase `bson:"transaction"`
+}
+
 type TransactionBase struct {
 	AbstractTransaction AbstractTransaction `bson:"abstracttransaction"`
 }
