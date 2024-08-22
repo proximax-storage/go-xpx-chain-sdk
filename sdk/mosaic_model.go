@@ -101,56 +101,53 @@ type Mosaic struct {
 	Amount  Amount `bson:"amount"`
 }
 
-func (m *Mosaic) UnmarshalBSON(data []byte) {
-
-	fmt.Println("inside marshal")
+func (m *Mosaic) UnmarshalBSON(data []byte) error {
+	fmt.Println("inside UnmarshalBSON")
+	
 	var tempMap bson.M
-    if err := bson.Unmarshal(data, &tempMap); err != nil {
-		fmt.Println("109")
-    }
-	fmt.Println(tempMap)
-
+	if err := bson.Unmarshal(data, &tempMap); err != nil {
+		fmt.Println("1")
+		return err
+	}
+	fmt.Println("Unmarshaled map:", tempMap)
+	
 	// Access the nested map "assetid"
 	assetIDMap, ok := tempMap["assetid"].(bson.M)
 	if !ok {
-		fmt.Println("Field 'assetid' not found or not a map")
+		fmt.Println("2")
+		return fmt.Errorf("field 'assetid' not found or not a map")
 	}
 	
+	// Extract and convert the 'id' from assetIDMap
 	id, ok := assetIDMap["id"].(int64)
-    if !ok {
-		fmt.Println("field 'id' not found or not a int64")
-		fmt.Println(ok)
-    }
-	id2, ok := tempMap["id"].(string)
-    if !ok {
-		fmt.Println("field 'id' not found or not a string")
-		fmt.Println(ok)
-    }
-	id3, ok := tempMap["id"].(int)
-    if !ok {
-		fmt.Println("field 'id' not found or not a int")
-		fmt.Println(ok)
-    }
-
-	fmt.Println(id)
-	fmt.Println(id2)
-	fmt.Println(id3)
-    m.AssetId, _ = NewAssetIdFromId(uint64(id))
+	if !ok {
+		fmt.Println("3")
+		return fmt.Errorf("field 'id' not found or not an int64")
+	}
 	
-	fmt.Println(m.AssetId)
 	fmt.Println(id)
+	uid := uint64(id)
+	fmt.Println(uid)
 	
+	// Create a new AssetId from the id
+	m.AssetId, _ = NewMosaicId(uid)
+	
+	fmt.Println("AssetId:", m.AssetId)
+	
+	// Extract and convert the 'amount'
 	amount, ok := tempMap["amount"].(int64)
-    if !ok {
-		fmt.Println("field 'id' not found or not a string")
-    }
-	
+	if !ok {
+		fmt.Println("4")
+		return fmt.Errorf("field 'amount' not found or not an int64")
+	}
+
 	m.Amount = Amount(amount)
-	
-	fmt.Println(m.Amount)
-	fmt.Println(amount)
-	fmt.Println("end marshal")
+
+	fmt.Println("Amount:", m.Amount)
+
+	return nil
 }
+
 // returns a Mosaic for passed AssetId and amount
 func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
 	if assetId == nil {
