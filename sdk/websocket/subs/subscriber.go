@@ -160,12 +160,11 @@ func (s *subscriptions[T]) delete(id int) {
 }
 
 func (s *subscriptions[T]) notify(ctx context.Context, v T) error {
-	s.subsMutex.Lock()
-	defer s.subsMutex.Unlock()
 
 	errCh := make(chan error, len(s.subs))
-
 	wg := sync.WaitGroup{}
+
+	s.subsMutex.Lock()
 	for id, sub := range s.subs {
 		wg.Add(1)
 		go func(id int, sub chan T) {
@@ -177,12 +176,16 @@ func (s *subscriptions[T]) notify(ctx context.Context, v T) error {
 			case sub <- v:
 			case <-time.After(time.Second * 30):
 				close(sub)
+
+				s.subsMutex.Lock()
 				delete(s.subs, id)
+				s.subsMutex.Unlock()
 
 				errCh <- errors.New(fmt.Sprintf("Close %d subscription because deadline has expired\n", id))
 			}
 		}(id, sub)
 	}
+	s.subsMutex.Unlock()
 
 	wg.Wait()
 	close(errCh)
