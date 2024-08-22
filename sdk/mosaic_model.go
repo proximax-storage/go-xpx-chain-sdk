@@ -97,8 +97,8 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId AssetId `bson:"assetid"`
-	Amount  Amount `bson:"amount"`
+	AssetId AssetId 
+	Amount  Amount
 }
 
 func (m *Mosaic) UnmarshalBSON(data []byte) error {
@@ -110,11 +110,11 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
     }
 	fmt.Println(tempMap)
 	
-	id, ok := tempMap["id"].(uint64)
+	id, ok := tempMap["id"].(int64)
     if !ok {
 		return fmt.Errorf("field 'id' not found or not a string")
     }
-    m.AssetId, _ = NewAssetIdFromId(id)
+    m.AssetId, _ = NewAssetIdFromId(uint64(id))
 	
 	fmt.Println(m.AssetId)
 	fmt.Println(id)
