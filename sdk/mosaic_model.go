@@ -101,16 +101,22 @@ type Mosaic struct {
 	Amount  Amount
 }
 
-func (m *Mosaic) UnmarshalBSON(data []byte) error {
+func (m *Mosaic) UnmarshalBSON(data []byte) {
 
 	fmt.Println("inside marshal")
 	var tempMap bson.M
     if err := bson.Unmarshal(data, &tempMap); err != nil {
-		return err
+		fmt.Println("109")
     }
 	fmt.Println(tempMap)
+
+	// Access the nested map "assetid"
+	assetIDMap, ok := tempMap["assetid"].(bson.M)
+	if !ok {
+		fmt.Println("Field 'assetid' not found or not a map")
+	}
 	
-	id, ok := tempMap["id"].(int64)
+	id, ok := assetIDMap["id"].(int64)
     if !ok {
 		fmt.Println("field 'id' not found or not a int64")
 		fmt.Println(ok)
@@ -136,7 +142,7 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
 	
 	amount, ok := tempMap["amount"].(int64)
     if !ok {
-		return fmt.Errorf("field 'id' not found or not a string")
+		fmt.Println("field 'id' not found or not a string")
     }
 	
 	m.Amount = Amount(amount)
@@ -144,7 +150,6 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
 	fmt.Println(m.Amount)
 	fmt.Println(amount)
 	fmt.Println("end marshal")
-	return nil
 }
 // returns a Mosaic for passed AssetId and amount
 func NewMosaic(assetId AssetId, amount Amount) (*Mosaic, error) {
