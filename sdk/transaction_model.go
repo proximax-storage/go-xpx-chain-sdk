@@ -1820,7 +1820,14 @@ func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
 		fmt.Println("1")
 		return err
 	}
-	fmt.Println("Unmarshaled map:", tempMap)
+
+	// Access the nested map "message"
+	msgMap, ok := tempMap["message"].(bson.M)
+	if !ok {
+		fmt.Println("2")
+		return fmt.Errorf("field 'assetid' not found or not a map")
+	}
+	fmt.Println(msgMap)
 
 	return nil
 }
