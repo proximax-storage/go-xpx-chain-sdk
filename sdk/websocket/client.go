@@ -254,7 +254,7 @@ func (c *CatapultWebsocketClientImpl) closeConnection() error {
 	log.Println("closing connection...")
 	if c.conn != nil {
 		if err := c.conn.Close(); err != nil {
-			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
+			log.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
 			return err
 		}
 	}
@@ -334,10 +334,10 @@ func (c *CatapultWebsocketClientImpl) reconnect(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			fmt.Println("websocket: connection is failed. Try again after wait period")
+			log.Println("websocket: connection is failed. Try again after wait period")
 			err := c.initNewConnection()
 			if err != nil {
-				fmt.Println("websocket: connection is failed. Try again after wait period")
+				log.Println("websocket: connection is failed. Try again after wait period")
 				select {
 				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
 					continue
@@ -346,7 +346,7 @@ func (c *CatapultWebsocketClientImpl) reconnect(ctx context.Context) {
 
 			err = c.updateHandlers()
 			if err != nil {
-				fmt.Println("websocket: update handles is failed. Try again after timeout period")
+				log.Println("websocket: update handles is failed. Try again after timeout period")
 				select {
 				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
 					continue
@@ -354,7 +354,7 @@ func (c *CatapultWebsocketClientImpl) reconnect(ctx context.Context) {
 
 			}
 
-			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
+			log.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
 			return
 		}
 	}
@@ -450,7 +450,7 @@ func subscribe[T any](
 	if !subsPool.HasSubscriptions(path) {
 		err := publisher.PublishSubscribeMessage(uid, path.String())
 		if err != nil {
-			fmt.Printf("cannot subscribe on block topic: %s\n", err)
+			log.Printf("Cannot subscribe on %s topic: %s\n", topic, err)
 			return nil, 0, err
 		}
 	}
@@ -472,7 +472,7 @@ func unsubscribe[T any](
 	if !subsPool.HasSubscriptions(path) {
 		err := publisher.PublishUnsubscribeMessage(uid, path.String())
 		if err != nil {
-			fmt.Printf("cannot unsubscribe from confirmed added topic for %s: %s\n", path, err)
+			log.Printf("cannot unsubscribe from %d subscribtion, %s topic for %s address: %s\n", subId, path, address.Address, err)
 			return err
 		}
 	}

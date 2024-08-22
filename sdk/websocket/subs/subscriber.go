@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -60,7 +61,7 @@ func (c *subscribersPool[T]) Notify(ctx context.Context, path *Path, payload []b
 
 		err := subs.notify(ctx, v)
 		if err != nil {
-			fmt.Printf("Cannot notify %s: %s\n", path.String(), err)
+			log.Printf("Cannot notify %s: %s\n", path.String(), err)
 		}
 	}()
 
