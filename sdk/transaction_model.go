@@ -1829,6 +1829,8 @@ func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
 	}
 	fmt.Println(msgMap)
 
+	t.Message = NewPlainMessage("not important")
+
 	return nil
 }
 
