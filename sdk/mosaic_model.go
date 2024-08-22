@@ -112,15 +112,18 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
 	
 	id, ok := tempMap["id"].(int64)
     if !ok {
-		return fmt.Errorf("field 'id' not found or not a string")
+		fmt.Println("field 'id' not found or not a int64")
+		fmt.Println(ok)
     }
 	id2, ok := tempMap["id"].(string)
     if !ok {
-		return fmt.Errorf("field 'id' not found or not a string")
+		fmt.Println("field 'id' not found or not a string")
+		fmt.Println(ok)
     }
 	id3, ok := tempMap["id"].(int)
     if !ok {
-		return fmt.Errorf("field 'id' not found or not a string")
+		fmt.Println("field 'id' not found or not a int")
+		fmt.Println(ok)
     }
 
 	fmt.Println(id)
