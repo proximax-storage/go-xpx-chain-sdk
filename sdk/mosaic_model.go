@@ -97,8 +97,8 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId AssetId 
-	Amount  Amount
+	AssetId AssetId `bson:"assetid"`
+	Amount  Amount `bson:"amount"`
 }
 
 func (m *Mosaic) UnmarshalBSON(data []byte) {
