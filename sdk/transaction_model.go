@@ -17,6 +17,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 	utils "github.com/proximax-storage/go-xpx-utils"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 )
@@ -1809,6 +1810,19 @@ type TransferTransaction struct {
 	Message   Message `bson:"message"`
 	Mosaics   []*Mosaic `bson:"mosaics"`
 	Recipient *Address `bson:"address"`
+}
+
+func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
+	fmt.Println("inside UnmarshalBSON")
+	
+	var tempMap bson.M
+	if err := bson.Unmarshal(data, &tempMap); err != nil {
+		fmt.Println("1")
+		return err
+	}
+	fmt.Println("Unmarshaled map:", tempMap)
+
+	return nil
 }
 
 // returns a TransferTransaction from passed transfer recipient Adderess, array of Mosaic's to transfer and transfer Message
