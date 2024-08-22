@@ -68,12 +68,13 @@ func (c *subscribersPool[T]) Notify(path *Path, payload []byte) error {
 
 func (c *subscribersPool[T]) NewSubscription(path *Path) (_ <-chan T, id int) {
 	c.subsPerPathsMutex.Lock()
+	defer c.subsPerPathsMutex.Unlock()
+
 	subs, ok := c.subsPerPaths[path.String()]
 	if !ok {
 		subs = newSubscriptions[T]()
 		c.subsPerPaths[path.String()] = subs
 	}
-	c.subsPerPathsMutex.Unlock()
 
 	return subs.new()
 }
@@ -161,18 +162,36 @@ func (s *subscriptions[T]) notify(v T) error {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
-	for id, sub := range s.subs {
-		select {
-		case sub <- v:
-		case <-time.After(time.Second * 30):
-			close(sub)
-			delete(s.subs, id)
+	errCh := make(chan error, len(s.subs))
 
-			return errors.New(fmt.Sprintf("Close %d subscription because deadline has expired\n", id))
+	wg := sync.WaitGroup{}
+	for id, sub := range s.subs {
+		wg.Add(1)
+		go func(id int, sub chan T) {
+			defer wg.Done()
+
+			select {
+			case sub <- v:
+			case <-time.After(time.Second * 30):
+				close(sub)
+				delete(s.subs, id)
+
+				errCh <- errors.New(fmt.Sprintf("Close %d subscription because deadline has expired\n", id))
+			}
+		}(id, sub)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	var err error
+	for e := range errCh {
+		if e != nil {
+			err = errors.Join(err, e)
 		}
 	}
 
-	return nil
+	return err
 }
 
 func (s *subscriptions[T]) getAll() map[int]chan T {
