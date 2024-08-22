@@ -1,6 +1,7 @@
 package subs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -42,7 +43,7 @@ func NewSubscribersPool[T any](mapper Mapper[T]) SubscribersPool[T] {
 	return c
 }
 
-func (c *subscribersPool[T]) Notify(path *Path, payload []byte) error {
+func (c *subscribersPool[T]) Notify(ctx context.Context, path *Path, payload []byte) error {
 	v, err := c.mapper.Map(payload)
 	if err != nil {
 		return err
@@ -57,7 +58,7 @@ func (c *subscribersPool[T]) Notify(path *Path, payload []byte) error {
 			return
 		}
 
-		err := subs.notify(v)
+		err := subs.notify(ctx, v)
 		if err != nil {
 			fmt.Printf("Cannot notify %s: %s\n", path.String(), err)
 		}
@@ -158,7 +159,7 @@ func (s *subscriptions[T]) delete(id int) {
 	delete(s.subs, id)
 }
 
-func (s *subscriptions[T]) notify(v T) error {
+func (s *subscriptions[T]) notify(ctx context.Context, v T) error {
 	s.subsMutex.Lock()
 	defer s.subsMutex.Unlock()
 
@@ -171,6 +172,8 @@ func (s *subscriptions[T]) notify(v T) error {
 			defer wg.Done()
 
 			select {
+			case <-ctx.Done():
+				return
 			case sub <- v:
 			case <-time.After(time.Second * 30):
 				close(sub)

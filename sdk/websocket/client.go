@@ -280,7 +280,7 @@ func (c *CatapultWebsocketClientImpl) startMessageReading(ctx context.Context) {
 				return
 			}
 
-			err = c.publisher.Publish(resp)
+			err = c.publisher.Publish(ctx, resp)
 			if err != nil {
 				log.Printf("Cannot publish ws message:%s\n", err)
 			}

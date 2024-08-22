@@ -1,6 +1,7 @@
 package subs
 
 import (
+	"context"
 	"encoding/json"
 	"sync"
 
@@ -21,7 +22,7 @@ const (
 )
 
 type Notifier interface {
-	Notify(path *Path, payload []byte) error
+	Notify(ctx context.Context, path *Path, payload []byte) error
 }
 
 type Publisher struct {
@@ -45,7 +46,7 @@ func (p *Publisher) AddSubscriber(topic Topic, sub Notifier) error {
 	return nil
 }
 
-func (p *Publisher) Publish(data []byte) error {
+func (p *Publisher) Publish(ctx context.Context, data []byte) error {
 	p.subsMutex.Lock()
 	defer p.subsMutex.Unlock()
 
@@ -60,7 +61,7 @@ func (p *Publisher) Publish(data []byte) error {
 		return errors.New("topic not found")
 	}
 
-	err = sub.Notify(path, data)
+	err = sub.Notify(ctx, path, data)
 	if err != nil {
 		return err
 	}
