@@ -102,14 +102,13 @@ type Mosaic struct {
 }
 
 func (m *Mosaic) UnmarshalBSON(data []byte) error {
-	fmt.Println("inside UnmarshalBSON")
+	fmt.Println("inside UnmarshalBSON mosaic")
 	
 	var tempMap bson.M
 	if err := bson.Unmarshal(data, &tempMap); err != nil {
 		fmt.Println("1")
 		return err
 	}
-	fmt.Println("Unmarshaled map:", tempMap)
 	
 	// Access the nested map "assetid"
 	assetIDMap, ok := tempMap["assetid"].(bson.M)
@@ -125,14 +124,10 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
 		return fmt.Errorf("field 'id' not found or not an int64")
 	}
 	
-	fmt.Println(id)
 	uid := uint64(id)
-	fmt.Println(uid)
 	
 	// Create a new AssetId from the id
 	m.AssetId, _ = NewMosaicId(uid)
-	
-	fmt.Println("AssetId:", m.AssetId)
 	
 	// Extract and convert the 'amount'
 	amount, ok := tempMap["amount"].(int64)
@@ -142,8 +137,6 @@ func (m *Mosaic) UnmarshalBSON(data []byte) error {
 	}
 
 	m.Amount = Amount(amount)
-
-	fmt.Println("Amount:", m.Amount)
 
 	return nil
 }

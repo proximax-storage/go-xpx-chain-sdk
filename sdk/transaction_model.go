@@ -1813,7 +1813,7 @@ type TransferTransaction struct {
 }
 
 func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
-	fmt.Println("inside UnmarshalBSON")
+	fmt.Println("inside UnmarshalBSON tranfer msg")
 	
 	var tempMap bson.M
 	if err := bson.Unmarshal(data, &tempMap); err != nil {
