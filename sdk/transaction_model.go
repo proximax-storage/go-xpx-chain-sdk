@@ -1802,10 +1802,11 @@ func (tx *MosaicRemoveLevyTransaction) Size() int {
 /// end region
 
 type TransferTransaction struct {
-	AbstractTransaction
-	Message   Message
-	Mosaics   []*Mosaic
-	Recipient *Address
+	AbstractTransaction AbstractTransaction `bson:"abstracttransaction"`
+	Message             Message             `bson:"message"`
+	Mosaics             []*Mosaic           `bson:"mosaics"`
+	Recipient           *Address            `bson:"address"`
+}
 }
 
 // returns a TransferTransaction from passed transfer recipient Adderess, array of Mosaic's to transfer and transfer Message
