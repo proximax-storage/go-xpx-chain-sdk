@@ -53,9 +53,9 @@ func (m *MosaicId) MarshalJSON() ([]byte, error) {
 }
 
 func (m MosaicId) MarshalBSON() ([]byte, error) {
-    return bson.Marshal(bson.M{
-        "assetid": m.String(),
-    })
+	return bson.Marshal(bson.M{
+		"id": uint64(m.baseInt64),
+	})
 }
 
 func newMosaicIdPanic(id uint64) *MosaicId {
@@ -277,7 +277,7 @@ func SuperContractMosaic(amount uint64) *Mosaic {
 	return newMosaicPanic(SuperContractNamespaceId, Amount(amount))
 }
 
-/// region MosaicLevy information
+// / region MosaicLevy information
 type LevyType uint8
 
 func (lt LevyType) String() string {
