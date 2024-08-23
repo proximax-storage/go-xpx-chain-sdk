@@ -34,6 +34,31 @@ type transactionDto interface {
 	toStruct(*Hash) (Transaction, error)
 }
 
+type TransactionBase struct {
+	AbstractTransaction AbstractTransaction `bson:"abstracttransaction"`
+}
+
+func (tx *TransactionBase) GetAbstractTransaction() *AbstractTransaction {
+	return &tx.AbstractTransaction
+}
+func (tx *TransactionBase) String() string {
+	return fmt.Sprintf(
+		`
+			"AbstractTransaction": %s,
+			"MosaicProperties": %s,
+			"MosaicNonce": %d,
+			"MosaicId": %s
+		`,
+		tx.AbstractTransaction.String(),
+	)
+}
+func (tx *TransactionBase) Size() int {
+	return 0
+}
+func (tx *TransactionBase) Bytes() ([]byte, error) {
+	return nil, nil
+}
+
 type AbstractTransaction struct {
 	TransactionInfo
 	NetworkType NetworkType    `json:"network_type" bson:"networktype"`
