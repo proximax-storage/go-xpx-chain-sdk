@@ -1807,29 +1807,82 @@ func (tx *MosaicRemoveLevyTransaction) Size() int {
 
 type TransferTransaction struct {
 	AbstractTransaction
-	Message   Message `bson:"message"`
+	Message   Message   `bson:"message"`
 	Mosaics   []*Mosaic `bson:"mosaics"`
-	Recipient *Address `bson:"address"`
+	Recipient *Address  `bson:"address"`
 }
 
 func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
 	fmt.Println("inside UnmarshalBSON tranfer msg")
-	
+
 	var tempMap bson.M
 	if err := bson.Unmarshal(data, &tempMap); err != nil {
 		fmt.Println("1")
 		return err
 	}
 
-	// Access the nested map "message"
-	msgMap, ok := tempMap["message"].(bson.M)
+	// mosaics
+	mosaics, ok := tempMap["mosaics"].(bson.A)
 	if !ok {
-		fmt.Println("2")
-		return fmt.Errorf("field 'assetid' not found or not a map")
+		return fmt.Errorf("type assertion to primitive.A failed")
 	}
-	fmt.Println(msgMap)
+	fmt.Println(mosaics)
 
+	for _, item := range mosaics {
+		var m Mosaic
+
+		mosaicMap, ok := item.(bson.M)
+		if !ok {
+			fmt.Println("Type assertion to bson.M failed")
+			return fmt.Errorf("field 'id' not found or not an int64")
+		}
+
+		fmt.Println(mosaicMap)
+		assetIdMap, ok := mosaicMap["assetid"].(bson.M)
+		if !ok {
+			fmt.Println("Type assertion to bson.M failed for 'assetid'")
+		}
+
+		id, ok := assetIdMap["id"].(int64)
+		if !ok {
+			fmt.Println("3")
+			return fmt.Errorf("field 'id' not found or not an int64")
+		}
+
+		uid := uint64(id)
+
+		m.AssetId, _ = NewMosaicId(uid)
+		// Extract and convert the 'amount'
+		amount, ok := mosaicMap["amount"].(int64)
+		if !ok {
+			fmt.Println("4")
+			return fmt.Errorf("field 'amount' not found or not an int64")
+		}
+		m.Amount = Amount(amount)
+		t.Mosaics = append(t.Mosaics, &m)
+	}
+
+	// message
 	t.Message = NewPlainMessage("not important")
+
+	// recipient
+	recipientMap, ok := tempMap["address"].(bson.M)
+	if !ok {
+		return fmt.Errorf("type assertion to primitive.A failed")
+	}
+	fmt.Println(recipientMap)
+
+	address, ok := recipientMap["address"].(string)
+	if !ok {
+		return fmt.Errorf("field 'id' not found or not an int64")
+	}
+	fmt.Println(address)
+	network, ok := recipientMap["type"].(int32)
+	if !ok {
+		return fmt.Errorf("field 'id' not found or not an int64")
+	}
+	fmt.Println(network)
+	t.Recipient = NewAddress(address, NetworkType(network))
 
 	return nil
 }

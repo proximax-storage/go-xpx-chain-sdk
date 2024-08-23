@@ -11,7 +11,6 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/bson"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/transactions"
 	"github.com/proximax-storage/go-xpx-utils/str"
@@ -99,46 +98,6 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 type Mosaic struct {
 	AssetId AssetId `bson:"assetid"`
 	Amount  Amount `bson:"amount"`
-}
-
-func (m *Mosaic) UnmarshalBSON(data []byte) error {
-	fmt.Println("inside UnmarshalBSON mosaic")
-	
-	var tempMap bson.M
-	if err := bson.Unmarshal(data, &tempMap); err != nil {
-		fmt.Println("1")
-		return err
-	}
-	
-	// Access the nested map "assetid"
-	assetIDMap, ok := tempMap["assetid"].(bson.M)
-	if !ok {
-		fmt.Println("2")
-		return fmt.Errorf("field 'assetid' not found or not a map")
-	}
-	
-	// Extract and convert the 'id' from assetIDMap
-	id, ok := assetIDMap["id"].(int64)
-	if !ok {
-		fmt.Println("3")
-		return fmt.Errorf("field 'id' not found or not an int64")
-	}
-	
-	uid := uint64(id)
-	
-	// Create a new AssetId from the id
-	m.AssetId, _ = NewMosaicId(uid)
-	
-	// Extract and convert the 'amount'
-	amount, ok := tempMap["amount"].(int64)
-	if !ok {
-		fmt.Println("4")
-		return fmt.Errorf("field 'amount' not found or not an int64")
-	}
-
-	m.Amount = Amount(amount)
-
-	return nil
 }
 
 // returns a Mosaic for passed AssetId and amount
