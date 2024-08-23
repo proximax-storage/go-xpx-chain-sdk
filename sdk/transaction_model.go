@@ -1807,6 +1807,95 @@ type TransferTransaction struct {
 	Mosaics             []*Mosaic           `bson:"mosaics"`
 	Recipient           *Address            `bson:"address"`
 }
+
+func (t *TransferTransaction) UnmarshalBSON(data []byte) error {
+	var txnMap bson.M
+	if err := bson.Unmarshal(data, &txnMap); err != nil {
+		return err
+	}
+
+	// Unmarshall abstract transaction
+	abstractMap, ok := txnMap["abstracttransaction"].(bson.M)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal abstract txn")
+	}
+
+	transactionBson, err := bson.Marshal(abstractMap)
+	if err != nil {
+		return fmt.Errorf("failed to marshal abstractMap")
+	}
+
+	var abstractTxn AbstractTransaction
+
+	err = bson.Unmarshal(transactionBson, &abstractTxn)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal transactionBson")
+	}
+
+	t.AbstractTransaction = abstractTxn
+
+	// Unmarshal mosaics
+	mosaics, ok := txnMap["mosaics"].(bson.A)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal mosaics")
+	}
+
+	for _, item := range mosaics {
+		var m Mosaic
+
+		mosaicMap, ok := item.(bson.M)
+		if !ok {
+			return fmt.Errorf("failed to unmarshal mosaicMap")
+		}
+
+		assetIdMap, ok := mosaicMap["assetid"].(bson.M)
+		if !ok {
+			return fmt.Errorf("failed to unmarshal assetIdMap")
+		}
+
+		id, ok := assetIdMap["id"].(int64)
+		if !ok {
+			return fmt.Errorf("failed to unmarshal assetIdMap's id")
+		}
+
+		uid := uint64(id)
+
+		var err error
+		m.AssetId, err = NewMosaicId(uid)
+		if err != nil {
+			return fmt.Errorf("failed to generate mosaic id")
+		}
+
+		// Extract and convert the 'amount'
+		amount, ok := mosaicMap["amount"].(int64)
+		if !ok {
+			return fmt.Errorf("failed to unmarshal amount")
+		}
+		m.Amount = Amount(amount)
+		t.Mosaics = append(t.Mosaics, &m)
+	}
+
+	// Unmarshal message
+	t.Message = NewPlainMessage("")
+
+	// Unmarshal recipient
+	recipientMap, ok := txnMap["address"].(bson.M)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal recipientMap")
+	}
+
+	address, ok := recipientMap["address"].(string)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal address")
+	}
+
+	network, ok := recipientMap["type"].(int32)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal network")
+	}
+	t.Recipient = NewAddress(address, NetworkType(network))
+
+	return nil
 }
 
 // returns a TransferTransaction from passed transfer recipient Adderess, array of Mosaic's to transfer and transfer Message
@@ -3315,8 +3404,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOnboardingTransactionDTO{}
 	case ReplicatorsCleanup:
 		dto = &replicatorsCleanupTransactionDTO{}
-    case ReplicatorTreeRebuild:
-        dto = &replicatorTreeRebuildTransactionDTO{}
+	case ReplicatorTreeRebuild:
+		dto = &replicatorTreeRebuildTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:
