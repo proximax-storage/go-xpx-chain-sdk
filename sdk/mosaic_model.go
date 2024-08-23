@@ -96,8 +96,8 @@ func NewMosaicIdFromNonceAndOwner(nonce uint32, ownerPublicKey string) (*MosaicI
 }
 
 type Mosaic struct {
-	AssetId AssetId
-	Amount  Amount
+	AssetId AssetId `bson:"assetid"`
+	Amount  Amount  `bson:"amount"`
 }
 
 // returns a Mosaic for passed AssetId and amount
