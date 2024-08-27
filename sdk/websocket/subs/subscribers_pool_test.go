@@ -2,21 +2,20 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package websocket
+package subs
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subs"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSubscribersPool(t *testing.T) {
 	t.Run("Notify_Success", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 		payload := []byte("test payload")
 		ctx := context.Background()
 
@@ -30,7 +29,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("Notify_Failure", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 		payload := []byte("test payload")
 		ctx := context.Background()
 
@@ -47,7 +46,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("NewSubscription_Success", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 
 		ch := make(<-chan string)
 
@@ -62,7 +61,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("NewSubscription_Failure", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 
 		mockPool.On("NewSubscription", path).Return(nil, 0)
 
@@ -75,7 +74,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("CloseSubscription", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 
 		mockPool.On("CloseSubscription", path, 1).Return()
 
@@ -109,7 +108,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("HasSubscriptions_Success", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 
 		mockPool.On("HasSubscriptions", path).Return(true)
 
@@ -121,7 +120,7 @@ func TestSubscribersPool(t *testing.T) {
 
 	t.Run("HasSubscriptions_Failure", func(t *testing.T) {
 		mockPool := new(MockSubscribersPool[string])
-		path := &subs.Path{}
+		path := &Path{}
 
 		mockPool.On("HasSubscriptions", path).Return(false)
 

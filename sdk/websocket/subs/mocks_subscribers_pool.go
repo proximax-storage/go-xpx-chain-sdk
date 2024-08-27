@@ -4,12 +4,11 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package websocket
+package subs
 
 import (
 	"context"
 
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subs"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -18,11 +17,11 @@ type MockSubscribersPool[T any] struct {
 	mock.Mock
 }
 
-func (_m *MockSubscribersPool[T]) Notify(ctx context.Context, path *subs.Path, payload []byte) error {
+func (_m *MockSubscribersPool[T]) Notify(ctx context.Context, path *Path, payload []byte) error {
 	ret := _m.Called(ctx, path, payload)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *subs.Path, []byte) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *Path, []byte) error); ok {
 		r0 = rf(ctx, path, payload)
 	} else {
 		r0 = ret.Error(0)
@@ -31,7 +30,7 @@ func (_m *MockSubscribersPool[T]) Notify(ctx context.Context, path *subs.Path, p
 	return r0
 }
 
-func (_m *MockSubscribersPool[T]) NewSubscription(path *subs.Path) (<-chan T, int) {
+func (_m *MockSubscribersPool[T]) NewSubscription(path *Path) (<-chan T, int) {
 	ret := _m.Called(path)
 
 	var r0 <-chan T
@@ -42,7 +41,7 @@ func (_m *MockSubscribersPool[T]) NewSubscription(path *subs.Path) (<-chan T, in
 	return r0, ret.Int(1)
 }
 
-func (_m *MockSubscribersPool[T]) CloseSubscription(path *subs.Path, id int) {
+func (_m *MockSubscribersPool[T]) CloseSubscription(path *Path, id int) {
 	_m.Called(path, id)
 }
 
@@ -57,11 +56,11 @@ func (_m *MockSubscribersPool[T]) GetPaths() []string {
 	return r0
 }
 
-func (_m *MockSubscribersPool[T]) HasSubscriptions(path *subs.Path) bool {
+func (_m *MockSubscribersPool[T]) HasSubscriptions(path *Path) bool {
 	ret := _m.Called(path)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(*subs.Path) bool); ok {
+	if rf, ok := ret.Get(0).(func(*Path) bool); ok {
 		r0 = rf(path)
 	} else {
 		r0 = ret.Bool(0)
