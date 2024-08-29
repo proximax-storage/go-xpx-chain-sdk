@@ -50,6 +50,7 @@ func (ncp *NodeHealthCheckerPool) ResetPeers() {
 
 func (ncp *NodeHealthCheckerPool) ReviewConnections() {
 	log.Printf("Reviewing exist valid checkers...")
+	defer log.Printf("Finished reviewing exist valid checkers")
 
 	ncp.validCheckersMu.Lock()
 	defer ncp.validCheckersMu.Unlock()
@@ -84,6 +85,9 @@ func (ncp *NodeHealthCheckerPool) ReviewConnections() {
 
 // ConnectToNodes connects to nodes. Returns map with pubKey as key and nodes info as value and error
 func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover bool) (failedConnectionsNodes map[string]*NodeInfo, err error) {
+	log.Printf("Start conecting to nodes...")
+	defer log.Printf("Finished conecting to nodes...")
+
 	ncp.ReviewConnections()
 
 	ncp.validCheckersMu.Lock()
@@ -153,6 +157,7 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 
 				nodeList, err := checker.NodeList()
 				if err != nil {
+					chInfo <- info
 					log.Printf("Error getting list of nodes from %s=%v: %s\n", checker.nodeInfo.Endpoint, checker.nodeInfo.IdentityKey, err)
 					return
 				}
@@ -171,13 +176,15 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 }
 
 func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealthChecker, error) {
+	log.Printf("Start maybe connect to %s=%v", info.Endpoint, info.IdentityKey)
+	defer log.Printf("Finished maybe connect to %s=%v", info.Endpoint, info.IdentityKey)
 
 	ncp.validCheckersMu.Lock()
-	if vd, ok := ncp.validCheckers[info.IdentityKey.String()]; ok {
-		ncp.validCheckersMu.Unlock()
+	vd, ok := ncp.validCheckers[info.IdentityKey.String()]
+	ncp.validCheckersMu.Unlock()
+	if ok {
 		return vd, nil
 	}
-	ncp.validCheckersMu.Unlock()
 
 	log.Printf("Dialing %s=%v", info.Endpoint, info.IdentityKey)
 	nc, err := NewNodeHealthChecker(ncp.client, info, ncp.mode)
@@ -188,9 +195,14 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealt
 	log.Printf("Connected to %s=%v", info.Endpoint, info.IdentityKey)
 
 	ncp.validCheckersMu.Lock()
-	ncp.validCheckers[info.IdentityKey.String()] = nc
-	ncp.validCheckersMu.Unlock()
+	defer ncp.validCheckersMu.Unlock()
 
+	existNc, ok := ncp.validCheckers[info.IdentityKey.String()]
+	if ok {
+		return existNc, nil
+	}
+
+	ncp.validCheckers[info.IdentityKey.String()] = nc
 	return nc, nil
 }
 
