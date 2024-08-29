@@ -108,7 +108,7 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 	connectedNodesMutex := sync.Mutex{}
 	connectedNodes := make(map[string]*NodeHealthChecker)
 
-	waiting := int32(0)
+	waiting := atomic.Int32{}
 	handled := make(map[string]struct{})
 	for {
 		select {
@@ -118,13 +118,15 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 					return nil, ErrCannotConnect
 				}
 
+				ncp.validCheckersMu.Lock()
 				ncp.validCheckers = connectedNodes
+				ncp.validCheckersMu.Unlock()
+
 				return failedConnectionsNodes, nil
 			}
 
 			if _, ok := handled[info.IdentityKey.String()]; ok {
-				v := atomic.LoadInt32(&waiting)
-				if v == 0 && len(chInfo) == 0 {
+				if waiting.Load() == 0 && len(chInfo) == 0 {
 					close(chInfo)
 				}
 
@@ -132,9 +134,9 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 			}
 
 			handled[info.IdentityKey.String()] = struct{}{}
-			atomic.AddInt32(&waiting, 1)
+			waiting.Add(1)
 			go func(info *NodeInfo) {
-				defer atomic.AddInt32(&waiting, -1)
+				defer waiting.Add(-1)
 
 				checker, err := ncp.MaybeConnectToNode(info)
 				if err != nil {
