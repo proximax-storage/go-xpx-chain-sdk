@@ -12,18 +12,21 @@ import (
 	crypto "github.com/proximax-storage/go-xpx-crypto"
 )
 
-const AvgSecondsPerBlock = 15 * time.Second
+const DefaultAvgSecondsPerBlock = 15 * time.Second
 
 var (
-	ErrReturnedZeroHashes = errors.New("returned zero hashes")
-	ErrTimedOut           = errors.New("timed out")
-	ErrTooLargeWaitTime   = errors.New("too large wait time")
+	ErrReturnedZeroHashes   = errors.New("returned zero hashes")
+	ErrTimedOut             = errors.New("timed out")
+	ErrTooLargeWaitTime     = errors.New("too large wait time")
+	ErrNodeGotStuck         = errors.New("node got stuck")
+	ErrNodeNotReachedHeight = errors.New("node does not reached the height")
 )
 
 type (
 	NodeInfo struct {
-		IdentityKey *crypto.PublicKey
-		Endpoint    string
+		IdentityKey  *crypto.PublicKey
+		Endpoint     string
+		FriendlyName string
 	}
 
 	NodeHealthChecker struct {
@@ -43,15 +46,16 @@ type (
 	}
 )
 
-func NewNodeInfo(pKey, addr string) (*NodeInfo, error) {
+func NewNodeInfo(pKey, addr, friendlyName string) (*NodeInfo, error) {
 	k, err := crypto.NewPublicKeyfromHex(pKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &NodeInfo{
-		IdentityKey: k,
-		Endpoint:    addr,
+		IdentityKey:  k,
+		Endpoint:     addr,
+		FriendlyName: friendlyName,
 	}, nil
 }
 
@@ -110,9 +114,18 @@ func (nhc *NodeHealthChecker) LastBlockHash() (sdk.Hash, error) {
 }
 
 func (nhc *NodeHealthChecker) BlockHash(height uint64) (sdk.Hash, error) {
+	ci, err := nhc.ChainInfo()
+	if err != nil {
+		return sdk.Hash{}, err
+	}
+
+	if ci.Height < height {
+		return sdk.Hash{}, ErrNodeNotReachedHeight
+	}
+
 	blockHashesReq := packets.NewBlockHashesRequest(height, 1)
 	blockHashesResp := &packets.BlockHashesResponse{}
-	err := nhc.handler.CommonHandle(blockHashesReq, blockHashesResp)
+	err = nhc.handler.CommonHandle(blockHashesReq, blockHashesResp)
 	if err != nil {
 		return sdk.Hash{}, err
 	}
@@ -139,57 +152,73 @@ func (nhc *NodeHealthChecker) NodeList() ([]*NodeInfo, error) {
 		}
 
 		ni = append(ni, &NodeInfo{
-			IdentityKey: node.IdentityKey,
-			Endpoint:    node.Host + ":" + strconv.Itoa(int(node.Port)),
+			IdentityKey:  node.IdentityKey,
+			Endpoint:     node.Host + ":" + strconv.Itoa(int(node.Port)),
+			FriendlyName: node.FriendlyName,
 		})
 	}
 
 	return ni, nil
 }
 
+// WaitHeight waits when a node will reach the expectedHeight
+// In error case returns the last reached height
 func (nhc *NodeHealthChecker) WaitHeight(expectedHeight uint64) (uint64, error) {
-	globalTicker := &time.Ticker{}
-	ticker := time.NewTicker(time.Second)
-	var height uint64
+	ci, err := nhc.ChainInfo()
+	if err != nil {
+		return 0, err
+	}
+
+	if ci.Height >= expectedHeight {
+		return ci.Height, err
+	}
+	prevHeight := ci.Height
+
+	multiplier := expectedHeight - ci.Height
+	if multiplier > 4 {
+		multiplier = 4
+	}
+
+	periodicTicker := time.NewTicker(DefaultAvgSecondsPerBlock * time.Duration(multiplier))
+	defer periodicTicker.Stop()
+
+	log.Printf("Start waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
+	maxRetryCount := uint8(3)
 	for {
 		select {
-		case <-ticker.C:
-			ci, err := nhc.ChainInfo()
-			if err != nil {
-				retryCount := 0
-				for retryCount < 3 && err != nil {
-					retryCount++
-
-					log.Printf("Retrying to get chain height from %s (attempt %d)\n", nhc.nodeInfo.Endpoint, retryCount)
-					time.Sleep(AvgSecondsPerBlock)
-
-					ci, err = nhc.ChainInfo()
+		case <-periodicTicker.C:
+			for retryCount := uint8(1); retryCount <= maxRetryCount; retryCount++ {
+				log.Printf("Trying to get current chain height from %s (attempt %d/%d)\n", nhc.nodeInfo.Endpoint, retryCount, maxRetryCount)
+				ci, err = nhc.ChainInfo()
+				if err == nil {
+					break
+				} else {
+					log.Printf("Cannot get height of %s=%s: %s\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, err)
 				}
 
-				if err != nil {
-					return 0, err
+				if retryCount < maxRetryCount {
+					time.Sleep(time.Second)
+				} else {
+					return prevHeight, err
 				}
 			}
 
-			height = ci.Height
-			if height >= expectedHeight {
+			if ci.Height == prevHeight {
+				return ci.Height, ErrNodeGotStuck
+			}
+
+			if ci.Height >= expectedHeight {
 				log.Printf("Node %s=%v has reached the required height\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey)
-				return height, nil
+				return ci.Height, nil
 			}
 
-			duration := time.Duration(expectedHeight-ci.Height) * AvgSecondsPerBlock
-			if duration > time.Hour {
-				return height, ErrTooLargeWaitTime
+			log.Printf("Still waiting for node %s=%s to reach height: %d, current: %d\n", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, ci.Height)
+
+			if expectedHeight-ci.Height < multiplier {
+				periodicTicker.Reset(time.Duration(expectedHeight-ci.Height) * DefaultAvgSecondsPerBlock)
 			}
 
-			ticker = time.NewTicker(duration)
-			if globalTicker.C == nil {
-				globalTicker = time.NewTicker(duration + duration/2)
-			}
-
-			log.Printf("Waiting for node %s=%s to reach height: %d, current: %d", nhc.nodeInfo.Endpoint, nhc.nodeInfo.IdentityKey, expectedHeight, height)
-		case <-globalTicker.C:
-			return height, ErrTimedOut
+			prevHeight = ci.Height
 		}
 	}
 }
