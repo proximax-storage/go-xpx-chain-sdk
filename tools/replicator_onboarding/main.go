@@ -65,7 +65,7 @@ func onboard(url, replicatorPrivateKey string, nodeBootPrivateKey string, feeStr
 	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		return err
 	}

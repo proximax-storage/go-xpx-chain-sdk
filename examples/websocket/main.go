@@ -33,13 +33,13 @@ func main() {
 
 	client := sdk.NewClient(nil, cfg)
 
-	wsc, err := websocket.NewClient(ctx, cfg)
+	wsc, err := websocket.NewClient(cfg)
 	if err != nil {
 		panic(err)
 	}
 
 	//Starting listening messages from websocket
-	go wsc.Listen()
+	go wsc.Listen(ctx)
 
 	destAccount, _ := client.NewAccountFromPrivateKey(privateKey)
 	address := destAccount.PublicAccount.Address
@@ -48,37 +48,93 @@ func main() {
 
 	// Register handlers functions for needed topics
 
-	if err := wsc.AddBlockHandlers(BlocksHandler1, BlocksHandler2); err != nil {
+	subBlock, _, err := wsc.NewBlockSubscription()
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddConfirmedAddedHandlers(address, ConfirmedAddedHandler1, ConfirmedAddedHandler2); err != nil {
+	go func() {
+		block := <-subBlock
+		BlocksHandler1(block)
+		BlocksHandler2(block)
+	}()
+
+	subConfirmed, _, err := wsc.NewConfirmedAddedSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddUnconfirmedAddedHandlers(address, UnconfirmedAddedHandler1, UnconfirmedAddedHandler2); err != nil {
+	go func() {
+		info := <-subConfirmed
+		ConfirmedAddedHandler1(info)
+		ConfirmedAddedHandler2(info)
+	}()
+
+	subUnconfirmed, _, err := wsc.NewUnConfirmedAddedSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddUnconfirmedRemovedHandlers(address, UnconfirmedRemovedHandler1, UnconfirmedRemovedHandler2); err != nil {
+	go func() {
+		info := <-subUnconfirmed
+		UnconfirmedAddedHandler1(info)
+		UnconfirmedAddedHandler2(info)
+	}()
+
+	subUnconfirmedRemoved, _, err := wsc.NewUnConfirmedRemovedSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddPartialAddedHandlers(address, PartialAddedHandler1, PartialAddedHandler2); err != nil {
+	go func() {
+		info := <-subUnconfirmedRemoved
+		UnconfirmedRemovedHandler1(info)
+		UnconfirmedRemovedHandler2(info)
+	}()
+
+	subPartial, _, err := wsc.NewPartialAddedSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddPartialRemovedHandlers(address, PartialRemovedHandler1, PartialRemovedHandler2); err != nil {
+	go func() {
+		info := <-subPartial
+		PartialAddedHandler1(info)
+		PartialAddedHandler2(info)
+	}()
+
+	subPartialRemoved, _, err := wsc.NewPartialRemovedSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddStatusHandlers(address, StatusHandler1, StatusHandler2); err != nil {
+	go func() {
+		info := <-subPartialRemoved
+		PartialRemovedHandler1(info)
+		PartialRemovedHandler2(info)
+	}()
+
+	subStatus, _, err := wsc.NewStatusSubscription(address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddCosignatureHandlers(address, CosignatureHandler1, CosignatureHandler2); err != nil {
+	go func() {
+		info := <-subStatus
+		StatusHandler1(info)
+		StatusHandler2(info)
+	}()
+
+	subCosignature, _, err := wsc.NewCosignatureSubscription(address)
+	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		info := <-subCosignature
+		CosignatureHandler1(info)
+		CosignatureHandler2(info)
+	}()
 
 	//Running the goroutine which will close websocket connection and listening after 2 minutes.
 	go func() {

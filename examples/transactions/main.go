@@ -29,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	ws, err := websocket.NewClient(ctx, conf)
+	ws, err := websocket.NewClient(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -38,53 +38,59 @@ func main() {
 
 	customerAcc, err := client.NewAccount()
 	wg := new(sync.WaitGroup)
-	go ws.Listen()
+	go ws.Listen(ctx)
 
 	// The UnconfirmedAdded channel notifies when a transaction related to an
 	// address is in unconfirmed state and waiting to be included in a block.
 	// The message contains the transaction.
 
-	wg.Add(1)
-	err = ws.AddUnconfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
-		defer wg.Done()
-		fmt.Printf("UnconfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
-		return true
-	})
-
+	unconfSub, _, err := ws.NewUnConfirmedAddedSubscription(customerAcc.Address)
 	if err != nil {
 		panic(err)
 	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		transaction := <-unconfSub
+		fmt.Printf("UnconfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
+	}()
 
 	//
 	//// The confirmedAdded channel notifies when a transaction related to an
 	//// address is included in a block. The message contains the transaction.
 
-	wg.Add(1)
-	err = ws.AddConfirmedAddedHandlers(customerAcc.Address, func(transaction sdk.Transaction) bool {
-		defer wg.Done()
-		fmt.Printf("ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
-		fmt.Println("Successful transfer!")
-		return true
-	})
-
+	confSub, _, err := ws.NewConfirmedAddedSubscription(customerAcc.Address)
 	if err != nil {
 		panic(err)
 	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		transaction := <-confSub
+		fmt.Printf("ConfirmedAdded Tx Content: %s \n", transaction.GetAbstractTransaction().TransactionHash)
+		fmt.Println("Successful transfer!")
+	}()
 
 	//The status channel notifies when a transaction related to an address rises an error.
 	//The message contains the error message and the transaction hash.
 
-	wg.Add(1)
-	err = ws.AddStatusHandlers(customerAcc.Address, func(info *sdk.StatusInfo) bool {
-		defer wg.Done()
-		fmt.Printf("Content: %v \n", info.Hash)
-		panic(fmt.Sprint("Status: ", info.Status))
-		return true
-	})
-
+	statusSub, _, err := ws.NewStatusSubscription(customerAcc.Address)
 	if err != nil {
 		panic(err)
 	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		info := <-statusSub
+		fmt.Printf("Content: %v \n", info.Hash)
+		panic(fmt.Sprint("Status: ", info.Status))
+	}()
 
 	time.Sleep(time.Second * 5)
 
@@ -135,16 +141,17 @@ func main() {
 	// The block channel notifies for every new block.
 	// The message contains the block information.
 
-	wg.Add(1)
-	err = ws.AddBlockHandlers(func(info *sdk.BlockInfo) bool {
-		defer wg.Done()
-		fmt.Printf("Block received with height: %v \n", info.Height)
-		return true
-	})
-
+	blockSub, _, err := ws.NewBlockSubscription()
 	if err != nil {
 		panic(err)
 	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		info := <-blockSub
+		fmt.Printf("Block received with height: %v \n", info.Height)
+	}()
 
 	wg.Wait()
 

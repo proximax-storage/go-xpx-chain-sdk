@@ -55,7 +55,7 @@ func rebuildTree(url, signerPrivateKey string, replicatorKeys string, feeStrateg
 	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		return err
 	}
