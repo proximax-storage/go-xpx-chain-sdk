@@ -76,7 +76,7 @@ func main() {
 	cfg.FeeCalculationStrategy = tools.ParseFeeStrategy(feeStrategy)
 
 	client := sdk.NewClient(http.DefaultClient, cfg)
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		fmt.Printf("Cannot create websocket client: %s\n", err)
 		os.Exit(1)

@@ -7,49 +7,50 @@ import (
 	"github.com/pkg/errors"
 )
 
-func newMessagePublisher(conn *websocket.Conn) MessagePublisher {
-	return &catapultWebsocketMessagePublisher{
-		conn: conn,
-	}
-}
-
 type MessagePublisher interface {
-	PublishSubscribeMessage(uid string, path Path) error
-	PublishUnsubscribeMessage(uid string, path Path) error
+	PublishSubscribeMessage(uid string, path string) error
+	PublishUnsubscribeMessage(uid string, path string) error
 	SetConn(conn *websocket.Conn)
 }
 
 type catapultWebsocketMessagePublisher struct {
-	sync.Mutex
+	m    sync.Mutex
 	conn *websocket.Conn
 }
 
-func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, path Path) error {
-	p.Lock()
-	defer p.Unlock()
+func newMessagePublisher(conn *websocket.Conn) MessagePublisher {
+	return &catapultWebsocketMessagePublisher{
+		m:    sync.Mutex{},
+		conn: conn,
+	}
+}
 
+func (p *catapultWebsocketMessagePublisher) PublishSubscribeMessage(uid string, path string) error {
 	dto := &subscribeDTO{
 		Uid:       uid,
-		Subscribe: string(path),
+		Subscribe: path,
 	}
 
-	if err := p.conn.WriteJSON(dto); err != nil {
+	p.m.Lock()
+	err := p.conn.WriteJSON(dto)
+	p.m.Unlock()
+	if err != nil {
 		return errors.Wrap(err, "publishing subscribe message into websocket connection")
 	}
 
 	return nil
 }
 
-func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string, path Path) error {
-	p.Lock()
-	defer p.Unlock()
-
+func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string, path string) error {
 	dto := &unsubscribeDTO{
 		Uid:         uid,
-		Unsubscribe: string(path),
+		Unsubscribe: path,
 	}
 
-	if err := p.conn.WriteJSON(dto); err != nil {
+	p.m.Lock()
+	err := p.conn.WriteJSON(dto)
+	p.m.Unlock()
+	if err != nil {
 		return errors.Wrap(err, "publishing unsubscribe message into websocket connection")
 	}
 
@@ -57,7 +58,9 @@ func (p *catapultWebsocketMessagePublisher) PublishUnsubscribeMessage(uid string
 }
 
 func (p *catapultWebsocketMessagePublisher) SetConn(conn *websocket.Conn) {
+	p.m.Lock()
 	p.conn = conn
+	p.m.Unlock()
 }
 
 type subscribeDTO struct {

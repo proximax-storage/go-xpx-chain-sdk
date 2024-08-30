@@ -56,7 +56,7 @@ func cleanup(url, signerPrivateKey string, replicatorKeys string, feeStrategy sd
 	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		return err
 	}

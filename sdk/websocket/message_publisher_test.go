@@ -17,7 +17,7 @@ func Test_catapultWebsocketMessagePublisher_PublishSubscribeMessage(t *testing.T
 	}
 	type args struct {
 		uid  string
-		path Path
+		path string
 	}
 
 	s := httptest.NewServer(http.HandlerFunc(echoError))
@@ -45,7 +45,7 @@ func Test_catapultWebsocketMessagePublisher_PublishSubscribeMessage(t *testing.T
 			},
 			args: args{
 				uid:  "123123123",
-				path: Path("test-path"),
+				path: "test-path",
 			},
 			wantErr: false,
 		},
@@ -68,7 +68,7 @@ func Test_catapultWebsocketMessagePublisher_PublishUnsubscribeMessage(t *testing
 	}
 	type args struct {
 		uid  string
-		path Path
+		path string
 	}
 
 	s := httptest.NewServer(http.HandlerFunc(echoError))
@@ -96,7 +96,7 @@ func Test_catapultWebsocketMessagePublisher_PublishUnsubscribeMessage(t *testing
 			},
 			args: args{
 				uid:  "123123123",
-				path: Path("test-path"),
+				path: "test-path",
 			},
 			wantErr: false,
 		},
