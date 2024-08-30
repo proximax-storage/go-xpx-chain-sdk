@@ -110,10 +110,16 @@ func (ncp *NodeHealthCheckerPool) ConnectToNodes(nodeInfos []*NodeInfo, discover
 
 	waiting := atomic.Int32{}
 	handled := make(map[string]struct{})
+	ticker := time.NewTicker(time.Second * 2)
 	for {
 		select {
+		case <-ticker.C:
+			if waiting.Load() == 0 && len(chInfo) == 0 {
+				log.Printf("Closing triggered by ticker")
+				close(chInfo)
+			}
 		case info, ok := <-chInfo:
-			if !ok || info == nil {
+			if !ok && info == nil {
 				if len(connectedNodes) == 0 {
 					return nil, ErrCannotConnect
 				}
