@@ -3243,6 +3243,8 @@ const (
     SecretProof                    EntityType = 0x4252
     Transfer                       EntityType = 0x4154
     ReplicatorOnboarding           EntityType = 0x4662
+    ReplicatorsCleanup             EntityType = 0x4062
+    ReplicatorTreeRebuild          EntityType = 0x4167
     PrepareBlockchainDrive         EntityType = 0x4162
     DataModification               EntityType = 0x4262
     DataModificationApproval       EntityType = 0x4462

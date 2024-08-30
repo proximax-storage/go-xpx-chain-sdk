@@ -26,12 +26,14 @@ func TestAddConfirmedAddedHandlers(t *testing.T) {
 
 	fmt.Println(testAccount)
 
-	wg.Add(1)
+	sub, _, err := wsc.NewConfirmedAddedSubscription(testAccount.Address)
+	assert.Nil(t, err)
 
-	err = wsc.AddConfirmedAddedHandlers(testAccount.Address, func(transaction sdk.Transaction) bool {
+	wg.Add(1)
+	go func() {
+		<-sub
 		wg.Done()
-		return true
-	})
+	}()
 	assert.Nil(t, err)
 
 	result := sendTransaction(t, func() (sdk.Transaction, error) {
@@ -58,12 +60,14 @@ func TestAddPartialAddedHandlers(t *testing.T) {
 	acc2, err := client.NewAccount()
 	assert.Nil(t, err)
 
-	wg.Add(1)
+	sub, _, err := wsc.NewPartialAddedSubscription(acc1.Address)
+	assert.Nil(t, err)
 
-	err = wsc.AddPartialAddedHandlers(acc1.Address, func(transaction *sdk.AggregateTransaction) bool {
+	wg.Add(1)
+	go func() {
+		<-sub
 		wg.Done()
-		return false
-	})
+	}()
 	assert.Nil(t, err)
 
 	multisigAccount, err := client.NewAccount()
@@ -115,12 +119,14 @@ func TestAddCosignatureHandlers(t *testing.T) {
 	acc2, err := client.NewAccount()
 	assert.Nil(t, err)
 
-	wg.Add(1)
+	sub, _, err := wsc.NewCosignatureSubscription(acc2.Address)
+	assert.Nil(t, err)
 
-	err = wsc.AddCosignatureHandlers(acc2.Address, func(info *sdk.SignerInfo) bool {
+	wg.Add(1)
+	go func() {
+		<-sub
 		wg.Done()
-		return true
-	})
+	}()
 	assert.Nil(t, err)
 
 	multisigAccount, err := client.NewAccount()

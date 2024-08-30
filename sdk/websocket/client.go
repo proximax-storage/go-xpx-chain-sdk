@@ -8,28 +8,28 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
+	"log"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subs"
 
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
-	hdlrs "github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/handlers"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket/subscribers"
 )
 
 const (
-	pathBlock              Path = "block"
-	pathConfirmedAdded     Path = "confirmedAdded"
-	pathUnconfirmedAdded   Path = "unconfirmedAdded"
-	pathUnconfirmedRemoved Path = "unconfirmedRemoved"
-	pathStatus             Path = "status"
-	pathPartialAdded       Path = "partialAdded"
-	pathPartialRemoved     Path = "partialRemoved"
-	pathCosignature        Path = "cosignature"
-	driveState             Path = "driveState"
+	topicBlock              subs.Topic = "block"
+	topicConfirmedAdded     subs.Topic = "confirmedAdded"
+	topicUnconfirmedAdded   subs.Topic = "unconfirmedAdded"
+	topicUnconfirmedRemoved subs.Topic = "unconfirmedRemoved"
+	topicStatus             subs.Topic = "status"
+	topicPartialAdded       subs.Topic = "partialAdded"
+	topicPartialRemoved     subs.Topic = "partialRemoved"
+	topicCosignature        subs.Topic = "cosignature"
+	topicDriveState         subs.Topic = "driveState"
 )
 
 var (
@@ -38,514 +38,265 @@ var (
 
 type (
 	// Subscribe path
-	Path string
+	//Path string
 
 	CatapultWebsocketClientImpl struct {
-		ctx        context.Context
-		cancelFunc context.CancelFunc
-
 		UID    string
 		config *sdk.Config
 
 		conn *websocket.Conn
 
-		blockSubscriber               subscribers.Block
-		statusSubscribers             subscribers.Status
-		cosignatureSubscribers        subscribers.Cosignature
-		driveStateSubscribers         subscribers.DriveState
-		partialAddedSubscribers       subscribers.PartialAdded
-		partialRemovedSubscribers     subscribers.PartialRemoved
-		confirmedAddedSubscribers     subscribers.ConfirmedAdded
-		unconfirmedAddedSubscribers   subscribers.UnconfirmedAdded
-		unconfirmedRemovedSubscribers subscribers.UnconfirmedRemoved
+		blockSubs          subs.SubscribersPool[*sdk.BlockInfo]
+		cosignatureSubs    subs.SubscribersPool[*sdk.SignerInfo]
+		driveStateSubs     subs.SubscribersPool[*sdk.DriveStateInfo]
+		confAddedSubs      subs.SubscribersPool[sdk.Transaction]
+		partialAddedSubs   subs.SubscribersPool[*sdk.AggregateTransaction]
+		partialRemovedSubs subs.SubscribersPool[*sdk.PartialRemovedInfo]
+		statusSubs         subs.SubscribersPool[*sdk.StatusInfo]
+		unconfAddedSubs    subs.SubscribersPool[sdk.Transaction]
+		unconfRemovedSubs  subs.SubscribersPool[*sdk.UnconfirmedRemoved]
 
-		messageRouter    Router
-		topicHandlers    TopicHandlersStorage
+		publisher        *subs.Publisher
 		messagePublisher MessagePublisher
 
-		// connectionStatusCh chan bool
-		listenCh     chan bool            // channel for manage current listen status for connection
-		reconnectCh  chan *websocket.Conn // channel for connection with we will close, and open new connection
-		connectionCh chan *websocket.Conn // channel for new opened connection
-
-		connectFn func(cfg *sdk.Config) (*websocket.Conn, string, error)
+		listening atomic.Bool
 	}
 
 	Client interface {
 		io.Closer
 
-		Listen()
+		Listen(ctx context.Context)
 	}
 
 	CatapultClient interface {
 		Client
 
 		Config() *sdk.Config
-		AddBlockHandlers(handlers ...subscribers.BlockHandler) error
-		AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error
-		AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error
-		AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error
-		AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error
-		AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error
-		AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error
-		AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error
-		AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error
+
+		NewBlockSubscription() (sub <-chan *sdk.BlockInfo, subId int, err error)
+		BlockUnsubscribe(subId int) error
+
+		NewConfirmedAddedSubscription(address *sdk.Address) (sub <-chan sdk.Transaction, subId int, err error)
+		ConfirmedAddedUnsubscribe(address *sdk.Address, subId int) error
+
+		NewUnConfirmedAddedSubscription(address *sdk.Address) (sub <-chan sdk.Transaction, subId int, err error)
+		UnConfirmedAddedUnsubscribe(address *sdk.Address, subId int) error
+
+		NewUnConfirmedRemovedSubscription(address *sdk.Address) (sub <-chan *sdk.UnconfirmedRemoved, subId int, err error)
+		UnConfirmedRemovedUnsubscribe(address *sdk.Address, subId int) error
+
+		NewCosignatureSubscription(address *sdk.Address) (sub <-chan *sdk.SignerInfo, subId int, err error)
+		CosignatureUnsubscribe(address *sdk.Address, subId int) error
+
+		NewPartialAddedSubscription(address *sdk.Address) (sub <-chan *sdk.AggregateTransaction, subId int, err error)
+		PartialAddedUnsubscribe(address *sdk.Address, subId int) error
+
+		NewPartialRemovedSubscription(address *sdk.Address) (sub <-chan *sdk.PartialRemovedInfo, subId int, err error)
+		PartialRemovedUnsubscribe(address *sdk.Address, subId int) error
+
+		NewStatusSubscription(address *sdk.Address) (sub <-chan *sdk.StatusInfo, subId int, err error)
+		DriveStateUnsubscribe(address *sdk.Address, subId int) error
+
+		NewDriveStateSubscription(address *sdk.Address) (sub <-chan *sdk.DriveStateInfo, subId int, err error)
+		StatusUnsubscribe(address *sdk.Address, subId int) error
 	}
 )
 
-func NewClient(ctx context.Context, cfg *sdk.Config) (CatapultClient, error) {
-	ctx, cancelFunc := context.WithCancel(ctx)
+func NewClient(cfg *sdk.Config) (CatapultClient, error) {
+	newSubs := make(map[subs.Topic]subs.Notifier)
 
-	socketClient := &CatapultWebsocketClientImpl{
-		ctx:        ctx,
-		cancelFunc: cancelFunc,
+	blockSubPools := subs.NewSubscribersPool[*sdk.BlockInfo](sdk.NewMapper[*sdk.BlockInfo](cfg.GenerationHash, sdk.BlockMapperFunc))
+	newSubs[subs.TopicBlock] = blockSubPools
 
-		config: cfg,
+	cosignatureSubs := subs.NewSubscribersPool[*sdk.SignerInfo](sdk.NewMapper[*sdk.SignerInfo](cfg.GenerationHash, sdk.CosignatureMapperFunc))
+	newSubs[subs.TopicCosignature] = cosignatureSubs
 
-		blockSubscriber:               subscribers.NewBlock(),
-		statusSubscribers:             subscribers.NewStatus(),
-		cosignatureSubscribers:        subscribers.NewCosignature(),
-		driveStateSubscribers:         subscribers.NewDriveState(),
-		partialAddedSubscribers:       subscribers.NewPartialAdded(),
-		partialRemovedSubscribers:     subscribers.NewPartialRemoved(),
-		confirmedAddedSubscribers:     subscribers.NewConfirmedAdded(),
-		unconfirmedAddedSubscribers:   subscribers.NewUnconfirmedAdded(),
-		unconfirmedRemovedSubscribers: subscribers.NewUnconfirmedRemoved(),
+	driveStateSubs := subs.NewSubscribersPool[*sdk.DriveStateInfo](sdk.NewMapper[*sdk.DriveStateInfo](cfg.GenerationHash, sdk.DriveStateMapperFunc))
+	newSubs[subs.TopicDriveState] = driveStateSubs
 
-		topicHandlers: &topicHandlers{h: make(topicHandlersMap)},
+	confAddedSubs := subs.NewSubscribersPool[sdk.Transaction](sdk.NewMapper[sdk.Transaction](cfg.GenerationHash, sdk.TransactionMapperFunc))
+	newSubs[subs.TopicConfirmedAdded] = confAddedSubs
 
-		listenCh:     make(chan bool),
-		reconnectCh:  make(chan *websocket.Conn),
-		connectionCh: make(chan *websocket.Conn),
+	partialAddedSubs := subs.NewSubscribersPool[*sdk.AggregateTransaction](sdk.NewMapper[*sdk.AggregateTransaction](cfg.GenerationHash, sdk.AggregateTransactionMapperFunc))
+	newSubs[subs.TopicPartialAdded] = partialAddedSubs
 
-		connectFn: connect,
+	partialRemovedSubs := subs.NewSubscribersPool[*sdk.PartialRemovedInfo](sdk.NewMapper[*sdk.PartialRemovedInfo](cfg.GenerationHash, sdk.PartialRemovedMapperFunc))
+	newSubs[subs.TopicPartialRemoved] = partialRemovedSubs
+
+	statusSubs := subs.NewSubscribersPool[*sdk.StatusInfo](sdk.NewMapper[*sdk.StatusInfo](cfg.GenerationHash, sdk.StatusMapperFunc))
+	newSubs[subs.TopicStatus] = statusSubs
+
+	unconfAddedSubs := subs.NewSubscribersPool[sdk.Transaction](sdk.NewMapper[sdk.Transaction](cfg.GenerationHash, sdk.TransactionMapperFunc))
+	newSubs[subs.TopicUnconfirmedAdded] = unconfAddedSubs
+
+	unconfRemovedSubs := subs.NewSubscribersPool[*sdk.UnconfirmedRemoved](sdk.NewMapper[*sdk.UnconfirmedRemoved](cfg.GenerationHash, sdk.UnconfirmedRemovedMapperFunc))
+	newSubs[subs.TopicUnconfirmedRemoved] = unconfRemovedSubs
+
+	var err error
+	publisher := subs.NewPublisher()
+	for topic, notifier := range newSubs {
+		err = publisher.AddSubscriber(topic, notifier)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	go socketClient.handleSignal()
+	socketClient := &CatapultWebsocketClientImpl{
+		config:             cfg,
+		blockSubs:          blockSubPools,
+		cosignatureSubs:    cosignatureSubs,
+		driveStateSubs:     driveStateSubs,
+		confAddedSubs:      confAddedSubs,
+		partialAddedSubs:   partialAddedSubs,
+		partialRemovedSubs: partialRemovedSubs,
+		statusSubs:         statusSubs,
+		unconfAddedSubs:    unconfAddedSubs,
+		unconfRemovedSubs:  unconfRemovedSubs,
+		publisher:          publisher,
+	}
 
 	if err := socketClient.initNewConnection(); err != nil {
-		return socketClient, err
+		return nil, err
 	}
 
 	return socketClient, nil
 }
 
-func (c *CatapultWebsocketClientImpl) Listen() {
-
-	c.listenCh <- true
-
-	select {
-	case <-c.ctx.Done():
-		c.closeConnection(c.conn)
+func (c *CatapultWebsocketClientImpl) Listen(ctx context.Context) {
+	if c.listening.Swap(true) {
+		return
 	}
+
+	c.startMessageReading(ctx)
 }
 
 func (c *CatapultWebsocketClientImpl) Close() error {
-	c.cancelFunc()
-	return nil
+	return c.closeConnection()
 }
 
 func (c *CatapultWebsocketClientImpl) Config() *sdk.Config {
 	return c.config
 }
 
-func (c *CatapultWebsocketClientImpl) AddBlockHandlers(handlers ...subscribers.BlockHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathBlock) {
-		c.topicHandlers.SetTopicHandler(pathBlock, &TopicHandler{
-			Handler: hdlrs.NewBlockHandler(sdk.BlockMapperFn(sdk.MapBlock), c.blockSubscriber),
-			Topic:   topicFormatFn(formatBlockTopic),
-		})
-	}
-
-	if !c.blockSubscriber.HasHandlers() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, pathBlock); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	if err := c.blockSubscriber.AddHandlers(handlers...); err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewBlockSubscription() (sub <-chan *sdk.BlockInfo, subId int, err error) {
+	return subscribe[*sdk.BlockInfo](topicBlock, nil, c.UID, c.messagePublisher, c.blockSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddConfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.ConfirmedAddedHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathConfirmedAdded) {
-		c.topicHandlers.SetTopicHandler(pathConfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewConfirmedAddedHandler(sdk.NewConfirmedAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.confirmedAddedSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.confirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.confirmedAddedSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewConfirmedAddedSubscription(address *sdk.Address) (sub <-chan sdk.Transaction, subId int, err error) {
+	return subscribe[sdk.Transaction](topicConfirmedAdded, address, c.UID, c.messagePublisher, c.confAddedSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedAddedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedAddedHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathUnconfirmedAdded) {
-		c.topicHandlers.SetTopicHandler(pathUnconfirmedAdded, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedAddedHandler(sdk.NewUnconfirmedAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.unconfirmedAddedSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.unconfirmedAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.unconfirmedAddedSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewUnConfirmedAddedSubscription(address *sdk.Address) (sub <-chan sdk.Transaction, subId int, err error) {
+	return subscribe[sdk.Transaction](topicUnconfirmedAdded, address, c.UID, c.messagePublisher, c.unconfAddedSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddUnconfirmedRemovedHandlers(address *sdk.Address, handlers ...subscribers.UnconfirmedRemovedHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathUnconfirmedRemoved) {
-		c.topicHandlers.SetTopicHandler(pathUnconfirmedRemoved, &TopicHandler{
-			Handler: hdlrs.NewUnconfirmedRemovedHandler(sdk.UnconfirmedRemovedMapperFn(sdk.MapUnconfirmedRemoved), c.unconfirmedRemovedSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.unconfirmedRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.unconfirmedRemovedSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewUnConfirmedRemovedSubscription(address *sdk.Address) (sub <-chan *sdk.UnconfirmedRemoved, subId int, err error) {
+	return subscribe[*sdk.UnconfirmedRemoved](topicUnconfirmedRemoved, address, c.UID, c.messagePublisher, c.unconfRemovedSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialAddedHandlers(address *sdk.Address, handlers ...subscribers.PartialAddedHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathPartialAdded) {
-		c.topicHandlers.SetTopicHandler(pathPartialAdded, &TopicHandler{
-			Handler: hdlrs.NewPartialAddedHandler(sdk.NewPartialAddedMapper(sdk.MapTransaction, c.config.GenerationHash), c.partialAddedSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.partialAddedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.partialAddedSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewCosignatureSubscription(address *sdk.Address) (sub <-chan *sdk.SignerInfo, subId int, err error) {
+	return subscribe[*sdk.SignerInfo](topicCosignature, address, c.UID, c.messagePublisher, c.cosignatureSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddPartialRemovedHandlers(address *sdk.Address, handlers ...subscribers.PartialRemovedHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathPartialRemoved) {
-		c.topicHandlers.SetTopicHandler(pathPartialRemoved, &TopicHandler{
-			Handler: hdlrs.NewPartialRemovedHandler(sdk.PartialRemovedMapperFn(sdk.MapPartialRemoved), c.partialRemovedSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.partialRemovedSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.partialRemovedSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewPartialAddedSubscription(address *sdk.Address) (sub <-chan *sdk.AggregateTransaction, subId int, err error) {
+	return subscribe[*sdk.AggregateTransaction](topicPartialAdded, address, c.UID, c.messagePublisher, c.partialAddedSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddStatusHandlers(address *sdk.Address, handlers ...subscribers.StatusHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathStatus) {
-		c.topicHandlers.SetTopicHandler(pathStatus, &TopicHandler{
-			Handler: hdlrs.NewStatusHandler(sdk.StatusMapperFn(sdk.MapStatus), c.statusSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.statusSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	err := c.statusSubscribers.AddHandlers(address, handlers...)
-	if err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewPartialRemovedSubscription(address *sdk.Address) (sub <-chan *sdk.PartialRemovedInfo, subId int, err error) {
+	return subscribe[*sdk.PartialRemovedInfo](topicPartialRemoved, address, c.UID, c.messagePublisher, c.partialRemovedSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddCosignatureHandlers(address *sdk.Address, handlers ...subscribers.CosignatureHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(pathCosignature) {
-		c.topicHandlers.SetTopicHandler(pathCosignature, &TopicHandler{
-			Handler: hdlrs.NewCosignatureHandler(sdk.CosignatureMapperFn(sdk.MapCosignature), c.cosignatureSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.cosignatureSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	if err := c.cosignatureSubscribers.AddHandlers(address, handlers...); err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewStatusSubscription(address *sdk.Address) (sub <-chan *sdk.StatusInfo, subId int, err error) {
+	return subscribe[*sdk.StatusInfo](topicStatus, address, c.UID, c.messagePublisher, c.statusSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) AddDriveStateHandlers(address *sdk.Address, handlers ...subscribers.DriveStateHandler) error {
-	if len(handlers) == 0 {
-		return nil
-	}
-
-	if !c.topicHandlers.HasHandler(driveState) {
-		c.topicHandlers.SetTopicHandler(driveState, &TopicHandler{
-			Handler: hdlrs.NewDriveStateHandler(sdk.DriveStateMapperFn(sdk.MapDriveState), c.driveStateSubscribers),
-			Topic:   topicFormatFn(formatPlainTopic),
-		})
-	}
-
-	if !c.driveStateSubscribers.HasHandlers(address) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", driveState, address.Address))); err != nil {
-			return errors.Wrap(err, "publishing subscribe message into websocket")
-		}
-	}
-
-	if err := c.driveStateSubscribers.AddHandlers(address, handlers...); err != nil {
-		return errors.Wrap(err, "adding handlers functions into handlers storage")
-	}
-
-	return nil
+func (c *CatapultWebsocketClientImpl) NewDriveStateSubscription(address *sdk.Address) (sub <-chan *sdk.DriveStateInfo, subId int, err error) {
+	return subscribe[*sdk.DriveStateInfo](topicDriveState, address, c.UID, c.messagePublisher, c.driveStateSubs)
 }
 
-func (c *CatapultWebsocketClientImpl) handleSignal() {
-	for {
-		select {
-		case conn := <-c.connectionCh:
-			c.conn = conn
-		case conn := <-c.reconnectCh:
-			c.closeConnection(conn)
-			go func() {
-				c.listenCh <- false
-			}()
-
-		case <-c.listenCh:
-
-			if c.conn == nil {
-				err := c.initNewConnection()
-				if err != nil {
-					fmt.Println("websocket: connection is failed. Try again after wait period")
-					select {
-					case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-						go func() {
-							c.listenCh <- true
-						}()
-						continue
-					}
-				}
-			}
-
-			err := c.updateHandlers()
-			if err != nil {
-				fmt.Println("websocket: update handles is failed. Try again after timeout period")
-				select {
-				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
-					continue
-				}
-
-			}
-			fmt.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
-			c.startListener()
-		}
-	}
+func (c *CatapultWebsocketClientImpl) BlockUnsubscribe(subId int) error {
+	return unsubscribe[*sdk.BlockInfo](topicBlock, nil, c.UID, subId, c.blockSubs, c.messagePublisher)
 }
 
-func (c *CatapultWebsocketClientImpl) removeHandlers() {
-	c.blockSubscriber = nil
-	c.confirmedAddedSubscribers = nil
-	c.unconfirmedAddedSubscribers = nil
-	c.unconfirmedRemovedSubscribers = nil
-	c.partialAddedSubscribers = nil
-	c.partialRemovedSubscribers = nil
-	c.statusSubscribers = nil
-	c.cosignatureSubscribers = nil
-	c.driveStateSubscribers = nil
-
-	c.topicHandlers = nil
+func (c *CatapultWebsocketClientImpl) ConfirmedAddedUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[sdk.Transaction](topicConfirmedAdded, address, c.UID, subId, c.confAddedSubs, c.messagePublisher)
 }
 
-func (c *CatapultWebsocketClientImpl) closeConnection(conn *websocket.Conn) {
-	if conn != nil {
-		if err := conn.Close(); err != nil {
-			fmt.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
+func (c *CatapultWebsocketClientImpl) UnConfirmedAddedUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[sdk.Transaction](topicUnconfirmedAdded, address, c.UID, subId, c.unconfAddedSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) UnConfirmedRemovedUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.UnconfirmedRemoved](topicUnconfirmedRemoved, address, c.UID, subId, c.unconfRemovedSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) CosignatureUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.SignerInfo](topicCosignature, address, c.UID, subId, c.cosignatureSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) PartialAddedUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.AggregateTransaction](topicPartialAdded, address, c.UID, subId, c.partialAddedSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) PartialRemovedUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.PartialRemovedInfo](topicPartialRemoved, address, c.UID, subId, c.partialRemovedSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) DriveStateUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.DriveStateInfo](topicDriveState, address, c.UID, subId, c.driveStateSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) StatusUnsubscribe(address *sdk.Address, subId int) error {
+	return unsubscribe[*sdk.StatusInfo](topicStatus, address, c.UID, subId, c.statusSubs, c.messagePublisher)
+}
+
+func (c *CatapultWebsocketClientImpl) closeConnection() error {
+	log.Println("closing connection...")
+	if c.conn != nil {
+		if err := c.conn.Close(); err != nil {
+			log.Println(fmt.Sprintf("websocket: disconnection error: %s", err))
+			return err
 		}
 	}
 	c.conn = nil
+
+	return nil
 }
 
-func (c *CatapultWebsocketClientImpl) startListener() {
+func (c *CatapultWebsocketClientImpl) startMessageReading(ctx context.Context) {
 	for {
-		_, resp, e := c.conn.ReadMessage()
-		if e != nil {
-			if _, ok := e.(*net.OpError); ok {
-				// Stop ReadMessage if user called Close function for websocket client
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			_, resp, err := c.conn.ReadMessage()
+			if err != nil {
+				log.Println("Error reading message:", err)
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Println("Unexpected close error, attempting to reconnect...")
+					c.reconnect(ctx)
+					continue
+				}
 				return
 			}
 
-			if _, ok := e.(*websocket.CloseError); ok {
-				go func() {
-					c.reconnectCh <- c.conn
-				}()
-				return
+			err = c.publisher.Publish(ctx, resp)
+			if err != nil {
+				log.Printf("Cannot publish ws message:%s\n", err)
 			}
 		}
-
-		c.messageRouter.RouteMessage(resp)
 	}
 }
 
 func (c *CatapultWebsocketClientImpl) initNewConnection() error {
-	conn, uid, err := c.connectFn(c.config)
-	if err != nil {
-		return err
-	}
-
-	c.UID = uid
-	c.conn = conn
-
-	messagePublisher := newMessagePublisher(c.conn)
-	messageRouter := NewRouter(c.UID, messagePublisher, c.topicHandlers)
-
-	c.messageRouter = messageRouter
-	c.messagePublisher = messagePublisher
-
-	return nil
-}
-
-func (c *CatapultWebsocketClientImpl) updateHandlers() error {
-
-	if c.topicHandlers.HasHandler(pathBlock) {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s", pathBlock))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.confirmedAddedSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathConfirmedAdded, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.cosignatureSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathCosignature, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.partialAddedSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialAdded, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.partialRemovedSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathPartialRemoved, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.statusSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathStatus, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.unconfirmedAddedSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedAdded, value))); err != nil {
-			return err
-		}
-	}
-
-	for _, value := range c.unconfirmedRemovedSubscribers.GetAddresses() {
-		if err := c.messagePublisher.PublishSubscribeMessage(c.UID, Path(fmt.Sprintf("%s/%s", pathUnconfirmedRemoved, value))); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 	var conn *websocket.Conn
 	var err error
 
-	conn, _, err = websocket.DefaultDialer.Dial(newWSUrl(cfg.UsedBaseUrl).String(), nil)
+	conn, _, err = websocket.DefaultDialer.Dial(newWSUrl(c.config.UsedBaseUrl).String(), nil)
 	if err != nil {
-		for _, u := range cfg.BaseURLs {
+		for _, u := range c.config.BaseURLs {
 
-			if u == cfg.UsedBaseUrl {
+			if u == c.config.UsedBaseUrl {
 				continue
 			}
 
@@ -554,21 +305,126 @@ func connect(cfg *sdk.Config) (*websocket.Conn, string, error) {
 				continue
 			}
 
-			cfg.UsedBaseUrl = u
+			c.config.UsedBaseUrl = u
 			break
 		}
 	}
 
 	if conn == nil {
-		return nil, "", err
+		return err
 	}
 
 	resp := new(wsConnectionResponse)
 	if err = conn.ReadJSON(resp); err != nil {
-		return nil, "", err
+		return err
 	}
 
-	return conn, resp.Uid, nil
+	c.UID = resp.Uid
+	c.conn = conn
+
+	c.messagePublisher = newMessagePublisher(c.conn)
+	return nil
+}
+
+func (c *CatapultWebsocketClientImpl) reconnect(ctx context.Context) {
+	c.closeConnection()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			log.Println("websocket: connection is failed. Try again after wait period")
+			err := c.initNewConnection()
+			if err != nil {
+				log.Println("websocket: connection is failed. Try again after wait period")
+				select {
+				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+					continue
+				}
+			}
+
+			err = c.updateHandlers()
+			if err != nil {
+				log.Println("websocket: update handles is failed. Try again after timeout period")
+				select {
+				case <-time.NewTicker(c.config.WsReconnectionTimeout).C:
+					continue
+				}
+
+			}
+
+			log.Println(fmt.Sprintf("websocket: connection established: %s", c.config.UsedBaseUrl.String()))
+			return
+		}
+	}
+}
+
+func (c *CatapultWebsocketClientImpl) updateHandlers() error {
+	for _, path := range c.blockSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.confAddedSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.unconfAddedSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.unconfRemovedSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.cosignatureSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.partialAddedSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.partialRemovedSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.statusSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, path := range c.driveStateSubs.GetPaths() {
+		err := c.messagePublisher.PublishSubscribeMessage(c.UID, path)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func newWSUrl(url url.URL) *url.URL {
@@ -581,4 +437,45 @@ func newWSUrl(url url.URL) *url.URL {
 	}
 
 	return &url
+}
+
+func subscribe[T any](
+	topic subs.Topic,
+	address *sdk.Address,
+	uid string,
+	publisher MessagePublisher,
+	subsPool subs.SubscribersPool[T]) (_ <-chan T, id int, err error) {
+
+	path := subs.NewPath(topic, address)
+	if !subsPool.HasSubscriptions(path) {
+		err := publisher.PublishSubscribeMessage(uid, path.String())
+		if err != nil {
+			log.Printf("Cannot subscribe on %s topic: %s\n", topic, err)
+			return nil, 0, err
+		}
+	}
+
+	sub, id := subsPool.NewSubscription(path)
+	return sub, id, nil
+}
+
+func unsubscribe[T any](
+	topic subs.Topic,
+	address *sdk.Address,
+	uid string,
+	subId int,
+	subsPool subs.SubscribersPool[T],
+	publisher MessagePublisher) error {
+
+	path := subs.NewPath(topic, address)
+	subsPool.CloseSubscription(path, subId)
+	if !subsPool.HasSubscriptions(path) {
+		err := publisher.PublishUnsubscribeMessage(uid, path.String())
+		if err != nil {
+			log.Printf("cannot unsubscribe from %d subscribtion, %s topic for %s address: %s\n", subId, path, address.Address, err)
+			return err
+		}
+	}
+
+	return nil
 }

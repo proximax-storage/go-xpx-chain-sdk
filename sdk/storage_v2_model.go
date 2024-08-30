@@ -272,6 +272,7 @@ func (info *DriveInfo) String() string {
 type Replicator struct {
 	Account          *PublicAccount
 	Version          uint32
+	NodeBootKey      *PublicAccount
 	Drives           []*DriveInfo // TODO make map
 	DownloadChannels []*Hash
 }
@@ -281,11 +282,13 @@ func (replicator *Replicator) String() string {
 		`
 		Account: %s, 
 		Version: %d,
+		NodeBootKey: %s, 
 		Drives: %+v,
 		DownloadChannels: %+v,
 		`,
 		replicator.Account,
 		replicator.Version,
+		replicator.NodeBootKey,
 		replicator.Drives,
 		replicator.DownloadChannels,
 	)
@@ -385,7 +388,10 @@ type DownloadChannelsFilters struct {
 // Replicator Onboarding Transaction
 type ReplicatorOnboardingTransaction struct {
 	AbstractTransaction
-	Capacity Amount
+	Capacity         Amount
+	NodeBootKey      *PublicAccount
+	Message          *Hash
+	MessageSignature *Signature
 }
 
 // Prepare Bc Drive Transaction
@@ -473,6 +479,18 @@ type DriveClosureTransaction struct {
 type ReplicatorOffboardingTransaction struct {
 	AbstractTransaction
 	DriveKey *PublicAccount
+}
+
+// Replicators Cleanup Transaction
+type ReplicatorsCleanupTransaction struct {
+	AbstractTransaction
+	ReplicatorKeys []*PublicAccount
+}
+
+// Replicator Tree Rebuild Transaction
+type ReplicatorTreeRebuildTransaction struct {
+	AbstractTransaction
+	ReplicatorKeys []*PublicAccount
 }
 
 type Opinion struct {

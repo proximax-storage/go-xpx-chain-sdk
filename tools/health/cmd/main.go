@@ -30,7 +30,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pool, err := health.NewNodeHealthCheckerPool(client, nodeInfos, packets.NoneConnectionSecurity, *discover, math.MaxInt)
+	pool := health.NewNodeHealthCheckerPool(client, packets.NoneConnectionSecurity, math.MaxInt)
+
+	_, err = pool.ConnectToNodes(nodeInfos, *discover)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = pool.WaitAllHashesEqual(*height)
+	_, err = pool.CompareHashes(*height)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +60,7 @@ func parseNodes(nodesStr string) ([]*health.NodeInfo, error) {
 			return nil, errors.New(ErrBadPair.Error() + ": " + endpointKeyPair)
 		}
 
-		ni, err := health.NewNodeInfo(pair[1], pair[0])
+		ni, err := health.NewNodeInfo(pair[1], pair[0], "")
 		if err != nil {
 			return nil, err
 		}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,31 +13,25 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	"github.com/proximax-storage/go-xpx-chain-sdk/tools"
-
 	sync "github.com/proximax-storage/go-xpx-chain-sync"
-)
-
-const (
-	low    = "low"
-	middle = "middle"
-	high   = "high"
 )
 
 var (
 	ErrNoUrl                  = errors.New("url is not provided")
 	ErrZeroCapacity           = errors.New("capacity is zero")
-	ErrUnknownFeeStrategy     = errors.New("unknown fee calculation strategy")
 	ErrNoReplicatorPrivateKey = errors.New("replicator private key is not provided")
+	ErrNoNodeBootPrivateKey   = errors.New("node boot private key is not provided")
 )
 
 func main() {
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
 	capacity := flag.Uint64("capacity", 0, "capacity of replicator")
-	feeStrategy := flag.String("feeStrategy", middle, "fee calculation strategy (low, middle, high)")
-	replicatorPrivateKey := flag.String("privateKey", "", "Replicator private key")
+	feeStrategy := flag.String("feeStrategy", "middle", "fee calculation strategy (low, middle, high)")
+	replicatorPrivateKey := flag.String("replicatorPrivateKey", "", "Replicator private key")
+	nodeBootPrivateKey := flag.String("nodeBootPrivateKey", "", "Node boot private key")
 	flag.Parse()
 
-	if err := onboard(*url, *replicatorPrivateKey, tools.ParseFeeStrategy(feeStrategy), *capacity); err != nil {
+	if err := onboard(*url, *replicatorPrivateKey, *nodeBootPrivateKey, tools.ParseFeeStrategy(feeStrategy), *capacity); err != nil {
 		fmt.Printf("Replicator onboarding failed: %s\n", err)
 		os.Exit(1)
 	}
@@ -44,13 +39,17 @@ func main() {
 	fmt.Println("Replicator onboarded successfully!!!")
 }
 
-func onboard(url, replicatorPrivateKey string, feeStrategy sdk.FeeCalculationStrategy, capacity uint64) error {
+func onboard(url, replicatorPrivateKey string, nodeBootPrivateKey string, feeStrategy sdk.FeeCalculationStrategy, capacity uint64) error {
 	if url == "" {
 		return ErrNoUrl
 	}
 
 	if replicatorPrivateKey == "" {
 		return ErrNoReplicatorPrivateKey
+	}
+
+	if nodeBootPrivateKey == "" {
+		return ErrNoNodeBootPrivateKey
 	}
 
 	if capacity == 0 {
@@ -66,7 +65,7 @@ func onboard(url, replicatorPrivateKey string, feeStrategy sdk.FeeCalculationStr
 	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		return err
 	}
@@ -76,9 +75,28 @@ func onboard(url, replicatorPrivateKey string, feeStrategy sdk.FeeCalculationStr
 		return err
 	}
 
+	nodeAccount, err := client.NewAccountFromPrivateKey(nodeBootPrivateKey)
+	if err != nil {
+		return err
+	}
+
+	var message sdk.Hash
+	_, err = rand.Read(message[:])
+	if err != nil {
+		return err
+	}
+
+	messageSignature, err := nodeAccount.SignData(message[:])
+	if err != nil {
+		return err
+	}
+
 	replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 		sdk.NewDeadline(time.Hour),
 		sdk.Amount(capacity),
+		nodeAccount.PublicAccount,
+		&message,
+		messageSignature,
 	)
 	if err != nil {
 		return err

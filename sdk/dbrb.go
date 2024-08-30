@@ -51,3 +51,19 @@ func (a *RemoveDbrbProcessByNetworkTransaction) Size() int {
 func (a *RemoveDbrbProcessByNetworkTransaction) Bytes() ([]byte, error) {
 	return nil, errors.New("cannot get bytes of RemoveDbrbProcessByNetworkTransaction")
 }
+
+type AddOrUpdateDbrbProcessTransaction struct {
+	AbstractTransaction
+}
+
+func (a *AddOrUpdateDbrbProcessTransaction) GetAbstractTransaction() *AbstractTransaction {
+	return &a.AbstractTransaction
+}
+
+func (a *AddOrUpdateDbrbProcessTransaction) Size() int {
+	return TransactionHeaderSize + 2
+}
+
+func (a *AddOrUpdateDbrbProcessTransaction) Bytes() ([]byte, error) {
+	return nil, errors.New("cannot get bytes of AddOrUpdateDbrbProcessTransaction")
+}

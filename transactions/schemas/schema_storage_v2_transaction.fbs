@@ -9,6 +9,9 @@ table ReplicatorOnboardingTransactionBuffer {
     maxFee: [uint];
     deadline: [uint];
     capacity: [uint];
+    nodeBootKey: [ubyte];
+    message: [ubyte];
+    messageSignature: [ubyte];
 }
 
 table PrepareBcDriveTransactionBuffer {
@@ -188,6 +191,32 @@ table DownloadApprovalTransactionBuffer {
     opinions: [OpinionsBuffer];
 }
 
+table ReplicatorsCleanupTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    replicatorCount: [ubyte];
+    replicatorKeys: [KeysBuffer];
+}
+
+table ReplicatorTreeRebuildTransactionBuffer {
+    size: uint;
+    signature: [ubyte];
+    signer: [ubyte];
+    version: uint;
+    type: ushort;
+    maxFee: [uint];
+    deadline: [uint];
+    // It is ushort. But it can be zero, and we still want to represent it like 2 bytes
+    replicatorCount: [ubyte];
+    replicatorKeys: [KeysBuffer];
+}
+
 root_type ReplicatorOnboardingTransactionBuffer;
 
 root_type PrepareBcDriveTransactionBuffer;
@@ -219,3 +248,7 @@ root_type ReplicatorOffboardingTransactionBuffer;
 root_type OpinionsBuffer;
 
 root_type DownloadApprovalTransactionBuffer;
+
+root_type ReplicatorsCleanupTransactionBuffer;
+
+root_type ReplicatorTreeRebuildTransactionBuffer;

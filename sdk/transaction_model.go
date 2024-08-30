@@ -2802,7 +2802,10 @@ const (
 	DeactivateHeaderSize                         = TransactionHeaderSize + KeySize + KeySize
 	BlsKeySize                               int = 48
 	BlsSignatureSize                         int = 96
-	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize
+	ReplicatorOnboardingHeaderSize               = TransactionHeaderSize + AmountSize + KeySize + Hash256 + SignatureSize
+	ReplicatorCountSize                          = 2
+	ReplicatorsCleanupHeaderSize                 = TransactionHeaderSize + ReplicatorCountSize
+	ReplicatorTreeRebuildHeaderSize              = TransactionHeaderSize + ReplicatorCountSize
 	PrepareBcDriveHeaderSize                     = TransactionHeaderSize + StorageSizeSize + AmountSize + 2
 	DataModificationHeaderSize                   = TransactionHeaderSize + KeySize + Hash256 + StorageSizeSize + AmountSize
 	DataModificationCancelHeaderSize             = TransactionHeaderSize + KeySize + Hash256
@@ -2906,6 +2909,8 @@ const (
 	SuperContractFileSystem        EntityType = 0x4460
 	Deactivate                     EntityType = 0x4560
 	ReplicatorOnboarding           EntityType = 0x4662
+	ReplicatorsCleanup             EntityType = 0x4062
+	ReplicatorTreeRebuild          EntityType = 0x4167
 	PrepareBcDrive                 EntityType = 0x4162
 	DataModification               EntityType = 0x4262
 	DataModificationApproval       EntityType = 0x4462
@@ -2932,6 +2937,7 @@ const (
 	AddDbrbProcess                 EntityType = 0x416C
 	RemoveDbrbProcess              EntityType = 0x426C
 	RemoveDbrbProcessByNetwork     EntityType = 0x436C
+	AddOrUpdateDbrbProcess         EntityType = 0x446C
 )
 
 func (t EntityType) String() string {
@@ -2990,7 +2996,9 @@ const (
 	OperationIdentifyVersion             EntityVersion = 1
 	SuperContractFileSystemVersion       EntityVersion = 1
 	DeactivateVersion                    EntityVersion = 1
-	ReplicatorOnboardingVersion          EntityVersion = 1
+	ReplicatorOnboardingVersion          EntityVersion = 2
+	ReplicatorsCleanupVersion            EntityVersion = 1
+	ReplicatorTreeRebuildVersion         EntityVersion = 1
 	PrepareBcDriveVersion                EntityVersion = 1
 	DataModificationVersion              EntityVersion = 1
 	DataModificationApprovalVersion      EntityVersion = 1 // TODO delete?
@@ -3278,6 +3286,10 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &deactivateTransactionDTO{}
 	case ReplicatorOnboarding:
 		dto = &replicatorOnboardingTransactionDTO{}
+	case ReplicatorsCleanup:
+		dto = &replicatorsCleanupTransactionDTO{}
+    case ReplicatorTreeRebuild:
+        dto = &replicatorTreeRebuildTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:
@@ -3330,6 +3342,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &removeDbrbProcessTransactionDTO{}
 	case RemoveDbrbProcessByNetwork:
 		dto = &removeDbrbProcessByNetworkTransactionDTO{}
+	case AddOrUpdateDbrbProcess:
+		dto = &addOrUpdateDbrbProcessTransactionDTO{}
 	}
 
 	return dtoToTransaction(b, dto, generationHash)
@@ -3416,6 +3430,16 @@ func signTransactionWith(tx Transaction, a *Account) (*SignedTransaction, error)
 		return nil, err
 	}
 	return &SignedTransaction{tx.GetAbstractTransaction().Type, strings.ToUpper(hex.EncodeToString(p)), h}, nil
+}
+
+func signDataWith(data []byte, a *Account) (*Signature, error) {
+	s := crypto.NewSignerFromKeyPair(a.KeyPair, nil)
+	signature, err := s.Sign(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytesToSignature(signature.Bytes())
 }
 
 func InnerTransactionHash(tx Transaction) *Hash {

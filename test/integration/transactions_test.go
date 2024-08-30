@@ -10,11 +10,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	math "math/rand"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 
 	"github.com/stretchr/testify/assert"
 
@@ -28,8 +29,8 @@ import (
 const testUrl = "http://127.0.0.1:3000"
 const privateKey = "819F72066B17FFD71B8B4142C5AEAE4B997B0882ABDF2C263B02869382BD93A0"
 
-//const testUrl = "http://35.167.38.200:3000"
-//const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
+// const testUrl = "http://35.167.38.200:3000"
+// const privateKey = "2C8178EF9ED7A6D30ABDC1E4D30D68B05861112A98B1629FBE2C8D16FDE97A1C"
 const nemesisPrivateKey = "C06B2CC5D7B66900B2493CF68BE10B7AA8690D973B7F0B65D0DAE4F7AA464716"
 
 const managerPrivateKey = "2F985E4EC55D60C957C973BD1BEE2C0B3BA313A841D3EE4C74810805E6936053"
@@ -67,7 +68,7 @@ func init() {
 
 	client = sdk.NewClient(nil, cfg)
 
-	wsc, err = websocket.NewClient(ctx, cfg)
+	wsc, err = websocket.NewClient(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -91,55 +92,88 @@ func init() {
 func initListeners(t *testing.T, account *sdk.Account, hash *sdk.Hash, tx sdk.Transaction) <-chan Result {
 	if !listening {
 		// Starting listening messages from websocket
-		go wsc.Listen()
+		go wsc.Listen(ctx)
 		listening = true
 	}
 
 	out := make(chan Result)
 
 	// Register handlers functions for needed topics
-	if err := wsc.AddConfirmedAddedHandlers(account.Address, func(transaction sdk.Transaction) bool {
-		if !hash.Equal(transaction.GetAbstractTransaction().TransactionHash) {
-			return false
-		}
-		fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
-		fmt.Println("Successful!")
-		tx.GetAbstractTransaction().Signer = transaction.GetAbstractTransaction().Signer
-		tx.GetAbstractTransaction().Signature = transaction.GetAbstractTransaction().Signature
-		tx.GetAbstractTransaction().TransactionInfo = transaction.GetAbstractTransaction().TransactionInfo
-		tx.GetAbstractTransaction().Deadline = transaction.GetAbstractTransaction().Deadline
+	confirmedSub, confirmedSubId, err := wsc.NewConfirmedAddedSubscription(account.Address)
+	if err != nil {
+		panic(err)
+	}
 
-		if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
-			transaction.GetAbstractTransaction().Type == sdk.AggregateCompleted {
-			agTx := transaction.(*sdk.AggregateTransaction)
-			originalAgTx := tx.(*sdk.AggregateTransaction)
+	go func() {
+		for {
+			select {
+			case transaction, ok := <-confirmedSub:
+				if !ok {
+					return
+				}
 
-			for i, t := range agTx.InnerTransactions {
-				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer = t.GetAbstractTransaction().Signer
-				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signature = t.GetAbstractTransaction().Signature
-				originalAgTx.InnerTransactions[i].GetAbstractTransaction().TransactionInfo = t.GetAbstractTransaction().TransactionInfo
-				originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline = t.GetAbstractTransaction().Deadline
+				if !hash.Equal(transaction.GetAbstractTransaction().TransactionHash) {
+					continue
+				}
+
+				fmt.Printf("ConfirmedAdded Tx Content: %v \n", transaction)
+				fmt.Println("Successful!")
+				tx.GetAbstractTransaction().Signer = transaction.GetAbstractTransaction().Signer
+				tx.GetAbstractTransaction().Signature = transaction.GetAbstractTransaction().Signature
+				tx.GetAbstractTransaction().TransactionInfo = transaction.GetAbstractTransaction().TransactionInfo
+				tx.GetAbstractTransaction().Deadline = transaction.GetAbstractTransaction().Deadline
+
+				if transaction.GetAbstractTransaction().Type == sdk.AggregateBonded ||
+					transaction.GetAbstractTransaction().Type == sdk.AggregateCompleted {
+					agTx := transaction.(*sdk.AggregateTransaction)
+					originalAgTx := tx.(*sdk.AggregateTransaction)
+
+					for i, t := range agTx.InnerTransactions {
+						originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signer = t.GetAbstractTransaction().Signer
+						originalAgTx.InnerTransactions[i].GetAbstractTransaction().Signature = t.GetAbstractTransaction().Signature
+						originalAgTx.InnerTransactions[i].GetAbstractTransaction().TransactionInfo = t.GetAbstractTransaction().TransactionInfo
+						originalAgTx.InnerTransactions[i].GetAbstractTransaction().Deadline = t.GetAbstractTransaction().Deadline
+					}
+					agTx.Cosignatures = originalAgTx.Cosignatures
+				}
+				assert.Equal(t, tx, transaction)
+				out <- Result{transaction, nil}
+
+				err = wsc.UnConfirmedRemovedUnsubscribe(account.Address, confirmedSubId)
+				if err != nil {
+					panic(err)
+				}
 			}
-			agTx.Cosignatures = originalAgTx.Cosignatures
 		}
-		assert.Equal(t, tx, transaction)
-		out <- Result{transaction, nil}
-		return true
-	}); err != nil {
+	}()
+
+	subStatus, _, err := wsc.NewStatusSubscription(account.Address)
+	if err != nil {
 		panic(err)
 	}
 
-	if err := wsc.AddStatusHandlers(account.Address, func(info *sdk.StatusInfo) bool {
-		if !hash.Equal(info.Hash) {
-			return false
+	go func() {
+		for {
+			select {
+			case info, ok := <-subStatus:
+				if !ok {
+					return
+				}
+
+				if !hash.Equal(info.Hash) {
+					return
+				}
+				fmt.Printf("Got error: %v \n", info)
+				t.Error()
+				out <- Result{nil, errors.New(info.Status)}
+
+				err = wsc.StatusUnsubscribe(account.Address, confirmedSubId)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
-		fmt.Printf("Got error: %v \n", info)
-		t.Error()
-		out <- Result{nil, errors.New(info.Status)}
-		return true
-	}); err != nil {
-		panic(err)
-	}
+	}()
 
 	return out
 }
@@ -153,22 +187,27 @@ func waitForBlocksCount(t *testing.T, duration int) {
 	m := sync.Mutex{}
 
 	innerCounter := 0
-	err := wsc.AddBlockHandlers(func(*sdk.BlockInfo) bool {
-		m.Lock()
-		defer m.Unlock()
-		innerCounter++
-		fmt.Println("Harvested", innerCounter, "block...")
-
-		if innerCounter == count {
-			out <- Result{nil, nil}
-			return true
-		}
-		return false
-	})
-
+	sub, id, err := wsc.NewBlockSubscription()
 	if err != nil {
 		panic(err)
 	}
+	go func() {
+		for range sub {
+			m.Lock()
+			defer m.Unlock()
+			innerCounter++
+			fmt.Println("Harvested", innerCounter, "block...")
+
+			if innerCounter == count {
+				out <- Result{nil, nil}
+
+				err = wsc.BlockUnsubscribe(id)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	}()
 
 	waitTimeout(t, out, time.Minute*time.Duration(count))
 	fmt.Println("Finish waiting for harvesting")

@@ -6,15 +6,16 @@ Allows to onboard a new replicator.
 
 ### Flags
 
-| Name          | Description                                        | Type   | Default               |
-|:--------------|:---------------------------------------------------|:-------|:----------------------|
-| `url`         | ProximaX Chain REST Url                            | string | http://127.0.0.1:3000 |
-| `feeStrategy` | fee calculation strategy (`low`, `middle`, `high`) | string | `middle`              |
-| `capacity`    | capacity of replicator (MB)                        | uint64 | -                     |
-| `privateKey`  | Replicator private key                             | string | -                     |
+| Name                   | Description                                        | Type   | Default               |
+|:-----------------------|:---------------------------------------------------|:-------|:----------------------|
+| `url`                  | ProximaX Chain REST Url                            | string | http://127.0.0.1:3000 |
+| `feeStrategy`          | fee calculation strategy (`low`, `middle`, `high`) | string | `middle`              |
+| `capacity`             | capacity of replicator (MB)                        | uint64 | -                     |
+| `replicatorPrivateKey` | Replicator private key                             | string | -                     |
+| `nodeBootPrivateKey`   | Node boot private key                              | string | -                     |
 
 ### Example
 
 ```shell
-./onboarding -url=http://127.0.0.1:3000 -feeStrategy=middle -capacity=1024 -privateKey=0000000000000000000000000000000000000000000000000000000000000000
+./onboarding -url=http://127.0.0.1:3000 -feeStrategy=middle -capacity=1024 -replicatorPrivateKey=0000000000000000000000000000000000000000000000000000000000000000 -nodeBootPrivateKey=0000000000000000000000000000000000000000000000000000000000000000
 ```

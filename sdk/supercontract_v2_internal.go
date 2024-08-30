@@ -545,13 +545,13 @@ func (ref *shortCallDigestDTOs) toStruct(networkType NetworkType) ([]*ShortCallD
 }
 
 type endBatchExecutionDTO struct {
-	ContractKey                         string                   `json:"contractKey"`
-	BatchId                             uint64DTO                `json:"batchId"`
-	AutomaticExecutionsNextBlockToCheck uint64DTO                `json:"automaticExecutionsNextBlockToCheck"`
-	PublicKeys                          []string                 `json:"publicKeys"`
-	Signatures                          []signatureDto           `json:"signatures"`
-	ProofsOfExecutions                  rawProofsOfExecutionDTOs `json:"proofsOfExecutions"`
-	CallPayments                        callPaymentDTOs          `json:"callPayments"`
+	ContractKey                         string                  `json:"contractKey"`
+	BatchId                             uint64DTO               `json:"batchId"`
+	AutomaticExecutionsNextBlockToCheck uint64DTO               `json:"automaticExecutionsNextBlockToCheck"`
+	PublicKeys                          []string                `json:"publicKeys"`
+	Signatures                          []signatureDto          `json:"signatures"`
+	ProofsOfExecutions                  rawProofsOfExecutionDTO `json:"proofsOfExecutions"`
+	CallPayments                        callPaymentDTOs         `json:"callPayments"`
 }
 
 func (ref *endBatchExecutionDTO) toStruct(networkType NetworkType) (*EndBatchExecution, error) {

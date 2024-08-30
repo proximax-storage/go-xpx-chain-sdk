@@ -66,7 +66,7 @@ func transfer(url string, feeStrategy sdk.FeeCalculationStrategy, sender, receiv
 	cfg.FeeCalculationStrategy = feeStrategy
 	client := sdk.NewClient(http.DefaultClient, cfg)
 
-	ws, err := websocket.NewClient(ctx, cfg)
+	ws, err := websocket.NewClient(cfg)
 	if err != nil {
 		return err
 	}

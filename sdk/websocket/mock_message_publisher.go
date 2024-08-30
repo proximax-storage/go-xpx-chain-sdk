@@ -17,11 +17,11 @@ type MockMessagePublisher struct {
 }
 
 // PublishSubscribeMessage provides a mock function with given fields: uid, path
-func (_m *MockMessagePublisher) PublishSubscribeMessage(uid string, path Path) error {
+func (_m *MockMessagePublisher) PublishSubscribeMessage(uid string, path string) error {
 	ret := _m.Called(uid, path)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, Path) error); ok {
+	if rf, ok := ret.Get(0).(func(string, string) error); ok {
 		r0 = rf(uid, path)
 	} else {
 		r0 = ret.Error(0)
@@ -31,11 +31,11 @@ func (_m *MockMessagePublisher) PublishSubscribeMessage(uid string, path Path) e
 }
 
 // PublishUnsubscribeMessage provides a mock function with given fields: uid, path
-func (_m *MockMessagePublisher) PublishUnsubscribeMessage(uid string, path Path) error {
+func (_m *MockMessagePublisher) PublishUnsubscribeMessage(uid string, path string) error {
 	ret := _m.Called(uid, path)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, Path) error); ok {
+	if rf, ok := ret.Get(0).(func(string, string) error); ok {
 		r0 = rf(uid, path)
 	} else {
 		r0 = ret.Error(0)

@@ -15,6 +15,9 @@ func replicatorOnboardingTransactionSchema() *schema {
 			newArrayAttribute("maxFee", IntSize),
 			newArrayAttribute("deadline", IntSize),
 			newArrayAttribute("capacity", IntSize),
+			newArrayAttribute("nodeBootKey", ByteSize),
+			newArrayAttribute("message", ByteSize),
+			newArrayAttribute("messageSignature", ByteSize),
 		},
 	}
 }
@@ -250,6 +253,46 @@ func downloadApprovalTransactionSchema() *schema {
 			newTableArrayAttribute("opinions", schema{
 				[]schemaAttribute{
 					newArrayAttribute("Opinion", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func replicatorsCleanupTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("replicatorCount", ByteSize),
+			newTableArrayAttribute("replicatorKeys", schema{
+				[]schemaAttribute{
+					newArrayAttribute("key", ByteSize),
+				},
+			}.schemaDefinition),
+		},
+	}
+}
+
+func replicatorTreeRebuildTransactionSchema() *schema {
+	return &schema{
+		[]schemaAttribute{
+			newScalarAttribute("size", IntSize),
+			newArrayAttribute("signature", ByteSize),
+			newArrayAttribute("signer", ByteSize),
+			newScalarAttribute("version", IntSize),
+			newScalarAttribute("type", ShortSize),
+			newArrayAttribute("maxFee", IntSize),
+			newArrayAttribute("deadline", IntSize),
+			newArrayAttribute("replicatorCount", ByteSize),
+			newTableArrayAttribute("replicatorKeys", schema{
+				[]schemaAttribute{
+					newArrayAttribute("key", ByteSize),
 				},
 			}.schemaDefinition),
 		},

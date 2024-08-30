@@ -20,6 +20,7 @@ import (
 func TestDriveV2FlowTransaction(t *testing.T) {
 	const replicatorCount uint16 = 2
 	var replicators [replicatorCount]*sdk.Account
+	var nodes [replicatorCount]*sdk.Account
 	var storageSize uint64 = 500
 	var verificationFee = 100
 
@@ -31,6 +32,10 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 		replicators[i], err = client.NewAccount()
 		require.NoError(t, err, err)
 		fmt.Printf("replicatorAccount[%d]: %s\n", i, replicators[i])
+
+		nodes[i], err = client.NewAccount()
+		require.NoError(t, err, err)
+		fmt.Printf("nodeAccount[%d]: %s\n", i, nodes[i])
 	}
 
 	// add storage and xpx mosaic to the drive owner
@@ -82,9 +87,19 @@ func TestDriveV2FlowTransaction(t *testing.T) {
 
 	rpOnboards := make([]sdk.Transaction, replicatorCount)
 	for i := 0; i < len(replicators); i++ {
+		var message sdk.Hash
+		_, err = rand.Read(message[:])
+		require.NoError(t, err, err)
+
+		messageSignature, err := nodes[i].SignData(message[:])
+		require.NoError(t, err, err)
+
 		replicatorOnboardingTx, err := client.NewReplicatorOnboardingTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.Amount(storageSize),
+			nodes[i].PublicAccount,
+			&message,
+			messageSignature,
 		)
 		assert.NoError(t, err, err)
 		replicatorOnboardingTx.ToAggregate(replicators[i].PublicAccount)
