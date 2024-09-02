@@ -45,6 +45,8 @@ func NewNodeHealthCheckerPool(client *crypto.KeyPair, mode packets.ConnectionSec
 }
 
 func (ncp *NodeHealthCheckerPool) ResetPeers() {
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
 	ncp.validCheckers = map[string]*NodeHealthChecker{}
 }
 
@@ -215,10 +217,15 @@ func (ncp *NodeHealthCheckerPool) MaybeConnectToNode(info *NodeInfo) (*NodeHealt
 }
 
 func (ncp *NodeHealthCheckerPool) CheckHeight(expectedHeight uint64) (uint64, map[string]*NodeHealthChecker) {
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
 	return checkHeight(expectedHeight, ncp.validCheckers)
 }
 
 func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
+
 	if len(ncp.validCheckers) == 0 {
 		return ErrNoConnectedPeers
 	}
@@ -258,6 +265,9 @@ func (ncp *NodeHealthCheckerPool) WaitHeightAll(expectedHeight uint64) error {
 }
 
 func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached map[NodeInfo]uint64, reached map[NodeInfo]uint64, err error) {
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
+
 	if len(ncp.validCheckers) == 0 {
 		return nil, nil, ErrNoConnectedPeers
 	}
@@ -316,6 +326,9 @@ func (ncp *NodeHealthCheckerPool) WaitHeight(expectedHeight uint64) (notReached 
 }
 
 func (ncp *NodeHealthCheckerPool) GetHashes(height uint64) (map[string]sdk.Hash, error) {
+	ncp.validCheckersMu.Lock()
+	defer ncp.validCheckersMu.Unlock()
+
 	if len(ncp.validCheckers) == 0 {
 		return nil, ErrNoConnectedPeers
 	}
