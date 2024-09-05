@@ -7,6 +7,7 @@ package sdk
 import (
 	"bytes"
 	"context"
+	jsonLib "encoding/json"
 	"fmt"
 	"net/http"
 
@@ -70,7 +71,7 @@ func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group
 	if err != nil {
 		return nil, err
 	}
-
+	
 	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
 	if err != nil {
 		return nil, err
@@ -81,6 +82,29 @@ func (txs *TransactionService) GetTransactionsByGroup(ctx context.Context, group
 	}
 
 	return tspDTO.toStruct(txs.client.GenerationHash())
+}
+
+// GetTransactionsByGroup returns an array of Transaction's for passed array of transaction ids or hashes
+func (txs *TransactionService) GetRawTransactionsByGroup(ctx context.Context, group TransactionGroup, tpOpts *TransactionsPageOptions) (*TransactionsPage, []jsonLib.RawMessage, error) {
+	tspDTO := &transactionsPageDTO{}
+
+	u, err := addOptions(fmt.Sprintf(transactionsByGroupRoute, group), tpOpts)
+	if err != nil {
+		return nil, nil, err
+	}
+	
+	resp, err := txs.client.doNewRequest(ctx, http.MethodGet, u, nil, &tspDTO)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err = handleResponseStatusCode(resp, map[int]error{404: ErrResourceNotFound, 409: ErrArgumentNotValid}); err != nil {
+		return nil, nil, err
+	}
+
+	obj, err := tspDTO.toStruct(txs.client.GenerationHash())
+
+	return obj, tspDTO.Transactions, err
 }
 
 // GetTransactionsByIds returns an array of Transaction's for passed array of transaction ids or hashes
