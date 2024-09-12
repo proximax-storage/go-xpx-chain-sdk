@@ -20,13 +20,6 @@ func GetRootAsMetadataV2TransactionBuffer(buf []byte, offset flatbuffers.UOffset
 	return x
 }
 
-func GetSizePrefixedRootAsMetadataV2TransactionBuffer(buf []byte, offset flatbuffers.UOffsetT) *MetadataV2TransactionBuffer {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &MetadataV2TransactionBuffer{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *MetadataV2TransactionBuffer) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -252,7 +245,7 @@ func (rcv *MetadataV2TransactionBuffer) MutateScopedMetadataKey(j int, n uint32)
 	return false
 }
 
-/// In case of address it is empty array. In case of mosaic or namespace id it is 8 byte array(or 2 uint32 array)
+// / In case of address it is empty array. In case of mosaic or namespace id it is 8 byte array(or 2 uint32 array)
 func (rcv *MetadataV2TransactionBuffer) TargetId(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
@@ -278,7 +271,7 @@ func (rcv *MetadataV2TransactionBuffer) TargetIdBytes() []byte {
 	return nil
 }
 
-/// In case of address it is empty array. In case of mosaic or namespace id it is 8 byte array(or 2 uint32 array)
+// / In case of address it is empty array. In case of mosaic or namespace id it is 8 byte array(or 2 uint32 array)
 func (rcv *MetadataV2TransactionBuffer) MutateTargetId(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
 	if o != 0 {
@@ -356,8 +349,34 @@ func (rcv *MetadataV2TransactionBuffer) MutateValueSize(j int, n byte) bool {
 	return false
 }
 
-func (rcv *MetadataV2TransactionBuffer) Value(j int) byte {
+func (rcv *MetadataV2TransactionBuffer) IsImmutable(j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetBool(a + flatbuffers.UOffsetT(j*1))
+	}
+	return false
+}
+
+func (rcv *MetadataV2TransactionBuffer) IsImmutableLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *MetadataV2TransactionBuffer) MutateIsImmutable(j int, n bool) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateBool(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *MetadataV2TransactionBuffer) Value(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -366,7 +385,7 @@ func (rcv *MetadataV2TransactionBuffer) Value(j int) byte {
 }
 
 func (rcv *MetadataV2TransactionBuffer) ValueLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -374,7 +393,7 @@ func (rcv *MetadataV2TransactionBuffer) ValueLength() int {
 }
 
 func (rcv *MetadataV2TransactionBuffer) ValueBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -382,7 +401,7 @@ func (rcv *MetadataV2TransactionBuffer) ValueBytes() []byte {
 }
 
 func (rcv *MetadataV2TransactionBuffer) MutateValue(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(28))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(30))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -391,7 +410,7 @@ func (rcv *MetadataV2TransactionBuffer) MutateValue(j int, n byte) bool {
 }
 
 func MetadataV2TransactionBufferStart(builder *flatbuffers.Builder) {
-	builder.StartObject(13)
+	builder.StartObject(14)
 }
 func MetadataV2TransactionBufferAddSize(builder *flatbuffers.Builder, size uint32) {
 	builder.PrependUint32Slot(0, size, 0)
@@ -456,8 +475,14 @@ func MetadataV2TransactionBufferAddValueSize(builder *flatbuffers.Builder, value
 func MetadataV2TransactionBufferStartValueSizeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
+func MetadataV2TransactionBufferAddIsImmutable(builder *flatbuffers.Builder, isImmutable flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(isImmutable), 0)
+}
+func MetadataV2TransactionBufferStartIsImmutableVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(1, numElems, 1)
+}
 func MetadataV2TransactionBufferAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(12, flatbuffers.UOffsetT(value), 0)
+	builder.PrependUOffsetTSlot(13, flatbuffers.UOffsetT(value), 0)
 }
 func MetadataV2TransactionBufferStartValueVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)

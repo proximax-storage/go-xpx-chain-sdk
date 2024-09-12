@@ -526,8 +526,8 @@ func (c *Client) NewBondedAggregateTransaction(deadline *Deadline, innerTxs []Tr
 
 func (c *Client) NewAccountMetadataTransaction(deadline *Deadline,
 	account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string) (*AccountMetadataTransaction, error) {
-	tx, err := NewAccountMetadataTransaction(deadline, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	newValue string, oldValue string, isImmutable bool) (*AccountMetadataTransaction, error) {
+	tx, err := NewAccountMetadataTransaction(deadline, account, scopedKey, newValue, oldValue, isImmutable, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -537,8 +537,8 @@ func (c *Client) NewAccountMetadataTransaction(deadline *Deadline,
 
 func (c *Client) NewMosaicMetadataTransaction(deadline *Deadline,
 	mosaic *MosaicId, account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string) (*MosaicMetadataTransaction, error) {
-	tx, err := NewMosaicMetadataTransaction(deadline, mosaic, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	newValue string, oldValue string, isImmutable bool) (*MosaicMetadataTransaction, error) {
+	tx, err := NewMosaicMetadataTransaction(deadline, mosaic, account, scopedKey, newValue, oldValue, isImmutable, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
@@ -548,8 +548,8 @@ func (c *Client) NewMosaicMetadataTransaction(deadline *Deadline,
 
 func (c *Client) NewNamespaceMetadataTransaction(deadline *Deadline,
 	namespace *NamespaceId, account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string) (*NamespaceMetadataTransaction, error) {
-	tx, err := NewNamespaceMetadataTransaction(deadline, namespace, account, scopedKey, newValue, oldValue, c.config.NetworkType)
+	newValue string, oldValue string, isImmutable bool) (*NamespaceMetadataTransaction, error) {
+	tx, err := NewNamespaceMetadataTransaction(deadline, namespace, account, scopedKey, newValue, oldValue, isImmutable, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}

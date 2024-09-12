@@ -984,6 +984,7 @@ type BasicMetadataTransaction struct {
 	ScopedMetadataKey   ScopedMetadataKey
 	Value               []byte
 	ValueDeltaSize      int16
+	IsImmutable         bool
 }
 
 func (tx *BasicMetadataTransaction) String() string {
@@ -992,11 +993,13 @@ func (tx *BasicMetadataTransaction) String() string {
 			"AbstractTransaction": %s,
 			"TargetPublicAccount": %s,
 			"ScopedMetadataKey": %s,
+			"IsImmutable": %t,
 			"Value": %s
 		`,
 		tx.AbstractTransaction.String(),
 		tx.TargetPublicAccount,
 		tx.ScopedMetadataKey,
+		tx.IsImmutable,
 		tx.Value,
 	)
 }
@@ -1021,6 +1024,15 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	binary.LittleEndian.PutUint16(buf, uint16(tx.ValueDeltaSize))
 	valueDeltaSizeV := transactions.TransactionBufferCreateByteVector(builder, buf)
 
+	buf = make([]byte, 1)
+	if tx.IsImmutable {
+		buf[0] = 1
+	} else {
+		buf[0] = 0
+	}
+
+	isImmutable := transactions.TransactionBufferCreateByteVector(builder, buf)
+
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
 		return nil, err
@@ -1034,6 +1046,7 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	transactions.MetadataV2TransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
 	transactions.MetadataV2TransactionBufferAddTargetId(builder, targetIdV)
 	transactions.MetadataV2TransactionBufferAddValueSizeDelta(builder, valueDeltaSizeV)
+	transactions.MetadataV2TransactionBufferAddIsImmutable(builder, isImmutable)
 	transactions.MetadataV2TransactionBufferAddValueSize(builder, valueSizeV)
 	transactions.MetadataV2TransactionBufferAddValue(builder, valueV)
 
@@ -1057,7 +1070,8 @@ type AccountMetadataTransaction struct {
 
 func NewAccountMetadataTransaction(deadline *Deadline,
 	account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string, networkType NetworkType) (*AccountMetadataTransaction, error) {
+	newValue string, oldValue string, isImmutable bool,
+	networkType NetworkType) (*AccountMetadataTransaction, error) {
 	if newValue == oldValue {
 		return nil, errors.New("new value is the same")
 	}
@@ -1073,6 +1087,7 @@ func NewAccountMetadataTransaction(deadline *Deadline,
 			TargetPublicAccount: account,
 			ScopedMetadataKey:   scopedKey,
 			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+			IsImmutable:         isImmutable,
 		},
 	}
 
@@ -1105,7 +1120,8 @@ type MosaicMetadataTransaction struct {
 
 func NewMosaicMetadataTransaction(deadline *Deadline,
 	mosaic *MosaicId, account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string, networkType NetworkType) (*MosaicMetadataTransaction, error) {
+	newValue string, oldValue string, isImmutable bool,
+	networkType NetworkType) (*MosaicMetadataTransaction, error) {
 	if newValue == oldValue {
 		return nil, errors.New("new value is the same")
 	}
@@ -1121,6 +1137,7 @@ func NewMosaicMetadataTransaction(deadline *Deadline,
 			TargetPublicAccount: account,
 			ScopedMetadataKey:   scopedKey,
 			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+			IsImmutable:         isImmutable,
 		},
 		TargetMosaicId: mosaic,
 	}
@@ -1176,7 +1193,8 @@ type NamespaceMetadataTransaction struct {
 
 func NewNamespaceMetadataTransaction(deadline *Deadline,
 	namespace *NamespaceId, account *PublicAccount, scopedKey ScopedMetadataKey,
-	newValue string, oldValue string, networkType NetworkType) (*NamespaceMetadataTransaction, error) {
+	newValue string, oldValue string, isImmutable bool,
+	networkType NetworkType) (*NamespaceMetadataTransaction, error) {
 	if newValue == oldValue {
 		return nil, errors.New("new value is the same")
 	}
@@ -1192,6 +1210,7 @@ func NewNamespaceMetadataTransaction(deadline *Deadline,
 			TargetPublicAccount: account,
 			ScopedMetadataKey:   scopedKey,
 			ValueDeltaSize:      int16(len(newValue)) - int16(len(oldValue)),
+			IsImmutable:         isImmutable,
 		},
 		TargetNamespaceId: namespace,
 	}
@@ -2748,7 +2767,7 @@ const (
 	LockSize                                     = TransactionHeaderSize + MosaicIdSize + AmountSize + DurationSize + Hash256
 	MetadataTypeSize                         int = 1
 	MetadataHeaderSize                           = TransactionHeaderSize + MetadataTypeSize
-	MetadataV2HeaderSize                         = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2
+	MetadataV2HeaderSize                         = TransactionHeaderSize + KeySize + BaseInt64Size + 2 + 2 + 1
 	ModificationsSizeSize                    int = 1
 	ModifyContractHeaderSize                     = TransactionHeaderSize + DurationSize + Hash256 + 3*ModificationsSizeSize
 	MinApprovalSize                          int = 1
@@ -2960,9 +2979,9 @@ const (
 	BlockchainUpgradeVersion             EntityVersion = 1
 	LinkAccountVersion                   EntityVersion = 2
 	LockVersion                          EntityVersion = 1
-	AccountMetadataVersion               EntityVersion = 1
-	MosaicMetadataVersion                EntityVersion = 1
-	NamespaceMetadataVersion             EntityVersion = 1
+	AccountMetadataVersion               EntityVersion = 2
+	MosaicMetadataVersion                EntityVersion = 2
+	NamespaceMetadataVersion             EntityVersion = 2
 	MetadataAddressVersion               EntityVersion = 1
 	MetadataMosaicVersion                EntityVersion = 1
 	MetadataNamespaceVersion             EntityVersion = 1
@@ -3288,8 +3307,8 @@ func MapTransaction(b *bytes.Buffer, generationHash *Hash) (Transaction, error) 
 		dto = &replicatorOnboardingTransactionDTO{}
 	case ReplicatorsCleanup:
 		dto = &replicatorsCleanupTransactionDTO{}
-    case ReplicatorTreeRebuild:
-        dto = &replicatorTreeRebuildTransactionDTO{}
+	case ReplicatorTreeRebuild:
+		dto = &replicatorTreeRebuildTransactionDTO{}
 	case PrepareBcDrive:
 		dto = &prepareBcDriveTransactionDTO{}
 	case DataModification:
