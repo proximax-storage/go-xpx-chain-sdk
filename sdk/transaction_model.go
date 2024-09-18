@@ -2895,9 +2895,9 @@ const (
 	MetadataAddress                EntityType = 0x413d
 	MetadataMosaic                 EntityType = 0x423d
 	MetadataNamespace              EntityType = 0x433d
-	AccountMetadata                EntityType = 0x413f
-	MosaicMetadata                 EntityType = 0x423f
-	NamespaceMetadata              EntityType = 0x433f
+	AccountMetadata                EntityType = 0x443f
+	MosaicMetadata                 EntityType = 0x453f
+	NamespaceMetadata              EntityType = 0x463f
 	ModifyContract                 EntityType = 0x4157
 	ModifyMultisig                 EntityType = 0x4155
 	MosaicAlias                    EntityType = 0x434e
@@ -2979,9 +2979,9 @@ const (
 	BlockchainUpgradeVersion             EntityVersion = 1
 	LinkAccountVersion                   EntityVersion = 2
 	LockVersion                          EntityVersion = 1
-	AccountMetadataVersion               EntityVersion = 2
-	MosaicMetadataVersion                EntityVersion = 2
-	NamespaceMetadataVersion             EntityVersion = 2
+	AccountMetadataVersion               EntityVersion = 1
+	MosaicMetadataVersion                EntityVersion = 1
+	NamespaceMetadataVersion             EntityVersion = 1
 	MetadataAddressVersion               EntityVersion = 1
 	MetadataMosaicVersion                EntityVersion = 1
 	MetadataNamespaceVersion             EntityVersion = 1
