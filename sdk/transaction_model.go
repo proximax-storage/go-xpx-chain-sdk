@@ -1024,15 +1024,6 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	binary.LittleEndian.PutUint16(buf, uint16(tx.ValueDeltaSize))
 	valueDeltaSizeV := transactions.TransactionBufferCreateByteVector(builder, buf)
 
-	buf = make([]byte, 1)
-	if tx.IsImmutable {
-		buf[0] = 1
-	} else {
-		buf[0] = 0
-	}
-
-	isImmutable := transactions.TransactionBufferCreateByteVector(builder, buf)
-
 	v, signatureV, signerV, deadlineV, fV, err := tx.AbstractTransaction.generateVectors(builder)
 	if err != nil {
 		return nil, err
@@ -1045,8 +1036,8 @@ func (tx *BasicMetadataTransaction) Bytes(builder *flatbuffers.Builder, targetId
 	transactions.MetadataV2TransactionBufferAddTargetKey(builder, targetKeyV)
 	transactions.MetadataV2TransactionBufferAddScopedMetadataKey(builder, metadataKeyV)
 	transactions.MetadataV2TransactionBufferAddTargetId(builder, targetIdV)
+	transactions.MetadataV2TransactionBufferAddIsImmutable(builder, tx.IsImmutable)
 	transactions.MetadataV2TransactionBufferAddValueSizeDelta(builder, valueDeltaSizeV)
-	transactions.MetadataV2TransactionBufferAddIsImmutable(builder, isImmutable)
 	transactions.MetadataV2TransactionBufferAddValueSize(builder, valueSizeV)
 	transactions.MetadataV2TransactionBufferAddValue(builder, valueV)
 

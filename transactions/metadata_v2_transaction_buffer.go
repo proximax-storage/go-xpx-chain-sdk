@@ -278,30 +278,16 @@ func (rcv *MetadataV2TransactionBuffer) MutateTargetId(j int, n byte) bool {
 	return false
 }
 
-func (rcv *MetadataV2TransactionBuffer) IsImmutable(j int) bool {
+func (rcv *MetadataV2TransactionBuffer) IsImmutable() bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetBool(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetBool(o + rcv._tab.Pos)
 	}
 	return false
 }
 
-func (rcv *MetadataV2TransactionBuffer) IsImmutableLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *MetadataV2TransactionBuffer) MutateIsImmutable(j int, n bool) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateBool(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
+func (rcv *MetadataV2TransactionBuffer) MutateIsImmutable(n bool) bool {
+	return rcv._tab.MutateBoolSlot(24, n)
 }
 
 func (rcv *MetadataV2TransactionBuffer) ValueSizeDelta(j int) byte {
@@ -460,11 +446,8 @@ func MetadataV2TransactionBufferAddTargetId(builder *flatbuffers.Builder, target
 func MetadataV2TransactionBufferStartTargetIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func MetadataV2TransactionBufferAddIsImmutable(builder *flatbuffers.Builder, isImmutable flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(10, flatbuffers.UOffsetT(isImmutable), 0)
-}
-func MetadataV2TransactionBufferStartIsImmutableVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func MetadataV2TransactionBufferAddIsImmutable(builder *flatbuffers.Builder, isImmutable bool) {
+	builder.PrependBoolSlot(10, isImmutable, false)
 }
 func MetadataV2TransactionBufferAddValueSizeDelta(builder *flatbuffers.Builder, valueSizeDelta flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(11, flatbuffers.UOffsetT(valueSizeDelta), 0)
