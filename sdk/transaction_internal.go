@@ -600,7 +600,7 @@ type accountMetadataTransactionDTO struct {
 		TargetKey         string    `json:"targetKey"`
 		ScopedMetadataKey uint64DTO `json:"scopedMetadataKey"`
 		ValueSizeDelta    int16     `json:"valueSizeDelta"`
-		IsImmutable       bool      `json:"immutable"`
+		IsImmutable       bool      `json:"isImmutable"`
 		Value             string    `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -647,7 +647,7 @@ type mosaicMetadataTransactionDTO struct {
 		ScopedMetadataKey uint64DTO    `json:"scopedMetadataKey"`
 		MosaicId          *mosaicIdDTO `json:"targetMosaicId"`
 		ValueSizeDelta    int16        `json:"valueSizeDelta"`
-		IsImmutable       bool         `json:"immutable"`
+		IsImmutable       bool         `json:"isImmutable"`
 		Value             string       `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -699,7 +699,7 @@ type namespaceMetadataTransactionDTO struct {
 		ScopedMetadataKey uint64DTO       `json:"scopedMetadataKey"`
 		NamespaceId       *namespaceIdDTO `json:"targetNamespaceId"`
 		ValueSizeDelta    int16           `json:"valueSizeDelta"`
-		IsImmutable       bool            `json:"immutable"`
+		IsImmutable       bool            `json:"isImmutable"`
 		Value             string          `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
