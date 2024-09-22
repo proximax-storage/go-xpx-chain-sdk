@@ -925,6 +925,7 @@ func TestAccountMetadataTransaction(t *testing.T) {
 		1,
 		"Hello world",
 		"",
+		false,
 	)
 	assert.Nil(t, err)
 	metadataTx.ToAggregate(defaultAccount.PublicAccount)
@@ -943,6 +944,7 @@ func TestAccountMetadataTransaction(t *testing.T) {
 		1,
 		"Hello hell",
 		"Hello world",
+		false,
 	)
 	assert.Nil(t, err)
 	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
@@ -987,6 +989,7 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 		1,
 		"Hello world",
 		"",
+		false,
 	)
 	assert.Nil(t, err)
 	metadataTx.ToAggregate(defaultAccount.PublicAccount)
@@ -1006,6 +1009,7 @@ func TestMosaicMetadataTransaction(t *testing.T) {
 		1,
 		"Hello hell",
 		"Hello world",
+		false,
 	)
 	assert.Nil(t, err)
 	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)
@@ -1051,6 +1055,7 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 		1,
 		"Hello world",
 		"",
+		false,
 	)
 	assert.Nil(t, err)
 	metadataTx.ToAggregate(defaultAccount.PublicAccount)
@@ -1070,6 +1075,7 @@ func TestNamespaceMetadataTransaction(t *testing.T) {
 		1,
 		"Hello hell",
 		"Hello world",
+		false,
 	)
 	assert.Nil(t, err)
 	updateMetadataTx.ToAggregate(defaultAccount.PublicAccount)

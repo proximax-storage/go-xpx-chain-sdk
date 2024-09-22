@@ -600,6 +600,7 @@ type accountMetadataTransactionDTO struct {
 		TargetKey         string    `json:"targetKey"`
 		ScopedMetadataKey uint64DTO `json:"scopedMetadataKey"`
 		ValueSizeDelta    int16     `json:"valueSizeDelta"`
+		IsImmutable       bool      `json:"isImmutable"`
 		Value             string    `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -631,6 +632,7 @@ func (dto *accountMetadataTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		dto.Tx.ScopedMetadataKey.toStruct(),
 		value,
 		dto.Tx.ValueSizeDelta,
+		dto.Tx.IsImmutable,
 	}
 
 	return &AccountMetadataTransaction{
@@ -645,6 +647,7 @@ type mosaicMetadataTransactionDTO struct {
 		ScopedMetadataKey uint64DTO    `json:"scopedMetadataKey"`
 		MosaicId          *mosaicIdDTO `json:"targetMosaicId"`
 		ValueSizeDelta    int16        `json:"valueSizeDelta"`
+		IsImmutable       bool         `json:"isImmutable"`
 		Value             string       `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -676,6 +679,7 @@ func (dto *mosaicMetadataTransactionDTO) toStruct(*Hash) (Transaction, error) {
 		dto.Tx.ScopedMetadataKey.toStruct(),
 		value,
 		dto.Tx.ValueSizeDelta,
+		dto.Tx.IsImmutable,
 	}
 	mosaicId, err := dto.Tx.MosaicId.toStruct()
 	if err != nil {
@@ -695,6 +699,7 @@ type namespaceMetadataTransactionDTO struct {
 		ScopedMetadataKey uint64DTO       `json:"scopedMetadataKey"`
 		NamespaceId       *namespaceIdDTO `json:"targetNamespaceId"`
 		ValueSizeDelta    int16           `json:"valueSizeDelta"`
+		IsImmutable       bool            `json:"isImmutable"`
 		Value             string          `json:"value"`
 	} `json:"transaction"`
 	TDto transactionInfoDTO `json:"meta"`
@@ -726,6 +731,7 @@ func (dto *namespaceMetadataTransactionDTO) toStruct(*Hash) (Transaction, error)
 		dto.Tx.ScopedMetadataKey.toStruct(),
 		value,
 		dto.Tx.ValueSizeDelta,
+		dto.Tx.IsImmutable,
 	}
 	namespaceId, err := dto.Tx.NamespaceId.toStruct()
 	if err != nil {
