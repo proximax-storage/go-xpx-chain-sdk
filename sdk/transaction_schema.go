@@ -123,7 +123,7 @@ func metadataTransactionSchema() *schema {
 			newArrayAttribute("targetKey", ByteSize),
 			newArrayAttribute("scopedMetadataKey", IntSize),
 			newArrayAttribute("targetId", ByteSize),
-			newArrayAttribute("isImmutable", ByteSize),
+			newScalarAttribute("isImmutable", ByteSize),
 			newArrayAttribute("valueSizeDelta", ByteSize),
 			newArrayAttribute("valueSize", ByteSize),
 			newArrayAttribute("value", ByteSize),
