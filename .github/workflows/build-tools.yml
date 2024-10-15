@@ -24,7 +24,7 @@ jobs:
         tool:
           - 'liquidity_provider'
           - 'replicator_onboarding'
-          - 'transactions'
+          - 'transfer'
 
     steps:
       - uses: actions/checkout@v4
