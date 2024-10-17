@@ -275,7 +275,7 @@ func announce(client *sdk.Client, ctx context.Context, cfg *sdk.Config, ws webso
 		lockFundsTx, err := client.NewLockFundsTransaction(
 			sdk.NewDeadline(time.Hour),
 			sdk.XpxRelative(10),
-			sdk.Duration(1000),
+			sdk.Duration(11519),
 			signedABT,
 		)
 		if err != nil {
