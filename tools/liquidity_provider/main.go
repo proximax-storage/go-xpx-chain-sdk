@@ -36,12 +36,14 @@ var (
 )
 
 var sender *sdk.Account
+var ownerAccount *sdk.PublicAccount
 
 func main() {
 	// common
 	url := flag.String("url", "http://127.0.0.1:3000", "ProximaX Chain REST Url")
 	feeStrategy := flag.String("feeStrategy", tools.MiddleFeeStrategy, "fee calculation strategy (low, middle, high)")
-	txSender := flag.String("sender", "", "transaction sender")
+	senderPrivateKey := flag.String("sender", "", "transaction sender private key")
+	ownerPublicKey := flag.String("owner", "", "liquidity provider owner public key (empty if owner is not multisig)")
 
 	providerMosaicName := flag.String("mosaic", "", "Name of a mosaic (storage, streaming or sc units)")
 
@@ -82,15 +84,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	if txSender == nil || *txSender == "" {
-		fmt.Println("Missed transaction sender account")
+	if senderPrivateKey == nil || *senderPrivateKey == "" {
+		fmt.Println("Transaction sender not specified")
 		os.Exit(1)
 	}
 
-	sender, err = client.NewAccountFromPrivateKey(*txSender)
+	sender, err = client.NewAccountFromPrivateKey(*senderPrivateKey)
 	if err != nil {
-		fmt.Printf("Cannot create txSender from private key: %s\n", err)
+		fmt.Printf("Cannot create sender account from private key: %s\n", err)
 		os.Exit(1)
+	}
+
+	if ownerPublicKey != nil && *ownerPublicKey != "" {
+		ownerAccount, err = client.NewAccountFromPublicKey(*ownerPublicKey)
+		if err != nil {
+			fmt.Printf("Cannot create owner account from public key: %s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	var mosacInfo *sdk.MosaicInfo
@@ -217,7 +227,7 @@ func newLiquidityProvider(
 		return err
 	}
 
-	return announce(context.Background(), cfg, ws, tx)
+	return announce(client, context.Background(), cfg, ws, tx)
 }
 
 func manualRateChange(
@@ -242,11 +252,28 @@ func manualRateChange(
 		return err
 	}
 
-	return announce(context.Background(), cfg, ws, tx)
+	return announce(client, context.Background(), cfg, ws, tx)
 }
 
-func announce(ctx context.Context, cfg *sdk.Config, ws websocket.CatapultClient, tx sdk.Transaction) error {
-	res, err := sync.Announce(ctx, cfg, ws, sender, tx)
+func announce(client *sdk.Client, ctx context.Context, cfg *sdk.Config, ws websocket.CatapultClient, tx sdk.Transaction) error {
+	var res *sync.ConfirmationResult
+	var err error
+	if ownerAccount != nil {
+		tx.GetAbstractTransaction().ToAggregate(ownerAccount)
+		var aggregateTx *sdk.AggregateTransaction
+		aggregateTx, err = client.NewBondedAggregateTransaction(
+			sdk.NewDeadline(time.Hour*48),
+			[]sdk.Transaction{tx},
+		)
+		if err != nil {
+			return err
+		}
+
+		res, err = sync.Announce(ctx, cfg, ws, sender, aggregateTx)
+	} else {
+		res, err = sync.Announce(ctx, cfg, ws, sender, tx)
+	}
+
 	if err != nil {
 		return err
 	}

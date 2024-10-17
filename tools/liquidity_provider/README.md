@@ -6,11 +6,12 @@ Allows to create and change liquidity provider in the ProximaX BC.
 
 #### Common Flags
 
-| Name          | Description                                          | Type   | Default               |
-|:--------------|:-----------------------------------------------------|:-------|:----------------------|
-| `sender`      | private account of transaction sender (**required**) | string | -                     |
-| `url`         | ProximaX Chain REST Url                              | string | http://127.0.0.1:3000 |
-| `feeStrategy` | fee calculation strategy (`low`, `middle`, `high`)   | string | `middle`              |
+| Name           | Description                                                                                       | Type   | Default               |
+|:---------------|:--------------------------------------------------------------------------------------------------|:-------|:----------------------|
+| `sender`       | private key of transaction sender (**required**, should be one of cosigners if owner is multisig) | string | -                     |
+| `owner`        | public key of liquidity provider owner (**optional**, set if owner is a multisig)                 | string | -                     |
+| `url`          | ProximaX Chain REST Url                                                                           | string | http://127.0.0.1:3000 |
+| `feeStrategy`  | fee calculation strategy (`low`, `middle`, `high`)                                                | string | `middle`              |
 
 ```shell
 ./lp <command> []<flag>
@@ -37,6 +38,7 @@ Allows to create and change liquidity provider in the ProximaX BC.
 ./lp -url=http://127.0.0.1:3000 \
     -feeStrategy=middle \
     -sender=0000000000000000000000000000000000000000000000000000000000000000 \
+    -owner=0000000000000000000000000000000000000000000000000000000000000000 \
     -mosaic=storage \
     -initial=100000 \
     -deposit=1000000 \
@@ -65,7 +67,8 @@ Allows to create and change liquidity provider in the ProximaX BC.
 ```shell
 ./lp -url=http://127.0.0.1:3000 \
     -feeStrategy=middle \
-    -sender=7AA907C3D80B3815BE4B4E1470DEEE8BB83BFEB330B9A82197603D09BA947230 \
+    -sender=0000000000000000000000000000000000000000000000000000000000000000 \
+    -owner=0000000000000000000000000000000000000000000000000000000000000000 \
     -mosaic=storage \
     -currencyBalanceIncrease \
     -currencyBalanceChange=100 \
