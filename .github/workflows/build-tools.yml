@@ -6,6 +6,7 @@ on:
     - 'develop'
     - 'master'
     - 'main'
+    - 'multisig'
   pull_request:
     branches:
     - 'develop'
