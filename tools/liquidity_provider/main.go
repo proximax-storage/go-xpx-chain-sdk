@@ -13,7 +13,6 @@ import (
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk"
 	"github.com/proximax-storage/go-xpx-chain-sdk/sdk/websocket"
 	"github.com/proximax-storage/go-xpx-chain-sdk/tools"
-	sync "github.com/proximax-storage/go-xpx-chain-sync"
 )
 
 const (
@@ -256,7 +255,6 @@ func manualRateChange(
 }
 
 func announce(client *sdk.Client, ctx context.Context, cfg *sdk.Config, ws websocket.CatapultClient, tx sdk.Transaction) error {
-	var res *sync.ConfirmationResult
 	var err error
 	if ownerAccount != nil {
 		tx.GetAbstractTransaction().ToAggregate(ownerAccount)
@@ -269,14 +267,51 @@ func announce(client *sdk.Client, ctx context.Context, cfg *sdk.Config, ws webso
 			return err
 		}
 
-		res, err = sync.Announce(ctx, cfg, ws, sender, aggregateTx)
+		signedABT, err := sender.Sign(aggregateTx)
+		if err != nil {
+			return err
+		}
+
+		lockFundsTx, err := client.NewLockFundsTransaction(
+			sdk.NewDeadline(time.Hour),
+			sdk.XpxRelative(10),
+			sdk.Duration(1000),
+			signedABT,
+		)
+		if err != nil {
+			return err
+		}
+
+		signedLockFundsTx, err := sender.Sign(lockFundsTx)
+		if err != nil {
+			return err
+		}
+
+		lockFundsTxHash, err := client.Transaction.Announce(ctx, signedLockFundsTx)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("LockFundsTx Hash:", lockFundsTxHash)
+
+		time.Sleep(20 * time.Second)
+
+		hash, err := client.Transaction.AnnounceAggregateBonded(ctx, signedABT)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("ABT hash:", hash)
 	} else {
-		res, err = sync.Announce(ctx, cfg, ws, sender, tx)
-	}
+		signedTx, err := sender.Sign(tx)
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		_, err = client.Transaction.Announce(ctx, signedTx)
+		if err != nil {
+			return err
+		}
 	}
-
-	return res.Err()
+	return nil
 }
