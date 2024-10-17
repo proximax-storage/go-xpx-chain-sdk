@@ -294,7 +294,7 @@ func announce(client *sdk.Client, ctx context.Context, cfg *sdk.Config, ws webso
 
 		fmt.Println("LockFundsTx Hash:", lockFundsTxHash)
 
-		time.Sleep(20 * time.Second)
+		time.Sleep(90 * time.Second)
 
 		hash, err := client.Transaction.AnnounceAggregateBonded(ctx, signedABT)
 		if err != nil {
