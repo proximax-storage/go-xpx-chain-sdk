@@ -28,9 +28,10 @@ func main() {
 	feeStrategy := flag.String("feeStrategy", "middle", "fee calculation strategy (low, middle, high)")
 	signerPrivateKey := flag.String("signerPrivateKey", "", "Transaction signer private key")
 	replicatorKeys := flag.String("replicatorKeys", "", "List of replicator public keys divided by whitespaces")
+	version := flag.Uint("version", 1, "Transaction version")
 	flag.Parse()
 
-	if err := cleanup(*url, *signerPrivateKey, *replicatorKeys, tools.ParseFeeStrategy(feeStrategy)); err != nil {
+	if err := cleanup(*url, *signerPrivateKey, *replicatorKeys, tools.ParseFeeStrategy(feeStrategy), sdk.EntityVersion(*version)); err != nil {
 		fmt.Printf("Replicator onboarding failed: %s\n", err)
 		os.Exit(1)
 	}
@@ -38,7 +39,7 @@ func main() {
 	fmt.Println("Replicators removed successfully!!!")
 }
 
-func cleanup(url, signerPrivateKey string, replicatorKeys string, feeStrategy sdk.FeeCalculationStrategy) error {
+func cleanup(url, signerPrivateKey string, replicatorKeys string, feeStrategy sdk.FeeCalculationStrategy, version sdk.EntityVersion) error {
 	if url == "" {
 		return ErrNoUrl
 	}
@@ -72,6 +73,7 @@ func cleanup(url, signerPrivateKey string, replicatorKeys string, feeStrategy sd
 	}
 
 	replicatorsCleanupTx, err := client.NewReplicatorsCleanupTransaction(
+		version,
 		sdk.NewDeadline(time.Hour),
 		replicatorAccounts,
 	)

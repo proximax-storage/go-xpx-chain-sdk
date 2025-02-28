@@ -149,6 +149,7 @@ func (dto *replicatorOnboardingTransactionDTO) toStruct(*Hash) (Transaction, err
 }
 
 func NewReplicatorsCleanupTransaction(
+	version EntityVersion,
 	deadline *Deadline,
 	replicatorKeys []*PublicAccount,
 	networkType NetworkType,
@@ -157,7 +158,7 @@ func NewReplicatorsCleanupTransaction(
 	tx := ReplicatorsCleanupTransaction{
 		AbstractTransaction: AbstractTransaction{
 			Deadline:    deadline,
-			Version:     ReplicatorsCleanupVersion,
+			Version:     version,
 			Type:        ReplicatorsCleanup,
 			NetworkType: networkType,
 		},

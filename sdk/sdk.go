@@ -943,8 +943,8 @@ func (c *Client) NewReplicatorOffboardingTransaction(deadline *Deadline, driveKe
 	return tx, err
 }
 
-func (c *Client) NewReplicatorsCleanupTransaction(deadline *Deadline, replicatorKeys []*PublicAccount) (*ReplicatorsCleanupTransaction, error) {
-	tx, err := NewReplicatorsCleanupTransaction(deadline, replicatorKeys, c.config.NetworkType)
+func (c *Client) NewReplicatorsCleanupTransaction(version EntityVersion, deadline *Deadline, replicatorKeys []*PublicAccount) (*ReplicatorsCleanupTransaction, error) {
+	tx, err := NewReplicatorsCleanupTransaction(version, deadline, replicatorKeys, c.config.NetworkType)
 	if tx != nil {
 		c.modifyTransaction(tx)
 	}
